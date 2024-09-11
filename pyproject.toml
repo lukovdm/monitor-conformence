@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "mdp-product"
+version = "0.1.0"
+description = ""
+authors = ["Luko van der Maas <luko.vandermaas@ru.nl>"]
+readme = "README.md"
+packages = [{include = "mdp_product"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
