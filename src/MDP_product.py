@@ -52,21 +52,10 @@ class MC_MON_Product:
         # Create the product states with appropriate labels and observations
         # They are stored in the states dict by (gb_id, mon_id, mc_id)
         self.states: dict[tuple[int, int, int], State] = {}
-        self.bottom_states: dict[tuple[int, str], State] = {}
-        for mon_id, mon_state in mon.states.items():
+        for mon_id in mon.states.keys():
             for gb_id in gb.states.keys():
                 for mc_id in mc.states.keys():
                     self.__create_product_state(mon_id, gb_id, mc_id)
-
-            # Create MC bottom states, to which we redirect any transition that is not in the MC but is in the Monitor
-            for action in self.normal_actions:
-                state = self.pomdp.new_state([f"l{mon_id}", "s⊥", action])
-
-                if "accepting" in mon_state.labels:
-                    state.add_label("accepting")
-
-                state.new_observation(self.__gen_observation(state, mon_id))
-                self.bottom_states[(mon_id, action)] = state
 
         # Create transitions between states
         for mon_id in mon.states.keys():
@@ -77,33 +66,6 @@ class MC_MON_Product:
                         gb_id,
                         mc_id,
                     )
-
-            mon_trans = self.mon.transitions[mon_id]
-            mon_trans_name_dict = {
-                list(a.labels)[0]: b for a, b in mon_trans.transition.items()
-            }
-            for src_a_name in self.normal_actions:
-                state = self.bottom_states[(mon_id, src_a_name)]
-                set_trans = True
-                for action in self.pomdp.actions.values():
-                    if action == self.end_action:
-                        if "accepting" in self.mon.get_state_by_id(mon_id).labels:
-                            state.add_transitions([(self.end_action, self.stop_state)])
-                    elif mon_branch := mon_trans_name_dict.get(action.name):
-                        # TODO: check if this is correct, it is highly suspicious
-                        trans = [
-                            (
-                                action,
-                                self.bottom_states[
-                                    (mon_branch.branch[0][1].id, action.name)
-                                ],
-                            )
-                        ]
-                        if set_trans:
-                            state.set_transitions(trans)
-                            set_trans = False
-                        else:
-                            state.add_transitions(trans)
 
         self.pomdp.add_self_loops()
 
@@ -215,13 +177,9 @@ class MC_MON_Product:
                 total_prob = sum([p for (p, _) in pomdp_branch])
 
                 if total_prob == 0:
-                    # Redirect to bottom branch if there is a transition in the monitor but not in the mc
+                    # Redirect to initial state if there is a transition in the monitor but not in the mc
                     trans = Transition(
-                        {
-                            action: Branch(
-                                [(1, self.bottom_states[(mon_id, action.name)])]
-                            )
-                        }
+                        {action: Branch([(1, self.pomdp.get_initial_state())])}
                     )
                 else:
                     # Add branch with optional transition to the initial state if some of the transitions in this state went to a different label
