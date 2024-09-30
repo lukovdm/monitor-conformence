@@ -1,0 +1,44 @@
+// Exported by storm
+// Original model type: POMDP
+@type: POMDP
+@parameters
+
+@reward_models
+
+@nr_states
+6
+@nr_choices
+12
+@model
+state 0 {0} good init l0 red s0
+	action green
+		4 : 0.6666666667
+		5 : 0.3333333333
+	action red
+		0 : 1
+state 1 {1} green l0 s1
+	action green
+		5 : 1
+	action red
+		0 : 1
+state 2 {1} good green l0 s2
+	action green
+		4 : 1
+	action red
+		0 : 1
+state 3 {2} accepting good l1 red s0
+	action green
+		4 : 0.6666666667
+		5 : 0.3333333333
+	action red
+		3 : 1
+state 4 {3} accepting green l1 s1
+	action green
+		5 : 1
+	action red
+		3 : 1
+state 5 {3} accepting good green l1 s2
+	action green
+		4 : 1
+	action red
+		3 : 1
