@@ -6,737 +6,6945 @@
 @reward_models
 
 @nr_states
-76
+716
 @nr_choices
-261
+2484
 @model
-state 0 {3} [pos=0] g0 init l0 s0
+state 0 {0} [pos=0] g0 init l0 s0
 	action ladder
 		0 : 0.5
-		20 : 0.25
-		22 : 0.25
+		37 : 0.25
+		39 : 0.25
 	action normal
 		0 : 0.5
-		4 : 0.25
-		6 : 0.25
+		72 : 0.25
+		74 : 0.25
 	action snake
-		38 : 1
-state 1 {9} goal
+		0 : 1
+state 1 {22} goal
 	action __NOLABEL__
 		1 : 1
-state 2 {10} stop
+state 2 {23} stop
 	action __NOLABEL__
 		2 : 1
 state 3 {0} [pos=1] g0 l0 ladder s1
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		7 : 1
+		75 : 1
 	action snake
-		38 : 1
-state 4 {1} [pos=2] g0 l0 normal s2
+		0 : 1
+state 4 {0} [pos=2] g0 l0 normal s2
 	action ladder
 		0 : 0.5
-		22 : 0.25
-		26 : 0.25
+		39 : 0.25
+		43 : 0.25
 	action normal
 		0 : 0.5
-		6 : 0.25
-		8 : 0.25
+		74 : 0.25
+		76 : 0.25
 	action snake
-		38 : 1
+		0 : 1
 state 5 {0} [pos=3] g0 l0 ladder s3
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		10 : 1
+		78 : 1
 	action snake
-		38 : 1
-state 6 {1} [pos=4] g0 l0 normal s4
+		0 : 1
+state 6 {0} [pos=4] g0 l0 normal s4
 	action ladder
 		0 : 0.75
-		26 : 0.25
+		43 : 0.25
 	action normal
 		0 : 0.5
-		8 : 0.25
-		12 : 0.25
+		76 : 0.25
+		80 : 0.25
 	action snake
 		0 : 0.75
-		11 : 0.25
-state 7 {1} [pos=9] g0 l0 normal s5
+		79 : 0.25
+state 7 {0} [pos=9] g0 l0 normal s5
 	action ladder
 		0 : 0.75
-		30 : 0.25
+		47 : 0.25
 	action normal
 		0 : 0.5
-		10 : 0.25
-		15 : 0.25
+		78 : 0.25
+		83 : 0.25
 	action snake
 		0 : 0.75
-		14 : 0.25
-state 8 {1} [pos=5] g0 l0 normal s6
+		82 : 0.25
+state 8 {0} [pos=5] g0 l0 normal s6
 	action ladder
 		0 : 0.75
-		26 : 0.25
+		43 : 0.25
 	action normal
 		0 : 0.5
-		7 : 0.25
-		12 : 0.25
+		75 : 0.25
+		80 : 0.25
 	action snake
 		0 : 0.75
-		11 : 0.25
+		79 : 0.25
 state 9 {0} [pos=6] g0 l0 ladder s7
 	action ladder
-		30 : 1
+		47 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		38 : 1
-state 10 {1} [pos=10] g0 l0 normal s8
+		0 : 1
+state 10 {0} [pos=10] g0 l0 normal s8
 	action ladder
 		0 : 0.75
-		30 : 0.25
+		47 : 0.25
 	action normal
 		0 : 0.5
-		15 : 0.25
-		16 : 0.25
+		83 : 0.25
+		84 : 0.25
 	action snake
 		0 : 0.75
-		14 : 0.25
-state 11 {2} [pos=7] g0 l0 s9 snake
+		82 : 0.25
+state 11 {0} [pos=7] g0 l0 s9 snake
 	action ladder
-		22 : 1
+		39 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		38 : 1
-state 12 {1} [pos=8] g0 l0 normal s10
+		0 : 1
+state 12 {0} [pos=8] g0 l0 normal s10
 	action ladder
 		0 : 0.75
-		30 : 0.25
+		47 : 0.25
 	action normal
 		0 : 0.5
-		7 : 0.25
-		10 : 0.25
+		75 : 0.25
+		78 : 0.25
 	action snake
 		0 : 0.75
-		14 : 0.25
+		82 : 0.25
 state 13 {0} [pos=11] g0 l0 ladder s11
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		16 : 1
+		84 : 1
 	action snake
-		38 : 1
-state 14 {2} [pos=12] g0 l0 s12 snake
+		0 : 1
+state 14 {0} [pos=12] g0 l0 s12 snake
 	action ladder
-		26 : 1
+		43 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		38 : 1
-state 15 {1} [pos=13] g0 l0 normal s13
+		0 : 1
+state 15 {0} [pos=13] g0 l0 normal s13
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
 		0 : 0.25
-		16 : 0.25
-		55 : 0.5
+		84 : 0.25
+		103 : 0.5
 	action snake
 		0 : 0.75
-		17 : 0.25
-state 16 {1} [pos=14] g0 l0 normal s14
+		85 : 0.25
+state 16 {0} [pos=14] g0 l0 normal s14
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
 		0 : 0.25
-		55 : 0.75
+		103 : 0.75
 	action snake
 		0 : 0.75
-		17 : 0.25
-state 17 {2} [pos=15] g0 l0 s15 snake
+		85 : 0.25
+state 17 {0} [pos=15] g0 l0 s15 snake
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		11 : 1
-state 18 {1} [pos=16] g0 good l0 normal s16
+		79 : 1
+state 18 {0} [pos=16] g0 good l0 normal s16
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		55 : 1
+		103 : 1
 	action snake
-		38 : 1
-state 19 {3} [pos=0] g1 l0 s0
+		0 : 1
+state 19 {0} [pos=0] g1 l0 s0
 	action ladder
 		0 : 0.5
-		57 : 0.25
-		59 : 0.25
+		54 : 0.25
+		56 : 0.25
 	action normal
 		0 : 0.5
-		41 : 0.25
-		43 : 0.25
+		89 : 0.25
+		91 : 0.25
 	action snake
-		38 : 1
+		0 : 1
 state 20 {0} [pos=1] g1 l0 ladder s1
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		44 : 1
+		92 : 1
 	action snake
-		38 : 1
-state 21 {1} [pos=2] g1 l0 normal s2
+		0 : 1
+state 21 {0} [pos=2] g1 l0 normal s2
 	action ladder
 		0 : 0.5
-		59 : 0.25
-		63 : 0.25
+		56 : 0.25
+		60 : 0.25
 	action normal
 		0 : 0.5
-		43 : 0.25
-		45 : 0.25
+		91 : 0.25
+		93 : 0.25
 	action snake
-		38 : 1
+		0 : 1
 state 22 {0} [pos=3] g1 l0 ladder s3
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		47 : 1
+		95 : 1
 	action snake
-		38 : 1
-state 23 {1} [pos=4] g1 l0 normal s4
+		0 : 1
+state 23 {0} [pos=4] g1 l0 normal s4
 	action ladder
 		0 : 0.75
-		63 : 0.25
+		60 : 0.25
 	action normal
 		0 : 0.5
-		45 : 0.25
-		49 : 0.25
+		93 : 0.25
+		97 : 0.25
 	action snake
 		0 : 0.75
-		48 : 0.25
-state 24 {1} [pos=9] g1 l0 normal s5
+		96 : 0.25
+state 24 {0} [pos=9] g1 l0 normal s5
 	action ladder
 		0 : 0.75
-		67 : 0.25
+		64 : 0.25
 	action normal
 		0 : 0.5
-		47 : 0.25
-		52 : 0.25
+		95 : 0.25
+		100 : 0.25
 	action snake
 		0 : 0.75
-		51 : 0.25
-state 25 {1} [pos=5] g1 l0 normal s6
+		99 : 0.25
+state 25 {0} [pos=5] g1 l0 normal s6
 	action ladder
 		0 : 0.75
-		63 : 0.25
+		60 : 0.25
 	action normal
 		0 : 0.5
-		44 : 0.25
-		49 : 0.25
+		92 : 0.25
+		97 : 0.25
 	action snake
 		0 : 0.75
-		48 : 0.25
+		96 : 0.25
 state 26 {0} [pos=6] g1 l0 ladder s7
 	action ladder
-		67 : 1
+		64 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		38 : 1
-state 27 {1} [pos=10] g1 l0 normal s8
+		0 : 1
+state 27 {0} [pos=10] g1 l0 normal s8
 	action ladder
 		0 : 0.75
-		67 : 0.25
+		64 : 0.25
 	action normal
 		0 : 0.5
-		52 : 0.25
-		53 : 0.25
+		100 : 0.25
+		101 : 0.25
 	action snake
 		0 : 0.75
-		51 : 0.25
-state 28 {2} [pos=7] g1 l0 s9 snake
+		99 : 0.25
+state 28 {0} [pos=7] g1 l0 s9 snake
 	action ladder
-		59 : 1
+		56 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		38 : 1
-state 29 {1} [pos=8] g1 l0 normal s10
+		0 : 1
+state 29 {0} [pos=8] g1 l0 normal s10
 	action ladder
 		0 : 0.75
-		67 : 0.25
+		64 : 0.25
 	action normal
 		0 : 0.5
-		44 : 0.25
-		47 : 0.25
+		92 : 0.25
+		95 : 0.25
 	action snake
 		0 : 0.75
-		51 : 0.25
+		99 : 0.25
 state 30 {0} [pos=11] g1 l0 ladder s11
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		53 : 1
+		101 : 1
 	action snake
-		38 : 1
-state 31 {2} [pos=12] g1 l0 s12 snake
+		0 : 1
+state 31 {0} [pos=12] g1 l0 s12 snake
 	action ladder
-		63 : 1
+		60 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		38 : 1
-state 32 {1} [pos=13] g1 l0 normal s13
+		0 : 1
+state 32 {0} [pos=13] g1 l0 normal s13
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
 		0 : 0.25
-		53 : 0.25
-		55 : 0.5
+		101 : 0.25
+		103 : 0.5
 	action snake
 		0 : 0.75
-		54 : 0.25
-state 33 {1} [pos=14] g1 l0 normal s14
+		102 : 0.25
+state 33 {0} [pos=14] g1 l0 normal s14
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
 		0 : 0.25
-		55 : 0.75
+		103 : 0.75
 	action snake
 		0 : 0.75
-		54 : 0.25
-state 34 {2} [pos=15] g1 l0 s15 snake
+		102 : 0.25
+state 34 {0} [pos=15] g1 l0 s15 snake
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		37 : 1
+		0 : 1
 	action snake
-		48 : 1
-state 35 {1} [pos=16] g1 good l0 normal s16
+		96 : 1
+state 35 {0} [pos=16] g1 good l0 normal s16
 	action ladder
-		36 : 1
+		0 : 1
 	action normal
-		55 : 1
+		103 : 1
 	action snake
-		38 : 1
-state 36 {0} l0 ladder s⊥
-	action ladder
-		73 : 1
-	action normal
-		37 : 1
-	action snake
-		38 : 1
-state 37 {1} l0 normal s⊥
-	action ladder
-		73 : 1
-	action normal
-		37 : 1
-	action snake
-		38 : 1
-state 38 {2} l0 snake s⊥
-	action ladder
-		73 : 1
-	action normal
-		37 : 1
-	action snake
-		38 : 1
-state 39 {7} [pos=0] accepting g0 l1 s0
+		0 : 1
+state 36 {1} [pos=0] accepting g0 l1 s0
 	action ladder
 		0 : 0.5
-		20 : 0.25
-		22 : 0.25
+		105 : 0.25
+		107 : 0.25
 	action normal
 		0 : 0.5
-		21 : 0.25
-		23 : 0.25
+		106 : 0.25
+		108 : 0.25
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 40 {4} [pos=1] accepting g0 l1 ladder s1
+state 37 {1} [pos=1] accepting g0 l1 ladder s1
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		24 : 1
+		109 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 41 {5} [pos=2] accepting g0 l1 normal s2
+state 38 {1} [pos=2] accepting g0 l1 normal s2
 	action ladder
 		0 : 0.5
-		22 : 0.25
-		26 : 0.25
+		107 : 0.25
+		111 : 0.25
 	action normal
 		0 : 0.5
-		23 : 0.25
-		25 : 0.25
+		108 : 0.25
+		110 : 0.25
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 42 {4} [pos=3] accepting g0 l1 ladder s3
+state 39 {1} [pos=3] accepting g0 l1 ladder s3
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		27 : 1
+		112 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 43 {5} [pos=4] accepting g0 l1 normal s4
+state 40 {1} [pos=4] accepting g0 l1 normal s4
 	action ladder
 		0 : 0.75
-		26 : 0.25
-	action normal
-		0 : 0.5
-		25 : 0.25
-		29 : 0.25
-	action snake
-		0 : 0.75
-		11 : 0.25
-	action end
-		2 : 1
-state 44 {5} [pos=9] accepting g0 l1 normal s5
-	action ladder
-		0 : 0.75
-		30 : 0.25
+		111 : 0.25
 	action normal
 		0 : 0.5
-		27 : 0.25
-		32 : 0.25
+		110 : 0.25
+		114 : 0.25
 	action snake
 		0 : 0.75
-		14 : 0.25
+		147 : 0.25
 	action end
 		2 : 1
-state 45 {5} [pos=5] accepting g0 l1 normal s6
+state 41 {1} [pos=9] accepting g0 l1 normal s5
 	action ladder
 		0 : 0.75
-		26 : 0.25
+		115 : 0.25
 	action normal
 		0 : 0.5
-		24 : 0.25
-		29 : 0.25
+		112 : 0.25
+		117 : 0.25
 	action snake
 		0 : 0.75
-		11 : 0.25
+		150 : 0.25
 	action end
 		2 : 1
-state 46 {4} [pos=6] accepting g0 l1 ladder s7
-	action ladder
-		30 : 1
-	action normal
-		74 : 1
-	action snake
-		75 : 1
-	action end
-		2 : 1
-state 47 {5} [pos=10] accepting g0 l1 normal s8
+state 42 {1} [pos=5] accepting g0 l1 normal s6
 	action ladder
 		0 : 0.75
-		30 : 0.25
+		111 : 0.25
 	action normal
 		0 : 0.5
-		32 : 0.25
-		33 : 0.25
+		109 : 0.25
+		114 : 0.25
 	action snake
 		0 : 0.75
-		14 : 0.25
+		147 : 0.25
 	action end
 		2 : 1
-state 48 {6} [pos=7] accepting g0 l1 s9 snake
+state 43 {1} [pos=6] accepting g0 l1 ladder s7
 	action ladder
-		22 : 1
+		115 : 1
 	action normal
-		74 : 1
+		0 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 49 {5} [pos=8] accepting g0 l1 normal s10
+state 44 {1} [pos=10] accepting g0 l1 normal s8
 	action ladder
 		0 : 0.75
-		30 : 0.25
+		115 : 0.25
 	action normal
 		0 : 0.5
-		24 : 0.25
-		27 : 0.25
+		117 : 0.25
+		118 : 0.25
 	action snake
 		0 : 0.75
-		14 : 0.25
+		150 : 0.25
 	action end
 		2 : 1
-state 50 {4} [pos=11] accepting g0 l1 ladder s11
+state 45 {1} [pos=7] accepting g0 l1 s9 snake
 	action ladder
-		73 : 1
+		107 : 1
 	action normal
-		33 : 1
+		0 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 51 {6} [pos=12] accepting g0 l1 s12 snake
+state 46 {1} [pos=8] accepting g0 l1 normal s10
 	action ladder
-		26 : 1
+		0 : 0.75
+		115 : 0.25
 	action normal
-		74 : 1
+		0 : 0.5
+		109 : 0.25
+		112 : 0.25
 	action snake
-		75 : 1
+		0 : 0.75
+		150 : 0.25
 	action end
 		2 : 1
-state 52 {5} [pos=13] accepting g0 l1 normal s13
+state 47 {1} [pos=11] accepting g0 l1 ladder s11
 	action ladder
-		73 : 1
+		0 : 1
+	action normal
+		118 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 48 {1} [pos=12] accepting g0 l1 s12 snake
+	action ladder
+		111 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 49 {1} [pos=13] accepting g0 l1 normal s13
+	action ladder
+		0 : 1
 	action normal
 		0 : 0.25
-		33 : 0.25
-		72 : 0.5
+		118 : 0.25
+		137 : 0.5
 	action snake
 		0 : 0.75
-		17 : 0.25
+		153 : 0.25
 	action end
 		2 : 1
-state 53 {5} [pos=14] accepting g0 l1 normal s14
+state 50 {1} [pos=14] accepting g0 l1 normal s14
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
 		0 : 0.25
-		72 : 0.75
+		137 : 0.75
 	action snake
 		0 : 0.75
-		17 : 0.25
+		153 : 0.25
 	action end
 		2 : 1
-state 54 {6} [pos=15] accepting g0 l1 s15 snake
+state 51 {1} [pos=15] accepting g0 l1 s15 snake
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		74 : 1
+		0 : 1
 	action snake
-		11 : 1
+		147 : 1
 	action end
 		2 : 1
-state 55 {5} [pos=16] accepting g0 good l1 normal s16
+state 52 {1} [pos=16] accepting g0 good l1 normal s16
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		72 : 1
+		137 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		2 : 1
-state 56 {7} [pos=0] accepting g1 l1 s0
+state 53 {1} [pos=0] accepting g1 l1 s0
 	action ladder
 		0 : 0.5
-		57 : 0.25
-		59 : 0.25
+		122 : 0.25
+		124 : 0.25
 	action normal
 		0 : 0.5
-		58 : 0.25
-		60 : 0.25
+		123 : 0.25
+		125 : 0.25
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 57 {4} [pos=1] accepting g1 l1 ladder s1
+state 54 {1} [pos=1] accepting g1 l1 ladder s1
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		61 : 1
+		126 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 58 {5} [pos=2] accepting g1 l1 normal s2
+state 55 {1} [pos=2] accepting g1 l1 normal s2
 	action ladder
 		0 : 0.5
-		59 : 0.25
-		63 : 0.25
+		124 : 0.25
+		128 : 0.25
 	action normal
 		0 : 0.5
-		60 : 0.25
-		62 : 0.25
+		125 : 0.25
+		127 : 0.25
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 59 {4} [pos=3] accepting g1 l1 ladder s3
+state 56 {1} [pos=3] accepting g1 l1 ladder s3
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		64 : 1
+		129 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 60 {5} [pos=4] accepting g1 l1 normal s4
+state 57 {1} [pos=4] accepting g1 l1 normal s4
 	action ladder
 		0 : 0.75
-		63 : 0.25
-	action normal
-		0 : 0.5
-		62 : 0.25
-		66 : 0.25
-	action snake
-		0 : 0.75
-		48 : 0.25
-	action end
-		1 : 1
-state 61 {5} [pos=9] accepting g1 l1 normal s5
-	action ladder
-		0 : 0.75
-		67 : 0.25
+		128 : 0.25
 	action normal
 		0 : 0.5
-		64 : 0.25
-		69 : 0.25
+		127 : 0.25
+		131 : 0.25
 	action snake
 		0 : 0.75
-		51 : 0.25
+		164 : 0.25
 	action end
 		1 : 1
-state 62 {5} [pos=5] accepting g1 l1 normal s6
+state 58 {1} [pos=9] accepting g1 l1 normal s5
 	action ladder
 		0 : 0.75
-		63 : 0.25
+		132 : 0.25
 	action normal
 		0 : 0.5
-		61 : 0.25
-		66 : 0.25
+		129 : 0.25
+		134 : 0.25
 	action snake
 		0 : 0.75
-		48 : 0.25
+		167 : 0.25
 	action end
 		1 : 1
-state 63 {4} [pos=6] accepting g1 l1 ladder s7
-	action ladder
-		67 : 1
-	action normal
-		74 : 1
-	action snake
-		75 : 1
-	action end
-		1 : 1
-state 64 {5} [pos=10] accepting g1 l1 normal s8
+state 59 {1} [pos=5] accepting g1 l1 normal s6
 	action ladder
 		0 : 0.75
-		67 : 0.25
+		128 : 0.25
 	action normal
 		0 : 0.5
-		69 : 0.25
-		70 : 0.25
+		126 : 0.25
+		131 : 0.25
 	action snake
 		0 : 0.75
-		51 : 0.25
+		164 : 0.25
 	action end
 		1 : 1
-state 65 {6} [pos=7] accepting g1 l1 s9 snake
+state 60 {1} [pos=6] accepting g1 l1 ladder s7
 	action ladder
-		59 : 1
+		132 : 1
 	action normal
-		74 : 1
+		0 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 66 {5} [pos=8] accepting g1 l1 normal s10
+state 61 {1} [pos=10] accepting g1 l1 normal s8
 	action ladder
 		0 : 0.75
-		67 : 0.25
+		132 : 0.25
 	action normal
 		0 : 0.5
-		61 : 0.25
-		64 : 0.25
+		134 : 0.25
+		135 : 0.25
 	action snake
 		0 : 0.75
-		51 : 0.25
+		167 : 0.25
 	action end
 		1 : 1
-state 67 {4} [pos=11] accepting g1 l1 ladder s11
+state 62 {1} [pos=7] accepting g1 l1 s9 snake
 	action ladder
-		73 : 1
+		124 : 1
 	action normal
-		70 : 1
+		0 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 68 {6} [pos=12] accepting g1 l1 s12 snake
+state 63 {1} [pos=8] accepting g1 l1 normal s10
 	action ladder
-		63 : 1
+		0 : 0.75
+		132 : 0.25
 	action normal
-		74 : 1
+		0 : 0.5
+		126 : 0.25
+		129 : 0.25
 	action snake
-		75 : 1
+		0 : 0.75
+		167 : 0.25
 	action end
 		1 : 1
-state 69 {5} [pos=13] accepting g1 l1 normal s13
+state 64 {1} [pos=11] accepting g1 l1 ladder s11
 	action ladder
-		73 : 1
+		0 : 1
+	action normal
+		135 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 65 {1} [pos=12] accepting g1 l1 s12 snake
+	action ladder
+		128 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 66 {1} [pos=13] accepting g1 l1 normal s13
+	action ladder
+		0 : 1
 	action normal
 		0 : 0.25
-		70 : 0.25
-		72 : 0.5
+		135 : 0.25
+		137 : 0.5
 	action snake
 		0 : 0.75
-		54 : 0.25
+		170 : 0.25
 	action end
 		1 : 1
-state 70 {5} [pos=14] accepting g1 l1 normal s14
+state 67 {1} [pos=14] accepting g1 l1 normal s14
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
 		0 : 0.25
-		72 : 0.75
+		137 : 0.75
 	action snake
 		0 : 0.75
-		54 : 0.25
+		170 : 0.25
 	action end
 		1 : 1
-state 71 {6} [pos=15] accepting g1 l1 s15 snake
+state 68 {1} [pos=15] accepting g1 l1 s15 snake
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		74 : 1
+		0 : 1
 	action snake
-		48 : 1
+		164 : 1
 	action end
 		1 : 1
-state 72 {5} [pos=16] accepting g1 good l1 normal s16
+state 69 {1} [pos=16] accepting g1 good l1 normal s16
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		72 : 1
+		137 : 1
 	action snake
-		75 : 1
+		0 : 1
 	action end
 		1 : 1
-state 73 {4} accepting l1 ladder s⊥
+state 70 {2} [pos=0] g0 l2 s0
 	action ladder
-		73 : 1
+		0 : 0.5
+		105 : 0.25
+		107 : 0.25
 	action normal
-		74 : 1
+		0 : 0.5
+		140 : 0.25
+		142 : 0.25
 	action snake
-		38 : 1
+		0 : 1
+state 71 {2} [pos=1] g0 l2 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		143 : 1
+	action snake
+		0 : 1
+state 72 {2} [pos=2] g0 l2 normal s2
+	action ladder
+		0 : 0.5
+		107 : 0.25
+		111 : 0.25
+	action normal
+		0 : 0.5
+		142 : 0.25
+		144 : 0.25
+	action snake
+		0 : 1
+state 73 {2} [pos=3] g0 l2 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		146 : 1
+	action snake
+		0 : 1
+state 74 {2} [pos=4] g0 l2 normal s4
+	action ladder
+		0 : 0.75
+		111 : 0.25
+	action normal
+		0 : 0.5
+		144 : 0.25
+		148 : 0.25
+	action snake
+		0 : 0.75
+		147 : 0.25
+state 75 {2} [pos=9] g0 l2 normal s5
+	action ladder
+		0 : 0.75
+		115 : 0.25
+	action normal
+		0 : 0.5
+		146 : 0.25
+		151 : 0.25
+	action snake
+		0 : 0.75
+		150 : 0.25
+state 76 {2} [pos=5] g0 l2 normal s6
+	action ladder
+		0 : 0.75
+		111 : 0.25
+	action normal
+		0 : 0.5
+		143 : 0.25
+		148 : 0.25
+	action snake
+		0 : 0.75
+		147 : 0.25
+state 77 {2} [pos=6] g0 l2 ladder s7
+	action ladder
+		115 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 78 {2} [pos=10] g0 l2 normal s8
+	action ladder
+		0 : 0.75
+		115 : 0.25
+	action normal
+		0 : 0.5
+		151 : 0.25
+		152 : 0.25
+	action snake
+		0 : 0.75
+		150 : 0.25
+state 79 {2} [pos=7] g0 l2 s9 snake
+	action ladder
+		107 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 80 {2} [pos=8] g0 l2 normal s10
+	action ladder
+		0 : 0.75
+		115 : 0.25
+	action normal
+		0 : 0.5
+		143 : 0.25
+		146 : 0.25
+	action snake
+		0 : 0.75
+		150 : 0.25
+state 81 {2} [pos=11] g0 l2 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		152 : 1
+	action snake
+		0 : 1
+state 82 {2} [pos=12] g0 l2 s12 snake
+	action ladder
+		111 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 83 {2} [pos=13] g0 l2 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		152 : 0.25
+		171 : 0.5
+	action snake
+		0 : 0.75
+		153 : 0.25
+state 84 {2} [pos=14] g0 l2 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		171 : 0.75
+	action snake
+		0 : 0.75
+		153 : 0.25
+state 85 {2} [pos=15] g0 l2 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		147 : 1
+state 86 {2} [pos=16] g0 good l2 normal s16
+	action ladder
+		0 : 1
+	action normal
+		171 : 1
+	action snake
+		0 : 1
+state 87 {2} [pos=0] g1 l2 s0
+	action ladder
+		0 : 0.5
+		122 : 0.25
+		124 : 0.25
+	action normal
+		0 : 0.5
+		157 : 0.25
+		159 : 0.25
+	action snake
+		0 : 1
+state 88 {2} [pos=1] g1 l2 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		160 : 1
+	action snake
+		0 : 1
+state 89 {2} [pos=2] g1 l2 normal s2
+	action ladder
+		0 : 0.5
+		124 : 0.25
+		128 : 0.25
+	action normal
+		0 : 0.5
+		159 : 0.25
+		161 : 0.25
+	action snake
+		0 : 1
+state 90 {2} [pos=3] g1 l2 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		163 : 1
+	action snake
+		0 : 1
+state 91 {2} [pos=4] g1 l2 normal s4
+	action ladder
+		0 : 0.75
+		128 : 0.25
+	action normal
+		0 : 0.5
+		161 : 0.25
+		165 : 0.25
+	action snake
+		0 : 0.75
+		164 : 0.25
+state 92 {2} [pos=9] g1 l2 normal s5
+	action ladder
+		0 : 0.75
+		132 : 0.25
+	action normal
+		0 : 0.5
+		163 : 0.25
+		168 : 0.25
+	action snake
+		0 : 0.75
+		167 : 0.25
+state 93 {2} [pos=5] g1 l2 normal s6
+	action ladder
+		0 : 0.75
+		128 : 0.25
+	action normal
+		0 : 0.5
+		160 : 0.25
+		165 : 0.25
+	action snake
+		0 : 0.75
+		164 : 0.25
+state 94 {2} [pos=6] g1 l2 ladder s7
+	action ladder
+		132 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 95 {2} [pos=10] g1 l2 normal s8
+	action ladder
+		0 : 0.75
+		132 : 0.25
+	action normal
+		0 : 0.5
+		168 : 0.25
+		169 : 0.25
+	action snake
+		0 : 0.75
+		167 : 0.25
+state 96 {2} [pos=7] g1 l2 s9 snake
+	action ladder
+		124 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 97 {2} [pos=8] g1 l2 normal s10
+	action ladder
+		0 : 0.75
+		132 : 0.25
+	action normal
+		0 : 0.5
+		160 : 0.25
+		163 : 0.25
+	action snake
+		0 : 0.75
+		167 : 0.25
+state 98 {2} [pos=11] g1 l2 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		169 : 1
+	action snake
+		0 : 1
+state 99 {2} [pos=12] g1 l2 s12 snake
+	action ladder
+		128 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 100 {2} [pos=13] g1 l2 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		169 : 0.25
+		171 : 0.5
+	action snake
+		0 : 0.75
+		170 : 0.25
+state 101 {2} [pos=14] g1 l2 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		171 : 0.75
+	action snake
+		0 : 0.75
+		170 : 0.25
+state 102 {2} [pos=15] g1 l2 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		164 : 1
+state 103 {2} [pos=16] g1 good l2 normal s16
+	action ladder
+		0 : 1
+	action normal
+		171 : 1
+	action snake
+		0 : 1
+state 104 {3} [pos=0] accepting g0 l3 s0
+	action ladder
+		0 : 0.5
+		173 : 0.25
+		175 : 0.25
+	action normal
+		0 : 0.5
+		174 : 0.25
+		176 : 0.25
+	action snake
+		0 : 1
 	action end
 		2 : 1
-state 74 {5} accepting l1 normal s⊥
+state 105 {3} [pos=1] accepting g0 l3 ladder s1
 	action ladder
-		73 : 1
+		0 : 1
 	action normal
-		74 : 1
+		177 : 1
 	action snake
-		38 : 1
+		0 : 1
 	action end
 		2 : 1
-state 75 {6} accepting l1 snake s⊥
+state 106 {3} [pos=2] accepting g0 l3 normal s2
 	action ladder
-		73 : 1
+		0 : 0.5
+		175 : 0.25
+		179 : 0.25
 	action normal
-		74 : 1
+		0 : 0.5
+		176 : 0.25
+		178 : 0.25
 	action snake
-		38 : 1
+		0 : 1
 	action end
 		2 : 1
+state 107 {3} [pos=3] accepting g0 l3 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		180 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 108 {3} [pos=4] accepting g0 l3 normal s4
+	action ladder
+		0 : 0.75
+		179 : 0.25
+	action normal
+		0 : 0.5
+		178 : 0.25
+		182 : 0.25
+	action snake
+		0 : 0.75
+		215 : 0.25
+	action end
+		2 : 1
+state 109 {3} [pos=9] accepting g0 l3 normal s5
+	action ladder
+		0 : 0.75
+		183 : 0.25
+	action normal
+		0 : 0.5
+		180 : 0.25
+		185 : 0.25
+	action snake
+		0 : 0.75
+		218 : 0.25
+	action end
+		2 : 1
+state 110 {3} [pos=5] accepting g0 l3 normal s6
+	action ladder
+		0 : 0.75
+		179 : 0.25
+	action normal
+		0 : 0.5
+		177 : 0.25
+		182 : 0.25
+	action snake
+		0 : 0.75
+		215 : 0.25
+	action end
+		2 : 1
+state 111 {3} [pos=6] accepting g0 l3 ladder s7
+	action ladder
+		183 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 112 {3} [pos=10] accepting g0 l3 normal s8
+	action ladder
+		0 : 0.75
+		183 : 0.25
+	action normal
+		0 : 0.5
+		185 : 0.25
+		186 : 0.25
+	action snake
+		0 : 0.75
+		218 : 0.25
+	action end
+		2 : 1
+state 113 {3} [pos=7] accepting g0 l3 s9 snake
+	action ladder
+		175 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 114 {3} [pos=8] accepting g0 l3 normal s10
+	action ladder
+		0 : 0.75
+		183 : 0.25
+	action normal
+		0 : 0.5
+		177 : 0.25
+		180 : 0.25
+	action snake
+		0 : 0.75
+		218 : 0.25
+	action end
+		2 : 1
+state 115 {3} [pos=11] accepting g0 l3 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		186 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 116 {3} [pos=12] accepting g0 l3 s12 snake
+	action ladder
+		179 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 117 {3} [pos=13] accepting g0 l3 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		186 : 0.25
+		205 : 0.5
+	action snake
+		0 : 0.75
+		221 : 0.25
+	action end
+		2 : 1
+state 118 {3} [pos=14] accepting g0 l3 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		205 : 0.75
+	action snake
+		0 : 0.75
+		221 : 0.25
+	action end
+		2 : 1
+state 119 {3} [pos=15] accepting g0 l3 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		215 : 1
+	action end
+		2 : 1
+state 120 {3} [pos=16] accepting g0 good l3 normal s16
+	action ladder
+		0 : 1
+	action normal
+		205 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 121 {3} [pos=0] accepting g1 l3 s0
+	action ladder
+		0 : 0.5
+		190 : 0.25
+		192 : 0.25
+	action normal
+		0 : 0.5
+		191 : 0.25
+		193 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 122 {3} [pos=1] accepting g1 l3 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		194 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 123 {3} [pos=2] accepting g1 l3 normal s2
+	action ladder
+		0 : 0.5
+		192 : 0.25
+		196 : 0.25
+	action normal
+		0 : 0.5
+		193 : 0.25
+		195 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 124 {3} [pos=3] accepting g1 l3 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		197 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 125 {3} [pos=4] accepting g1 l3 normal s4
+	action ladder
+		0 : 0.75
+		196 : 0.25
+	action normal
+		0 : 0.5
+		195 : 0.25
+		199 : 0.25
+	action snake
+		0 : 0.75
+		232 : 0.25
+	action end
+		1 : 1
+state 126 {3} [pos=9] accepting g1 l3 normal s5
+	action ladder
+		0 : 0.75
+		200 : 0.25
+	action normal
+		0 : 0.5
+		197 : 0.25
+		202 : 0.25
+	action snake
+		0 : 0.75
+		235 : 0.25
+	action end
+		1 : 1
+state 127 {3} [pos=5] accepting g1 l3 normal s6
+	action ladder
+		0 : 0.75
+		196 : 0.25
+	action normal
+		0 : 0.5
+		194 : 0.25
+		199 : 0.25
+	action snake
+		0 : 0.75
+		232 : 0.25
+	action end
+		1 : 1
+state 128 {3} [pos=6] accepting g1 l3 ladder s7
+	action ladder
+		200 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 129 {3} [pos=10] accepting g1 l3 normal s8
+	action ladder
+		0 : 0.75
+		200 : 0.25
+	action normal
+		0 : 0.5
+		202 : 0.25
+		203 : 0.25
+	action snake
+		0 : 0.75
+		235 : 0.25
+	action end
+		1 : 1
+state 130 {3} [pos=7] accepting g1 l3 s9 snake
+	action ladder
+		192 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 131 {3} [pos=8] accepting g1 l3 normal s10
+	action ladder
+		0 : 0.75
+		200 : 0.25
+	action normal
+		0 : 0.5
+		194 : 0.25
+		197 : 0.25
+	action snake
+		0 : 0.75
+		235 : 0.25
+	action end
+		1 : 1
+state 132 {3} [pos=11] accepting g1 l3 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		203 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 133 {3} [pos=12] accepting g1 l3 s12 snake
+	action ladder
+		196 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 134 {3} [pos=13] accepting g1 l3 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		203 : 0.25
+		205 : 0.5
+	action snake
+		0 : 0.75
+		238 : 0.25
+	action end
+		1 : 1
+state 135 {3} [pos=14] accepting g1 l3 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		205 : 0.75
+	action snake
+		0 : 0.75
+		238 : 0.25
+	action end
+		1 : 1
+state 136 {3} [pos=15] accepting g1 l3 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		232 : 1
+	action end
+		1 : 1
+state 137 {3} [pos=16] accepting g1 good l3 normal s16
+	action ladder
+		0 : 1
+	action normal
+		205 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 138 {4} [pos=0] g0 l4 s0
+	action ladder
+		0 : 0.5
+		173 : 0.25
+		175 : 0.25
+	action normal
+		0 : 0.5
+		208 : 0.25
+		210 : 0.25
+	action snake
+		0 : 1
+state 139 {4} [pos=1] g0 l4 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		211 : 1
+	action snake
+		0 : 1
+state 140 {4} [pos=2] g0 l4 normal s2
+	action ladder
+		0 : 0.5
+		175 : 0.25
+		179 : 0.25
+	action normal
+		0 : 0.5
+		210 : 0.25
+		212 : 0.25
+	action snake
+		0 : 1
+state 141 {4} [pos=3] g0 l4 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		214 : 1
+	action snake
+		0 : 1
+state 142 {4} [pos=4] g0 l4 normal s4
+	action ladder
+		0 : 0.75
+		179 : 0.25
+	action normal
+		0 : 0.5
+		212 : 0.25
+		216 : 0.25
+	action snake
+		0 : 0.75
+		215 : 0.25
+state 143 {4} [pos=9] g0 l4 normal s5
+	action ladder
+		0 : 0.75
+		183 : 0.25
+	action normal
+		0 : 0.5
+		214 : 0.25
+		219 : 0.25
+	action snake
+		0 : 0.75
+		218 : 0.25
+state 144 {4} [pos=5] g0 l4 normal s6
+	action ladder
+		0 : 0.75
+		179 : 0.25
+	action normal
+		0 : 0.5
+		211 : 0.25
+		216 : 0.25
+	action snake
+		0 : 0.75
+		215 : 0.25
+state 145 {4} [pos=6] g0 l4 ladder s7
+	action ladder
+		183 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 146 {4} [pos=10] g0 l4 normal s8
+	action ladder
+		0 : 0.75
+		183 : 0.25
+	action normal
+		0 : 0.5
+		219 : 0.25
+		220 : 0.25
+	action snake
+		0 : 0.75
+		218 : 0.25
+state 147 {4} [pos=7] g0 l4 s9 snake
+	action ladder
+		175 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 148 {4} [pos=8] g0 l4 normal s10
+	action ladder
+		0 : 0.75
+		183 : 0.25
+	action normal
+		0 : 0.5
+		211 : 0.25
+		214 : 0.25
+	action snake
+		0 : 0.75
+		218 : 0.25
+state 149 {4} [pos=11] g0 l4 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		220 : 1
+	action snake
+		0 : 1
+state 150 {4} [pos=12] g0 l4 s12 snake
+	action ladder
+		179 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 151 {4} [pos=13] g0 l4 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		220 : 0.25
+		239 : 0.5
+	action snake
+		0 : 0.75
+		221 : 0.25
+state 152 {4} [pos=14] g0 l4 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		239 : 0.75
+	action snake
+		0 : 0.75
+		221 : 0.25
+state 153 {4} [pos=15] g0 l4 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		215 : 1
+state 154 {4} [pos=16] g0 good l4 normal s16
+	action ladder
+		0 : 1
+	action normal
+		239 : 1
+	action snake
+		0 : 1
+state 155 {4} [pos=0] g1 l4 s0
+	action ladder
+		0 : 0.5
+		190 : 0.25
+		192 : 0.25
+	action normal
+		0 : 0.5
+		225 : 0.25
+		227 : 0.25
+	action snake
+		0 : 1
+state 156 {4} [pos=1] g1 l4 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		228 : 1
+	action snake
+		0 : 1
+state 157 {4} [pos=2] g1 l4 normal s2
+	action ladder
+		0 : 0.5
+		192 : 0.25
+		196 : 0.25
+	action normal
+		0 : 0.5
+		227 : 0.25
+		229 : 0.25
+	action snake
+		0 : 1
+state 158 {4} [pos=3] g1 l4 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		231 : 1
+	action snake
+		0 : 1
+state 159 {4} [pos=4] g1 l4 normal s4
+	action ladder
+		0 : 0.75
+		196 : 0.25
+	action normal
+		0 : 0.5
+		229 : 0.25
+		233 : 0.25
+	action snake
+		0 : 0.75
+		232 : 0.25
+state 160 {4} [pos=9] g1 l4 normal s5
+	action ladder
+		0 : 0.75
+		200 : 0.25
+	action normal
+		0 : 0.5
+		231 : 0.25
+		236 : 0.25
+	action snake
+		0 : 0.75
+		235 : 0.25
+state 161 {4} [pos=5] g1 l4 normal s6
+	action ladder
+		0 : 0.75
+		196 : 0.25
+	action normal
+		0 : 0.5
+		228 : 0.25
+		233 : 0.25
+	action snake
+		0 : 0.75
+		232 : 0.25
+state 162 {4} [pos=6] g1 l4 ladder s7
+	action ladder
+		200 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 163 {4} [pos=10] g1 l4 normal s8
+	action ladder
+		0 : 0.75
+		200 : 0.25
+	action normal
+		0 : 0.5
+		236 : 0.25
+		237 : 0.25
+	action snake
+		0 : 0.75
+		235 : 0.25
+state 164 {4} [pos=7] g1 l4 s9 snake
+	action ladder
+		192 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 165 {4} [pos=8] g1 l4 normal s10
+	action ladder
+		0 : 0.75
+		200 : 0.25
+	action normal
+		0 : 0.5
+		228 : 0.25
+		231 : 0.25
+	action snake
+		0 : 0.75
+		235 : 0.25
+state 166 {4} [pos=11] g1 l4 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		237 : 1
+	action snake
+		0 : 1
+state 167 {4} [pos=12] g1 l4 s12 snake
+	action ladder
+		196 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 168 {4} [pos=13] g1 l4 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		237 : 0.25
+		239 : 0.5
+	action snake
+		0 : 0.75
+		238 : 0.25
+state 169 {4} [pos=14] g1 l4 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		239 : 0.75
+	action snake
+		0 : 0.75
+		238 : 0.25
+state 170 {4} [pos=15] g1 l4 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		232 : 1
+state 171 {4} [pos=16] g1 good l4 normal s16
+	action ladder
+		0 : 1
+	action normal
+		239 : 1
+	action snake
+		0 : 1
+state 172 {5} [pos=0] accepting g0 l5 s0
+	action ladder
+		0 : 0.5
+		241 : 0.25
+		243 : 0.25
+	action normal
+		0 : 0.5
+		242 : 0.25
+		244 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 173 {5} [pos=1] accepting g0 l5 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		245 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 174 {5} [pos=2] accepting g0 l5 normal s2
+	action ladder
+		0 : 0.5
+		243 : 0.25
+		247 : 0.25
+	action normal
+		0 : 0.5
+		244 : 0.25
+		246 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 175 {5} [pos=3] accepting g0 l5 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		248 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 176 {5} [pos=4] accepting g0 l5 normal s4
+	action ladder
+		0 : 0.75
+		247 : 0.25
+	action normal
+		0 : 0.5
+		246 : 0.25
+		250 : 0.25
+	action snake
+		0 : 0.75
+		283 : 0.25
+	action end
+		2 : 1
+state 177 {5} [pos=9] accepting g0 l5 normal s5
+	action ladder
+		0 : 0.75
+		251 : 0.25
+	action normal
+		0 : 0.5
+		248 : 0.25
+		253 : 0.25
+	action snake
+		0 : 0.75
+		286 : 0.25
+	action end
+		2 : 1
+state 178 {5} [pos=5] accepting g0 l5 normal s6
+	action ladder
+		0 : 0.75
+		247 : 0.25
+	action normal
+		0 : 0.5
+		245 : 0.25
+		250 : 0.25
+	action snake
+		0 : 0.75
+		283 : 0.25
+	action end
+		2 : 1
+state 179 {5} [pos=6] accepting g0 l5 ladder s7
+	action ladder
+		251 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 180 {5} [pos=10] accepting g0 l5 normal s8
+	action ladder
+		0 : 0.75
+		251 : 0.25
+	action normal
+		0 : 0.5
+		253 : 0.25
+		254 : 0.25
+	action snake
+		0 : 0.75
+		286 : 0.25
+	action end
+		2 : 1
+state 181 {5} [pos=7] accepting g0 l5 s9 snake
+	action ladder
+		243 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 182 {5} [pos=8] accepting g0 l5 normal s10
+	action ladder
+		0 : 0.75
+		251 : 0.25
+	action normal
+		0 : 0.5
+		245 : 0.25
+		248 : 0.25
+	action snake
+		0 : 0.75
+		286 : 0.25
+	action end
+		2 : 1
+state 183 {5} [pos=11] accepting g0 l5 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		254 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 184 {5} [pos=12] accepting g0 l5 s12 snake
+	action ladder
+		247 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 185 {5} [pos=13] accepting g0 l5 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		254 : 0.25
+		273 : 0.5
+	action snake
+		0 : 0.75
+		289 : 0.25
+	action end
+		2 : 1
+state 186 {5} [pos=14] accepting g0 l5 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		273 : 0.75
+	action snake
+		0 : 0.75
+		289 : 0.25
+	action end
+		2 : 1
+state 187 {5} [pos=15] accepting g0 l5 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		283 : 1
+	action end
+		2 : 1
+state 188 {5} [pos=16] accepting g0 good l5 normal s16
+	action ladder
+		0 : 1
+	action normal
+		273 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 189 {5} [pos=0] accepting g1 l5 s0
+	action ladder
+		0 : 0.5
+		258 : 0.25
+		260 : 0.25
+	action normal
+		0 : 0.5
+		259 : 0.25
+		261 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 190 {5} [pos=1] accepting g1 l5 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		262 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 191 {5} [pos=2] accepting g1 l5 normal s2
+	action ladder
+		0 : 0.5
+		260 : 0.25
+		264 : 0.25
+	action normal
+		0 : 0.5
+		261 : 0.25
+		263 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 192 {5} [pos=3] accepting g1 l5 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		265 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 193 {5} [pos=4] accepting g1 l5 normal s4
+	action ladder
+		0 : 0.75
+		264 : 0.25
+	action normal
+		0 : 0.5
+		263 : 0.25
+		267 : 0.25
+	action snake
+		0 : 0.75
+		300 : 0.25
+	action end
+		1 : 1
+state 194 {5} [pos=9] accepting g1 l5 normal s5
+	action ladder
+		0 : 0.75
+		268 : 0.25
+	action normal
+		0 : 0.5
+		265 : 0.25
+		270 : 0.25
+	action snake
+		0 : 0.75
+		303 : 0.25
+	action end
+		1 : 1
+state 195 {5} [pos=5] accepting g1 l5 normal s6
+	action ladder
+		0 : 0.75
+		264 : 0.25
+	action normal
+		0 : 0.5
+		262 : 0.25
+		267 : 0.25
+	action snake
+		0 : 0.75
+		300 : 0.25
+	action end
+		1 : 1
+state 196 {5} [pos=6] accepting g1 l5 ladder s7
+	action ladder
+		268 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 197 {5} [pos=10] accepting g1 l5 normal s8
+	action ladder
+		0 : 0.75
+		268 : 0.25
+	action normal
+		0 : 0.5
+		270 : 0.25
+		271 : 0.25
+	action snake
+		0 : 0.75
+		303 : 0.25
+	action end
+		1 : 1
+state 198 {5} [pos=7] accepting g1 l5 s9 snake
+	action ladder
+		260 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 199 {5} [pos=8] accepting g1 l5 normal s10
+	action ladder
+		0 : 0.75
+		268 : 0.25
+	action normal
+		0 : 0.5
+		262 : 0.25
+		265 : 0.25
+	action snake
+		0 : 0.75
+		303 : 0.25
+	action end
+		1 : 1
+state 200 {5} [pos=11] accepting g1 l5 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		271 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 201 {5} [pos=12] accepting g1 l5 s12 snake
+	action ladder
+		264 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 202 {5} [pos=13] accepting g1 l5 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		271 : 0.25
+		273 : 0.5
+	action snake
+		0 : 0.75
+		306 : 0.25
+	action end
+		1 : 1
+state 203 {5} [pos=14] accepting g1 l5 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		273 : 0.75
+	action snake
+		0 : 0.75
+		306 : 0.25
+	action end
+		1 : 1
+state 204 {5} [pos=15] accepting g1 l5 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		300 : 1
+	action end
+		1 : 1
+state 205 {5} [pos=16] accepting g1 good l5 normal s16
+	action ladder
+		0 : 1
+	action normal
+		273 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 206 {6} [pos=0] g0 l6 s0
+	action ladder
+		0 : 0.5
+		241 : 0.25
+		243 : 0.25
+	action normal
+		0 : 0.5
+		276 : 0.25
+		278 : 0.25
+	action snake
+		0 : 1
+state 207 {6} [pos=1] g0 l6 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		279 : 1
+	action snake
+		0 : 1
+state 208 {6} [pos=2] g0 l6 normal s2
+	action ladder
+		0 : 0.5
+		243 : 0.25
+		247 : 0.25
+	action normal
+		0 : 0.5
+		278 : 0.25
+		280 : 0.25
+	action snake
+		0 : 1
+state 209 {6} [pos=3] g0 l6 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		282 : 1
+	action snake
+		0 : 1
+state 210 {6} [pos=4] g0 l6 normal s4
+	action ladder
+		0 : 0.75
+		247 : 0.25
+	action normal
+		0 : 0.5
+		280 : 0.25
+		284 : 0.25
+	action snake
+		0 : 0.75
+		283 : 0.25
+state 211 {6} [pos=9] g0 l6 normal s5
+	action ladder
+		0 : 0.75
+		251 : 0.25
+	action normal
+		0 : 0.5
+		282 : 0.25
+		287 : 0.25
+	action snake
+		0 : 0.75
+		286 : 0.25
+state 212 {6} [pos=5] g0 l6 normal s6
+	action ladder
+		0 : 0.75
+		247 : 0.25
+	action normal
+		0 : 0.5
+		279 : 0.25
+		284 : 0.25
+	action snake
+		0 : 0.75
+		283 : 0.25
+state 213 {6} [pos=6] g0 l6 ladder s7
+	action ladder
+		251 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 214 {6} [pos=10] g0 l6 normal s8
+	action ladder
+		0 : 0.75
+		251 : 0.25
+	action normal
+		0 : 0.5
+		287 : 0.25
+		288 : 0.25
+	action snake
+		0 : 0.75
+		286 : 0.25
+state 215 {6} [pos=7] g0 l6 s9 snake
+	action ladder
+		243 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 216 {6} [pos=8] g0 l6 normal s10
+	action ladder
+		0 : 0.75
+		251 : 0.25
+	action normal
+		0 : 0.5
+		279 : 0.25
+		282 : 0.25
+	action snake
+		0 : 0.75
+		286 : 0.25
+state 217 {6} [pos=11] g0 l6 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		288 : 1
+	action snake
+		0 : 1
+state 218 {6} [pos=12] g0 l6 s12 snake
+	action ladder
+		247 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 219 {6} [pos=13] g0 l6 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		288 : 0.25
+		307 : 0.5
+	action snake
+		0 : 0.75
+		289 : 0.25
+state 220 {6} [pos=14] g0 l6 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		307 : 0.75
+	action snake
+		0 : 0.75
+		289 : 0.25
+state 221 {6} [pos=15] g0 l6 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		283 : 1
+state 222 {6} [pos=16] g0 good l6 normal s16
+	action ladder
+		0 : 1
+	action normal
+		307 : 1
+	action snake
+		0 : 1
+state 223 {6} [pos=0] g1 l6 s0
+	action ladder
+		0 : 0.5
+		258 : 0.25
+		260 : 0.25
+	action normal
+		0 : 0.5
+		293 : 0.25
+		295 : 0.25
+	action snake
+		0 : 1
+state 224 {6} [pos=1] g1 l6 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		296 : 1
+	action snake
+		0 : 1
+state 225 {6} [pos=2] g1 l6 normal s2
+	action ladder
+		0 : 0.5
+		260 : 0.25
+		264 : 0.25
+	action normal
+		0 : 0.5
+		295 : 0.25
+		297 : 0.25
+	action snake
+		0 : 1
+state 226 {6} [pos=3] g1 l6 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		299 : 1
+	action snake
+		0 : 1
+state 227 {6} [pos=4] g1 l6 normal s4
+	action ladder
+		0 : 0.75
+		264 : 0.25
+	action normal
+		0 : 0.5
+		297 : 0.25
+		301 : 0.25
+	action snake
+		0 : 0.75
+		300 : 0.25
+state 228 {6} [pos=9] g1 l6 normal s5
+	action ladder
+		0 : 0.75
+		268 : 0.25
+	action normal
+		0 : 0.5
+		299 : 0.25
+		304 : 0.25
+	action snake
+		0 : 0.75
+		303 : 0.25
+state 229 {6} [pos=5] g1 l6 normal s6
+	action ladder
+		0 : 0.75
+		264 : 0.25
+	action normal
+		0 : 0.5
+		296 : 0.25
+		301 : 0.25
+	action snake
+		0 : 0.75
+		300 : 0.25
+state 230 {6} [pos=6] g1 l6 ladder s7
+	action ladder
+		268 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 231 {6} [pos=10] g1 l6 normal s8
+	action ladder
+		0 : 0.75
+		268 : 0.25
+	action normal
+		0 : 0.5
+		304 : 0.25
+		305 : 0.25
+	action snake
+		0 : 0.75
+		303 : 0.25
+state 232 {6} [pos=7] g1 l6 s9 snake
+	action ladder
+		260 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 233 {6} [pos=8] g1 l6 normal s10
+	action ladder
+		0 : 0.75
+		268 : 0.25
+	action normal
+		0 : 0.5
+		296 : 0.25
+		299 : 0.25
+	action snake
+		0 : 0.75
+		303 : 0.25
+state 234 {6} [pos=11] g1 l6 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		305 : 1
+	action snake
+		0 : 1
+state 235 {6} [pos=12] g1 l6 s12 snake
+	action ladder
+		264 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 236 {6} [pos=13] g1 l6 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		305 : 0.25
+		307 : 0.5
+	action snake
+		0 : 0.75
+		306 : 0.25
+state 237 {6} [pos=14] g1 l6 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		307 : 0.75
+	action snake
+		0 : 0.75
+		306 : 0.25
+state 238 {6} [pos=15] g1 l6 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		300 : 1
+state 239 {6} [pos=16] g1 good l6 normal s16
+	action ladder
+		0 : 1
+	action normal
+		307 : 1
+	action snake
+		0 : 1
+state 240 {7} [pos=0] accepting g0 l7 s0
+	action ladder
+		0 : 0.5
+		309 : 0.25
+		311 : 0.25
+	action normal
+		0 : 0.5
+		310 : 0.25
+		312 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 241 {7} [pos=1] accepting g0 l7 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		313 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 242 {7} [pos=2] accepting g0 l7 normal s2
+	action ladder
+		0 : 0.5
+		311 : 0.25
+		315 : 0.25
+	action normal
+		0 : 0.5
+		312 : 0.25
+		314 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 243 {7} [pos=3] accepting g0 l7 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		316 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 244 {7} [pos=4] accepting g0 l7 normal s4
+	action ladder
+		0 : 0.75
+		315 : 0.25
+	action normal
+		0 : 0.5
+		314 : 0.25
+		318 : 0.25
+	action snake
+		0 : 0.75
+		351 : 0.25
+	action end
+		2 : 1
+state 245 {7} [pos=9] accepting g0 l7 normal s5
+	action ladder
+		0 : 0.75
+		319 : 0.25
+	action normal
+		0 : 0.5
+		316 : 0.25
+		321 : 0.25
+	action snake
+		0 : 0.75
+		354 : 0.25
+	action end
+		2 : 1
+state 246 {7} [pos=5] accepting g0 l7 normal s6
+	action ladder
+		0 : 0.75
+		315 : 0.25
+	action normal
+		0 : 0.5
+		313 : 0.25
+		318 : 0.25
+	action snake
+		0 : 0.75
+		351 : 0.25
+	action end
+		2 : 1
+state 247 {7} [pos=6] accepting g0 l7 ladder s7
+	action ladder
+		319 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 248 {7} [pos=10] accepting g0 l7 normal s8
+	action ladder
+		0 : 0.75
+		319 : 0.25
+	action normal
+		0 : 0.5
+		321 : 0.25
+		322 : 0.25
+	action snake
+		0 : 0.75
+		354 : 0.25
+	action end
+		2 : 1
+state 249 {7} [pos=7] accepting g0 l7 s9 snake
+	action ladder
+		311 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 250 {7} [pos=8] accepting g0 l7 normal s10
+	action ladder
+		0 : 0.75
+		319 : 0.25
+	action normal
+		0 : 0.5
+		313 : 0.25
+		316 : 0.25
+	action snake
+		0 : 0.75
+		354 : 0.25
+	action end
+		2 : 1
+state 251 {7} [pos=11] accepting g0 l7 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		322 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 252 {7} [pos=12] accepting g0 l7 s12 snake
+	action ladder
+		315 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 253 {7} [pos=13] accepting g0 l7 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		322 : 0.25
+		341 : 0.5
+	action snake
+		0 : 0.75
+		357 : 0.25
+	action end
+		2 : 1
+state 254 {7} [pos=14] accepting g0 l7 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		341 : 0.75
+	action snake
+		0 : 0.75
+		357 : 0.25
+	action end
+		2 : 1
+state 255 {7} [pos=15] accepting g0 l7 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		351 : 1
+	action end
+		2 : 1
+state 256 {7} [pos=16] accepting g0 good l7 normal s16
+	action ladder
+		0 : 1
+	action normal
+		341 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 257 {7} [pos=0] accepting g1 l7 s0
+	action ladder
+		0 : 0.5
+		326 : 0.25
+		328 : 0.25
+	action normal
+		0 : 0.5
+		327 : 0.25
+		329 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 258 {7} [pos=1] accepting g1 l7 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		330 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 259 {7} [pos=2] accepting g1 l7 normal s2
+	action ladder
+		0 : 0.5
+		328 : 0.25
+		332 : 0.25
+	action normal
+		0 : 0.5
+		329 : 0.25
+		331 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 260 {7} [pos=3] accepting g1 l7 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		333 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 261 {7} [pos=4] accepting g1 l7 normal s4
+	action ladder
+		0 : 0.75
+		332 : 0.25
+	action normal
+		0 : 0.5
+		331 : 0.25
+		335 : 0.25
+	action snake
+		0 : 0.75
+		368 : 0.25
+	action end
+		1 : 1
+state 262 {7} [pos=9] accepting g1 l7 normal s5
+	action ladder
+		0 : 0.75
+		336 : 0.25
+	action normal
+		0 : 0.5
+		333 : 0.25
+		338 : 0.25
+	action snake
+		0 : 0.75
+		371 : 0.25
+	action end
+		1 : 1
+state 263 {7} [pos=5] accepting g1 l7 normal s6
+	action ladder
+		0 : 0.75
+		332 : 0.25
+	action normal
+		0 : 0.5
+		330 : 0.25
+		335 : 0.25
+	action snake
+		0 : 0.75
+		368 : 0.25
+	action end
+		1 : 1
+state 264 {7} [pos=6] accepting g1 l7 ladder s7
+	action ladder
+		336 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 265 {7} [pos=10] accepting g1 l7 normal s8
+	action ladder
+		0 : 0.75
+		336 : 0.25
+	action normal
+		0 : 0.5
+		338 : 0.25
+		339 : 0.25
+	action snake
+		0 : 0.75
+		371 : 0.25
+	action end
+		1 : 1
+state 266 {7} [pos=7] accepting g1 l7 s9 snake
+	action ladder
+		328 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 267 {7} [pos=8] accepting g1 l7 normal s10
+	action ladder
+		0 : 0.75
+		336 : 0.25
+	action normal
+		0 : 0.5
+		330 : 0.25
+		333 : 0.25
+	action snake
+		0 : 0.75
+		371 : 0.25
+	action end
+		1 : 1
+state 268 {7} [pos=11] accepting g1 l7 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		339 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 269 {7} [pos=12] accepting g1 l7 s12 snake
+	action ladder
+		332 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 270 {7} [pos=13] accepting g1 l7 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		339 : 0.25
+		341 : 0.5
+	action snake
+		0 : 0.75
+		374 : 0.25
+	action end
+		1 : 1
+state 271 {7} [pos=14] accepting g1 l7 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		341 : 0.75
+	action snake
+		0 : 0.75
+		374 : 0.25
+	action end
+		1 : 1
+state 272 {7} [pos=15] accepting g1 l7 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		368 : 1
+	action end
+		1 : 1
+state 273 {7} [pos=16] accepting g1 good l7 normal s16
+	action ladder
+		0 : 1
+	action normal
+		341 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 274 {8} [pos=0] g0 l8 s0
+	action ladder
+		0 : 0.5
+		309 : 0.25
+		311 : 0.25
+	action normal
+		0 : 0.5
+		344 : 0.25
+		346 : 0.25
+	action snake
+		0 : 1
+state 275 {8} [pos=1] g0 l8 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		347 : 1
+	action snake
+		0 : 1
+state 276 {8} [pos=2] g0 l8 normal s2
+	action ladder
+		0 : 0.5
+		311 : 0.25
+		315 : 0.25
+	action normal
+		0 : 0.5
+		346 : 0.25
+		348 : 0.25
+	action snake
+		0 : 1
+state 277 {8} [pos=3] g0 l8 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		350 : 1
+	action snake
+		0 : 1
+state 278 {8} [pos=4] g0 l8 normal s4
+	action ladder
+		0 : 0.75
+		315 : 0.25
+	action normal
+		0 : 0.5
+		348 : 0.25
+		352 : 0.25
+	action snake
+		0 : 0.75
+		351 : 0.25
+state 279 {8} [pos=9] g0 l8 normal s5
+	action ladder
+		0 : 0.75
+		319 : 0.25
+	action normal
+		0 : 0.5
+		350 : 0.25
+		355 : 0.25
+	action snake
+		0 : 0.75
+		354 : 0.25
+state 280 {8} [pos=5] g0 l8 normal s6
+	action ladder
+		0 : 0.75
+		315 : 0.25
+	action normal
+		0 : 0.5
+		347 : 0.25
+		352 : 0.25
+	action snake
+		0 : 0.75
+		351 : 0.25
+state 281 {8} [pos=6] g0 l8 ladder s7
+	action ladder
+		319 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 282 {8} [pos=10] g0 l8 normal s8
+	action ladder
+		0 : 0.75
+		319 : 0.25
+	action normal
+		0 : 0.5
+		355 : 0.25
+		356 : 0.25
+	action snake
+		0 : 0.75
+		354 : 0.25
+state 283 {8} [pos=7] g0 l8 s9 snake
+	action ladder
+		311 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 284 {8} [pos=8] g0 l8 normal s10
+	action ladder
+		0 : 0.75
+		319 : 0.25
+	action normal
+		0 : 0.5
+		347 : 0.25
+		350 : 0.25
+	action snake
+		0 : 0.75
+		354 : 0.25
+state 285 {8} [pos=11] g0 l8 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		356 : 1
+	action snake
+		0 : 1
+state 286 {8} [pos=12] g0 l8 s12 snake
+	action ladder
+		315 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 287 {8} [pos=13] g0 l8 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		356 : 0.25
+		375 : 0.5
+	action snake
+		0 : 0.75
+		357 : 0.25
+state 288 {8} [pos=14] g0 l8 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		375 : 0.75
+	action snake
+		0 : 0.75
+		357 : 0.25
+state 289 {8} [pos=15] g0 l8 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		351 : 1
+state 290 {8} [pos=16] g0 good l8 normal s16
+	action ladder
+		0 : 1
+	action normal
+		375 : 1
+	action snake
+		0 : 1
+state 291 {8} [pos=0] g1 l8 s0
+	action ladder
+		0 : 0.5
+		326 : 0.25
+		328 : 0.25
+	action normal
+		0 : 0.5
+		361 : 0.25
+		363 : 0.25
+	action snake
+		0 : 1
+state 292 {8} [pos=1] g1 l8 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		364 : 1
+	action snake
+		0 : 1
+state 293 {8} [pos=2] g1 l8 normal s2
+	action ladder
+		0 : 0.5
+		328 : 0.25
+		332 : 0.25
+	action normal
+		0 : 0.5
+		363 : 0.25
+		365 : 0.25
+	action snake
+		0 : 1
+state 294 {8} [pos=3] g1 l8 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		367 : 1
+	action snake
+		0 : 1
+state 295 {8} [pos=4] g1 l8 normal s4
+	action ladder
+		0 : 0.75
+		332 : 0.25
+	action normal
+		0 : 0.5
+		365 : 0.25
+		369 : 0.25
+	action snake
+		0 : 0.75
+		368 : 0.25
+state 296 {8} [pos=9] g1 l8 normal s5
+	action ladder
+		0 : 0.75
+		336 : 0.25
+	action normal
+		0 : 0.5
+		367 : 0.25
+		372 : 0.25
+	action snake
+		0 : 0.75
+		371 : 0.25
+state 297 {8} [pos=5] g1 l8 normal s6
+	action ladder
+		0 : 0.75
+		332 : 0.25
+	action normal
+		0 : 0.5
+		364 : 0.25
+		369 : 0.25
+	action snake
+		0 : 0.75
+		368 : 0.25
+state 298 {8} [pos=6] g1 l8 ladder s7
+	action ladder
+		336 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 299 {8} [pos=10] g1 l8 normal s8
+	action ladder
+		0 : 0.75
+		336 : 0.25
+	action normal
+		0 : 0.5
+		372 : 0.25
+		373 : 0.25
+	action snake
+		0 : 0.75
+		371 : 0.25
+state 300 {8} [pos=7] g1 l8 s9 snake
+	action ladder
+		328 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 301 {8} [pos=8] g1 l8 normal s10
+	action ladder
+		0 : 0.75
+		336 : 0.25
+	action normal
+		0 : 0.5
+		364 : 0.25
+		367 : 0.25
+	action snake
+		0 : 0.75
+		371 : 0.25
+state 302 {8} [pos=11] g1 l8 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		373 : 1
+	action snake
+		0 : 1
+state 303 {8} [pos=12] g1 l8 s12 snake
+	action ladder
+		332 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 304 {8} [pos=13] g1 l8 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		373 : 0.25
+		375 : 0.5
+	action snake
+		0 : 0.75
+		374 : 0.25
+state 305 {8} [pos=14] g1 l8 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		375 : 0.75
+	action snake
+		0 : 0.75
+		374 : 0.25
+state 306 {8} [pos=15] g1 l8 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		368 : 1
+state 307 {8} [pos=16] g1 good l8 normal s16
+	action ladder
+		0 : 1
+	action normal
+		375 : 1
+	action snake
+		0 : 1
+state 308 {9} [pos=0] accepting g0 l9 s0
+	action ladder
+		0 : 0.5
+		377 : 0.25
+		379 : 0.25
+	action normal
+		0 : 0.5
+		378 : 0.25
+		380 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 309 {9} [pos=1] accepting g0 l9 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		381 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 310 {9} [pos=2] accepting g0 l9 normal s2
+	action ladder
+		0 : 0.5
+		379 : 0.25
+		383 : 0.25
+	action normal
+		0 : 0.5
+		380 : 0.25
+		382 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 311 {9} [pos=3] accepting g0 l9 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		384 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 312 {9} [pos=4] accepting g0 l9 normal s4
+	action ladder
+		0 : 0.75
+		383 : 0.25
+	action normal
+		0 : 0.5
+		382 : 0.25
+		386 : 0.25
+	action snake
+		0 : 0.75
+		419 : 0.25
+	action end
+		2 : 1
+state 313 {9} [pos=9] accepting g0 l9 normal s5
+	action ladder
+		0 : 0.75
+		387 : 0.25
+	action normal
+		0 : 0.5
+		384 : 0.25
+		389 : 0.25
+	action snake
+		0 : 0.75
+		422 : 0.25
+	action end
+		2 : 1
+state 314 {9} [pos=5] accepting g0 l9 normal s6
+	action ladder
+		0 : 0.75
+		383 : 0.25
+	action normal
+		0 : 0.5
+		381 : 0.25
+		386 : 0.25
+	action snake
+		0 : 0.75
+		419 : 0.25
+	action end
+		2 : 1
+state 315 {9} [pos=6] accepting g0 l9 ladder s7
+	action ladder
+		387 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 316 {9} [pos=10] accepting g0 l9 normal s8
+	action ladder
+		0 : 0.75
+		387 : 0.25
+	action normal
+		0 : 0.5
+		389 : 0.25
+		390 : 0.25
+	action snake
+		0 : 0.75
+		422 : 0.25
+	action end
+		2 : 1
+state 317 {9} [pos=7] accepting g0 l9 s9 snake
+	action ladder
+		379 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 318 {9} [pos=8] accepting g0 l9 normal s10
+	action ladder
+		0 : 0.75
+		387 : 0.25
+	action normal
+		0 : 0.5
+		381 : 0.25
+		384 : 0.25
+	action snake
+		0 : 0.75
+		422 : 0.25
+	action end
+		2 : 1
+state 319 {9} [pos=11] accepting g0 l9 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		390 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 320 {9} [pos=12] accepting g0 l9 s12 snake
+	action ladder
+		383 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 321 {9} [pos=13] accepting g0 l9 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		390 : 0.25
+		409 : 0.5
+	action snake
+		0 : 0.75
+		425 : 0.25
+	action end
+		2 : 1
+state 322 {9} [pos=14] accepting g0 l9 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		409 : 0.75
+	action snake
+		0 : 0.75
+		425 : 0.25
+	action end
+		2 : 1
+state 323 {9} [pos=15] accepting g0 l9 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		419 : 1
+	action end
+		2 : 1
+state 324 {9} [pos=16] accepting g0 good l9 normal s16
+	action ladder
+		0 : 1
+	action normal
+		409 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 325 {9} [pos=0] accepting g1 l9 s0
+	action ladder
+		0 : 0.5
+		394 : 0.25
+		396 : 0.25
+	action normal
+		0 : 0.5
+		395 : 0.25
+		397 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 326 {9} [pos=1] accepting g1 l9 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		398 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 327 {9} [pos=2] accepting g1 l9 normal s2
+	action ladder
+		0 : 0.5
+		396 : 0.25
+		400 : 0.25
+	action normal
+		0 : 0.5
+		397 : 0.25
+		399 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 328 {9} [pos=3] accepting g1 l9 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		401 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 329 {9} [pos=4] accepting g1 l9 normal s4
+	action ladder
+		0 : 0.75
+		400 : 0.25
+	action normal
+		0 : 0.5
+		399 : 0.25
+		403 : 0.25
+	action snake
+		0 : 0.75
+		436 : 0.25
+	action end
+		1 : 1
+state 330 {9} [pos=9] accepting g1 l9 normal s5
+	action ladder
+		0 : 0.75
+		404 : 0.25
+	action normal
+		0 : 0.5
+		401 : 0.25
+		406 : 0.25
+	action snake
+		0 : 0.75
+		439 : 0.25
+	action end
+		1 : 1
+state 331 {9} [pos=5] accepting g1 l9 normal s6
+	action ladder
+		0 : 0.75
+		400 : 0.25
+	action normal
+		0 : 0.5
+		398 : 0.25
+		403 : 0.25
+	action snake
+		0 : 0.75
+		436 : 0.25
+	action end
+		1 : 1
+state 332 {9} [pos=6] accepting g1 l9 ladder s7
+	action ladder
+		404 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 333 {9} [pos=10] accepting g1 l9 normal s8
+	action ladder
+		0 : 0.75
+		404 : 0.25
+	action normal
+		0 : 0.5
+		406 : 0.25
+		407 : 0.25
+	action snake
+		0 : 0.75
+		439 : 0.25
+	action end
+		1 : 1
+state 334 {9} [pos=7] accepting g1 l9 s9 snake
+	action ladder
+		396 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 335 {9} [pos=8] accepting g1 l9 normal s10
+	action ladder
+		0 : 0.75
+		404 : 0.25
+	action normal
+		0 : 0.5
+		398 : 0.25
+		401 : 0.25
+	action snake
+		0 : 0.75
+		439 : 0.25
+	action end
+		1 : 1
+state 336 {9} [pos=11] accepting g1 l9 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		407 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 337 {9} [pos=12] accepting g1 l9 s12 snake
+	action ladder
+		400 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 338 {9} [pos=13] accepting g1 l9 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		407 : 0.25
+		409 : 0.5
+	action snake
+		0 : 0.75
+		442 : 0.25
+	action end
+		1 : 1
+state 339 {9} [pos=14] accepting g1 l9 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		409 : 0.75
+	action snake
+		0 : 0.75
+		442 : 0.25
+	action end
+		1 : 1
+state 340 {9} [pos=15] accepting g1 l9 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		436 : 1
+	action end
+		1 : 1
+state 341 {9} [pos=16] accepting g1 good l9 normal s16
+	action ladder
+		0 : 1
+	action normal
+		409 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 342 {10} [pos=0] g0 l10 s0
+	action ladder
+		0 : 0.5
+		377 : 0.25
+		379 : 0.25
+	action normal
+		0 : 0.5
+		412 : 0.25
+		414 : 0.25
+	action snake
+		0 : 1
+state 343 {10} [pos=1] g0 l10 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		415 : 1
+	action snake
+		0 : 1
+state 344 {10} [pos=2] g0 l10 normal s2
+	action ladder
+		0 : 0.5
+		379 : 0.25
+		383 : 0.25
+	action normal
+		0 : 0.5
+		414 : 0.25
+		416 : 0.25
+	action snake
+		0 : 1
+state 345 {10} [pos=3] g0 l10 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		418 : 1
+	action snake
+		0 : 1
+state 346 {10} [pos=4] g0 l10 normal s4
+	action ladder
+		0 : 0.75
+		383 : 0.25
+	action normal
+		0 : 0.5
+		416 : 0.25
+		420 : 0.25
+	action snake
+		0 : 0.75
+		419 : 0.25
+state 347 {10} [pos=9] g0 l10 normal s5
+	action ladder
+		0 : 0.75
+		387 : 0.25
+	action normal
+		0 : 0.5
+		418 : 0.25
+		423 : 0.25
+	action snake
+		0 : 0.75
+		422 : 0.25
+state 348 {10} [pos=5] g0 l10 normal s6
+	action ladder
+		0 : 0.75
+		383 : 0.25
+	action normal
+		0 : 0.5
+		415 : 0.25
+		420 : 0.25
+	action snake
+		0 : 0.75
+		419 : 0.25
+state 349 {10} [pos=6] g0 l10 ladder s7
+	action ladder
+		387 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 350 {10} [pos=10] g0 l10 normal s8
+	action ladder
+		0 : 0.75
+		387 : 0.25
+	action normal
+		0 : 0.5
+		423 : 0.25
+		424 : 0.25
+	action snake
+		0 : 0.75
+		422 : 0.25
+state 351 {10} [pos=7] g0 l10 s9 snake
+	action ladder
+		379 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 352 {10} [pos=8] g0 l10 normal s10
+	action ladder
+		0 : 0.75
+		387 : 0.25
+	action normal
+		0 : 0.5
+		415 : 0.25
+		418 : 0.25
+	action snake
+		0 : 0.75
+		422 : 0.25
+state 353 {10} [pos=11] g0 l10 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		424 : 1
+	action snake
+		0 : 1
+state 354 {10} [pos=12] g0 l10 s12 snake
+	action ladder
+		383 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 355 {10} [pos=13] g0 l10 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		424 : 0.25
+		443 : 0.5
+	action snake
+		0 : 0.75
+		425 : 0.25
+state 356 {10} [pos=14] g0 l10 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		443 : 0.75
+	action snake
+		0 : 0.75
+		425 : 0.25
+state 357 {10} [pos=15] g0 l10 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		419 : 1
+state 358 {10} [pos=16] g0 good l10 normal s16
+	action ladder
+		0 : 1
+	action normal
+		443 : 1
+	action snake
+		0 : 1
+state 359 {10} [pos=0] g1 l10 s0
+	action ladder
+		0 : 0.5
+		394 : 0.25
+		396 : 0.25
+	action normal
+		0 : 0.5
+		429 : 0.25
+		431 : 0.25
+	action snake
+		0 : 1
+state 360 {10} [pos=1] g1 l10 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		432 : 1
+	action snake
+		0 : 1
+state 361 {10} [pos=2] g1 l10 normal s2
+	action ladder
+		0 : 0.5
+		396 : 0.25
+		400 : 0.25
+	action normal
+		0 : 0.5
+		431 : 0.25
+		433 : 0.25
+	action snake
+		0 : 1
+state 362 {10} [pos=3] g1 l10 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		435 : 1
+	action snake
+		0 : 1
+state 363 {10} [pos=4] g1 l10 normal s4
+	action ladder
+		0 : 0.75
+		400 : 0.25
+	action normal
+		0 : 0.5
+		433 : 0.25
+		437 : 0.25
+	action snake
+		0 : 0.75
+		436 : 0.25
+state 364 {10} [pos=9] g1 l10 normal s5
+	action ladder
+		0 : 0.75
+		404 : 0.25
+	action normal
+		0 : 0.5
+		435 : 0.25
+		440 : 0.25
+	action snake
+		0 : 0.75
+		439 : 0.25
+state 365 {10} [pos=5] g1 l10 normal s6
+	action ladder
+		0 : 0.75
+		400 : 0.25
+	action normal
+		0 : 0.5
+		432 : 0.25
+		437 : 0.25
+	action snake
+		0 : 0.75
+		436 : 0.25
+state 366 {10} [pos=6] g1 l10 ladder s7
+	action ladder
+		404 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 367 {10} [pos=10] g1 l10 normal s8
+	action ladder
+		0 : 0.75
+		404 : 0.25
+	action normal
+		0 : 0.5
+		440 : 0.25
+		441 : 0.25
+	action snake
+		0 : 0.75
+		439 : 0.25
+state 368 {10} [pos=7] g1 l10 s9 snake
+	action ladder
+		396 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 369 {10} [pos=8] g1 l10 normal s10
+	action ladder
+		0 : 0.75
+		404 : 0.25
+	action normal
+		0 : 0.5
+		432 : 0.25
+		435 : 0.25
+	action snake
+		0 : 0.75
+		439 : 0.25
+state 370 {10} [pos=11] g1 l10 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		441 : 1
+	action snake
+		0 : 1
+state 371 {10} [pos=12] g1 l10 s12 snake
+	action ladder
+		400 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 372 {10} [pos=13] g1 l10 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		441 : 0.25
+		443 : 0.5
+	action snake
+		0 : 0.75
+		442 : 0.25
+state 373 {10} [pos=14] g1 l10 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		443 : 0.75
+	action snake
+		0 : 0.75
+		442 : 0.25
+state 374 {10} [pos=15] g1 l10 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		436 : 1
+state 375 {10} [pos=16] g1 good l10 normal s16
+	action ladder
+		0 : 1
+	action normal
+		443 : 1
+	action snake
+		0 : 1
+state 376 {11} [pos=0] accepting g0 l11 s0
+	action ladder
+		0 : 0.5
+		445 : 0.25
+		447 : 0.25
+	action normal
+		0 : 0.5
+		446 : 0.25
+		448 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 377 {11} [pos=1] accepting g0 l11 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		449 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 378 {11} [pos=2] accepting g0 l11 normal s2
+	action ladder
+		0 : 0.5
+		447 : 0.25
+		451 : 0.25
+	action normal
+		0 : 0.5
+		448 : 0.25
+		450 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 379 {11} [pos=3] accepting g0 l11 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		452 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 380 {11} [pos=4] accepting g0 l11 normal s4
+	action ladder
+		0 : 0.75
+		451 : 0.25
+	action normal
+		0 : 0.5
+		450 : 0.25
+		454 : 0.25
+	action snake
+		0 : 0.75
+		487 : 0.25
+	action end
+		2 : 1
+state 381 {11} [pos=9] accepting g0 l11 normal s5
+	action ladder
+		0 : 0.75
+		455 : 0.25
+	action normal
+		0 : 0.5
+		452 : 0.25
+		457 : 0.25
+	action snake
+		0 : 0.75
+		490 : 0.25
+	action end
+		2 : 1
+state 382 {11} [pos=5] accepting g0 l11 normal s6
+	action ladder
+		0 : 0.75
+		451 : 0.25
+	action normal
+		0 : 0.5
+		449 : 0.25
+		454 : 0.25
+	action snake
+		0 : 0.75
+		487 : 0.25
+	action end
+		2 : 1
+state 383 {11} [pos=6] accepting g0 l11 ladder s7
+	action ladder
+		455 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 384 {11} [pos=10] accepting g0 l11 normal s8
+	action ladder
+		0 : 0.75
+		455 : 0.25
+	action normal
+		0 : 0.5
+		457 : 0.25
+		458 : 0.25
+	action snake
+		0 : 0.75
+		490 : 0.25
+	action end
+		2 : 1
+state 385 {11} [pos=7] accepting g0 l11 s9 snake
+	action ladder
+		447 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 386 {11} [pos=8] accepting g0 l11 normal s10
+	action ladder
+		0 : 0.75
+		455 : 0.25
+	action normal
+		0 : 0.5
+		449 : 0.25
+		452 : 0.25
+	action snake
+		0 : 0.75
+		490 : 0.25
+	action end
+		2 : 1
+state 387 {11} [pos=11] accepting g0 l11 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		458 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 388 {11} [pos=12] accepting g0 l11 s12 snake
+	action ladder
+		451 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 389 {11} [pos=13] accepting g0 l11 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		458 : 0.25
+		477 : 0.5
+	action snake
+		0 : 0.75
+		493 : 0.25
+	action end
+		2 : 1
+state 390 {11} [pos=14] accepting g0 l11 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		477 : 0.75
+	action snake
+		0 : 0.75
+		493 : 0.25
+	action end
+		2 : 1
+state 391 {11} [pos=15] accepting g0 l11 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		487 : 1
+	action end
+		2 : 1
+state 392 {11} [pos=16] accepting g0 good l11 normal s16
+	action ladder
+		0 : 1
+	action normal
+		477 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 393 {11} [pos=0] accepting g1 l11 s0
+	action ladder
+		0 : 0.5
+		462 : 0.25
+		464 : 0.25
+	action normal
+		0 : 0.5
+		463 : 0.25
+		465 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 394 {11} [pos=1] accepting g1 l11 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		466 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 395 {11} [pos=2] accepting g1 l11 normal s2
+	action ladder
+		0 : 0.5
+		464 : 0.25
+		468 : 0.25
+	action normal
+		0 : 0.5
+		465 : 0.25
+		467 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 396 {11} [pos=3] accepting g1 l11 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		469 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 397 {11} [pos=4] accepting g1 l11 normal s4
+	action ladder
+		0 : 0.75
+		468 : 0.25
+	action normal
+		0 : 0.5
+		467 : 0.25
+		471 : 0.25
+	action snake
+		0 : 0.75
+		504 : 0.25
+	action end
+		1 : 1
+state 398 {11} [pos=9] accepting g1 l11 normal s5
+	action ladder
+		0 : 0.75
+		472 : 0.25
+	action normal
+		0 : 0.5
+		469 : 0.25
+		474 : 0.25
+	action snake
+		0 : 0.75
+		507 : 0.25
+	action end
+		1 : 1
+state 399 {11} [pos=5] accepting g1 l11 normal s6
+	action ladder
+		0 : 0.75
+		468 : 0.25
+	action normal
+		0 : 0.5
+		466 : 0.25
+		471 : 0.25
+	action snake
+		0 : 0.75
+		504 : 0.25
+	action end
+		1 : 1
+state 400 {11} [pos=6] accepting g1 l11 ladder s7
+	action ladder
+		472 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 401 {11} [pos=10] accepting g1 l11 normal s8
+	action ladder
+		0 : 0.75
+		472 : 0.25
+	action normal
+		0 : 0.5
+		474 : 0.25
+		475 : 0.25
+	action snake
+		0 : 0.75
+		507 : 0.25
+	action end
+		1 : 1
+state 402 {11} [pos=7] accepting g1 l11 s9 snake
+	action ladder
+		464 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 403 {11} [pos=8] accepting g1 l11 normal s10
+	action ladder
+		0 : 0.75
+		472 : 0.25
+	action normal
+		0 : 0.5
+		466 : 0.25
+		469 : 0.25
+	action snake
+		0 : 0.75
+		507 : 0.25
+	action end
+		1 : 1
+state 404 {11} [pos=11] accepting g1 l11 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		475 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 405 {11} [pos=12] accepting g1 l11 s12 snake
+	action ladder
+		468 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 406 {11} [pos=13] accepting g1 l11 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		475 : 0.25
+		477 : 0.5
+	action snake
+		0 : 0.75
+		510 : 0.25
+	action end
+		1 : 1
+state 407 {11} [pos=14] accepting g1 l11 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		477 : 0.75
+	action snake
+		0 : 0.75
+		510 : 0.25
+	action end
+		1 : 1
+state 408 {11} [pos=15] accepting g1 l11 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		504 : 1
+	action end
+		1 : 1
+state 409 {11} [pos=16] accepting g1 good l11 normal s16
+	action ladder
+		0 : 1
+	action normal
+		477 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 410 {12} [pos=0] g0 l12 s0
+	action ladder
+		0 : 0.5
+		445 : 0.25
+		447 : 0.25
+	action normal
+		0 : 0.5
+		480 : 0.25
+		482 : 0.25
+	action snake
+		0 : 1
+state 411 {12} [pos=1] g0 l12 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		483 : 1
+	action snake
+		0 : 1
+state 412 {12} [pos=2] g0 l12 normal s2
+	action ladder
+		0 : 0.5
+		447 : 0.25
+		451 : 0.25
+	action normal
+		0 : 0.5
+		482 : 0.25
+		484 : 0.25
+	action snake
+		0 : 1
+state 413 {12} [pos=3] g0 l12 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		486 : 1
+	action snake
+		0 : 1
+state 414 {12} [pos=4] g0 l12 normal s4
+	action ladder
+		0 : 0.75
+		451 : 0.25
+	action normal
+		0 : 0.5
+		484 : 0.25
+		488 : 0.25
+	action snake
+		0 : 0.75
+		487 : 0.25
+state 415 {12} [pos=9] g0 l12 normal s5
+	action ladder
+		0 : 0.75
+		455 : 0.25
+	action normal
+		0 : 0.5
+		486 : 0.25
+		491 : 0.25
+	action snake
+		0 : 0.75
+		490 : 0.25
+state 416 {12} [pos=5] g0 l12 normal s6
+	action ladder
+		0 : 0.75
+		451 : 0.25
+	action normal
+		0 : 0.5
+		483 : 0.25
+		488 : 0.25
+	action snake
+		0 : 0.75
+		487 : 0.25
+state 417 {12} [pos=6] g0 l12 ladder s7
+	action ladder
+		455 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 418 {12} [pos=10] g0 l12 normal s8
+	action ladder
+		0 : 0.75
+		455 : 0.25
+	action normal
+		0 : 0.5
+		491 : 0.25
+		492 : 0.25
+	action snake
+		0 : 0.75
+		490 : 0.25
+state 419 {12} [pos=7] g0 l12 s9 snake
+	action ladder
+		447 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 420 {12} [pos=8] g0 l12 normal s10
+	action ladder
+		0 : 0.75
+		455 : 0.25
+	action normal
+		0 : 0.5
+		483 : 0.25
+		486 : 0.25
+	action snake
+		0 : 0.75
+		490 : 0.25
+state 421 {12} [pos=11] g0 l12 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		492 : 1
+	action snake
+		0 : 1
+state 422 {12} [pos=12] g0 l12 s12 snake
+	action ladder
+		451 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 423 {12} [pos=13] g0 l12 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		492 : 0.25
+		511 : 0.5
+	action snake
+		0 : 0.75
+		493 : 0.25
+state 424 {12} [pos=14] g0 l12 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		511 : 0.75
+	action snake
+		0 : 0.75
+		493 : 0.25
+state 425 {12} [pos=15] g0 l12 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		487 : 1
+state 426 {12} [pos=16] g0 good l12 normal s16
+	action ladder
+		0 : 1
+	action normal
+		511 : 1
+	action snake
+		0 : 1
+state 427 {12} [pos=0] g1 l12 s0
+	action ladder
+		0 : 0.5
+		462 : 0.25
+		464 : 0.25
+	action normal
+		0 : 0.5
+		497 : 0.25
+		499 : 0.25
+	action snake
+		0 : 1
+state 428 {12} [pos=1] g1 l12 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		500 : 1
+	action snake
+		0 : 1
+state 429 {12} [pos=2] g1 l12 normal s2
+	action ladder
+		0 : 0.5
+		464 : 0.25
+		468 : 0.25
+	action normal
+		0 : 0.5
+		499 : 0.25
+		501 : 0.25
+	action snake
+		0 : 1
+state 430 {12} [pos=3] g1 l12 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		503 : 1
+	action snake
+		0 : 1
+state 431 {12} [pos=4] g1 l12 normal s4
+	action ladder
+		0 : 0.75
+		468 : 0.25
+	action normal
+		0 : 0.5
+		501 : 0.25
+		505 : 0.25
+	action snake
+		0 : 0.75
+		504 : 0.25
+state 432 {12} [pos=9] g1 l12 normal s5
+	action ladder
+		0 : 0.75
+		472 : 0.25
+	action normal
+		0 : 0.5
+		503 : 0.25
+		508 : 0.25
+	action snake
+		0 : 0.75
+		507 : 0.25
+state 433 {12} [pos=5] g1 l12 normal s6
+	action ladder
+		0 : 0.75
+		468 : 0.25
+	action normal
+		0 : 0.5
+		500 : 0.25
+		505 : 0.25
+	action snake
+		0 : 0.75
+		504 : 0.25
+state 434 {12} [pos=6] g1 l12 ladder s7
+	action ladder
+		472 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 435 {12} [pos=10] g1 l12 normal s8
+	action ladder
+		0 : 0.75
+		472 : 0.25
+	action normal
+		0 : 0.5
+		508 : 0.25
+		509 : 0.25
+	action snake
+		0 : 0.75
+		507 : 0.25
+state 436 {12} [pos=7] g1 l12 s9 snake
+	action ladder
+		464 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 437 {12} [pos=8] g1 l12 normal s10
+	action ladder
+		0 : 0.75
+		472 : 0.25
+	action normal
+		0 : 0.5
+		500 : 0.25
+		503 : 0.25
+	action snake
+		0 : 0.75
+		507 : 0.25
+state 438 {12} [pos=11] g1 l12 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		509 : 1
+	action snake
+		0 : 1
+state 439 {12} [pos=12] g1 l12 s12 snake
+	action ladder
+		468 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 440 {12} [pos=13] g1 l12 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		509 : 0.25
+		511 : 0.5
+	action snake
+		0 : 0.75
+		510 : 0.25
+state 441 {12} [pos=14] g1 l12 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		511 : 0.75
+	action snake
+		0 : 0.75
+		510 : 0.25
+state 442 {12} [pos=15] g1 l12 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		504 : 1
+state 443 {12} [pos=16] g1 good l12 normal s16
+	action ladder
+		0 : 1
+	action normal
+		511 : 1
+	action snake
+		0 : 1
+state 444 {13} [pos=0] accepting g0 l13 s0
+	action ladder
+		0 : 0.5
+		513 : 0.25
+		515 : 0.25
+	action normal
+		0 : 0.5
+		514 : 0.25
+		516 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 445 {13} [pos=1] accepting g0 l13 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		517 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 446 {13} [pos=2] accepting g0 l13 normal s2
+	action ladder
+		0 : 0.5
+		515 : 0.25
+		519 : 0.25
+	action normal
+		0 : 0.5
+		516 : 0.25
+		518 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 447 {13} [pos=3] accepting g0 l13 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		520 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 448 {13} [pos=4] accepting g0 l13 normal s4
+	action ladder
+		0 : 0.75
+		519 : 0.25
+	action normal
+		0 : 0.5
+		518 : 0.25
+		522 : 0.25
+	action snake
+		0 : 0.75
+		555 : 0.25
+	action end
+		2 : 1
+state 449 {13} [pos=9] accepting g0 l13 normal s5
+	action ladder
+		0 : 0.75
+		523 : 0.25
+	action normal
+		0 : 0.5
+		520 : 0.25
+		525 : 0.25
+	action snake
+		0 : 0.75
+		558 : 0.25
+	action end
+		2 : 1
+state 450 {13} [pos=5] accepting g0 l13 normal s6
+	action ladder
+		0 : 0.75
+		519 : 0.25
+	action normal
+		0 : 0.5
+		517 : 0.25
+		522 : 0.25
+	action snake
+		0 : 0.75
+		555 : 0.25
+	action end
+		2 : 1
+state 451 {13} [pos=6] accepting g0 l13 ladder s7
+	action ladder
+		523 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 452 {13} [pos=10] accepting g0 l13 normal s8
+	action ladder
+		0 : 0.75
+		523 : 0.25
+	action normal
+		0 : 0.5
+		525 : 0.25
+		526 : 0.25
+	action snake
+		0 : 0.75
+		558 : 0.25
+	action end
+		2 : 1
+state 453 {13} [pos=7] accepting g0 l13 s9 snake
+	action ladder
+		515 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 454 {13} [pos=8] accepting g0 l13 normal s10
+	action ladder
+		0 : 0.75
+		523 : 0.25
+	action normal
+		0 : 0.5
+		517 : 0.25
+		520 : 0.25
+	action snake
+		0 : 0.75
+		558 : 0.25
+	action end
+		2 : 1
+state 455 {13} [pos=11] accepting g0 l13 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		526 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 456 {13} [pos=12] accepting g0 l13 s12 snake
+	action ladder
+		519 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 457 {13} [pos=13] accepting g0 l13 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		526 : 0.25
+		545 : 0.5
+	action snake
+		0 : 0.75
+		561 : 0.25
+	action end
+		2 : 1
+state 458 {13} [pos=14] accepting g0 l13 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		545 : 0.75
+	action snake
+		0 : 0.75
+		561 : 0.25
+	action end
+		2 : 1
+state 459 {13} [pos=15] accepting g0 l13 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		555 : 1
+	action end
+		2 : 1
+state 460 {13} [pos=16] accepting g0 good l13 normal s16
+	action ladder
+		0 : 1
+	action normal
+		545 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 461 {13} [pos=0] accepting g1 l13 s0
+	action ladder
+		0 : 0.5
+		530 : 0.25
+		532 : 0.25
+	action normal
+		0 : 0.5
+		531 : 0.25
+		533 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 462 {13} [pos=1] accepting g1 l13 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		534 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 463 {13} [pos=2] accepting g1 l13 normal s2
+	action ladder
+		0 : 0.5
+		532 : 0.25
+		536 : 0.25
+	action normal
+		0 : 0.5
+		533 : 0.25
+		535 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 464 {13} [pos=3] accepting g1 l13 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		537 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 465 {13} [pos=4] accepting g1 l13 normal s4
+	action ladder
+		0 : 0.75
+		536 : 0.25
+	action normal
+		0 : 0.5
+		535 : 0.25
+		539 : 0.25
+	action snake
+		0 : 0.75
+		572 : 0.25
+	action end
+		1 : 1
+state 466 {13} [pos=9] accepting g1 l13 normal s5
+	action ladder
+		0 : 0.75
+		540 : 0.25
+	action normal
+		0 : 0.5
+		537 : 0.25
+		542 : 0.25
+	action snake
+		0 : 0.75
+		575 : 0.25
+	action end
+		1 : 1
+state 467 {13} [pos=5] accepting g1 l13 normal s6
+	action ladder
+		0 : 0.75
+		536 : 0.25
+	action normal
+		0 : 0.5
+		534 : 0.25
+		539 : 0.25
+	action snake
+		0 : 0.75
+		572 : 0.25
+	action end
+		1 : 1
+state 468 {13} [pos=6] accepting g1 l13 ladder s7
+	action ladder
+		540 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 469 {13} [pos=10] accepting g1 l13 normal s8
+	action ladder
+		0 : 0.75
+		540 : 0.25
+	action normal
+		0 : 0.5
+		542 : 0.25
+		543 : 0.25
+	action snake
+		0 : 0.75
+		575 : 0.25
+	action end
+		1 : 1
+state 470 {13} [pos=7] accepting g1 l13 s9 snake
+	action ladder
+		532 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 471 {13} [pos=8] accepting g1 l13 normal s10
+	action ladder
+		0 : 0.75
+		540 : 0.25
+	action normal
+		0 : 0.5
+		534 : 0.25
+		537 : 0.25
+	action snake
+		0 : 0.75
+		575 : 0.25
+	action end
+		1 : 1
+state 472 {13} [pos=11] accepting g1 l13 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		543 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 473 {13} [pos=12] accepting g1 l13 s12 snake
+	action ladder
+		536 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 474 {13} [pos=13] accepting g1 l13 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		543 : 0.25
+		545 : 0.5
+	action snake
+		0 : 0.75
+		578 : 0.25
+	action end
+		1 : 1
+state 475 {13} [pos=14] accepting g1 l13 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		545 : 0.75
+	action snake
+		0 : 0.75
+		578 : 0.25
+	action end
+		1 : 1
+state 476 {13} [pos=15] accepting g1 l13 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		572 : 1
+	action end
+		1 : 1
+state 477 {13} [pos=16] accepting g1 good l13 normal s16
+	action ladder
+		0 : 1
+	action normal
+		545 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 478 {14} [pos=0] g0 l14 s0
+	action ladder
+		0 : 0.5
+		513 : 0.25
+		515 : 0.25
+	action normal
+		0 : 0.5
+		548 : 0.25
+		550 : 0.25
+	action snake
+		0 : 1
+state 479 {14} [pos=1] g0 l14 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		551 : 1
+	action snake
+		0 : 1
+state 480 {14} [pos=2] g0 l14 normal s2
+	action ladder
+		0 : 0.5
+		515 : 0.25
+		519 : 0.25
+	action normal
+		0 : 0.5
+		550 : 0.25
+		552 : 0.25
+	action snake
+		0 : 1
+state 481 {14} [pos=3] g0 l14 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		554 : 1
+	action snake
+		0 : 1
+state 482 {14} [pos=4] g0 l14 normal s4
+	action ladder
+		0 : 0.75
+		519 : 0.25
+	action normal
+		0 : 0.5
+		552 : 0.25
+		556 : 0.25
+	action snake
+		0 : 0.75
+		555 : 0.25
+state 483 {14} [pos=9] g0 l14 normal s5
+	action ladder
+		0 : 0.75
+		523 : 0.25
+	action normal
+		0 : 0.5
+		554 : 0.25
+		559 : 0.25
+	action snake
+		0 : 0.75
+		558 : 0.25
+state 484 {14} [pos=5] g0 l14 normal s6
+	action ladder
+		0 : 0.75
+		519 : 0.25
+	action normal
+		0 : 0.5
+		551 : 0.25
+		556 : 0.25
+	action snake
+		0 : 0.75
+		555 : 0.25
+state 485 {14} [pos=6] g0 l14 ladder s7
+	action ladder
+		523 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 486 {14} [pos=10] g0 l14 normal s8
+	action ladder
+		0 : 0.75
+		523 : 0.25
+	action normal
+		0 : 0.5
+		559 : 0.25
+		560 : 0.25
+	action snake
+		0 : 0.75
+		558 : 0.25
+state 487 {14} [pos=7] g0 l14 s9 snake
+	action ladder
+		515 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 488 {14} [pos=8] g0 l14 normal s10
+	action ladder
+		0 : 0.75
+		523 : 0.25
+	action normal
+		0 : 0.5
+		551 : 0.25
+		554 : 0.25
+	action snake
+		0 : 0.75
+		558 : 0.25
+state 489 {14} [pos=11] g0 l14 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		560 : 1
+	action snake
+		0 : 1
+state 490 {14} [pos=12] g0 l14 s12 snake
+	action ladder
+		519 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 491 {14} [pos=13] g0 l14 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		560 : 0.25
+		579 : 0.5
+	action snake
+		0 : 0.75
+		561 : 0.25
+state 492 {14} [pos=14] g0 l14 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		579 : 0.75
+	action snake
+		0 : 0.75
+		561 : 0.25
+state 493 {14} [pos=15] g0 l14 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		555 : 1
+state 494 {14} [pos=16] g0 good l14 normal s16
+	action ladder
+		0 : 1
+	action normal
+		579 : 1
+	action snake
+		0 : 1
+state 495 {14} [pos=0] g1 l14 s0
+	action ladder
+		0 : 0.5
+		530 : 0.25
+		532 : 0.25
+	action normal
+		0 : 0.5
+		565 : 0.25
+		567 : 0.25
+	action snake
+		0 : 1
+state 496 {14} [pos=1] g1 l14 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		568 : 1
+	action snake
+		0 : 1
+state 497 {14} [pos=2] g1 l14 normal s2
+	action ladder
+		0 : 0.5
+		532 : 0.25
+		536 : 0.25
+	action normal
+		0 : 0.5
+		567 : 0.25
+		569 : 0.25
+	action snake
+		0 : 1
+state 498 {14} [pos=3] g1 l14 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		571 : 1
+	action snake
+		0 : 1
+state 499 {14} [pos=4] g1 l14 normal s4
+	action ladder
+		0 : 0.75
+		536 : 0.25
+	action normal
+		0 : 0.5
+		569 : 0.25
+		573 : 0.25
+	action snake
+		0 : 0.75
+		572 : 0.25
+state 500 {14} [pos=9] g1 l14 normal s5
+	action ladder
+		0 : 0.75
+		540 : 0.25
+	action normal
+		0 : 0.5
+		571 : 0.25
+		576 : 0.25
+	action snake
+		0 : 0.75
+		575 : 0.25
+state 501 {14} [pos=5] g1 l14 normal s6
+	action ladder
+		0 : 0.75
+		536 : 0.25
+	action normal
+		0 : 0.5
+		568 : 0.25
+		573 : 0.25
+	action snake
+		0 : 0.75
+		572 : 0.25
+state 502 {14} [pos=6] g1 l14 ladder s7
+	action ladder
+		540 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 503 {14} [pos=10] g1 l14 normal s8
+	action ladder
+		0 : 0.75
+		540 : 0.25
+	action normal
+		0 : 0.5
+		576 : 0.25
+		577 : 0.25
+	action snake
+		0 : 0.75
+		575 : 0.25
+state 504 {14} [pos=7] g1 l14 s9 snake
+	action ladder
+		532 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 505 {14} [pos=8] g1 l14 normal s10
+	action ladder
+		0 : 0.75
+		540 : 0.25
+	action normal
+		0 : 0.5
+		568 : 0.25
+		571 : 0.25
+	action snake
+		0 : 0.75
+		575 : 0.25
+state 506 {14} [pos=11] g1 l14 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		577 : 1
+	action snake
+		0 : 1
+state 507 {14} [pos=12] g1 l14 s12 snake
+	action ladder
+		536 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 508 {14} [pos=13] g1 l14 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		577 : 0.25
+		579 : 0.5
+	action snake
+		0 : 0.75
+		578 : 0.25
+state 509 {14} [pos=14] g1 l14 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		579 : 0.75
+	action snake
+		0 : 0.75
+		578 : 0.25
+state 510 {14} [pos=15] g1 l14 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		572 : 1
+state 511 {14} [pos=16] g1 good l14 normal s16
+	action ladder
+		0 : 1
+	action normal
+		579 : 1
+	action snake
+		0 : 1
+state 512 {15} [pos=0] accepting g0 l15 s0
+	action ladder
+		0 : 0.5
+		581 : 0.25
+		583 : 0.25
+	action normal
+		0 : 0.5
+		582 : 0.25
+		584 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 513 {15} [pos=1] accepting g0 l15 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		585 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 514 {15} [pos=2] accepting g0 l15 normal s2
+	action ladder
+		0 : 0.5
+		583 : 0.25
+		587 : 0.25
+	action normal
+		0 : 0.5
+		584 : 0.25
+		586 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 515 {15} [pos=3] accepting g0 l15 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		588 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 516 {15} [pos=4] accepting g0 l15 normal s4
+	action ladder
+		0 : 0.75
+		587 : 0.25
+	action normal
+		0 : 0.5
+		586 : 0.25
+		590 : 0.25
+	action snake
+		0 : 0.75
+		623 : 0.25
+	action end
+		2 : 1
+state 517 {15} [pos=9] accepting g0 l15 normal s5
+	action ladder
+		0 : 0.75
+		591 : 0.25
+	action normal
+		0 : 0.5
+		588 : 0.25
+		593 : 0.25
+	action snake
+		0 : 0.75
+		626 : 0.25
+	action end
+		2 : 1
+state 518 {15} [pos=5] accepting g0 l15 normal s6
+	action ladder
+		0 : 0.75
+		587 : 0.25
+	action normal
+		0 : 0.5
+		585 : 0.25
+		590 : 0.25
+	action snake
+		0 : 0.75
+		623 : 0.25
+	action end
+		2 : 1
+state 519 {15} [pos=6] accepting g0 l15 ladder s7
+	action ladder
+		591 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 520 {15} [pos=10] accepting g0 l15 normal s8
+	action ladder
+		0 : 0.75
+		591 : 0.25
+	action normal
+		0 : 0.5
+		593 : 0.25
+		594 : 0.25
+	action snake
+		0 : 0.75
+		626 : 0.25
+	action end
+		2 : 1
+state 521 {15} [pos=7] accepting g0 l15 s9 snake
+	action ladder
+		583 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 522 {15} [pos=8] accepting g0 l15 normal s10
+	action ladder
+		0 : 0.75
+		591 : 0.25
+	action normal
+		0 : 0.5
+		585 : 0.25
+		588 : 0.25
+	action snake
+		0 : 0.75
+		626 : 0.25
+	action end
+		2 : 1
+state 523 {15} [pos=11] accepting g0 l15 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		594 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 524 {15} [pos=12] accepting g0 l15 s12 snake
+	action ladder
+		587 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 525 {15} [pos=13] accepting g0 l15 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		594 : 0.25
+		613 : 0.5
+	action snake
+		0 : 0.75
+		629 : 0.25
+	action end
+		2 : 1
+state 526 {15} [pos=14] accepting g0 l15 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		613 : 0.75
+	action snake
+		0 : 0.75
+		629 : 0.25
+	action end
+		2 : 1
+state 527 {15} [pos=15] accepting g0 l15 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		623 : 1
+	action end
+		2 : 1
+state 528 {15} [pos=16] accepting g0 good l15 normal s16
+	action ladder
+		0 : 1
+	action normal
+		613 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 529 {15} [pos=0] accepting g1 l15 s0
+	action ladder
+		0 : 0.5
+		598 : 0.25
+		600 : 0.25
+	action normal
+		0 : 0.5
+		599 : 0.25
+		601 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 530 {15} [pos=1] accepting g1 l15 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		602 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 531 {15} [pos=2] accepting g1 l15 normal s2
+	action ladder
+		0 : 0.5
+		600 : 0.25
+		604 : 0.25
+	action normal
+		0 : 0.5
+		601 : 0.25
+		603 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 532 {15} [pos=3] accepting g1 l15 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		605 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 533 {15} [pos=4] accepting g1 l15 normal s4
+	action ladder
+		0 : 0.75
+		604 : 0.25
+	action normal
+		0 : 0.5
+		603 : 0.25
+		607 : 0.25
+	action snake
+		0 : 0.75
+		640 : 0.25
+	action end
+		1 : 1
+state 534 {15} [pos=9] accepting g1 l15 normal s5
+	action ladder
+		0 : 0.75
+		608 : 0.25
+	action normal
+		0 : 0.5
+		605 : 0.25
+		610 : 0.25
+	action snake
+		0 : 0.75
+		643 : 0.25
+	action end
+		1 : 1
+state 535 {15} [pos=5] accepting g1 l15 normal s6
+	action ladder
+		0 : 0.75
+		604 : 0.25
+	action normal
+		0 : 0.5
+		602 : 0.25
+		607 : 0.25
+	action snake
+		0 : 0.75
+		640 : 0.25
+	action end
+		1 : 1
+state 536 {15} [pos=6] accepting g1 l15 ladder s7
+	action ladder
+		608 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 537 {15} [pos=10] accepting g1 l15 normal s8
+	action ladder
+		0 : 0.75
+		608 : 0.25
+	action normal
+		0 : 0.5
+		610 : 0.25
+		611 : 0.25
+	action snake
+		0 : 0.75
+		643 : 0.25
+	action end
+		1 : 1
+state 538 {15} [pos=7] accepting g1 l15 s9 snake
+	action ladder
+		600 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 539 {15} [pos=8] accepting g1 l15 normal s10
+	action ladder
+		0 : 0.75
+		608 : 0.25
+	action normal
+		0 : 0.5
+		602 : 0.25
+		605 : 0.25
+	action snake
+		0 : 0.75
+		643 : 0.25
+	action end
+		1 : 1
+state 540 {15} [pos=11] accepting g1 l15 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		611 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 541 {15} [pos=12] accepting g1 l15 s12 snake
+	action ladder
+		604 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 542 {15} [pos=13] accepting g1 l15 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		611 : 0.25
+		613 : 0.5
+	action snake
+		0 : 0.75
+		646 : 0.25
+	action end
+		1 : 1
+state 543 {15} [pos=14] accepting g1 l15 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		613 : 0.75
+	action snake
+		0 : 0.75
+		646 : 0.25
+	action end
+		1 : 1
+state 544 {15} [pos=15] accepting g1 l15 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		640 : 1
+	action end
+		1 : 1
+state 545 {15} [pos=16] accepting g1 good l15 normal s16
+	action ladder
+		0 : 1
+	action normal
+		613 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 546 {16} [pos=0] g0 l16 s0
+	action ladder
+		0 : 0.5
+		581 : 0.25
+		583 : 0.25
+	action normal
+		0 : 0.5
+		616 : 0.25
+		618 : 0.25
+	action snake
+		0 : 1
+state 547 {16} [pos=1] g0 l16 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		619 : 1
+	action snake
+		0 : 1
+state 548 {16} [pos=2] g0 l16 normal s2
+	action ladder
+		0 : 0.5
+		583 : 0.25
+		587 : 0.25
+	action normal
+		0 : 0.5
+		618 : 0.25
+		620 : 0.25
+	action snake
+		0 : 1
+state 549 {16} [pos=3] g0 l16 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		622 : 1
+	action snake
+		0 : 1
+state 550 {16} [pos=4] g0 l16 normal s4
+	action ladder
+		0 : 0.75
+		587 : 0.25
+	action normal
+		0 : 0.5
+		620 : 0.25
+		624 : 0.25
+	action snake
+		0 : 0.75
+		623 : 0.25
+state 551 {16} [pos=9] g0 l16 normal s5
+	action ladder
+		0 : 0.75
+		591 : 0.25
+	action normal
+		0 : 0.5
+		622 : 0.25
+		627 : 0.25
+	action snake
+		0 : 0.75
+		626 : 0.25
+state 552 {16} [pos=5] g0 l16 normal s6
+	action ladder
+		0 : 0.75
+		587 : 0.25
+	action normal
+		0 : 0.5
+		619 : 0.25
+		624 : 0.25
+	action snake
+		0 : 0.75
+		623 : 0.25
+state 553 {16} [pos=6] g0 l16 ladder s7
+	action ladder
+		591 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 554 {16} [pos=10] g0 l16 normal s8
+	action ladder
+		0 : 0.75
+		591 : 0.25
+	action normal
+		0 : 0.5
+		627 : 0.25
+		628 : 0.25
+	action snake
+		0 : 0.75
+		626 : 0.25
+state 555 {16} [pos=7] g0 l16 s9 snake
+	action ladder
+		583 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 556 {16} [pos=8] g0 l16 normal s10
+	action ladder
+		0 : 0.75
+		591 : 0.25
+	action normal
+		0 : 0.5
+		619 : 0.25
+		622 : 0.25
+	action snake
+		0 : 0.75
+		626 : 0.25
+state 557 {16} [pos=11] g0 l16 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		628 : 1
+	action snake
+		0 : 1
+state 558 {16} [pos=12] g0 l16 s12 snake
+	action ladder
+		587 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 559 {16} [pos=13] g0 l16 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		628 : 0.25
+		647 : 0.5
+	action snake
+		0 : 0.75
+		629 : 0.25
+state 560 {16} [pos=14] g0 l16 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		647 : 0.75
+	action snake
+		0 : 0.75
+		629 : 0.25
+state 561 {16} [pos=15] g0 l16 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		623 : 1
+state 562 {16} [pos=16] g0 good l16 normal s16
+	action ladder
+		0 : 1
+	action normal
+		647 : 1
+	action snake
+		0 : 1
+state 563 {16} [pos=0] g1 l16 s0
+	action ladder
+		0 : 0.5
+		598 : 0.25
+		600 : 0.25
+	action normal
+		0 : 0.5
+		633 : 0.25
+		635 : 0.25
+	action snake
+		0 : 1
+state 564 {16} [pos=1] g1 l16 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		636 : 1
+	action snake
+		0 : 1
+state 565 {16} [pos=2] g1 l16 normal s2
+	action ladder
+		0 : 0.5
+		600 : 0.25
+		604 : 0.25
+	action normal
+		0 : 0.5
+		635 : 0.25
+		637 : 0.25
+	action snake
+		0 : 1
+state 566 {16} [pos=3] g1 l16 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		639 : 1
+	action snake
+		0 : 1
+state 567 {16} [pos=4] g1 l16 normal s4
+	action ladder
+		0 : 0.75
+		604 : 0.25
+	action normal
+		0 : 0.5
+		637 : 0.25
+		641 : 0.25
+	action snake
+		0 : 0.75
+		640 : 0.25
+state 568 {16} [pos=9] g1 l16 normal s5
+	action ladder
+		0 : 0.75
+		608 : 0.25
+	action normal
+		0 : 0.5
+		639 : 0.25
+		644 : 0.25
+	action snake
+		0 : 0.75
+		643 : 0.25
+state 569 {16} [pos=5] g1 l16 normal s6
+	action ladder
+		0 : 0.75
+		604 : 0.25
+	action normal
+		0 : 0.5
+		636 : 0.25
+		641 : 0.25
+	action snake
+		0 : 0.75
+		640 : 0.25
+state 570 {16} [pos=6] g1 l16 ladder s7
+	action ladder
+		608 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 571 {16} [pos=10] g1 l16 normal s8
+	action ladder
+		0 : 0.75
+		608 : 0.25
+	action normal
+		0 : 0.5
+		644 : 0.25
+		645 : 0.25
+	action snake
+		0 : 0.75
+		643 : 0.25
+state 572 {16} [pos=7] g1 l16 s9 snake
+	action ladder
+		600 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 573 {16} [pos=8] g1 l16 normal s10
+	action ladder
+		0 : 0.75
+		608 : 0.25
+	action normal
+		0 : 0.5
+		636 : 0.25
+		639 : 0.25
+	action snake
+		0 : 0.75
+		643 : 0.25
+state 574 {16} [pos=11] g1 l16 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		645 : 1
+	action snake
+		0 : 1
+state 575 {16} [pos=12] g1 l16 s12 snake
+	action ladder
+		604 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 576 {16} [pos=13] g1 l16 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		645 : 0.25
+		647 : 0.5
+	action snake
+		0 : 0.75
+		646 : 0.25
+state 577 {16} [pos=14] g1 l16 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		647 : 0.75
+	action snake
+		0 : 0.75
+		646 : 0.25
+state 578 {16} [pos=15] g1 l16 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		640 : 1
+state 579 {16} [pos=16] g1 good l16 normal s16
+	action ladder
+		0 : 1
+	action normal
+		647 : 1
+	action snake
+		0 : 1
+state 580 {17} [pos=0] accepting g0 l17 s0
+	action ladder
+		0 : 0.5
+		649 : 0.25
+		651 : 0.25
+	action normal
+		0 : 0.5
+		650 : 0.25
+		652 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 581 {17} [pos=1] accepting g0 l17 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		653 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 582 {17} [pos=2] accepting g0 l17 normal s2
+	action ladder
+		0 : 0.5
+		651 : 0.25
+		655 : 0.25
+	action normal
+		0 : 0.5
+		652 : 0.25
+		654 : 0.25
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 583 {17} [pos=3] accepting g0 l17 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		656 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 584 {17} [pos=4] accepting g0 l17 normal s4
+	action ladder
+		0 : 0.75
+		655 : 0.25
+	action normal
+		0 : 0.5
+		654 : 0.25
+		658 : 0.25
+	action snake
+		0 : 0.75
+		691 : 0.25
+	action end
+		2 : 1
+state 585 {17} [pos=9] accepting g0 l17 normal s5
+	action ladder
+		0 : 0.75
+		659 : 0.25
+	action normal
+		0 : 0.5
+		656 : 0.25
+		661 : 0.25
+	action snake
+		0 : 0.75
+		694 : 0.25
+	action end
+		2 : 1
+state 586 {17} [pos=5] accepting g0 l17 normal s6
+	action ladder
+		0 : 0.75
+		655 : 0.25
+	action normal
+		0 : 0.5
+		653 : 0.25
+		658 : 0.25
+	action snake
+		0 : 0.75
+		691 : 0.25
+	action end
+		2 : 1
+state 587 {17} [pos=6] accepting g0 l17 ladder s7
+	action ladder
+		659 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 588 {17} [pos=10] accepting g0 l17 normal s8
+	action ladder
+		0 : 0.75
+		659 : 0.25
+	action normal
+		0 : 0.5
+		661 : 0.25
+		662 : 0.25
+	action snake
+		0 : 0.75
+		694 : 0.25
+	action end
+		2 : 1
+state 589 {17} [pos=7] accepting g0 l17 s9 snake
+	action ladder
+		651 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 590 {17} [pos=8] accepting g0 l17 normal s10
+	action ladder
+		0 : 0.75
+		659 : 0.25
+	action normal
+		0 : 0.5
+		653 : 0.25
+		656 : 0.25
+	action snake
+		0 : 0.75
+		694 : 0.25
+	action end
+		2 : 1
+state 591 {17} [pos=11] accepting g0 l17 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		662 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 592 {17} [pos=12] accepting g0 l17 s12 snake
+	action ladder
+		655 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 593 {17} [pos=13] accepting g0 l17 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		662 : 0.25
+		681 : 0.5
+	action snake
+		0 : 0.75
+		697 : 0.25
+	action end
+		2 : 1
+state 594 {17} [pos=14] accepting g0 l17 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		681 : 0.75
+	action snake
+		0 : 0.75
+		697 : 0.25
+	action end
+		2 : 1
+state 595 {17} [pos=15] accepting g0 l17 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		691 : 1
+	action end
+		2 : 1
+state 596 {17} [pos=16] accepting g0 good l17 normal s16
+	action ladder
+		0 : 1
+	action normal
+		681 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 597 {17} [pos=0] accepting g1 l17 s0
+	action ladder
+		0 : 0.5
+		666 : 0.25
+		668 : 0.25
+	action normal
+		0 : 0.5
+		667 : 0.25
+		669 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 598 {17} [pos=1] accepting g1 l17 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		670 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 599 {17} [pos=2] accepting g1 l17 normal s2
+	action ladder
+		0 : 0.5
+		668 : 0.25
+		672 : 0.25
+	action normal
+		0 : 0.5
+		669 : 0.25
+		671 : 0.25
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 600 {17} [pos=3] accepting g1 l17 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		673 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 601 {17} [pos=4] accepting g1 l17 normal s4
+	action ladder
+		0 : 0.75
+		672 : 0.25
+	action normal
+		0 : 0.5
+		671 : 0.25
+		675 : 0.25
+	action snake
+		0 : 0.75
+		708 : 0.25
+	action end
+		1 : 1
+state 602 {17} [pos=9] accepting g1 l17 normal s5
+	action ladder
+		0 : 0.75
+		676 : 0.25
+	action normal
+		0 : 0.5
+		673 : 0.25
+		678 : 0.25
+	action snake
+		0 : 0.75
+		711 : 0.25
+	action end
+		1 : 1
+state 603 {17} [pos=5] accepting g1 l17 normal s6
+	action ladder
+		0 : 0.75
+		672 : 0.25
+	action normal
+		0 : 0.5
+		670 : 0.25
+		675 : 0.25
+	action snake
+		0 : 0.75
+		708 : 0.25
+	action end
+		1 : 1
+state 604 {17} [pos=6] accepting g1 l17 ladder s7
+	action ladder
+		676 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 605 {17} [pos=10] accepting g1 l17 normal s8
+	action ladder
+		0 : 0.75
+		676 : 0.25
+	action normal
+		0 : 0.5
+		678 : 0.25
+		679 : 0.25
+	action snake
+		0 : 0.75
+		711 : 0.25
+	action end
+		1 : 1
+state 606 {17} [pos=7] accepting g1 l17 s9 snake
+	action ladder
+		668 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 607 {17} [pos=8] accepting g1 l17 normal s10
+	action ladder
+		0 : 0.75
+		676 : 0.25
+	action normal
+		0 : 0.5
+		670 : 0.25
+		673 : 0.25
+	action snake
+		0 : 0.75
+		711 : 0.25
+	action end
+		1 : 1
+state 608 {17} [pos=11] accepting g1 l17 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		679 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 609 {17} [pos=12] accepting g1 l17 s12 snake
+	action ladder
+		672 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 610 {17} [pos=13] accepting g1 l17 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		679 : 0.25
+		681 : 0.5
+	action snake
+		0 : 0.75
+		714 : 0.25
+	action end
+		1 : 1
+state 611 {17} [pos=14] accepting g1 l17 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		681 : 0.75
+	action snake
+		0 : 0.75
+		714 : 0.25
+	action end
+		1 : 1
+state 612 {17} [pos=15] accepting g1 l17 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		708 : 1
+	action end
+		1 : 1
+state 613 {17} [pos=16] accepting g1 good l17 normal s16
+	action ladder
+		0 : 1
+	action normal
+		681 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 614 {18} [pos=0] g0 l18 s0
+	action ladder
+		0 : 0.5
+		649 : 0.25
+		651 : 0.25
+	action normal
+		0 : 0.5
+		684 : 0.25
+		686 : 0.25
+	action snake
+		0 : 1
+state 615 {18} [pos=1] g0 l18 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		687 : 1
+	action snake
+		0 : 1
+state 616 {18} [pos=2] g0 l18 normal s2
+	action ladder
+		0 : 0.5
+		651 : 0.25
+		655 : 0.25
+	action normal
+		0 : 0.5
+		686 : 0.25
+		688 : 0.25
+	action snake
+		0 : 1
+state 617 {18} [pos=3] g0 l18 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		690 : 1
+	action snake
+		0 : 1
+state 618 {18} [pos=4] g0 l18 normal s4
+	action ladder
+		0 : 0.75
+		655 : 0.25
+	action normal
+		0 : 0.5
+		688 : 0.25
+		692 : 0.25
+	action snake
+		0 : 0.75
+		691 : 0.25
+state 619 {18} [pos=9] g0 l18 normal s5
+	action ladder
+		0 : 0.75
+		659 : 0.25
+	action normal
+		0 : 0.5
+		690 : 0.25
+		695 : 0.25
+	action snake
+		0 : 0.75
+		694 : 0.25
+state 620 {18} [pos=5] g0 l18 normal s6
+	action ladder
+		0 : 0.75
+		655 : 0.25
+	action normal
+		0 : 0.5
+		687 : 0.25
+		692 : 0.25
+	action snake
+		0 : 0.75
+		691 : 0.25
+state 621 {18} [pos=6] g0 l18 ladder s7
+	action ladder
+		659 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 622 {18} [pos=10] g0 l18 normal s8
+	action ladder
+		0 : 0.75
+		659 : 0.25
+	action normal
+		0 : 0.5
+		695 : 0.25
+		696 : 0.25
+	action snake
+		0 : 0.75
+		694 : 0.25
+state 623 {18} [pos=7] g0 l18 s9 snake
+	action ladder
+		651 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 624 {18} [pos=8] g0 l18 normal s10
+	action ladder
+		0 : 0.75
+		659 : 0.25
+	action normal
+		0 : 0.5
+		687 : 0.25
+		690 : 0.25
+	action snake
+		0 : 0.75
+		694 : 0.25
+state 625 {18} [pos=11] g0 l18 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		696 : 1
+	action snake
+		0 : 1
+state 626 {18} [pos=12] g0 l18 s12 snake
+	action ladder
+		655 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 627 {18} [pos=13] g0 l18 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		696 : 0.25
+		715 : 0.5
+	action snake
+		0 : 0.75
+		697 : 0.25
+state 628 {18} [pos=14] g0 l18 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		715 : 0.75
+	action snake
+		0 : 0.75
+		697 : 0.25
+state 629 {18} [pos=15] g0 l18 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		691 : 1
+state 630 {18} [pos=16] g0 good l18 normal s16
+	action ladder
+		0 : 1
+	action normal
+		715 : 1
+	action snake
+		0 : 1
+state 631 {18} [pos=0] g1 l18 s0
+	action ladder
+		0 : 0.5
+		666 : 0.25
+		668 : 0.25
+	action normal
+		0 : 0.5
+		701 : 0.25
+		703 : 0.25
+	action snake
+		0 : 1
+state 632 {18} [pos=1] g1 l18 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		704 : 1
+	action snake
+		0 : 1
+state 633 {18} [pos=2] g1 l18 normal s2
+	action ladder
+		0 : 0.5
+		668 : 0.25
+		672 : 0.25
+	action normal
+		0 : 0.5
+		703 : 0.25
+		705 : 0.25
+	action snake
+		0 : 1
+state 634 {18} [pos=3] g1 l18 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		707 : 1
+	action snake
+		0 : 1
+state 635 {18} [pos=4] g1 l18 normal s4
+	action ladder
+		0 : 0.75
+		672 : 0.25
+	action normal
+		0 : 0.5
+		705 : 0.25
+		709 : 0.25
+	action snake
+		0 : 0.75
+		708 : 0.25
+state 636 {18} [pos=9] g1 l18 normal s5
+	action ladder
+		0 : 0.75
+		676 : 0.25
+	action normal
+		0 : 0.5
+		707 : 0.25
+		712 : 0.25
+	action snake
+		0 : 0.75
+		711 : 0.25
+state 637 {18} [pos=5] g1 l18 normal s6
+	action ladder
+		0 : 0.75
+		672 : 0.25
+	action normal
+		0 : 0.5
+		704 : 0.25
+		709 : 0.25
+	action snake
+		0 : 0.75
+		708 : 0.25
+state 638 {18} [pos=6] g1 l18 ladder s7
+	action ladder
+		676 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 639 {18} [pos=10] g1 l18 normal s8
+	action ladder
+		0 : 0.75
+		676 : 0.25
+	action normal
+		0 : 0.5
+		712 : 0.25
+		713 : 0.25
+	action snake
+		0 : 0.75
+		711 : 0.25
+state 640 {18} [pos=7] g1 l18 s9 snake
+	action ladder
+		668 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 641 {18} [pos=8] g1 l18 normal s10
+	action ladder
+		0 : 0.75
+		676 : 0.25
+	action normal
+		0 : 0.5
+		704 : 0.25
+		707 : 0.25
+	action snake
+		0 : 0.75
+		711 : 0.25
+state 642 {18} [pos=11] g1 l18 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		713 : 1
+	action snake
+		0 : 1
+state 643 {18} [pos=12] g1 l18 s12 snake
+	action ladder
+		672 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 644 {18} [pos=13] g1 l18 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		713 : 0.25
+		715 : 0.5
+	action snake
+		0 : 0.75
+		714 : 0.25
+state 645 {18} [pos=14] g1 l18 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 0.25
+		715 : 0.75
+	action snake
+		0 : 0.75
+		714 : 0.25
+state 646 {18} [pos=15] g1 l18 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		708 : 1
+state 647 {18} [pos=16] g1 good l18 normal s16
+	action ladder
+		0 : 1
+	action normal
+		715 : 1
+	action snake
+		0 : 1
+state 648 {19} [pos=0] accepting g0 horizon l19 s0
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 649 {19} [pos=1] accepting g0 horizon l19 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 650 {19} [pos=2] accepting g0 horizon l19 normal s2
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 651 {19} [pos=3] accepting g0 horizon l19 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 652 {19} [pos=4] accepting g0 horizon l19 normal s4
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 653 {19} [pos=9] accepting g0 horizon l19 normal s5
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 654 {19} [pos=5] accepting g0 horizon l19 normal s6
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 655 {19} [pos=6] accepting g0 horizon l19 ladder s7
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 656 {19} [pos=10] accepting g0 horizon l19 normal s8
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 657 {19} [pos=7] accepting g0 horizon l19 s9 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 658 {19} [pos=8] accepting g0 horizon l19 normal s10
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 659 {19} [pos=11] accepting g0 horizon l19 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 660 {19} [pos=12] accepting g0 horizon l19 s12 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 661 {19} [pos=13] accepting g0 horizon l19 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 662 {19} [pos=14] accepting g0 horizon l19 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 663 {19} [pos=15] accepting g0 horizon l19 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 664 {19} [pos=16] accepting g0 good horizon l19 normal s16
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		2 : 1
+state 665 {19} [pos=0] accepting g1 horizon l19 s0
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 666 {19} [pos=1] accepting g1 horizon l19 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 667 {19} [pos=2] accepting g1 horizon l19 normal s2
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 668 {19} [pos=3] accepting g1 horizon l19 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 669 {19} [pos=4] accepting g1 horizon l19 normal s4
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 670 {19} [pos=9] accepting g1 horizon l19 normal s5
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 671 {19} [pos=5] accepting g1 horizon l19 normal s6
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 672 {19} [pos=6] accepting g1 horizon l19 ladder s7
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 673 {19} [pos=10] accepting g1 horizon l19 normal s8
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 674 {19} [pos=7] accepting g1 horizon l19 s9 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 675 {19} [pos=8] accepting g1 horizon l19 normal s10
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 676 {19} [pos=11] accepting g1 horizon l19 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 677 {19} [pos=12] accepting g1 horizon l19 s12 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 678 {19} [pos=13] accepting g1 horizon l19 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 679 {19} [pos=14] accepting g1 horizon l19 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 680 {19} [pos=15] accepting g1 horizon l19 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 681 {19} [pos=16] accepting g1 good horizon l19 normal s16
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+	action end
+		1 : 1
+state 682 {20} [pos=0] g0 horizon l20 s0
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 683 {20} [pos=1] g0 horizon l20 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 684 {20} [pos=2] g0 horizon l20 normal s2
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 685 {20} [pos=3] g0 horizon l20 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 686 {20} [pos=4] g0 horizon l20 normal s4
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 687 {20} [pos=9] g0 horizon l20 normal s5
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 688 {20} [pos=5] g0 horizon l20 normal s6
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 689 {20} [pos=6] g0 horizon l20 ladder s7
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 690 {20} [pos=10] g0 horizon l20 normal s8
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 691 {20} [pos=7] g0 horizon l20 s9 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 692 {20} [pos=8] g0 horizon l20 normal s10
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 693 {20} [pos=11] g0 horizon l20 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 694 {20} [pos=12] g0 horizon l20 s12 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 695 {20} [pos=13] g0 horizon l20 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 696 {20} [pos=14] g0 horizon l20 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 697 {20} [pos=15] g0 horizon l20 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 698 {20} [pos=16] g0 good horizon l20 normal s16
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 699 {20} [pos=0] g1 horizon l20 s0
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 700 {20} [pos=1] g1 horizon l20 ladder s1
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 701 {20} [pos=2] g1 horizon l20 normal s2
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 702 {20} [pos=3] g1 horizon l20 ladder s3
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 703 {20} [pos=4] g1 horizon l20 normal s4
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 704 {20} [pos=9] g1 horizon l20 normal s5
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 705 {20} [pos=5] g1 horizon l20 normal s6
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 706 {20} [pos=6] g1 horizon l20 ladder s7
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 707 {20} [pos=10] g1 horizon l20 normal s8
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 708 {20} [pos=7] g1 horizon l20 s9 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 709 {20} [pos=8] g1 horizon l20 normal s10
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 710 {20} [pos=11] g1 horizon l20 ladder s11
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 711 {20} [pos=12] g1 horizon l20 s12 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 712 {20} [pos=13] g1 horizon l20 normal s13
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 713 {20} [pos=14] g1 horizon l20 normal s14
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 714 {20} [pos=15] g1 horizon l20 s15 snake
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1
+state 715 {20} [pos=16] g1 good horizon l20 normal s16
+	action ladder
+		0 : 1
+	action normal
+		0 : 1
+	action snake
+		0 : 1

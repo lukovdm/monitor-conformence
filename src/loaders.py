@@ -1,6 +1,6 @@
 import stormpy
-from stormvogel.model import Model
 from stormvogel.mapping import stormpy_to_stormvogel
+from stormvogel.model import Model
 
 
 def load_mc(path: str) -> Model:
@@ -29,5 +29,8 @@ def load_dfa(path: str) -> Model:
     dfa = stormpy_to_stormvogel(dfas)
     if dfa is None:
         raise Exception("Could not build model")
+
+    for s in dfas.states:
+        dfa.states[s.id].add_label(s.valuations)
 
     return dfa
