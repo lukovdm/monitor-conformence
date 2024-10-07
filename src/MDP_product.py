@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 from typing import Self
 
 import paynt.cli
@@ -8,12 +9,17 @@ import paynt.synthesizer.synthesizer
 import paynt.utils.timer
 import paynt.verification.property
 import payntbind.synthesis
+from paynt.family.family import Family
 from paynt.parser.prism_parser import PrismParser
 from stormpy import (
     get_maximal_end_components,
     export_to_drn,
     parse_properties,
     model_checking,
+    SparsePomdp,
+    SchedulerChoice,
+    Scheduler,
+    SparseDtmc,
 )
 from stormpy.simulator import create_simulator
 from stormvogel.mapping import stormvogel_to_stormpy
@@ -32,7 +38,10 @@ from stormvogel.show import show
 
 class MC_MON_Product:
     def __init__(
-        self: Self, mc: Model, mon: Model, gb: Model, create_baclinks=True
+        self: Self,
+        mc: Model,
+        mon: Model,
+        gb: Model,
     ) -> None:
         if mc.type != ModelType.DTMC:
             raise Exception("Wrong model type for the MC, should be DTMC", mc.type)
@@ -43,46 +52,10 @@ class MC_MON_Product:
                 "Wrong model type for the Good/Bad DFA, should be MDP", gb.type
             )
 
-        self.mc = mc
-        self.mon = mon
-        self.gb = gb
-        self.create_backlinks = create_baclinks
+        self.mc = deepcopy(mc)
+        self.mon = deepcopy(mon)
+        self.gb = deepcopy(gb)
         self.pomdp = new_pomdp("Product")
-
-        # Create actions from labels of the markov chain and add the end trace action
-        self.pomdp.actions = {}
-        for mon_act in mon.actions.values():  # type: ignore
-            name = list(mon_act.labels)[0]
-            if name not in self.pomdp.actions.keys():
-                self.pomdp.new_action(name, mon_act.labels)
-        self.normal_actions = self.pomdp.actions.copy()
-        self.end_action = self.pomdp.new_action(name="end", labels=frozenset({"end"}))
-
-        # Create the stop and goal state
-        self.goal_state = self.pomdp.new_state("goal")
-        self.goal_state.new_observation(len(mon.states) + 1)
-        self.stop_state = self.pomdp.new_state("stop")
-        self.stop_state.new_observation(len(mon.states) + 2)
-
-        # Create the product states with appropriate labels and observations
-        # They are stored in the states dict by (mon_id, gb_id, mc_id)
-        self.states: dict[tuple[int, int, int], State] = {}
-        for mon_id in mon.states.keys():
-            for gb_id in gb.states.keys():
-                for mc_id in mc.states.keys():
-                    self.__create_product_state(mon_id, gb_id, mc_id)
-
-        # Create transitions between states
-        for mon_id in mon.states.keys():
-            for gb_id in gb.states.keys():
-                for mc_id in mc.states.keys():
-                    self.__create_product_transition(
-                        mon_id,
-                        gb_id,
-                        mc_id,
-                    )
-
-        self.pomdp.add_self_loops()
 
     def __gen_observation(self: Self, state: State, dfa_id: int):
         c = len(self.normal_actions)
@@ -125,7 +98,7 @@ class MC_MON_Product:
         if "happy" in mon_state.labels:
             state.add_label("happy")
 
-        state.new_observation(mon_id)
+        state.set_observation(mon_id)
         self.states[(mon_id, gb_id, mc_id)] = state
 
     def __create_product_transition(
@@ -256,24 +229,119 @@ class MC_MON_Product:
                 else:
                     state.add_transitions([(action, self.pomdp.get_initial_state())])
 
-    def remove_top_states(self: Self):
-        unreachable_states = list(self.pomdp.states.values())
-        unreachable_states.remove(self.pomdp.get_initial_state())
-        for s_id, trans in self.pomdp.transitions.items():
-            for branch in trans.transition.values():
-                for p, s in branch.branch:
-                    if float(p) > 0 and s.id != s_id and s in unreachable_states:
-                        unreachable_states.remove(s)
+    def _do_remove_inconsistent_actions(self: Self):
+        reachable_states = self.reachable_states()
+        for mon_id in self.mon.states.keys():
+            for action in self.normal_actions:
+                action_used = False
+                for gb_id in self.gb.states.keys():
+                    if action_used:
+                        break
 
-        for s in unreachable_states:
-            self.pomdp.states.pop(s.id)
-            self.pomdp.transitions.pop(s.id)
+                    for mc_id in self.mc.states.keys():
+                        state = self.states[(mon_id, gb_id, mc_id)]
+                        if state.id not in reachable_states:
+                            continue
+                        if action in self.pomdp.transitions[
+                            state.id
+                        ].transition and self.pomdp.transitions[state.id].transition[
+                            action
+                        ].branch != [
+                            (1, self.pomdp.get_initial_state())
+                        ]:
+                            action_used = True
+                            break
+
+                if not action_used:
+                    for gb_id in self.gb.states.keys():
+                        for mc_id in self.mc.states.keys():
+                            state = self.states[(mon_id, gb_id, mc_id)]
+                            if action in self.pomdp.transitions[state.id].transition:
+                                self.pomdp.transitions[state.id].transition.pop(action)
+                            print(".", end="")
+
+    def apply_spec(self: Self, spec: str):
+        """
+        Add the good label to all states where the probability of spec is above threshold.
+
+        :param spec: A string containing the LTL specification used to determine good states
+        :param threshold: A float in [0,1] which greater equal compared against the probability of spec at each state
+        """
+        mc = stormvogel_to_stormpy(self.mc)
+        prop = parse_properties(spec)
+        result = model_checking(mc, prop[0])
+        for s_id, s in self.mc.states.items():
+            if result.at(s_id):
+                print(s_id, result.at(s_id))
+                # Works since this attribute gets added during the stormvogel to stormpy conversion
+                s.add_label("good")
+
+    def create_product(
+        self: Self, create_backlinks=True, remove_inconsistent_actions=False
+    ):
+        self.create_backlinks = create_backlinks
+        self._remove_inconsistent_actions = remove_inconsistent_actions
+
+        # Create actions from labels of the markov chain and add the end trace action
+        self.pomdp.actions = {}
+        for mon_act in self.mon.actions.values():
+            name = list(mon_act.labels)[0]
+            if name not in self.pomdp.actions.keys():
+                self.pomdp.new_action(name, mon_act.labels)
+        self.normal_actions = self.pomdp.actions.copy()
+        self.end_action = self.pomdp.new_action(name="end", labels=frozenset({"end"}))
+
+        # Create the stop and goal state
+        self.goal_state = self.pomdp.new_state("goal")
+        self.goal_state.set_observation(len(self.mon.states) + 1)
+        self.stop_state = self.pomdp.new_state("stop")
+        self.stop_state.set_observation(len(self.mon.states) + 2)
+
+        # Create the product states with appropriate labels and observations
+        # They are stored in the states dict by (mon_id, gb_id, mc_id)
+        self.states: dict[tuple[int, int, int], State] = {}
+        for mon_id in self.mon.states.keys():
+            for gb_id in self.gb.states.keys():
+                for mc_id in self.mc.states.keys():
+                    self.__create_product_state(mon_id, gb_id, mc_id)
+
+        # Create transitions between states
+        for mon_id in self.mon.states.keys():
+            for gb_id in self.gb.states.keys():
+                for mc_id in self.mc.states.keys():
+                    self.__create_product_transition(
+                        mon_id,
+                        gb_id,
+                        mc_id,
+                    )
+
+        self.pomdp.add_self_loops()
+        if self._remove_inconsistent_actions:
+            self._do_remove_inconsistent_actions()
+
+    def reachable_states(self: Self):
+        reachable = {}
+        check_queue = [self.pomdp.get_initial_state()]
+        while check_queue:
+            state = check_queue.pop(0)
+            for a in self.pomdp.transitions[state.id].transition.values():
+                for p, s in a.branch:
+                    if p == 0 or s.id in reachable:
+                        continue
+                    else:
+                        check_queue.append(s)
+                        reachable[state.id] = state
+
+        return reachable
 
     def remove_unreachable_states(self: Self):
-        prev_num_states = len(self.pomdp.states) + 1
-        while prev_num_states > len(self.pomdp.states):
-            self.remove_top_states()
-            prev_num_states = len(self.pomdp.states)
+        reachable = self.reachable_states()
+        states = list(self.pomdp.states.items())
+        for state_id, state in states:
+            if state_id in reachable:
+                continue
+
+            self.pomdp.delete_state(state)
 
     def add_ret_to_bmecs(self: Self):
         storm_m = stormvogel_to_stormpy(self.pomdp)
@@ -336,34 +404,37 @@ class MC_MON_Product:
         storm_pomdp = stormvogel_to_stormpy(self.pomdp)
         export_to_drn(storm_pomdp, path)
 
-    def check_storm_prop(self: Self, str_prop: str):
+    def check_storm_prop(self: Self, str_prop: str, simulate=False):
         self.pomdp.type = ModelType.MDP
-        storm_pomdp = stormvogel_to_stormpy(self.pomdp)
+        storm_mdp = stormvogel_to_stormpy(self.pomdp)
         self.pomdp.type = ModelType.POMDP
         prop = parse_properties(str_prop)
-        result = model_checking(storm_pomdp, prop[0], extract_scheduler=True)
-        print("Result of model checking", result.at(storm_pomdp.initial_states[0]))
-        # induced_mc = storm_pomdp.apply_scheduler(result.scheduler)
-        simulator = create_simulator(storm_pomdp)
+        result = model_checking(storm_mdp, prop[0], extract_scheduler=True)
+        simulator = create_simulator(storm_mdp)
         scheduler = result.scheduler
 
-        for m in range(3):
-            state, reward, labels = simulator.restart()
-            old_state = state
-            print(f"s{state}, labels={' '.join(labels)} -->")
-            for n in range(20):
-                chosen_action = storm_pomdp.states[old_state].actions[
-                    scheduler.get_choice(old_state).get_deterministic_choice()
-                ]
-                state, reward, labels = simulator.step(chosen_action.id)
+        if simulate:
+            print("Result of model checking", result.at(storm_mdp.initial_states[0]))
+            for m in range(3):
+                state, reward, labels = simulator.restart()
                 old_state = state
+                print(f"s{state}, labels={' '.join(labels)} -->")
+                for n in range(20):
+                    chosen_action = storm_mdp.states[old_state].actions[
+                        scheduler.get_choice(old_state).get_deterministic_choice()
+                    ]
+                    state, reward, labels = simulator.step(chosen_action.id)
+                    old_state = state
+                    print(
+                        f"-[{list(chosen_action.labels)[0]}]-> \ts{state}, labels={' '.join(labels)}"
+                    )
+                    if simulator.is_done():
+                        print("Done")
+                        break
                 print(
-                    f"-[{list(chosen_action.labels)[0]}]-> \ts{state}, labels={' '.join(labels)}"
+                    "---------------------------------------------------------------\n"
                 )
-                if simulator.is_done():
-                    print("Done")
-                    break
-            print("---------------------------------------------------------------\n")
+        return scheduler
 
     def print_mec(self: Self):
         storm_pomdp = stormvogel_to_stormpy(self.pomdp)
@@ -386,7 +457,7 @@ class MC_MON_Product:
                     except:
                         pass
 
-    def check_paynt_prop(self: Self, str_prop: str):
+    def check_paynt_prop(self: Self, str_prop: str) -> tuple[SparseDtmc, list[int]]:
         storm_pomdp = stormvogel_to_stormpy(self.pomdp)
         paynt.cli.setup_logger()
         logging.getLogger().handlers.clear()
@@ -451,6 +522,33 @@ class MC_MON_Product:
 
             print("\n".join([p for p, _ in paths[-1]]))
             print(f"it took {len(paths)} tries until the goal was reached")
-            return [pos[0] for _, pos in paths[-1] if pos]
+
+            scheduler = self._storm_scheduler_from_paynt_assignment(
+                storm_pomdp, assignment
+            )
+
+            self.pomdp.type = ModelType.MDP
+            storm_mdp = stormvogel_to_stormpy(self.pomdp)
+            self.pomdp.type = ModelType.POMDP
+
+            induced_mc = storm_mdp.apply_scheduler(scheduler)
+
+            return induced_mc, [0] + [pos[0] for _, pos in paths[-1] if pos]
         else:
             print("counterexample not found")
+
+    def _storm_scheduler_from_paynt_assignment(
+        self: Self, storm_pomdp: SparsePomdp, assignment: Family
+    ) -> Scheduler:
+        sched = []
+        for i, obs in enumerate(storm_pomdp.observations):
+            if obs >= assignment.num_holes:
+                sched.append(0)
+            else:
+                sched.append(assignment.hole_options(obs)[0])
+
+        scheduler = self.check_storm_prop('Pmax=? [F "init"]')
+        for s_id, choice in enumerate(sched):
+            scheduler.set_choice(SchedulerChoice(choice), s_id)
+
+        return scheduler
