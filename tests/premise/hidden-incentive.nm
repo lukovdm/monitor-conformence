@@ -1,0 +1,65 @@
+pomdp
+
+observables
+start, ax, ay, turn, dx, dy
+endobservables
+
+
+const int N;
+const int xMAX = N-1;
+const int yMAX = N-1;
+const int aXMAX = xMAX;
+const int aYMAX = yMAX;
+const int aXMIN = 0;
+const int aYMIN = 1;
+const int dxMAX = xMAX;
+const int dyMAX = yMAX;
+const int dxMIN = 0;
+const int dyMIN = 0;
+const double slippery = 0.2;
+
+formula done = ax = aXMIN & ay = aYMIN;
+observable "done" = done;
+formula crash =  (dx = ax & dy = ay);
+observable "crash" = crash;
+
+
+module master
+    start : bool init false;
+    turn : bool init false;
+
+    [placement] !start -> (start'=true);
+    [adv]  start & !done & turn -> (turn'=!turn);
+    [ego]  start & !done & !turn -> (turn'=!turn);
+endmodule
+
+module ego
+    ax : [aXMIN..aXMAX] init aXMAX-1;
+    ay : [aYMIN..aYMAX] init aYMAX;
+
+    [ego] true -> 1/4 : (ax'=max(ax-1,aXMIN)) +  1/4: (ax'=min(ax+1,aXMAX))
+                + 1/4 : (ay'=max(ay-1,aYMIN)) + 1/4 : (ay'=min(ay+1,aYMAX));
+    //[ego] true -> 1/8 : (ax'=max(ax-1,aXMIN)) +  1/8: (ax'=min(ax+1,aXMAX))
+    //            + 1/8 : (ay'=max(ay-1,aYMIN)) + 1/8 : (ay'=min(ay+1,aYMAX))
+    //            + 1/16 : (ax'=max(ax-2,aXMIN)) +  1/16: (ax'=min(ax+2,aXMAX))
+    //            + 1/16 : (ay'=max(ay-2,aYMIN)) + 1/16 : (ay'=min(ay+2,aYMAX))
+    //            + 1/16 : (ax'=max(ax-1,aXMIN)) & (ay'=max(ay-1,aYMIN)) +  1/16: (ax'=min(ax+1,aXMAX)) & (ay'=max(ay-1,aYMIN))
+    //            + 1/16 : (ax'=max(ax-1,aXMIN)) & (ay'=min(ay+1,aYMAX)) +  1/16: (ax'=min(ax+1,aXMAX)) & (ay'=min(ay+1,aYMAX));
+endmodule
+
+module drone
+    dx : [dxMIN..dxMAX] init 0;
+    dy : [dyMIN..dyMAX] init 0;
+    incentive : [0..3] init 1;
+
+    [adv] true -> 0.25: (incentive'=0) + 0.25: (incentive'=1) + 0.25: (incentive'=2) + 0.25: (incentive'=3);
+
+    [adv] incentive = 0 & dx > dxMIN -> (1-slippery): (dx'=max(dx-1,dxMIN)) + slippery/2: (dy'=max(dy-1,dyMIN)) + slippery/2: (dy'=min(dy+1,dyMAX)) ;
+    [adv] incentive = 1 & dx < dxMAX -> (1-slippery): (dx'=min(dx+1,dxMAX)) + slippery/2: (dy'=max(dy-1,dyMIN)) + slippery/2: (dy'=min(dy+1,dyMAX)) ;
+    [adv] incentive = 2 & dy < dxMAX -> (1-slippery): (dy'=min(dy+1,dyMAX)) + slippery/2: (dx'=max(dx-1,dxMIN)) + slippery/2: (dx'=min(dx+1,dxMAX)) ;
+    [adv] incentive = 3 & dy > dyMIN -> (1-slippery): (dy'=max(dy-1,dyMIN)) + slippery/2: (dx'=max(dx-1,dxMIN)) + slippery/2: (dx'=min(dx+1,dxMAX)) ;
+endmodule
+
+label "goal" = done;
+label "crash" = crash;
+label "notbad" =  !crash;

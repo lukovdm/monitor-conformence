@@ -19,9 +19,6 @@ const s3d = 8;
 formula ladder = pos=l1s|pos=l2s|pos=l3s;
 formula snake = pos=s1s|pos=s2s|pos=s3s;
 
-formula down = pos - ceil(pos/2);
-formula up = pos + ceil((n-pos)/2);
-
 module main
     pos : [0..n] init 0;
 

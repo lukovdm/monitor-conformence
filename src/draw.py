@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-
+# https://coolors.co/ef476f-ffd166-06d6a0-118ab2-073b4c
 COLORS = {
     "snake": "#EF476F",
     "snake_eyes": "#FFD166",
@@ -16,7 +16,7 @@ COLORS = {
 }
 
 
-def get_coordinates(num, n):
+def get_coordinates(num: int, n: int) -> tuple[int, int]:
     """Helper function to convert cell number to grid coordinates."""
     row = (num - 1) // n
     col = (num - 1) % n
@@ -139,7 +139,7 @@ def animate_player_movement(
     snakes: dict[int, int],
     ladders: dict[int, int],
     goal_squares: list[int],
-    path: list[int],
+    path: list[tuple[int, list[int]]],
 ):
     """Animate the player moving along a path."""
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -167,7 +167,7 @@ def animate_player_movement(
 
     # Add highlight patches
     highlights = []
-    for i in range(n):
+    for i in range(6):
         highlight = patches.Rectangle(
             (0, 0),
             1,
@@ -183,43 +183,24 @@ def animate_player_movement(
 
     def update(frame):
         """Update the player's position on the board."""
-        x, y = get_coordinates(path[frame], n)
+        x, y = get_coordinates(path[frame][0], n)
         player_circle.center = (x + 0.5, y + 0.5)
         if frame < len(path) - 1:
-            i = 0
-            if path[frame + 1] in snakes:
-                for s in snakes:
-                    if path[frame] < s <= path[frame] + 4:
-                        highlights[i].set_xy(get_coordinates(s, n))
-                        highlights[i].set_color(COLORS["snake"])
-                        highlights[i].set_visible(True)
-                        i += 1
-            elif path[frame + 1] in ladders:
-                for s in ladders:
-                    if path[frame] < s <= path[frame] + 4:
-                        highlights[i].set_xy(get_coordinates(s, n))
-                        highlights[i].set_color(COLORS["ladder"])
-                        highlights[i].set_visible(True)
-                        i += 1
-            else:
-                if path[frame] in ladders:
-                    highlights[i].set_xy(get_coordinates(ladders[path[frame]], n))
-                    highlights[i].set_color(COLORS["highlight"])
-                    highlights[i].set_visible(True)
-                    i += 1
-                elif path[frame] in snakes:
-                    highlights[i].set_xy(get_coordinates(snakes[path[frame]], n))
-                    highlights[i].set_color(COLORS["highlight"])
-                    highlights[i].set_visible(True)
-                    i += 1
+            skip_one = 0
+            for i, next_s in enumerate(path[frame + 1][1]):
+                if next_s == 0:
+                    skip_one = 1
+                    continue
+                highlights[i].set_xy(get_coordinates(next_s, n))
+                highlights[i].set_visible(True)
+                if next_s in snakes:
+                    highlights[i].set_color(COLORS["snake"])
+                elif next_s in ladders:
+                    highlights[i].set_color(COLORS["ladder"])
                 else:
-                    for s in range(path[frame] + 1, path[frame] + 5):
-                        if s not in ladders and s not in snakes:
-                            highlights[i].set_xy(get_coordinates(s, n))
-                            highlights[i].set_color(COLORS["highlight"])
-                            highlights[i].set_visible(True)
-                            i += 1
-            for j in range(i, 4):
+                    highlights[i].set_color(COLORS["highlight"])
+
+            for j in range(len(path[frame + 1][1]) - skip_one, n):
                 highlights[j].set_visible(False)
         else:
             for h in highlights:

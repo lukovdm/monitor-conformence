@@ -35,14 +35,11 @@ from stormvogel.model import (
 )
 from stormvogel.show import show
 
+from src.utils import get_pos
+
 
 class MC_MON_Product:
-    def __init__(
-        self: Self,
-        mc: Model,
-        mon: Model,
-        gb: Model,
-    ) -> None:
+    def __init__(self: Self, mc: Model, mon: Model, gb: Model, good_label: str) -> None:
         if mc.type != ModelType.DTMC:
             raise Exception("Wrong model type for the MC, should be DTMC", mc.type)
         if mon.type != ModelType.MDP:
@@ -55,6 +52,7 @@ class MC_MON_Product:
         self.mc = deepcopy(mc)
         self.mon = deepcopy(mon)
         self.gb = deepcopy(gb)
+        self.good_label = good_label
         self.pomdp = new_pomdp("Product")
 
     def __gen_observation(self: Self, state: State, dfa_id: int):
@@ -75,7 +73,7 @@ class MC_MON_Product:
         mc_state = self.mc.states[mc_id]
         mon_state = self.mon.states[mon_id]
         gb_state = self.gb.states[gb_id]
-        labels = [f"g{gb_id}", f"l{mon_id}", f"s{mc_id}"] + [
+        labels = [f"!g{gb_id}", f"!l{mon_id}", f"!s{mc_id}"] + [
             l for l in mc_state.labels if l != "init"
         ]
         if (
@@ -161,7 +159,7 @@ class MC_MON_Product:
                     if action.name not in mc_new_state.labels:
                         continue
                     if gb_branch := gb_trans_name_dict.get(
-                        "good" if "good" in mc_new_state.labels else "bad"
+                        "good" if self.good_label in mc_new_state.labels else "bad"
                     ):
                         pomdp_branch.append(
                             (
@@ -270,17 +268,16 @@ class MC_MON_Product:
         mc = stormvogel_to_stormpy(self.mc)
         prop = parse_properties(spec)
         result = model_checking(mc, prop[0])
+        states = []
         for s_id, s in self.mc.states.items():
             if result.at(s_id):
-                print(s_id, result.at(s_id))
                 # Works since this attribute gets added during the stormvogel to stormpy conversion
-                s.add_label("good")
+                states.append([l for l in s.labels if l.startswith("[")])
+                s.add_label(self.good_label)
+        print("New good states become:", states)
 
-    def create_product(
-        self: Self, create_backlinks=True, remove_inconsistent_actions=False
-    ):
+    def create_product(self: Self, create_backlinks=True):
         self.create_backlinks = create_backlinks
-        self._remove_inconsistent_actions = remove_inconsistent_actions
 
         # Create actions from labels of the markov chain and add the end trace action
         self.pomdp.actions = {}
@@ -316,8 +313,6 @@ class MC_MON_Product:
                     )
 
         self.pomdp.add_self_loops()
-        if self._remove_inconsistent_actions:
-            self._do_remove_inconsistent_actions()
 
     def reachable_states(self: Self):
         reachable = {}
@@ -412,14 +407,14 @@ class MC_MON_Product:
         result = model_checking(storm_mdp, prop[0], extract_scheduler=True)
         simulator = create_simulator(storm_mdp)
         scheduler = result.scheduler
+        print("Result of model checking", result.at(storm_mdp.initial_states[0]))
 
         if simulate:
-            print("Result of model checking", result.at(storm_mdp.initial_states[0]))
             for m in range(3):
                 state, reward, labels = simulator.restart()
                 old_state = state
                 print(f"s{state}, labels={' '.join(labels)} -->")
-                for n in range(20):
+                for n in range(100):
                     chosen_action = storm_mdp.states[old_state].actions[
                         scheduler.get_choice(old_state).get_deterministic_choice()
                     ]
@@ -457,15 +452,17 @@ class MC_MON_Product:
                     except:
                         pass
 
-    def check_paynt_prop(self: Self, str_prop: str) -> tuple[SparseDtmc, list[int]]:
-        storm_pomdp = stormvogel_to_stormpy(self.pomdp)
+    def check_paynt_prop(
+        self: Self, str_prop: str
+    ) -> tuple[SparseDtmc, list[tuple[int, list[int]]]]:
+        self.storm_pomdp: SparsePomdp = stormvogel_to_stormpy(self.pomdp)
         paynt.cli.setup_logger()
         logging.getLogger().handlers.clear()
 
         formula = PrismParser.parse_property(str_prop)
         prop = paynt.verification.property.construct_property(formula, 0)
         specification = paynt.verification.property.Specification([prop])
-        explicit_quotient = storm_pomdp
+        explicit_quotient = self.storm_pomdp
 
         paynt.verification.property.Property.initialize()
         explicit_quotient = payntbind.synthesis.addMissingChoiceLabels(
@@ -484,58 +481,70 @@ class MC_MON_Product:
             print(
                 "counterexample found: ",
                 assignment,
-                "\n--------------------------------------\n",
+                "\n--------------------",
             )
 
-            simulator = create_simulator(storm_pomdp)
-
-            old_observation, reward, labels = simulator.restart()
-            print(
-                f"s{simulator._report_state()}, labels={' '.join(labels)}",
-            )
-            paths = [[]]
-            while len(paths) < 10000:
-                if old_observation >= assignment.num_holes:
-                    a_options = [0]
-                else:
-                    a_options = assignment.hole_options(old_observation)
-                observation, reward, labels = simulator.step(a_options[0])
-
-                paths[-1].append(
-                    (
-                        f"\t--[{old_observation}, {a_options[0]}:{str(assignment.hole_to_option_labels[old_observation][a_options[0]])}]-->\n"
-                        f"s{simulator._report_state()}, labels={' '.join(sorted(labels))}",
-                        [
-                            int(l[5:-1])
-                            for l in labels
-                            if len(l) > 5 and l.startswith("[pos")
-                        ],
-                    )
-                )
-                if simulator._report_state() == 2:
-                    print("failed")
-                if simulator._report_state() == 0:
-                    paths.append([])
-                if simulator.is_done():
-                    break
-                old_observation = observation
-
-            print("\n".join([p for p, _ in paths[-1]]))
-            print(f"it took {len(paths)} tries until the goal was reached")
-
-            scheduler = self._storm_scheduler_from_paynt_assignment(
-                storm_pomdp, assignment
-            )
-
-            self.pomdp.type = ModelType.MDP
-            storm_mdp = stormvogel_to_stormpy(self.pomdp)
-            self.pomdp.type = ModelType.POMDP
-
-            induced_mc = storm_mdp.apply_scheduler(scheduler)
-
-            return induced_mc, [0] + [pos[0] for _, pos in paths[-1] if pos]
+            return assignment
         else:
             print("counterexample not found")
+
+    def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):
+        simulator = create_simulator(self.storm_pomdp)
+
+        old_observation, reward, labels = simulator.restart()
+        print(
+            f"s{simulator._report_state()}, labels={' '.join(labels)}",
+        )
+        paths = [[]]
+        while len(paths) < tries:
+            if old_observation >= assignment.num_holes:
+                a_options = [0]
+            else:
+                a_options = assignment.hole_options(old_observation)
+
+            possible_next_states = [
+                get_pos(b[1].labels)
+                for b in list(
+                    self.pomdp.transitions[
+                        simulator._report_state()
+                    ].transition.values()
+                )[a_options[0]].branch
+            ]
+
+            observation, reward, labels = simulator.step(a_options[0])
+
+            paths[-1].append(
+                (
+                    f"\t--[{old_observation}, {a_options[0]}:{str(assignment.hole_to_option_labels[old_observation][a_options[0]])}]-->\n"
+                    f"s{simulator._report_state()}, labels={' '.join(sorted(labels))}",
+                    get_pos(labels),
+                    possible_next_states,
+                )
+            )
+            if simulator._report_state() == 2:
+                print("failed")
+            if simulator._report_state() == 0:
+                paths.append([])
+            if simulator.is_done():
+                break
+            old_observation = observation
+
+        print("\n" + "\n".join([p for p, _, _ in paths[-1]]))
+        print(f"it took {len(paths)} tries until the goal was reached")
+
+        scheduler = self._storm_scheduler_from_paynt_assignment(
+            self.storm_pomdp, assignment
+        )
+
+        self.pomdp.type = ModelType.MDP
+        storm_mdp = stormvogel_to_stormpy(self.pomdp)
+        self.pomdp.type = ModelType.POMDP
+
+        induced_mc = storm_mdp.apply_scheduler(scheduler)
+
+        return induced_mc, [(0, [])] + [
+            (pos, next_states) for _, pos, next_states in paths[-1] if pos
+        ]
 
     def _storm_scheduler_from_paynt_assignment(
         self: Self, storm_pomdp: SparsePomdp, assignment: Family

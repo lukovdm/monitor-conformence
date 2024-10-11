@@ -1,0 +1,47 @@
+pomdp
+observables
+    d, pobs, turn
+endobservables
+
+const int DMAX;
+const int PMAX;
+
+const int Dmax = DMAX - 1;
+const int Pr = PMAX - 1;
+
+module plane
+    d : [0..Dmax] init Dmax;
+
+    [approach] d > 0 -> 1: (d'=d-1);
+    [stay] true -> 1: (d'=d);
+endmodule
+
+formula L = p = 0;
+formula M = p > 0 & p <= Pr-1;
+formula R = p >= Pr-1;
+
+module gv
+    p : [0..Pr] init Pr;
+
+    [approach] M -> 0.99-((d-1)/Dmax)*0.3: (p'=max(0,p-1)) + 0.01+((d-1)/Dmax)*0.3: (p'=p);
+    [stay] M -> 0.99-(d/Dmax)*0.3: (p'=max(0,p-1)) + 0.01+(d/Dmax)*0.3: (p'=p);
+    [approach] R -> (p'=p);
+    [approach] R -> 0.99-((d-1)/Dmax)*0.2: (p'=p) + 0.01+((d-1)/Dmax)*0.2: (p'=max(0,p-1));
+    [stay] R -> (p'=p);
+    [stay] R -> 0.99-(d/Dmax)*0.2: (p'=p) + 0.01+(d/Dmax)*0.2: (p'=max(0,p-1));
+    [approach] L -> (p'=p);
+endmodule
+
+module sensor
+    pobs : [0..Pr] init Pr;
+    [measure] true -> 0.05+0.15*(d/Dmax): (pobs'=max(p-1,0)) + 0.9-0.3*(d/Dmax): (pobs'=p) + 0.05+0.15*(d/Dmax): (pobs'=min(p+1,Pr));
+endmodule
+
+module master
+    turn : [0..1] init 1;
+    [approach] turn=1 -> (turn'=0);
+    [stay] turn=1 -> (turn'=0);
+    [measure] turn=0 -> (turn'=1);
+endmodule
+
+label "crash" = M & d=0;

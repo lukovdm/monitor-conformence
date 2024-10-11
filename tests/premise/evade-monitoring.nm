@@ -1,0 +1,67 @@
+pomdp
+
+observables
+start, ax, ay, turn
+endobservables
+
+const int RADIUS;
+
+const int N;
+const int xMAX = N-1;
+const int yMAX = N-1;
+const int aXMAX = xMAX;
+const int aYMAX = yMAX;
+const int aXMIN = 0;
+const int aYMIN = 1;
+const int dxMAX = xMAX;
+const int dyMAX = yMAX;
+const int dxMIN = 0;
+const int dyMIN = 0;
+const double slippery = 0.2;
+
+formula done = ax = aXMIN & ay = aYMIN;
+observable "done" = done;
+formula crash =  (dx = ax & dy = ay);
+observable "crash" = crash;
+formula seedrone = ax-dx < RADIUS + 1 & dx-ax < RADIUS +1 & ay-dy < RADIUS+1 & dy -ay < RADIUS+1;
+formula see_dx = seedrone ? dx : -1;
+formula see_dy = seedrone ? dy : -1;
+observable "see_dx" = see_dx;
+observable "see_dy" = see_dy;
+
+module master
+    start : bool init false;
+    turn : bool init false;
+
+    [placement] !start -> (start'=true);
+    [adv]  start & turn -> (turn'=!turn);
+    [ego]  start & !turn -> (turn'=!turn);
+endmodule
+
+module ego
+    ax : [aXMIN..aXMAX] init aXMAX-1;
+    ay : [aYMIN..aYMAX] init aYMAX;
+
+    [ego] true -> 1/4 : (ax'=max(ax-1,aXMIN)) +  1/4: (ax'=min(ax+1,aXMAX))
+                + 1/4 : (ay'=max(ay-1,aYMIN)) + 1/4 : (ay'=min(ay+1,aYMAX));
+    //[ego] true -> 1/8 : (ax'=max(ax-1,aXMIN)) +  1/8: (ax'=min(ax+1,aXMAX))
+    //            + 1/8 : (ay'=max(ay-1,aYMIN)) + 1/8 : (ay'=min(ay+1,aYMAX))
+    //            + 1/16 : (ax'=max(ax-2,aXMIN)) +  1/16: (ax'=min(ax+2,aXMAX))
+    //            + 1/16 : (ay'=max(ay-2,aYMIN)) + 1/16 : (ay'=min(ay+2,aYMAX))
+    //            + 1/16 : (ax'=max(ax-1,aXMIN)) & (ay'=max(ay-1,aYMIN)) +  1/16: (ax'=min(ax+1,aXMAX)) & (ay'=max(ay-1,aYMIN))
+    //            + 1/16 : (ax'=max(ax-1,aXMIN)) & (ay'=min(ay+1,aYMAX)) +  1/16: (ax'=min(ax+1,aXMAX)) & (ay'=min(ay+1,aYMAX));
+endmodule
+
+module drone
+    dx : [dxMIN..dxMAX] init 0;
+    dy : [dyMIN..dyMAX] init 0;
+
+    [adv] true -> (1-slippery): (dx'=max(dx-1,dxMIN)) + slippery: (dx'=max(dx,dxMIN));
+    [adv] true -> (1-slippery): (dx'=min(dx+1,dxMAX)) + slippery: (dx'=min(dx,dxMAX));
+    [adv]  true -> (1-slippery): (dy'=min(dy+1,dyMAX)) + slippery: (dy'=min(dy,dyMAX));
+    [adv]  true -> (1-slippery): (dy'=max(dy-1,dyMIN)) + slippery: (dy'=max(dy,dyMIN));
+endmodule
+
+label "goal" = done;
+label "crash" = crash;
+label "notbad" =  !crash;
