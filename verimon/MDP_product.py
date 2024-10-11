@@ -35,7 +35,7 @@ from stormvogel.model import (
 )
 from stormvogel.show import show
 
-from src.utils import get_pos
+from verimon.utils import get_pos
 
 
 class MC_MON_Product:

@@ -18,6 +18,20 @@ def load_snl(path: str, n: int, ladders: dict[int, int], snakes: dict[int, int])
     return _load_prism(snl_prism)
 
 
+def load_snl_stormpy(
+    path: str, n: int, ladders: dict[int, int], snakes: dict[int, int]
+):
+    snl_prism: PrismProgram = parse_prism_program(path)
+    if not snl_prism.has_undefined_constants:
+        raise Exception("Model is already fully defined")
+    prism = _define_snl_constants(snl_prism, n, ladders, snakes)
+    options = BuilderOptions()
+    options.set_build_all_labels()
+    options.set_build_choice_labels()
+    options.set_build_state_valuations()
+    return build_sparse_model_with_options(prism, options)
+
+
 def load_defined_snl(path: str) -> tuple[Model, int, dict[int, int], dict[int, int]]:
     mc_prism = parse_prism_program(path)
     n, ladders, snakes = _get_sl_prism_consts(mc_prism)
