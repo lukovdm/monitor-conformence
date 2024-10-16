@@ -1,0 +1,55 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{preamble}
+
+\RequirePackage{amsmath}
+\RequirePackage{amssymb}
+
+\newif\if@myfiledraft
+\DeclareOption{draft}{\@myfiledrafttrue}
+
+\ProcessOptions\relax
+
+\if@myfiledraft
+    \newcommand{\myterm}[1]{\emph{#1}\marginpar{TERM: #1}}
+\else
+    \newcommand{\myterm}[1]{\emph{#1}}
+\fi
+
+% Objects
+\newcommand{\mc}{\mathcal{M}}           % Markov Chain
+\newcommand{\mdp}{\mathcal{M}}          % Markov Decision Process
+\newcommand{\dfa}{\mathcal{A}}          % Deterministic Finite Automaton
+\newcommand{\dfaB}{\mathcal{B}}         % Another DFA (if needed)
+
+% Properties
+\newcommand{\Sts}{S}                 % Set of states (general)
+\newcommand{\StsD}{Q}              % Set of states in DFA
+\newcommand{\alphabet}{\Sigma}              % Alphabet
+\newcommand{\trans}{\delta}         % Transition function
+\newcommand{\init}{\iota}       % Initial state
+\newcommand{\final}{F}            % Set of accept/final states
+\newcommand{\ptrans}{\mathbf{P}}   % Transition probability function
+\newcommand{\Act}{\mathit{Act}}     % Set of actions
+\newcommand{\Aps}{{AP}}                 % Set of atomic propositions
+\newcommand{\lbl}{L}               % Labeling function
+\newcommand{\Colors}{C}
+\newcommand{\pat}{\pi}
+\newcommand{\Pat}{\Pi}
+\newcommand{\trace}{\tau}
+\newcommand{\inte}{I}
+\newcommand{\Obs}{O}
+\newcommand{\obsf}{{obs}}
+\newcommand{\sched}{\sigma}
+
+% Functions
+\newcommand{\Prob}{{Pr}}
+\newcommand{\Paths}{{\operatorname{Paths}}}
+\newcommand{\Cyl}{{\operatorname{Cyl}}}
+
+\newcommand{\lang}[1]{\mathcal{L}(#1)}
+
+\newcommand{\inter}{\operatorname{in}}
+
+\newtheorem{definition}{Definition}
+
+\endinput

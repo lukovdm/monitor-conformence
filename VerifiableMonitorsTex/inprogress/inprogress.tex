@@ -1,0 +1,141 @@
+\documentclass{article}
+
+\usepackage[style=numeric]{biblatex}
+\usepackage{preamble}
+\usepackage{hyperref}
+
+\addbibresource{zotero.bib}
+
+\title{Verifiable monitors}
+\author{Luko van der Maas}
+
+\begin{document}
+\maketitle
+
+\section{Preliminaries}
+
+\begin{definition}
+    A deterministic finite automaton (DFA) $\dfa$ is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$ where:
+    \begin{itemize}
+        \item $\StsD$ is a finite set of states,
+        \item $\alphabet$ is an alphabet,
+        \item $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) transition function,
+        \item $\init$ is the initial state, and
+        \item $\final \subseteq \StsD$ is a set of accept (or: final) states.
+    \end{itemize}
+
+    From \cite{baierPrinciplesModelChecking2008}
+\end{definition}
+
+\begin{definition}
+    The language $\lang(\dfa)$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$.
+\end{definition}
+
+\begin{definition}
+    A (discrete-time) Markov chain (MC) is a tuple $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ where:
+    \begin{itemize}
+        \item $\Sts$ is a countable, nonempty set of states,
+        \item $\ptrans: \Sts \times \Sts \rightarrow[0,1]$ is the transition probability function such that for all states $s$ :
+
+              $$
+                  \sum_{s^{\prime} \in \Sts} \ptrans\left(s, s^{\prime}\right)=1
+              $$
+        \item $\init$ is the initial state, and
+        \item $\Aps$ is a set of atomic propositions, and
+        \item $\lbl: \Sts \rightarrow 2^{\Aps}$ is a labeling function.
+    \end{itemize}
+
+    Additionally, observations can be added to an MC by adding a Set of observations $\Obs$, together with an observation function $\obsf\colon \Sts \to \Obs$.
+
+    From \cite{baierPrinciplesModelChecking2008}
+\end{definition}
+
+\begin{definition}
+    The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $mc$.
+\end{definition}
+
+\begin{definition}
+    Given an MC $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$, the paths conforming to a trace $\trace$ are defined as $$\Paths(\trace) = \{\pat \in \Pat^{fin}\ |\ \obsf(\pat) = \trace\}$$
+\end{definition}
+
+\begin{definition}
+    Given an MC $\mc$, the cylinder set $\Cyl(\pat)$ of a finite path $\pat$ is the set of all infinite extensions of $\pat$ in $\mc$.
+\end{definition}
+
+\begin{definition}
+    A Markov decision process is a tuple $\mdp=\left(\Sts, \Act, \ptrans, \init, \Aps, \lbl\right)$ where
+    \begin{itemize}
+        \item $\Sts$ is a countable set of states,
+        \item $\Act$ is a set of actions,
+        \item $\ptrans$ : $\Sts \times \Act \times \Sts \rightarrow[0,1]$ is the transition probability function such that for all states $s \in \Sts$ and actions $\alpha \in \Act$:
+
+              $$
+                  \sum_{s^{\prime} \in \Sts} \ptrans\left(s, \alpha, s^{\prime}\right) \in\{0,1\}
+              $$
+
+        \item $\init$ is the initial state,
+        \item $\Aps$ is a set of atomic propositions, and
+        \item $\lbl: S \rightarrow 2^{\Aps}$ is a labeling function.
+    \end{itemize}
+
+    From \cite{baierPrinciplesModelChecking2008}
+\end{definition}
+
+\section{Problem Statement}
+Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a monitor DAG DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
+For all paths $\pat$ conforming to a trace $\tau$ of the monitor, The probability of $\pat$ is in a given interval $\inte$.
+$$\underset{\trace\in\lang{\mc}}{\inter^\inte} \Prob^\mc(\pat\in\lang{\dfa}\ |\ \pat\in \Cyl(\Paths(\trace)))$$
+
+\section{Algorithm}
+Our algorithm will proceed in four steps. First, we take the MC product \cite{baierPrinciplesModelChecking2008} of the MC $\mc$ and the specification $\dfa$. Then, we will combine the product MC with the monitor into an MDP. Next we will add end transitions to this MDP for all states that are accepted by the underlying monitor. Lastly, we use Paynt \cite{andriushchenkoPAYNTToolInductive2021} to model check the created MDP.
+
+\subsection{Applying the specification to the MC}
+We take the MC product as defined by \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008} to create the product MC $\mc \oplus \dfa$.
+
+\paragraph{Intuition}
+The created product MC is the original MC, but every good state is labeled.
+
+\subsection{Constructing the product MDP}
+To create the MDP, we first create its states. The states are the product of the states of the product MC and the monitor. These are denoted as $\langle s, q_\dfaB\rangle$ for $s \in \Sts_{\mc \oplus \dfa}$, and $q_\dfaB \in \StsD_\dfaB$. As actions in the product MDP we take the observations $\Colors$ of the MC $\mc$.
+
+The transitions in the MDP are defined here in two steps. First we create a not-yet-normalized transition function $P'$ on the states in the MDP. Next, we normalize the transition function by creating redirecting all remaining probability mass of an action in a state towards the initial state in $P''$.
+\begin{align*}
+    \large P'(\langle s, q\rangle , c, \langle s', q'\rangle) =  & \begin{cases}P(s, s') & \text{if } obs(s') = c \land q' = \delta(q, c)\\ 0 & \text{otherwise}\end{cases}                                                                                                                                              \\
+    \large P''(\langle s, q\rangle , c, \langle s', q'\rangle) = & \begin{cases}1 - \sum_{s''\in S}\sum_{q''\in Q}P'(\langle s, q\rangle , c, \langle s'', q''\rangle) & \text{if } s' = \iota_{\mc\oplus\dfa} \land q' = \iota_\dfaB\\ P'(\langle s, q\rangle , c, \langle s', q'\rangle) & \text{otherwise}\end{cases}
+\end{align*}
+
+Lastly, the atomic propositions are $\{\circledcirc_\dfa, \circledcirc_\dfaB\}$, where accepting states in the product MC are labeled by $\circledcirc_\dfa$ and accepting states in the monitor are labeled by $\circledcirc_\dfaB$.
+
+\paragraph{Intuition}
+The created MDP can be seen as the original product MC $\mc\oplus\dfa$, where we can choose which observation to observe, but only if the monitor contains the transition labeled by the observation.
+
+\subsection{Adding end transitions}
+We add two new states to the MDP, the $goal$ and $stop$ states, each only having a self loop. Next, we will add an $end$ action to every state with the label $\circledcirc_\dfaB$. If the state also contains the $\circledcirc_\dfa$ label, we direct the $end$ action to the $goal$ state, otherwise we direct the $end$ action to the stop state.
+
+\paragraph{Intuition}
+Since we are talking about finite traces in the monitor, we need to give the MDP a way to end a path. This is done by taking the $end$ action. If we take the end action in a good state of the product MDP, we reach the $goal$ state, if it was a bad state, then we reach the $stop$ state.
+
+\subsection{Model checking using Paynt}
+We create a POMDP which will be model checked by Paynt \cite{andriushchenkoPAYNTToolInductive2021} for reachability of the goal state. The observations in this POMDP are the states of the monitor. Using this POMDP we calculate $$\mathbb{P}_{\max}[\diamond goal]$$ to find the maximum probability and $$1-\mathbb{P}_{\max}[\diamond stop]$$ to find the minimum probability. Finally, we can verify this upper and lower bound with the interval $\inte$.
+
+\paragraph{Intuition}
+In order to find the traces in the monitor which give the maximum and minimum probability of reaching a good state, we associate a trace $\trace$ with a scheduler $\sched_\trace$ in an MDP. Such a scheduler is called consistent.
+\begin{definition}
+    A \emph{consistent scheduler} is a scheduler which generates only one trace
+    $$\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = \cdots\iota\trace e^\star$$
+    where $\iota$ is the observation of the initial state and $e$ is the observation of the $goal$ and $stop$ state.
+\end{definition}
+By model checking the created POMDP, we don't yet ensure that every scheduler is consistent, instead we only ensure semi-consistence.
+\begin{definition}
+    A semi-consistent scheduler $\sigma$ is a scheduler which has the following property $$\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^+)^\star$$ where $\tau^+$ can be a different prefix of $\tau$ for every loop in $()^\star$.
+\end{definition}
+Thus, a semi-consistent scheduler does not have to take and end action. However, by maximizing the probability of reaching either the $goal$ or $stop$ state, we ensure that if the $end$ action can be taken, it will be taken. And if a path takes the $end$ action, almost surely any other path will also take the $end$ action at some point. This property ensures that when maximizing semi-consistent schedulers we will always get a consistent scheduler, and thus a single trace.
+
+\section{Alternative formulations of the problem}
+Instead of giving a specification DFA, we could instead give a TL specification \cite{lichtensteinGlory1985} which is evaluated for every state. Since TL has both future and past operators both now reachability, $\diamond\hspace{-.9em}- l$, and soon reachability, $\bigcirc^n \diamond\hspace{-.9em}- l$, for a label $l$ can be expressed. While using a specification DFA can only express now reachability.
+
+The only impact this reformulation of the problem would have is in step 1. Here, instead of taking the product MC, we check if the above described TL formula has a probability above a certain threshold. If that is the case we mark it with the $\circledcirc_\dfa$ label. This MC is then used for the subsequent steps.
+
+\printbibliography{}
+
+\end{document}

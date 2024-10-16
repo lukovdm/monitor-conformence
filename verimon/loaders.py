@@ -5,6 +5,8 @@ from stormpy import (
     parse_prism_program,
     BuilderOptions,
     build_sparse_model_with_options,
+    SparseDtmc,
+    SparseMdp,
 )
 from stormvogel.mapping import stormpy_to_stormvogel
 from stormvogel.model import Model, EmptyAction, Branch, ModelType, new_mdp
@@ -130,10 +132,14 @@ def _load_prism(prism: PrismProgram) -> Model:
     if model is None:
         raise Exception("Could not build model")
 
-    for s in model_stormpy.states:
-        model.states[s.id].add_label(s.valuations)
+    _add_valuation_to_sv_labels(model_stormpy, model)
 
     return model
+
+
+def _add_valuation_to_sv_labels(spy: SparseDtmc | SparseMdp, sv: Model):
+    for s in spy.states:
+        sv.states[s.id].add_label(s.valuations)
 
 
 def _get_sl_prism_consts(model) -> tuple[int, dict[int, int], dict[int, int]]:

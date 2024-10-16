@@ -35,6 +35,7 @@ from stormvogel.model import (
 )
 from stormvogel.show import show
 
+from verimon.unrolling import _reassign_ids
 from verimon.utils import get_pos
 
 
@@ -64,12 +65,7 @@ class MC_MON_Product:
 
         return c + dfa_id * (len(self.normal_actions) + 1)
 
-    def __create_product_state(
-        self: Self,
-        mon_id: int,
-        gb_id: int,
-        mc_id: int,
-    ):
+    def __create_product_state(self: Self, mon_id: int, gb_id: int, mc_id: int):
         mc_state = self.mc.states[mc_id]
         mon_state = self.mon.states[mon_id]
         gb_state = self.gb.states[gb_id]
@@ -96,7 +92,12 @@ class MC_MON_Product:
         if "happy" in mon_state.labels:
             state.add_label("happy")
 
-        state.set_observation(mon_id)
+        if self.use_step_label:
+            step = int([l[5:] for l in mon_state.labels if l.startswith("step=")][0])
+            accepting = "accepting" in mon_state.labels
+            state.set_observation(self.observations[(step, accepting)])
+        else:
+            state.set_observation(mon_id)
         self.states[(mon_id, gb_id, mc_id)] = state
 
     def __create_product_transition(
@@ -227,37 +228,6 @@ class MC_MON_Product:
                 else:
                     state.add_transitions([(action, self.pomdp.get_initial_state())])
 
-    def _do_remove_inconsistent_actions(self: Self):
-        reachable_states = self.reachable_states()
-        for mon_id in self.mon.states.keys():
-            for action in self.normal_actions:
-                action_used = False
-                for gb_id in self.gb.states.keys():
-                    if action_used:
-                        break
-
-                    for mc_id in self.mc.states.keys():
-                        state = self.states[(mon_id, gb_id, mc_id)]
-                        if state.id not in reachable_states:
-                            continue
-                        if action in self.pomdp.transitions[
-                            state.id
-                        ].transition and self.pomdp.transitions[state.id].transition[
-                            action
-                        ].branch != [
-                            (1, self.pomdp.get_initial_state())
-                        ]:
-                            action_used = True
-                            break
-
-                if not action_used:
-                    for gb_id in self.gb.states.keys():
-                        for mc_id in self.mc.states.keys():
-                            state = self.states[(mon_id, gb_id, mc_id)]
-                            if action in self.pomdp.transitions[state.id].transition:
-                                self.pomdp.transitions[state.id].transition.pop(action)
-                            print(".", end="")
-
     def apply_spec(self: Self, spec: str):
         """
         Add the good label to all states where the probability of spec is above threshold.
@@ -276,8 +246,9 @@ class MC_MON_Product:
                 s.add_label(self.good_label)
         print("New good states become:", states)
 
-    def create_product(self: Self, create_backlinks=True):
+    def create_product(self: Self, create_backlinks=True, use_step_label=False):
         self.create_backlinks = create_backlinks
+        self.use_step_label = use_step_label
 
         # Create actions from labels of the markov chain and add the end trace action
         self.pomdp.actions = {}
@@ -288,11 +259,25 @@ class MC_MON_Product:
         self.normal_actions = self.pomdp.actions.copy()
         self.end_action = self.pomdp.new_action(name="end", labels=frozenset({"end"}))
 
+        if self.use_step_label:
+            self.observations = {}
+            obs = 0
+            for s in self.mon.states.values():
+                step = int([l[5:] for l in s.labels if l.startswith("step=")][0])
+                accepting = "accepting" in s.labels
+                if (step, accepting) not in self.observations:
+                    self.observations[(step, accepting)] = obs
+                    obs += 1
+
         # Create the stop and goal state
         self.goal_state = self.pomdp.new_state("goal")
-        self.goal_state.set_observation(len(self.mon.states) + 1)
         self.stop_state = self.pomdp.new_state("stop")
-        self.stop_state.set_observation(len(self.mon.states) + 2)
+        if self.use_step_label:
+            self.goal_state.set_observation(max(self.observations.values()) + 1)
+            self.stop_state.set_observation(max(self.observations.values()) + 2)
+        else:
+            self.goal_state.set_observation(len(self.mon.states) + 1)
+            self.stop_state.set_observation(len(self.mon.states) + 2)
 
         # Create the product states with appropriate labels and observations
         # They are stored in the states dict by (mon_id, gb_id, mc_id)
@@ -315,28 +300,28 @@ class MC_MON_Product:
         self.pomdp.add_self_loops()
 
     def reachable_states(self: Self):
-        reachable = {}
+        reachable = {self.pomdp.get_initial_state().id}
         check_queue = [self.pomdp.get_initial_state()]
         while check_queue:
             state = check_queue.pop(0)
-            for a in self.pomdp.transitions[state.id].transition.values():
-                for p, s in a.branch:
+            for b in self.pomdp.transitions[state.id].transition.values():
+                for p, s in b.branch:
                     if p == 0 or s.id in reachable:
                         continue
                     else:
                         check_queue.append(s)
-                        reachable[state.id] = state
+                        reachable.add(s.id)
 
         return reachable
 
     def remove_unreachable_states(self: Self):
         reachable = self.reachable_states()
-        states = list(self.pomdp.states.items())
-        for state_id, state in states:
-            if state_id in reachable:
-                continue
+        states = list([s for i, s in self.pomdp.states.items() if i not in reachable])
+        for state in states:
+            self.pomdp.remove_state(state)
 
-            self.pomdp.delete_state(state)
+        _reassign_ids(self.pomdp)
+        print(f"Remove {len(states)} unreachable states")
 
     def add_ret_to_bmecs(self: Self):
         storm_m = stormvogel_to_stormpy(self.pomdp)
@@ -453,14 +438,14 @@ class MC_MON_Product:
                         pass
 
     def check_paynt_prop(
-        self: Self, str_prop: str
+        self: Self, str_prop: str, relative_error=0
     ) -> tuple[SparseDtmc, list[tuple[int, list[int]]]]:
         self.storm_pomdp: SparsePomdp = stormvogel_to_stormpy(self.pomdp)
-        paynt.cli.setup_logger()
         logging.getLogger().handlers.clear()
+        paynt.cli.setup_logger()
 
         formula = PrismParser.parse_property(str_prop)
-        prop = paynt.verification.property.construct_property(formula, 0)
+        prop = paynt.verification.property.construct_property(formula, relative_error)
         specification = paynt.verification.property.Specification([prop])
         explicit_quotient = self.storm_pomdp
 
