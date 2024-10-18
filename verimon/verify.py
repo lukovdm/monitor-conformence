@@ -14,6 +14,7 @@ default_option = {
     "good_label": "good",
     "relative_error": 0.1,
     "show_monitor": False,
+    "return_all": False,
 }
 
 
@@ -137,16 +138,26 @@ def _verify_helper(
     logger.debug("creating product done")
 
     logger.debug("Creating trace")
-    assignment = model.check_paynt_prop(paynt_spec, options["relative_error"])
+    assignment = model.check_paynt_prop(
+        paynt_spec, options["relative_error"], options["return_all"]
+    )
 
     if assignment is None:
         logger.info("no counter example during verification")
         return None
 
-    induced_mc = model.created_induced_mc(assignment)
+    any_assignment = assignment.pick_any()
+    induced_mc = model.created_induced_mc(any_assignment)
 
-    trace = model.trace_of_assignment(assignment)
-    logger.info(f"Found trace: {trace}")
+    if options["return_all"]:
+        trace = []
+        for comb in assignment.all_combinations():
+            ass = assignment.construct_assignment(comb)
+            trace.append(model.trace_of_assignment(ass))
+        logger.info(f"Found {len(trace)} traces: {trace[:min(5,len(trace))]}")
+    else:
+        trace = model.trace_of_assignment(any_assignment)
+        logger.info(f"Found trace: {trace}")
 
     result_goal: float = model_checking(
         induced_mc, parse_properties('Pmax=? [F "goal"]')[0]

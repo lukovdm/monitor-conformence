@@ -69,15 +69,18 @@ class VerimonEqOracle(Oracle):
                 "good_spec": self.spec,
                 "good_label": self.good_label,
                 "relative_error": self.relative_error,
+                "return_all": True,
             },
         )
         if res is not None:
-            result, trace, _, _ = res
+            result, traces, _, _ = res
             logger.info(
-                f"Trace should not be in hyp: {self._check_hyp_on_trace(hypothesis, trace)}"
+                f"Trace should not be in hyp: {self._check_hyp_on_trace(hypothesis, traces[0])}"
             )
-            logger.info(f"Trace should be in SUL: {self._check_sul_on_trace(trace)}")
-            return trace
+            logger.info(
+                f"Trace should be in SUL: {self._check_sul_on_trace(traces[0])}"
+            )
+            return traces
 
         logger.debug("Finding false positive probability")
         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
@@ -91,17 +94,18 @@ class VerimonEqOracle(Oracle):
                 "good_spec": self.spec,
                 "good_label": self.good_label,
                 "relative_error": self.relative_error,
+                "return_all": True,
             },
         )
         if res is not None:
-            result, trace, _, _ = res
+            result, traces, _, _ = res
             logger.info(
-                f"Trace should be in hyp: {self._check_hyp_on_trace(hypothesis, trace)}"
+                f"Trace should be in hyp: {self._check_hyp_on_trace(hypothesis, traces)}"
             )
             logger.info(
-                f"Trace should not be in SUL: {self._check_sul_on_trace(trace)}"
+                f"Trace should not be in SUL: {self._check_sul_on_trace(traces)}"
             )
-            return trace
+            return traces
 
         return None
 

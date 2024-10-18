@@ -160,16 +160,15 @@ def run_Lstar(
         if cex is None:
             break
 
-        # make sure counterexample is a tuple in case oracle returns a list
-        cex = tuple(cex)
-
         if print_level == 3:
             print("Counterexample", cex)
 
         # Process counterexample and ask membership queries
         if not cex_processing:
             s_to_update = []
-            added_rows = extend_set(observation_table.S, all_prefixes(cex))
+            added_rows = []
+            for c in cex:
+                added_rows += extend_set(observation_table.S, all_prefixes(c))
             s_to_update.extend(added_rows)
             for p in added_rows:
                 s_to_update.extend([p + (a,) for a in alphabet])
