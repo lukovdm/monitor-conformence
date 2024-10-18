@@ -47,6 +47,8 @@ const s10d;
 formula ladder = pos=l1s|pos=l2s|pos=l3s|pos=l4s|pos=l5s|pos=l6s|pos=l7s|pos=l8s|pos=l9s|pos=l10s;
 formula snake = pos=s1s|pos=s2s|pos=s3s|pos=s4s|pos=s5s|pos=s6s|pos=s7s|pos=s8s|pos=s9s|pos=s10s;
 
+const d = 6;
+
 module main
     pos : [0..n] init 0;
 
@@ -73,12 +75,12 @@ module main
     [] pos=l10s -> 1:(pos'=l10d);
 
     [] pos=n -> 1:(pos'=n);
-    [] !ladder & !snake & !(pos=n) -> 1/6:(pos'=(pos + 1 > n) ? (n - (n - (pos + 1))*-1) : (pos + 1)) +
-                                      1/6:(pos'=(pos + 2 > n) ? (n - (n - (pos + 2))*-1) : (pos + 2)) +
-                                      1/6:(pos'=(pos + 3 > n) ? (n - (n - (pos + 3))*-1) : (pos + 3)) +
-                                      1/6:(pos'=(pos + 4 > n) ? (n - (n - (pos + 4))*-1) : (pos + 4)) +
-                                      1/6:(pos'=(pos + 5 > n) ? (n - (n - (pos + 5))*-1) : (pos + 5)) +
-                                      1/6:(pos'=(pos + 6 > n) ? (n - (n - (pos + 6))*-1) : (pos + 6));
+    [] !ladder & !snake & !(pos=n) -> 1/d:(pos'=(pos + 1 > n) ? (n - (n - (pos + 1))*-1) : (pos + 1)) +
+                                      1/d:(pos'=(pos + 2 > n) ? (n - (n - (pos + 2))*-1) : (pos + 2)) +
+                                      1/d:(pos'=(pos + 3 > n) ? (n - (n - (pos + 3))*-1) : (pos + 3)) +
+                                      1/d:(pos'=(pos + 4 > n) ? (n - (n - (pos + 4))*-1) : (pos + 4)) +
+                                      1/d:(pos'=(pos + 5 > n) ? (n - (n - (pos + 5))*-1) : (pos + 5)) +
+                                      1/d:(pos'=(pos + 6 > n) ? (n - (n - (pos + 6))*-1) : (pos + 6));
     
 endmodule
 

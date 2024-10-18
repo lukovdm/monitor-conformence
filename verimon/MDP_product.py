@@ -1,4 +1,3 @@
-import logging
 from copy import deepcopy
 from typing import Self
 
@@ -12,7 +11,6 @@ import payntbind.synthesis
 from paynt.family.family import Family
 from paynt.parser.prism_parser import PrismParser
 from stormpy import (
-    get_maximal_end_components,
     export_to_drn,
     parse_properties,
     model_checking,
@@ -20,8 +18,10 @@ from stormpy import (
     SchedulerChoice,
     Scheduler,
     SparseDtmc,
+    SparseMdp,
 )
-from stormpy.simulator import create_simulator
+from stormpy.simulator import create_simulator, SimulatorActionMode
+from stormpy.utility import ShortestPathsGenerator
 from stormvogel.mapping import stormvogel_to_stormpy
 from stormvogel.model import (
     Model,
@@ -35,8 +35,8 @@ from stormvogel.model import (
 )
 from stormvogel.show import show
 
-from verimon.unrolling import _reassign_ids
-from verimon.utils import get_pos
+from verimon.algs import remove_unreachable_states
+from verimon.utils import get_pos, logger
 
 
 class MC_MON_Product:
@@ -244,7 +244,7 @@ class MC_MON_Product:
                 # Works since this attribute gets added during the stormvogel to stormpy conversion
                 states.append([l for l in s.labels if l.startswith("[")])
                 s.add_label(self.good_label)
-        print("New good states become:", states)
+        logger.info(f"New good states become: {states}")
 
     def create_product(self: Self, create_backlinks=True, use_step_label=False):
         self.create_backlinks = create_backlinks
@@ -298,83 +298,7 @@ class MC_MON_Product:
                     )
 
         self.pomdp.add_self_loops()
-
-    def reachable_states(self: Self):
-        reachable = {self.pomdp.get_initial_state().id}
-        check_queue = [self.pomdp.get_initial_state()]
-        while check_queue:
-            state = check_queue.pop(0)
-            for b in self.pomdp.transitions[state.id].transition.values():
-                for p, s in b.branch:
-                    if p == 0 or s.id in reachable:
-                        continue
-                    else:
-                        check_queue.append(s)
-                        reachable.add(s.id)
-
-        return reachable
-
-    def remove_unreachable_states(self: Self):
-        reachable = self.reachable_states()
-        states = list([s for i, s in self.pomdp.states.items() if i not in reachable])
-        for state in states:
-            self.pomdp.remove_state(state)
-
-        _reassign_ids(self.pomdp)
-        print(f"Remove {len(states)} unreachable states")
-
-    def add_ret_to_bmecs(self: Self):
-        storm_m = stormvogel_to_stormpy(self.pomdp)
-        if storm_m is None:
-            raise Exception("Mapping failed")
-
-        init = self.pomdp.get_initial_state()
-
-        mecs = get_maximal_end_components(storm_m)
-        for mec in mecs:
-            # Check if MEC is the goal or stop MEC, if this is the case skip it
-            skip = False
-            for s_id, choice in mec:
-                state = self.pomdp.get_state_by_id(s_id)
-                if (
-                    "goal" in state.labels
-                    or "stop" in state.labels
-                    # or "init" in state.labels
-                ):
-                    skip = True
-            if skip:
-                continue
-
-            # Check if MEC is bottom
-            for s_id, choices in mec:
-                state = self.pomdp.get_state_by_id(s_id)
-                available_actions = set(state.available_actions())
-                for choice in choices:
-                    labels: set[str] = storm_m.choice_labeling.get_labels_of_choice(
-                        choice
-                    )
-                    matched_actions = {
-                        a for a in available_actions if not a.labels.isdisjoint(labels)
-                    }
-                    available_actions.difference_update(matched_actions)
-                if len(available_actions) > 0:
-                    break
-            else:  # MEC is bottom, we did not break
-                mec_ids = [id for id, _ in mec]
-                print("found BMEC", mec_ids, "removing it")
-                for trans in self.pomdp.transitions.values():
-                    for action, branch in trans.transition.items():
-                        new_branch: list[tuple[float, State]] = []
-                        ret_prob = 0
-                        for p, s in branch.branch:
-                            if s.id in mec_ids:
-                                ret_prob += float(p)
-                            else:
-                                new_branch.append((float(p), s))
-                        if ret_prob > 0:
-                            new_branch.append((ret_prob, init))
-
-                        trans.transition[action] = Branch(new_branch)  # type: ignore
+        remove_unreachable_states(self.pomdp)
 
     def show(self: Self):
         self.remove_unreachable_states()
@@ -392,9 +316,9 @@ class MC_MON_Product:
         result = model_checking(storm_mdp, prop[0], extract_scheduler=True)
         simulator = create_simulator(storm_mdp)
         scheduler = result.scheduler
-        print("Result of model checking", result.at(storm_mdp.initial_states[0]))
 
         if simulate:
+            print("Result of model checking", result.at(storm_mdp.initial_states[0]))
             for m in range(3):
                 state, reward, labels = simulator.restart()
                 old_state = state
@@ -416,33 +340,10 @@ class MC_MON_Product:
                 )
         return scheduler
 
-    def print_mec(self: Self):
-        storm_pomdp = stormvogel_to_stormpy(self.pomdp)
-        r = get_maximal_end_components(storm_pomdp)
-        for mec in r:
-            print(mec.size)
-            for state, choices in mec:
-                print("-", state, storm_pomdp.labeling.get_labels_of_state(state))
-                for choice in choices:
-                    try:
-                        print(
-                            "--",
-                            storm_pomdp.choice_labeling.get_labels_of_choice(choice),
-                            type(
-                                storm_pomdp.choice_labeling.get_labels_of_choice(
-                                    choice
-                                ).pop()
-                            ),
-                        )
-                    except:
-                        pass
-
     def check_paynt_prop(
-        self: Self, str_prop: str, relative_error=0
-    ) -> tuple[SparseDtmc, list[tuple[int, list[int]]]]:
+        self: Self, str_prop: str, relative_error=0, return_all=False
+    ) -> Family:
         self.storm_pomdp: SparsePomdp = stormvogel_to_stormpy(self.pomdp)
-        logging.getLogger().handlers.clear()
-        paynt.cli.setup_logger()
 
         formula = PrismParser.parse_property(str_prop)
         prop = paynt.verification.property.construct_property(formula, relative_error)
@@ -459,19 +360,15 @@ class MC_MON_Product:
         synthesizer = paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
             quotient, "ar"
         )
-        assignment = (
-            synthesizer.synthesize()
+        assignment = synthesizer.synthesize(
+            print_stats=False, return_all=return_all
         )  # use print_stats=False to remove synthesis summary
         if assignment is not None:
-            print(
-                "counterexample found: ",
-                assignment,
-                "\n--------------------",
-            )
+            logger.info(synthesizer.stat.get_summary())
 
             return assignment
         else:
-            print("counterexample not found")
+            logger.info("counterexample not found")
 
     def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):
         simulator = create_simulator(self.storm_pomdp)
@@ -506,17 +403,56 @@ class MC_MON_Product:
                     possible_next_states,
                 )
             )
-            if simulator._report_state() == 2:
-                print("failed")
+
             if simulator._report_state() == 0:
                 paths.append([])
             if simulator.is_done():
                 break
             old_observation = observation
 
-        print("\n" + "\n".join([p for p, _, _ in paths[-1]]))
+        print("\n" + "\n".join([p[0] for p in paths[-1]]))
         print(f"it took {len(paths)} tries until the goal was reached")
 
+        return [(0, [])] + [
+            (pos, next_states) for _, pos, next_states in paths[-1] if pos
+        ]
+
+    def trace_of_assignment(self: Self, assignment: Family):
+        storm_mon: SparseMdp = stormvogel_to_stormpy(self.mon)
+        simulator = create_simulator(storm_mon)
+        simulator.set_action_mode(SimulatorActionMode.GLOBAL_NAMES)
+
+        state, _, labels = simulator.restart()
+        trace = []
+        while True:
+            step = int([l[5:] for l in labels if l.startswith("step=")][0])
+            accepting = "accepting" in labels
+            observation = self.observations[(step, accepting)]
+            a_index = assignment.hole_options(observation)[0]
+            action = str(assignment.hole_to_option_labels[observation][a_index])
+            if action == "end":
+                break
+
+            trace.append(action)
+
+            state, _, labels = simulator.step(action)
+
+        return trace
+
+    def find_trace_to_good_state(self: Self):
+        self.storm_pomdp: SparsePomdp = stormvogel_to_stormpy(self.pomdp)
+        spg = ShortestPathsGenerator(self.storm_pomdp, self.good_label)
+        path = spg.get_path_as_list(1)
+        trace = []
+        for s in path:
+            obs_labels = [
+                l for l in self.pomdp.states[s].labels if l in self.mon.actions.keys()
+            ]
+            trace.append(obs_labels[0])
+
+        return trace
+
+    def created_induced_mc(self, assignment: Family) -> SparseDtmc:
         scheduler = self._storm_scheduler_from_paynt_assignment(
             self.storm_pomdp, assignment
         )
@@ -527,9 +463,7 @@ class MC_MON_Product:
 
         induced_mc = storm_mdp.apply_scheduler(scheduler)
 
-        return induced_mc, [(0, [])] + [
-            (pos, next_states) for _, pos, next_states in paths[-1] if pos
-        ]
+        return induced_mc
 
     def _storm_scheduler_from_paynt_assignment(
         self: Self, storm_pomdp: SparsePomdp, assignment: Family

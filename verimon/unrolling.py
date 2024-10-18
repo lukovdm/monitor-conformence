@@ -2,6 +2,8 @@ from stormpy import parse_properties, model_checking
 from stormvogel.mapping import stormvogel_to_stormpy
 from stormvogel.model import Model, new_mdp, State, Branch, Transition
 
+from verimon.algs import reassign_ids
+
 
 def product_unroll(mon: Model, horizon):
     ordering = _breath_first_ordering(mon)
@@ -76,7 +78,11 @@ def simulator_unroll(mon: Model, horizon):
                     new_dest_s = states[(i + 1, dest_s.id)]
                 else:
                     new_dest_s = new_mon.new_state(
-                        [l for l in dest_s.labels if l != "init"]
+                        [
+                            l
+                            for l in dest_s.labels
+                            if l != "init" and not l.startswith("step=")
+                        ]
                     )
                     states[(i + 1, dest_s.id)] = new_dest_s
                     new_dest_s.add_label(f"step={i+1}")
@@ -108,19 +114,4 @@ def prune_monitor(mon: Model):
     for s in to_delete:
         mon.remove_state(s, False)
 
-    # mon.normalize()
-    _reassign_ids(mon)
-
-
-def _reassign_ids(mon: Model):
-    id_map = {}
-    new_states = {}
-    for new_id, (old_id, value) in enumerate(sorted(mon.states.items())):
-        id_map[old_id] = new_id
-        new_states[new_id] = value
-        value.id = new_id
-    mon.states = new_states
-
-    mon.transitions = {
-        new_id: mon.transitions[old_id] for old_id, new_id in id_map.items()
-    }
+    reassign_ids(mon)

@@ -10,19 +10,112 @@ from stormpy.pomdp import (
     create_nondeterminstic_belief_tracker,
     NondeterministicBeliefTrackerDoubleSparse,
 )
-from stormvogel.model import new_mdp
+from stormvogel.model import new_mdp, Model
+
+from verimon.utils import logger
+from verimon.verify import false_positive, false_negative
 
 
-# class VerimonEqOracle(Oracle):
-#
-#     def __init__(self, alphabet, sul: SUL, threshold: int, mc: Model):
-#         super().__init__(alphabet, sul)
-#
-#     def find_cex(self, hypothesis):
-#         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
-#         mon = simulator_unroll(mon_cycl, 10)
-#         prune_monitor(mon)
-#         return None
+class VerimonEqOracle(Oracle):
+
+    def __init__(
+        self,
+        alphabet,
+        sul: SUL,
+        mc: Model,
+        gb: Model,
+        false_pos_threshold: float,
+        false_neg_threshold: float,
+        horizon: int,
+        spec: str,
+        good_label: str,
+        relative_error: float,
+    ):
+        """
+
+        :param alphabet: The observations in the MC
+        :param sul: the filtering SUL
+        :param mc: the MC we are learning
+        :param gb: the specification model
+        :param false_pos_threshold: The minimum probability of a trace in the monitor to reach a good state
+        :param false_neg_threshold: The maximum probability of a trace not in the monitor to reach a good state
+        :param horizon: the max steps we are taking
+        :param spec: the specification of good states
+        :param good_label: the label of good states
+        :param relative_error: the relative error for Paynt
+        """
+        super().__init__(alphabet, sul)
+        self.alphabet = alphabet
+        self.mc = mc
+        self.gb = gb
+        self.false_pos_threshold = false_pos_threshold
+        self.false_neg_threshold = false_neg_threshold
+        self.horizon = horizon
+        self.spec = spec
+        self.good_label = good_label
+        self.relative_error = relative_error
+
+    def find_cex(self, hypothesis: Dfa):
+        hypothesis.visualize(path=f"model{len(hypothesis.states)}")
+        logger.debug("Finding false negative probability")
+        mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
+        res = false_negative(
+            self.mc,
+            mon_cycl,
+            self.gb,
+            self.horizon,
+            self.false_neg_threshold,
+            {
+                "good_spec": self.spec,
+                "good_label": self.good_label,
+                "relative_error": self.relative_error,
+            },
+        )
+        if res is not None:
+            result, trace, _, _ = res
+            logger.info(
+                f"Trace should not be in hyp: {self._check_hyp_on_trace(hypothesis, trace)}"
+            )
+            logger.info(f"Trace should be in SUL: {self._check_sul_on_trace(trace)}")
+            return trace
+
+        logger.debug("Finding false positive probability")
+        mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
+        res = false_positive(
+            self.mc,
+            mon_cycl,
+            self.gb,
+            self.horizon,
+            1 - self.false_pos_threshold,
+            {
+                "good_spec": self.spec,
+                "good_label": self.good_label,
+                "relative_error": self.relative_error,
+            },
+        )
+        if res is not None:
+            result, trace, _, _ = res
+            logger.info(
+                f"Trace should be in hyp: {self._check_hyp_on_trace(hypothesis, trace)}"
+            )
+            logger.info(
+                f"Trace should not be in SUL: {self._check_sul_on_trace(trace)}"
+            )
+            return trace
+
+        return None
+
+    def _check_sul_on_trace(self, trace):
+        self.sul.pre()
+        res = False
+        for t in trace:
+            res = self.sul.step(t)
+        self.sul.post()
+        return res
+
+    @staticmethod
+    def _check_hyp_on_trace(hypothesis: Dfa, trace):
+        return hypothesis.compute_output_seq(hypothesis.initial_state, trace)[0]
 
 
 class FilteringSUL(SUL):
