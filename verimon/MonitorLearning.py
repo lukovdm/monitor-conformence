@@ -24,8 +24,8 @@ class VerimonEqOracle(Oracle):
         sul: SUL,
         mc: Model,
         gb: Model,
-        false_pos_threshold: float,
-        false_neg_threshold: float,
+        threshold: float,
+        slack: float,
         horizon: int,
         spec: str,
         good_label: str,
@@ -37,8 +37,8 @@ class VerimonEqOracle(Oracle):
         :param sul: the filtering SUL
         :param mc: the MC we are learning
         :param gb: the specification model
-        :param false_pos_threshold: The minimum probability of a trace in the monitor to reach a good state
-        :param false_neg_threshold: The maximum probability of a trace not in the monitor to reach a good state
+        :param threshold: The threshold probability of a trace to be included in the monitor
+        :param slack: How far over the false negative and false positive rates can be during eq checking
         :param horizon: the max steps we are taking
         :param spec: the specification of good states
         :param good_label: the label of good states
@@ -48,8 +48,8 @@ class VerimonEqOracle(Oracle):
         self.alphabet = alphabet
         self.mc = mc
         self.gb = gb
-        self.false_pos_threshold = false_pos_threshold
-        self.false_neg_threshold = false_neg_threshold
+        self.threshold = threshold
+        self.slack = slack
         self.horizon = horizon
         self.spec = spec
         self.good_label = good_label
@@ -64,7 +64,7 @@ class VerimonEqOracle(Oracle):
             mon_cycl,
             self.gb,
             self.horizon,
-            self.false_neg_threshold,
+            self.threshold + self.slack,
             {
                 "good_spec": self.spec,
                 "good_label": self.good_label,
@@ -86,7 +86,7 @@ class VerimonEqOracle(Oracle):
             mon_cycl,
             self.gb,
             self.horizon,
-            1 - self.false_pos_threshold,
+            1 - (self.threshold - self.slack),
             {
                 "good_spec": self.spec,
                 "good_label": self.good_label,

@@ -35,7 +35,6 @@ from stormvogel.model import (
 )
 from stormvogel.show import show
 
-from verimon.algs import remove_unreachable_states
 from verimon.utils import get_pos, logger
 
 
@@ -279,6 +278,8 @@ class MC_MON_Product:
             self.goal_state.set_observation(len(self.mon.states) + 1)
             self.stop_state.set_observation(len(self.mon.states) + 2)
 
+        logger.debug("Finished product setup")
+
         # Create the product states with appropriate labels and observations
         # They are stored in the states dict by (mon_id, gb_id, mc_id)
         self.states: dict[tuple[int, int, int], State] = {}
@@ -286,6 +287,8 @@ class MC_MON_Product:
             for gb_id in self.gb.states.keys():
                 for mc_id in self.mc.states.keys():
                     self.__create_product_state(mon_id, gb_id, mc_id)
+
+        logger.debug("Created product states")
 
         # Create transitions between states
         for mon_id in self.mon.states.keys():
@@ -297,8 +300,10 @@ class MC_MON_Product:
                         mc_id,
                     )
 
+        logger.debug("Created product transitions")
+
         self.pomdp.add_self_loops()
-        remove_unreachable_states(self.pomdp)
+        # remove_unreachable_states(self.pomdp)
 
     def show(self: Self):
         self.remove_unreachable_states()

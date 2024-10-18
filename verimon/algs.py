@@ -1,6 +1,6 @@
-import logging
-
 from stormvogel.model import Model
+
+from verimon.utils import logger
 
 
 def reachable_states(model: Model):
@@ -26,7 +26,7 @@ def remove_unreachable_states(model: Model):
         model.remove_state(state)
 
     reassign_ids(model)
-    logging.info(f"Remove {len(states)} unreachable states")
+    logger.info(f"Removed {len(states)} unreachable states")
 
 
 def complement_model(model: Model, accepting_label: str):

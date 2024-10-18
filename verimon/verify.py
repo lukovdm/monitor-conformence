@@ -114,15 +114,25 @@ def _verify_helper(
         options = {}
 
     logger.debug("Building model")
+
     mon = simulator_unroll(mon_cycl, horizon)
     logger.debug("Unrolling done")
-    prune_monitor(mon)
+
+    try:
+        prune_monitor(mon)
+    except RuntimeError as e:
+        raise Exception(
+            "Monitor horizon probably not deep enough, no accepting states in monitor",
+            e,
+        )
     if options["show_monitor"]:
         show(mon)
     logger.debug("Pruning done")
+
     model = MC_MON_Product(mc, mon, gb, options["good_label"])
     model.apply_spec(options["good_spec"])
     logger.debug("Apply spec done")
+
     model.create_product(use_step_label=True)
     logger.debug("creating product done")
 
