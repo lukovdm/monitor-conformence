@@ -186,10 +186,9 @@ def animate_player_movement(
         x, y = get_coordinates(path[frame][0], n)
         player_circle.center = (x + 0.5, y + 0.5)
         if frame < len(path) - 1:
-            skip_one = 0
+            last_i = 0
             for i, next_s in enumerate(path[frame + 1][1]):
                 if next_s == 0:
-                    skip_one = 1
                     continue
                 highlights[i].set_xy(get_coordinates(next_s, n))
                 highlights[i].set_visible(True)
@@ -199,8 +198,9 @@ def animate_player_movement(
                     highlights[i].set_color(COLORS["ladder"])
                 else:
                     highlights[i].set_color(COLORS["highlight"])
+                last_i = i
 
-            for j in range(len(path[frame + 1][1]) - skip_one, n):
+            for j in range(last_i + 1, len(highlights)):
                 highlights[j].set_visible(False)
         else:
             for h in highlights:

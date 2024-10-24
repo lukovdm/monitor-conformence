@@ -82,15 +82,6 @@ class MC_MON_Product:
         else:
             state = self.pomdp.new_state(labels)
 
-        if "accepting" in mon_state.labels:
-            state.add_label("accepting")
-
-        if "horizon" in mon_state.labels:
-            state.add_label("horizon")
-
-        if "happy" in mon_state.labels:
-            state.add_label("happy")
-
         if self.use_step_label:
             step = int([l[5:] for l in mon_state.labels if l.startswith("step=")][0])
             accepting = "accepting" in mon_state.labels
@@ -278,7 +269,9 @@ class MC_MON_Product:
             self.goal_state.set_observation(len(self.mon.states) + 1)
             self.stop_state.set_observation(len(self.mon.states) + 2)
 
-        logger.debug("Finished product setup")
+        logger.debug(
+            f"Finished product setup, created {len(self.observations)} observations"
+        )
 
         # Create the product states with appropriate labels and observations
         # They are stored in the states dict by (mon_id, gb_id, mc_id)
@@ -288,7 +281,7 @@ class MC_MON_Product:
                 for mc_id in self.mc.states.keys():
                     self.__create_product_state(mon_id, gb_id, mc_id)
 
-        logger.debug("Created product states")
+        logger.debug(f"Created product {len(self.pomdp.states)} states")
 
         # Create transitions between states
         for mon_id in self.mon.states.keys():
@@ -300,7 +293,9 @@ class MC_MON_Product:
                         mc_id,
                     )
 
-        logger.debug("Created product transitions")
+        logger.debug(
+            f"Created product transitions for {len(self.pomdp.transitions)} states"
+        )
 
         self.pomdp.add_self_loops()
         # remove_unreachable_states(self.pomdp)

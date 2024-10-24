@@ -46,6 +46,9 @@ def setup_logging(level=logging.DEBUG):
     global logger
     logger.setLevel(level)
 
+    formatter_warn = logging.Formatter(
+        "\033[1;33m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
+    )
     formatter_info = logging.Formatter(
         "\033[1;34m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
     )
@@ -55,9 +58,15 @@ def setup_logging(level=logging.DEBUG):
 
     time_filter = TimeFilter()
 
+    s_warn = logging.StreamHandler(sys.stdout)
+    s_warn.setLevel(logging.WARN)
+    s_warn.addFilter(time_filter)
+    s_warn.setFormatter(formatter_warn)
+
     s_info = logging.StreamHandler(sys.stdout)
     s_info.setLevel(logging.INFO)
     s_info.addFilter(time_filter)
+    s_info.addFilter(filter_maker(logging.WARN))
     s_info.setFormatter(formatter_info)
 
     s_debug = logging.StreamHandler(sys.stdout)
@@ -67,5 +76,6 @@ def setup_logging(level=logging.DEBUG):
     s_debug.setFormatter(formatter_debug)
 
     logger.handlers.clear()
+    logger.addHandler(s_warn)
     logger.addHandler(s_info)
     logger.addHandler(s_debug)

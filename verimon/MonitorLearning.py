@@ -1,3 +1,5 @@
+import logging
+
 from aalpy import SUL, run_Lstar, Dfa, RandomWMethodEqOracle, Oracle
 from stormpy import (
     SparseDtmc,
@@ -73,10 +75,16 @@ class VerimonEqOracle(Oracle):
         )
         if res is not None:
             result, trace, _, _ = res
-            logger.info(
-                f"Trace should not be in hyp: {self._check_hyp_on_trace(hypothesis, trace)}"
+            in_hyp = self._check_hyp_on_trace(hypothesis, trace)
+            logger.log(
+                logging.WARN if in_hyp else logging.INFO,
+                f"Trace should not be in hyp: {in_hyp}",
             )
-            logger.info(f"Trace should be in SUL: {self._check_sul_on_trace(trace)}")
+            in_sul = self._check_sul_on_trace(trace)
+            logger.log(
+                logging.INFO if in_sul else logging.WARN,
+                f"Trace should be in SUL: {in_sul}",
+            )
             return trace
 
         logger.debug("Finding false positive probability")
@@ -95,11 +103,15 @@ class VerimonEqOracle(Oracle):
         )
         if res is not None:
             result, trace, _, _ = res
-            logger.info(
-                f"Trace should be in hyp: {self._check_hyp_on_trace(hypothesis, trace)}"
+            in_hyp = self._check_hyp_on_trace(hypothesis, trace)
+            logger.log(
+                logging.INFO if in_hyp else logging.WARN,
+                f"Trace should be in hyp: {in_hyp}",
             )
-            logger.info(
-                f"Trace should not be in SUL: {self._check_sul_on_trace(trace)}"
+            in_sul = self._check_sul_on_trace(trace)
+            logger.log(
+                logging.WARN if in_sul else logging.INFO,
+                f"Trace should not be in SUL: {in_sul}",
             )
             return trace
 
@@ -115,7 +127,7 @@ class VerimonEqOracle(Oracle):
 
     @staticmethod
     def _check_hyp_on_trace(hypothesis: Dfa, trace):
-        return hypothesis.compute_output_seq(hypothesis.initial_state, trace)[0]
+        return hypothesis.compute_output_seq(hypothesis.initial_state, trace)[-1]
 
 
 class FilteringSUL(SUL):
@@ -126,6 +138,7 @@ class FilteringSUL(SUL):
         observation_classes: list[str],
         spec: str,
         threshold: float,
+        horizon: int,
     ):
         super().__init__()
         self.observation_classes = observation_classes
@@ -133,6 +146,8 @@ class FilteringSUL(SUL):
         self.threshold = threshold
         self.spec = spec
         self.mc = mc
+        self.horizon = horizon
+        self.observation_length = 0
 
         components = SparseModelComponents(mc.transition_matrix, mc.labeling)
         components.choice_labeling = mc.choice_labeling
@@ -153,6 +168,7 @@ class FilteringSUL(SUL):
 
     def pre(self):
         self.tracker.reset(self.observation_classes.index(self.initial_observation))
+        self.observation_length = 0
 
     def post(self):
         pass
@@ -161,9 +177,13 @@ class FilteringSUL(SUL):
         if self.tracker.size() == 0:
             return False
 
+        if self.observation_length > self.horizon:
+            return False
+
         if observation is not None:
             obs = self.observation_classes.index(observation)
             res = self.tracker.track(obs)
+            self.observation_length += 1
             if not res:
                 return False
 
