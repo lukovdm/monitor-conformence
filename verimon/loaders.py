@@ -1,3 +1,6 @@
+from math import sqrt
+from random import randrange
+
 from stormpy import (
     PrismProgram,
     PrismConstant,
@@ -10,6 +13,22 @@ from stormpy import (
 )
 from stormvogel.mapping import stormpy_to_stormvogel
 from stormvogel.model import Model, EmptyAction, Branch, ModelType, new_mdp
+
+
+def random_snl_board(n: int):
+    def random_ladder(n):
+        source = randrange(1, n - int(sqrt(n)))
+        dest = randrange(source, int(min(n, source + n / 2)))
+        return source, dest
+
+    def random_snake(n):
+        source = randrange(int(sqrt(n)) + 1, n)
+        dest = randrange(1, source)
+        return source, dest
+
+    ladders = dict(random_ladder(n) for _ in range(int(sqrt(n))))
+    snakes = dict(random_snake(n) for _ in range(int(sqrt(n))))
+    return n, ladders, snakes
 
 
 def load_snl(path: str, n: int, ladders: dict[int, int], snakes: dict[int, int]):
@@ -44,6 +63,15 @@ def load_defined_snl(path: str) -> tuple[Model, int, dict[int, int], dict[int, i
 def load_dfa(path: str) -> Model:
     dfa_prism = parse_prism_program(path)
     return _load_prism(dfa_prism)
+
+
+def load_dfa_stormpy(path: str) -> SparseMdp:
+    dfa_prism = parse_prism_program(path)
+    options = BuilderOptions()
+    options.set_build_all_labels()
+    options.set_build_choice_labels()
+    options.set_build_state_valuations()
+    return build_sparse_model_with_options(dfa_prism, options)
 
 
 def pomdp_to_mc(path: str, constants: str = "") -> tuple[set[int], Model]:
