@@ -1,6 +1,6 @@
 from stormvogel.model import Model
 
-from verimon.utils import logger
+from verimon.logger import logger
 
 
 def reachable_states(model: Model):

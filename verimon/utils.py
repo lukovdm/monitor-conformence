@@ -1,10 +1,5 @@
-import datetime
-import logging
-import sys
-from logging import Logger
-
-logger: Logger = logging.getLogger(__name__)
-logger.propagate = False
+from paynt.family.family import Family
+from stormpy import SparsePomdp, SparseMdp, SparseModelComponents
 
 
 def get_pos(labels: list[str]):
@@ -15,67 +10,17 @@ def get_pos(labels: list[str]):
         return None
 
 
-class TimeFilter(logging.Filter):
+def stormpy_pomdp_to_mdp(pomdp: SparsePomdp) -> SparseMdp:
+    components = SparseModelComponents(pomdp.transition_matrix, pomdp.labeling)
+    components.choice_labeling = pomdp.choice_labeling
+    components.state_valuations = pomdp.state_valuations
 
-    def filter(self, record):
-        try:
-            last = self.last
-        except AttributeError:
-            last = record.relativeCreated
+    return SparseMdp(components)
 
-        delta = datetime.datetime.fromtimestamp(
-            record.relativeCreated / 1000.0
-        ) - datetime.datetime.fromtimestamp(last / 1000.0)
-
-        record.relative = "{0:.2f}".format(
-            delta.seconds + delta.microseconds / 1000000.0
-        )
-
-        self.last = record.relativeCreated
-        return True
-
-
-def filter_maker(level):
-    def filter(record):
-        return record.levelno < level
-
-    return filter
-
-
-def setup_logging(level=logging.DEBUG):
-    global logger
-    logger.setLevel(level)
-
-    formatter_warn = logging.Formatter(
-        "\033[1;33m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
-    )
-    formatter_info = logging.Formatter(
-        "\033[1;34m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
-    )
-    formatter_debug = logging.Formatter(
-        "\033[1;37m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
-    )
-
-    time_filter = TimeFilter()
-
-    s_warn = logging.StreamHandler(sys.stdout)
-    s_warn.setLevel(logging.WARN)
-    s_warn.addFilter(time_filter)
-    s_warn.setFormatter(formatter_warn)
-
-    s_info = logging.StreamHandler(sys.stdout)
-    s_info.setLevel(logging.INFO)
-    s_info.addFilter(time_filter)
-    s_info.addFilter(filter_maker(logging.WARN))
-    s_info.setFormatter(formatter_info)
-
-    s_debug = logging.StreamHandler(sys.stdout)
-    s_debug.setLevel(logging.DEBUG)
-    s_debug.addFilter(time_filter)
-    s_debug.addFilter(filter_maker(logging.INFO))
-    s_debug.setFormatter(formatter_debug)
-
-    logger.handlers.clear()
-    logger.addHandler(s_warn)
-    logger.addHandler(s_info)
-    logger.addHandler(s_debug)
+def hole_to_observations(assignment: Family) -> dict[int, str]:
+    action_map = {}
+    for i in range(assignment.num_holes):
+        obs = int(assignment.hole_name(i)[2:-3])
+        act = assignment.hole_to_option_labels[i][assignment.hole_options(i)[0]]
+        action_map[obs] = act
+    return action_map

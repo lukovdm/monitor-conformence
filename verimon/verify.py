@@ -6,8 +6,8 @@ from stormvogel.show import show
 
 from verimon.MDP_product import MC_MON_Product
 from verimon.algs import complement_model
+from verimon.logger import logger
 from verimon.unrolling import prune_monitor, simulator_unroll
-from verimon.utils import logger
 
 default_option = {
     "good_spec": 'P>0.9 [ "good" ]',

@@ -14,7 +14,7 @@ from stormpy.pomdp import (
 )
 from stormvogel.model import new_mdp, Model
 
-from verimon.utils import logger
+from verimon.logger import logger
 from verimon.verify import false_positive, false_negative
 
 

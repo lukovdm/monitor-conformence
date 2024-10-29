@@ -35,7 +35,8 @@ from stormvogel.model import (
 )
 from stormvogel.show import show
 
-from verimon.utils import get_pos, logger
+from verimon.logger import logger
+from verimon.utils import get_pos
 
 
 class MC_MON_Product:
@@ -343,6 +344,7 @@ class MC_MON_Product:
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
     ) -> Family:
+        paynt.utils.timer.GlobalTimer.start()
         self.storm_pomdp: SparsePomdp = stormvogel_to_stormpy(self.pomdp)
 
         formula = PrismParser.parse_property(str_prop)

@@ -19,6 +19,7 @@ z3-solver = "^4.13.3.0"
 psutil = "^6.1.0"
 setuptools = "^75.2.0"
 pybind11 = "^2.13.6"
+black = "^24.10.0"
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.2.2"
