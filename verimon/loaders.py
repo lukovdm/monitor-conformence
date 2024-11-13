@@ -11,8 +11,11 @@ from stormpy import (
     SparseDtmc,
     SparseMdp,
 )
-from stormvogel.mapping import stormpy_to_stormvogel
-from stormvogel.model import Model, EmptyAction, Branch, ModelType, new_mdp
+import stormvogel
+from stormvogel.mapping import stormpy_to_stormvogel, stormvogel_to_stormpy
+from stormvogel.model import Model, EmptyAction, Branch, ModelType, new_mdp, State
+
+from verimon.logger import logger
 
 
 def random_snl_board(n: int):
@@ -26,8 +29,12 @@ def random_snl_board(n: int):
         dest = randrange(1, source)
         return source, dest
 
-    ladders = dict(random_ladder(n) for _ in range(int(sqrt(n))))
-    snakes = dict(random_snake(n) for _ in range(int(sqrt(n))))
+    ladders = {1: 1}
+    snakes = {1: 1}
+    while not set(ladders.keys()).isdisjoint(snakes.keys()):
+        ladders = dict(random_ladder(n) for _ in range(int(sqrt(n))))
+        snakes = dict(random_snake(n) for _ in range(int(sqrt(n))))
+
     return n, ladders, snakes
 
 
@@ -74,25 +81,42 @@ def load_dfa_stormpy(path: str) -> SparseMdp:
     return build_sparse_model_with_options(dfa_prism, options)
 
 
-def pomdp_to_mc(path: str, constants: str = "") -> tuple[set[int], Model]:
+def pomdp_to_mc(path: str, constants: str = "") -> tuple[str, set[str], SparseDtmc]:
     prism = parse_prism_program(path)
     prism, _ = preprocess_symbolic_input(prism, [], constants)
-    pomdp = _load_prism(prism)
-    possible_actions = set()
+    pomdp = _load_prism(prism, False)
+
+    logger.debug(f"Finished loading original pomdp")
+    observation_classes: set[str] = set()
+    initial_observation = "obs" + str(
+        pomdp.get_initial_state().get_observation().observation
+    )
     for state in pomdp.states.values():
-        possible_actions.add("obs" + str(state.get_observation().observation))
+        observation_classes.add("obs" + str(state.get_observation().observation))
         state.add_label("obs" + str(state.get_observation().observation))
+    logger.debug("Finished assigning labels to states")
 
     for transition in pomdp.transitions.values():
-        mc_branch = []
+        mc_trans_prob: dict[int, float] = {}
         nr_actions = len(transition.transition)
         for b in transition.transition.values():
-            mc_branch += [(p / nr_actions, s) for p, s in b.branch]
+            for p, s in b.branch:
+                if not type(p) is float:
+                    continue
+                if s.id in mc_trans_prob:
+                    mc_trans_prob[s.id] += p / nr_actions
+                else:
+                    mc_trans_prob[s.id] = p / nr_actions
         transition.transition.clear()
-        transition.transition[EmptyAction] = Branch(mc_branch)
+        transition.transition[EmptyAction] = Branch(
+            [(p, pomdp.states[s]) for s, p in mc_trans_prob.items()]
+        )
+    logger.debug("Finished creating new transitions")
 
     pomdp.type = ModelType.DTMC
-    return possible_actions, pomdp
+    dtmc = stormvogel_to_stormpy(pomdp)
+    logger.debug("transformed POMDP to stormpy DTMC")
+    return initial_observation, observation_classes, dtmc
 
 
 def gen_monitor(action_strs: list[str], horizon: int, accepting_after=1):
@@ -150,7 +174,7 @@ def _define_snl_constants(
     return snl_prism.define_constants(mapping)
 
 
-def _load_prism(prism: PrismProgram) -> Model:
+def _load_prism(prism: PrismProgram, add_valuation=True) -> Model:
     options = BuilderOptions()
     options.set_build_all_labels()
     options.set_build_choice_labels()
@@ -160,7 +184,8 @@ def _load_prism(prism: PrismProgram) -> Model:
     if model is None:
         raise Exception("Could not build model")
 
-    _add_valuation_to_sv_labels(model_stormpy, model)
+    if add_valuation:
+        _add_valuation_to_sv_labels(model_stormpy, model)
 
     return model
 
@@ -168,6 +193,7 @@ def _load_prism(prism: PrismProgram) -> Model:
 def _add_valuation_to_sv_labels(spy: SparseDtmc | SparseMdp, sv: Model):
     for s in spy.states:
         sv.states[s.id].add_label(s.valuations)
+        # sv.states[s.id].add_label(str(s.id))
 
 
 def _get_sl_prism_consts(model) -> tuple[int, dict[int, int], dict[int, int]]:

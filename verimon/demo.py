@@ -3,7 +3,7 @@ from stormvogel.mapping import stormvogel_to_stormpy
 from verimon import loaders
 from verimon.generator import Verifier
 from verimon.logger import setup_logging
-from verimon.unrolling import simulator_unroll
+from verimon.transformations import simulator_unroll
 
 setup_logging()
 

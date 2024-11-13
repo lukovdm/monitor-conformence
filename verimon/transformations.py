@@ -1,4 +1,10 @@
-from stormpy import parse_properties, model_checking
+from stormpy import (
+    parse_properties,
+    model_checking,
+    SparseMdp,
+    perform_sparse_bisimulation,
+    BisimulationType,
+)
 from stormvogel.mapping import stormvogel_to_stormpy
 from stormvogel.model import Model, new_mdp, State, Branch, Transition
 
@@ -115,3 +121,8 @@ def prune_monitor(mon: Model):
         mon.remove_state(s, False)
 
     reassign_ids(mon)
+
+
+def bisim_minimise_monitor(mon: SparseMdp) -> SparseMdp:
+    prop = parse_properties('Pmax=? [F "accepting"]')
+    return perform_sparse_bisimulation(mon, prop, BisimulationType.STRONG)

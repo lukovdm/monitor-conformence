@@ -1,26 +1,32 @@
 from copy import deepcopy
 
-from stormpy import model_checking, parse_properties
+from paynt.family.family import Family
+
+from stormpy import model_checking, parse_properties, SparseDtmc
+from stormvogel.mapping import stormvogel_to_stormpy, stormpy_to_stormvogel
 from stormvogel.model import Model
 from stormvogel.show import show
 
-from verimon.MDP_product import MC_MON_Product
+from verimon import loaders
 from verimon.algs import complement_model
+from verimon.generator import Verifier
 from verimon.logger import logger
-from verimon.unrolling import prune_monitor, simulator_unroll
+from verimon.transformations import (
+    bisim_minimise_monitor,
+    prune_monitor,
+    simulator_unroll,
+)
 
 default_option = {
     "good_spec": 'P>0.9 [ "good" ]',
     "good_label": "good",
     "relative_error": 0.1,
-    "show_monitor": False,
 }
 
 
 def false_positive(
-    mc: Model,
+    mc: SparseDtmc,
     mon: Model,
-    gb: Model,
     horizon: int,
     threshold: float | None = None,
     options=None,
@@ -34,13 +40,12 @@ def false_positive(
     else:
         paynt_spec = f'P>{threshold} [F "stop"]'
 
-    return _verify_helper(mc, mon, gb, paynt_spec, horizon, default_option | options)
+    return _verify_helper(mc, mon, paynt_spec, horizon, default_option | options)
 
 
 def false_negative(
-    mc: Model,
+    mc: SparseDtmc,
     mon: Model,
-    gb: Model,
     horizon: int,
     threshold: float | None = None,
     options=None,
@@ -57,13 +62,12 @@ def false_negative(
     mon_c = deepcopy(mon)
     complement_model(mon_c, "accepting")
 
-    return _verify_helper(mc, mon_c, gb, paynt_spec, horizon, default_option | options)
+    return _verify_helper(mc, mon_c, paynt_spec, horizon, default_option | options)
 
 
 def true_positive(
-    mc: Model,
+    mc: SparseDtmc,
     mon: Model,
-    gb: Model,
     horizon: int,
     threshold: float | None = None,
     options=None,
@@ -77,13 +81,12 @@ def true_positive(
     else:
         paynt_spec = f'P>{threshold} [F "goal"]'
 
-    return _verify_helper(mc, mon, gb, paynt_spec, horizon, default_option | options)
+    return _verify_helper(mc, mon, paynt_spec, horizon, default_option | options)
 
 
 def true_negative(
-    mc: Model,
+    mc: SparseDtmc,
     mon: Model,
-    gb: Model,
     horizon: int,
     threshold: float | None = None,
     options=None,
@@ -99,41 +102,41 @@ def true_negative(
     mon_c = deepcopy(mon)
     complement_model(mon_c, "accepting")
 
-    return _verify_helper(mc, mon_c, gb, paynt_spec, horizon, default_option | options)
+    return _verify_helper(mc, mon_c, paynt_spec, horizon, default_option | options)
 
 
 def _verify_helper(
-    mc: Model,
+    mc: SparseDtmc,
     mon_cycl: Model,
-    gb: Model,
     paynt_spec: str,
     horizon: int,
     options=None,
-):
+) -> None | tuple[float, list[str], Family, Verifier]:
     if options is None:
         options = {}
 
     logger.debug("Building model")
 
-    mon = simulator_unroll(mon_cycl, horizon)
+    mon_unroll = simulator_unroll(mon_cycl, horizon)
     logger.debug("Unrolling done")
 
     try:
-        prune_monitor(mon)
+        prune_monitor(mon_unroll)
     except RuntimeError as e:
         raise Exception(
             "Monitor horizon probably not deep enough, no accepting states in monitor",
             e,
         )
-    if options["show_monitor"]:
-        show(mon)
+
     logger.debug("Pruning done")
 
-    model = MC_MON_Product(mc, mon, gb, options["good_label"])
+    mon = stormvogel_to_stormpy(mon_unroll)
+    mon = bisim_minimise_monitor(mon)
+    model = Verifier(mc, mon, options["good_label"])
     model.apply_spec(options["good_spec"])
     logger.debug("Apply spec done")
 
-    model.create_product(use_step_label=True)
+    model.create_product()
     logger.debug("creating product done")
 
     logger.debug("Creating trace")

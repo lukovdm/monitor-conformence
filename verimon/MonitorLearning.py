@@ -14,7 +14,7 @@ from stormpy.pomdp import (
 )
 from stormvogel.model import new_mdp, Model
 
-from verimon.logger import logger
+from verimon.logger import logger, setup_logging, clear_logging
 from verimon.verify import false_positive, false_negative
 
 
@@ -24,8 +24,7 @@ class VerimonEqOracle(Oracle):
         self,
         alphabet,
         sul: SUL,
-        mc: Model,
-        gb: Model,
+        mc: SparseDtmc,
         threshold: float,
         slack: float,
         horizon: int,
@@ -49,7 +48,6 @@ class VerimonEqOracle(Oracle):
         super().__init__(alphabet, sul)
         self.alphabet = alphabet
         self.mc = mc
-        self.gb = gb
         self.threshold = threshold
         self.slack = slack
         self.horizon = horizon
@@ -58,13 +56,13 @@ class VerimonEqOracle(Oracle):
         self.relative_error = relative_error
 
     def find_cex(self, hypothesis: Dfa):
-        hypothesis.visualize(path=f"model{len(hypothesis.states)}")
+        setup_logging()
+        hypothesis.visualize(path=f"models/model{len(hypothesis.states)}")
         logger.debug("Finding false negative probability")
         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
         res = false_negative(
             self.mc,
             mon_cycl,
-            self.gb,
             self.horizon,
             self.threshold + self.slack,
             {
@@ -85,6 +83,7 @@ class VerimonEqOracle(Oracle):
                 logging.INFO if in_sul else logging.WARN,
                 f"Trace should be in SUL: {in_sul}",
             )
+            clear_logging()
             return trace
 
         logger.debug("Finding false positive probability")
@@ -92,7 +91,6 @@ class VerimonEqOracle(Oracle):
         res = false_positive(
             self.mc,
             mon_cycl,
-            self.gb,
             self.horizon,
             1 - (self.threshold - self.slack),
             {
@@ -113,6 +111,7 @@ class VerimonEqOracle(Oracle):
                 logging.WARN if in_sul else logging.INFO,
                 f"Trace should not be in SUL: {in_sul}",
             )
+            clear_logging()
             return trace
 
         return None
@@ -150,8 +149,14 @@ class FilteringSUL(SUL):
         self.observation_length = 0
 
         components = SparseModelComponents(mc.transition_matrix, mc.labeling)
-        components.choice_labeling = mc.choice_labeling
-        components.state_valuations = mc.state_valuations
+        try:
+            components.choice_labeling = mc.choice_labeling
+        except RuntimeError:
+            pass
+        try:
+            components.state_valuations = mc.state_valuations
+        except RuntimeError:
+            pass
         components.observability_classes = FilteringSUL._labels_to_observations(
             mc, observation_classes
         )
@@ -168,6 +173,7 @@ class FilteringSUL(SUL):
 
     def pre(self):
         self.tracker.reset(self.observation_classes.index(self.initial_observation))
+        logger.log(logging.DEBUG - 1, "reset")
         self.observation_length = 0
 
     def post(self):
@@ -175,9 +181,17 @@ class FilteringSUL(SUL):
 
     def step(self, observation: str):
         if self.tracker.size() == 0:
+            logger.log(
+                logging.DEBUG - 1,
+                f"Risk collapsed to 0 after observing {observation} ({self.observation_length})",
+            )
             return False
 
         if self.observation_length > self.horizon:
+            logger.log(
+                logging.DEBUG - 1,
+                f"Risk collapsed to 0 after observing past the horizon ({self.observation_length})",
+            )
             return False
 
         if observation is not None:
@@ -185,9 +199,18 @@ class FilteringSUL(SUL):
             res = self.tracker.track(obs)
             self.observation_length += 1
             if not res:
+                logger.log(
+                    logging.DEBUG - 1,
+                    f"Observing {observation} resulted in collapse, {res}",
+                )
                 return False
 
-        return self.tracker.obtain_current_risk(max=False) >= self.threshold
+        risk = self.tracker.obtain_current_risk(max=False)
+        logger.log(
+            logging.DEBUG - 1,
+            f"Risk after observing {observation} ({self.observation_length}): {risk} | {self.threshold} [{[str(b) for b in self.tracker.obtain_beliefs()]}]",
+        )
+        return risk >= self.threshold
 
     @staticmethod
     def _labels_to_observations(mc: SparseDtmc, observation_classes: list[str]):
@@ -201,36 +224,36 @@ class FilteringSUL(SUL):
         return observations
 
 
-def learn_monitor(
-    mc: SparseDtmc,
-    initial_observation: str,
-    observation_classes: list[str],
-    spec: str,
-    threshold: float,
-    walks_per_state=100,
-    walk_len=100,
-):
-    filtering_sul = FilteringSUL(
-        mc, initial_observation, observation_classes, spec, threshold
-    )
-    # eq_oracle = StatePrefixEqOracle(
-    #     observation_classes,
-    #     filtering_sul,
-    #     walks_per_state=walks_per_state,
-    #     walk_len=walk_len,
-    # )
-    eq_oracle = RandomWMethodEqOracle(
-        observation_classes, filtering_sul, walks_per_state, walk_len
-    )
-    learned_monitor = run_Lstar(
-        observation_classes,
-        filtering_sul,
-        eq_oracle,
-        automaton_type="dfa",
-        print_level=2,
-    )
+# def learn_monitor(
+#     mc: SparseDtmc,
+#     initial_observation: str,
+#     observation_classes: list[str],
+#     spec: str,
+#     threshold: float,
+#     walks_per_state=100,
+#     walk_len=100,
+# ):
+#     filtering_sul = FilteringSUL(
+#         mc, initial_observation, observation_classes, spec, threshold
+#     )
+#     # eq_oracle = StatePrefixEqOracle(
+#     #     observation_classes,
+#     #     filtering_sul,
+#     #     walks_per_state=walks_per_state,
+#     #     walk_len=walk_len,
+#     # )
+#     eq_oracle = RandomWMethodEqOracle(
+#         observation_classes, filtering_sul, walks_per_state, walk_len
+#     )
+#     learned_monitor = run_Lstar(
+#         observation_classes,
+#         filtering_sul,
+#         eq_oracle,
+#         automaton_type="dfa",
+#         print_level=2,
+#     )
 
-    return learned_monitor
+#     return learned_monitor
 
 
 def aalpy_dfa_to_stormvogel(dfa_a: Dfa):

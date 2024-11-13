@@ -9,6 +9,7 @@ import paynt.verification.property
 import payntbind.synthesis
 from paynt.family.family import Family
 from paynt.parser.prism_parser import PrismParser
+from paynt.synthesizer.synthesizer_ar import SynthesizerAR
 from stormpy import (
     parse_properties,
     model_checking,
@@ -19,7 +20,7 @@ from stormpy.pomdp import (
     GenerateMonitorVerifierDouble,
     GenerateMonitorVerifierDoubleOptions,
 )
-from stormpy.simulator import create_simulator, SimulatorActionMode
+from stormpy.simulator import create_simulator, SimulatorActionMode, SparseSimulator
 
 from verimon.logger import logger
 from verimon.utils import get_pos, hole_to_observations
@@ -68,7 +69,7 @@ class Verifier:
 
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
-    ) -> Family:
+    ) -> Family | None:
         paynt.utils.timer.GlobalTimer.start()
 
         formula = PrismParser.parse_property(str_prop)
@@ -84,11 +85,13 @@ class Verifier:
         )
 
         # synthesize 1-FSC
-        synthesizer = paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
-            self.pomdp_quotient, "ar"
+        synthesizer: SynthesizerAR = (
+            paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
+                self.pomdp_quotient, "ar"
+            )
         )
         assignment = synthesizer.synthesize(
-            print_stats=False, return_all=return_all
+            print_stats=False
         )  # use print_stats=False to remove synthesis summary
         if assignment is not None:
             logger.info(synthesizer.stat.get_summary())
@@ -98,7 +101,7 @@ class Verifier:
             logger.info("counterexample not found")
 
     def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):
-        simulator = create_simulator(self.pomdp)
+        simulator: SparseSimulator = create_simulator(self.pomdp)
 
         sched = hole_to_observations(assignment)
 
@@ -153,7 +156,11 @@ class Verifier:
         ]
 
     def trace_of_assignment(self: Self, assignment: Family):
-        simulator = create_simulator(self.mon)
+        observation_map = self.monitor_verifier.observation_map
+
+        sched = hole_to_observations(assignment)
+
+        simulator: SparseSimulator = create_simulator(self.mon)  # type: ignore
         simulator.set_action_mode(SimulatorActionMode.GLOBAL_NAMES)
 
         state, _, labels = simulator.restart()
@@ -161,9 +168,8 @@ class Verifier:
         while True:
             step = int([l[5:] for l in labels if l.startswith("step=")][0])
             accepting = "accepting" in labels
-            observation = self.monitor_verifier.observation_map[(step, accepting)]
-            a_index = assignment.hole_options(observation)[0]
-            action = str(assignment.hole_to_option_labels[observation][a_index])
+            observation = observation_map[(step, accepting)]
+            action = sched[observation]
             if action == "end":
                 break
 

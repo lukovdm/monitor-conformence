@@ -33,6 +33,10 @@ def filter_maker(level):
     return filter
 
 
+def clear_logging():
+    logger.handlers.clear()
+
+
 def setup_logging(level=logging.DEBUG):
     global logger
     logger.setLevel(level)
