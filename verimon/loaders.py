@@ -10,6 +10,7 @@ from stormpy import (
     build_sparse_model_with_options,
     SparseDtmc,
     SparseMdp,
+    ExpressionManager,
 )
 import stormvogel
 from stormvogel.mapping import stormpy_to_stormvogel, stormvogel_to_stormpy
@@ -48,7 +49,7 @@ def load_snl(path: str, n: int, ladders: dict[int, int], snakes: dict[int, int])
 
 def load_snl_stormpy(
     path: str, n: int, ladders: dict[int, int], snakes: dict[int, int]
-):
+) -> tuple[SparseDtmc, ExpressionManager]:
     snl_prism: PrismProgram = parse_prism_program(path)
     if not snl_prism.has_undefined_constants:
         raise Exception("Model is already fully defined")
@@ -57,7 +58,7 @@ def load_snl_stormpy(
     options.set_build_all_labels()
     options.set_build_choice_labels()
     options.set_build_state_valuations()
-    return build_sparse_model_with_options(prism, options)
+    return build_sparse_model_with_options(prism, options), snl_prism.expression_manager
 
 
 def load_defined_snl(path: str) -> tuple[Model, int, dict[int, int], dict[int, int]]:
@@ -81,10 +82,12 @@ def load_dfa_stormpy(path: str) -> SparseMdp:
     return build_sparse_model_with_options(dfa_prism, options)
 
 
-def pomdp_to_mc(path: str, constants: str = "") -> tuple[str, set[str], SparseDtmc]:
+def pomdp_to_mc(
+    path: str, constants: str = ""
+) -> tuple[str, set[str], SparseDtmc, ExpressionManager]:
     prism = parse_prism_program(path)
-    prism, _ = preprocess_symbolic_input(prism, [], constants)
-    pomdp = _load_prism(prism, False)
+    symb, _ = preprocess_symbolic_input(prism, [], constants)
+    pomdp = _load_prism(symb, False)
 
     logger.debug(f"Finished loading original pomdp")
     observation_classes: set[str] = set()
@@ -116,7 +119,7 @@ def pomdp_to_mc(path: str, constants: str = "") -> tuple[str, set[str], SparseDt
     pomdp.type = ModelType.DTMC
     dtmc = stormvogel_to_stormpy(pomdp)
     logger.debug("transformed POMDP to stormpy DTMC")
-    return initial_observation, observation_classes, dtmc
+    return initial_observation, observation_classes, dtmc, prism.expression_manager
 
 
 def gen_monitor(action_strs: list[str], horizon: int, accepting_after=1):

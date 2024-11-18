@@ -1,13 +1,11 @@
+from json import loads
 from paynt.family.family import Family
 from stormpy import SparsePomdp, SparseMdp, SparseModelComponents
+import re
 
 
-def get_pos(labels: list[str]):
-    pos = [int(l[5:-1]) for l in labels if len(l) > 5 and l.startswith("[pos")]
-    if pos:
-        return pos[0]
-    else:
-        return None
+def get_pos(json_val):
+    return loads(str(json_val))["pos"]
 
 
 def stormpy_pomdp_to_mdp(pomdp: SparsePomdp) -> SparseMdp:
@@ -16,6 +14,7 @@ def stormpy_pomdp_to_mdp(pomdp: SparsePomdp) -> SparseMdp:
     components.state_valuations = pomdp.state_valuations
 
     return SparseMdp(components)
+
 
 def hole_to_observations(assignment: Family) -> dict[int, str]:
     action_map = {}

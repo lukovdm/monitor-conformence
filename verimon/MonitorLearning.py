@@ -7,6 +7,7 @@ from stormpy import (
     SparseModelComponents,
     parse_properties,
     model_checking,
+    ExpressionManager,
 )
 from stormpy.pomdp import (
     create_nondeterminstic_belief_tracker,
@@ -26,11 +27,13 @@ class VerimonEqOracle(Oracle):
         sul: SUL,
         mc: SparseDtmc,
         threshold: float,
-        slack: float,
+        fp_slack: float,
+        fn_slack: float,
         horizon: int,
         spec: str,
         good_label: str,
         relative_error: float,
+        expression_manager: ExpressionManager,
     ):
         """
 
@@ -49,22 +52,27 @@ class VerimonEqOracle(Oracle):
         self.alphabet = alphabet
         self.mc = mc
         self.threshold = threshold
-        self.slack = slack
+        self.fp_slack = fp_slack
+        self.fn_slack = fn_slack
         self.horizon = horizon
         self.spec = spec
         self.good_label = good_label
         self.relative_error = relative_error
+        self.expression_manager = expression_manager
 
     def find_cex(self, hypothesis: Dfa):
         setup_logging()
-        hypothesis.visualize(path=f"models/model{len(hypothesis.states)}")
+        hypothesis.visualize(
+            path=f"models/model{len(hypothesis.states)}", file_type="dot"
+        )
         logger.debug("Finding false negative probability")
         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
         res = false_negative(
             self.mc,
             mon_cycl,
             self.horizon,
-            self.threshold + self.slack,
+            self.expression_manager,
+            self.threshold + self.fp_slack,
             {
                 "good_spec": self.spec,
                 "good_label": self.good_label,
@@ -92,7 +100,8 @@ class VerimonEqOracle(Oracle):
             self.mc,
             mon_cycl,
             self.horizon,
-            1 - (self.threshold - self.slack),
+            self.expression_manager,
+            1 - (self.threshold - self.fn_slack),
             {
                 "good_spec": self.spec,
                 "good_label": self.good_label,

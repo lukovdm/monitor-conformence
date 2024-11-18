@@ -1,3 +1,4 @@
+import logging
 from typing import Self
 
 import paynt.cli
@@ -15,6 +16,7 @@ from stormpy import (
     model_checking,
     SparseDtmc,
     SparseMdp,
+    ExpressionManager,
 )
 from stormpy.pomdp import (
     GenerateMonitorVerifierDouble,
@@ -27,7 +29,13 @@ from verimon.utils import get_pos, hole_to_observations
 
 
 class Verifier:
-    def __init__(self: Self, mc: SparseDtmc, mon: SparseMdp, good_label: str) -> None:
+    def __init__(
+        self: Self,
+        mc: SparseDtmc,
+        mon: SparseMdp,
+        expr_manager: ExpressionManager,
+        good_label: str,
+    ) -> None:
         self.mc = mc
         self.mon = mon
         self.good_label = good_label
@@ -37,7 +45,7 @@ class Verifier:
         options = GenerateMonitorVerifierDoubleOptions()
         options.good_label = good_label
         options.step_prefix = "step="
-        self.generator = GenerateMonitorVerifierDouble(mc, mon, options)
+        self.generator = GenerateMonitorVerifierDouble(mc, mon, expr_manager, options)
 
     def apply_spec(self: Self, spec: str):
         """
@@ -58,6 +66,8 @@ class Verifier:
     def create_product(self: Self):
         self.monitor_verifier = self.generator.create_product()
         self.pomdp = self.monitor_verifier.get_product()
+        with open("pomdp.dot", "w") as f:
+            f.write(self.pomdp.to_dot())
 
     def check_storm_prop(self: Self, str_prop: str):
         prop = parse_properties(str_prop)
@@ -70,6 +80,7 @@ class Verifier:
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
     ) -> Family | None:
+        paynt.cli.setup_logger()
         paynt.utils.timer.GlobalTimer.start()
 
         formula = PrismParser.parse_property(str_prop)
@@ -93,6 +104,9 @@ class Verifier:
         assignment = synthesizer.synthesize(
             print_stats=False
         )  # use print_stats=False to remove synthesis summary
+
+        root_logger = logging.getLogger()
+        root_logger.handlers.clear()
         if assignment is not None:
             logger.info(synthesizer.stat.get_summary())
 
@@ -121,7 +135,7 @@ class Verifier:
             simulator.set_action_mode(SimulatorActionMode.INDEX_LEVEL)
 
             possible_next_states = [
-                get_pos([self.pomdp.state_valuations.get_string(t.column)])
+                get_pos(self.pomdp.state_valuations.get_json(t.column))
                 for t in self.pomdp.states[simulator._report_state()]
                 .actions[current_stormpy_action]
                 .transitions
@@ -129,15 +143,13 @@ class Verifier:
 
             observation, reward, labels = simulator.step(current_stormpy_action)
 
-            valuation = self.pomdp.state_valuations.get_string(
-                simulator._report_state()
-            )
+            valuation = self.pomdp.state_valuations.get_json(simulator._report_state())
 
             paths[-1].append(
                 (
                     f"--[{old_observation}, {action}]-->\t"
                     f"s{simulator._report_state()}, val={valuation}, labels={' '.join(labels)}",
-                    get_pos([valuation]),
+                    get_pos(valuation),
                     possible_next_states,
                 )
             )
@@ -160,6 +172,9 @@ class Verifier:
 
         sched = hole_to_observations(assignment)
 
+        with open("dot.dot", "w") as f:
+            f.write(self.mon.to_dot())
+
         simulator: SparseSimulator = create_simulator(self.mon)  # type: ignore
         simulator.set_action_mode(SimulatorActionMode.GLOBAL_NAMES)
 
@@ -168,6 +183,9 @@ class Verifier:
         while True:
             step = int([l[5:] for l in labels if l.startswith("step=")][0])
             accepting = "accepting" in labels
+            if (step, accepting) not in observation_map:
+                logger.warning("trace generation failed")
+                raise Exception()
             observation = observation_map[(step, accepting)]
             action = sched[observation]
             if action == "end":

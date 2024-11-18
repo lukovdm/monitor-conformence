@@ -473,3 +473,4 @@ TSWLatexianTemp*
 notebooks/*/*.pdf
 tests/*/*.pdf
 */*.gif
+**/*.dot
