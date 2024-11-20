@@ -25,7 +25,7 @@ from stormpy.pomdp import (
 from stormpy.simulator import create_simulator, SimulatorActionMode, SparseSimulator
 
 from verimon.logger import logger
-from verimon.utils import get_pos, hole_to_observations
+from verimon.utils import compact_json_str, get_pos, hole_to_observations
 
 
 class Verifier:
@@ -36,16 +36,19 @@ class Verifier:
         expr_manager: ExpressionManager,
         good_label: str,
     ) -> None:
-        self.mc = mc
-        self.mon = mon
+        self.mc = SparseDtmc(mc)
+        self.mon = SparseMdp(mon)
+        self.expr_manager = expr_manager
         self.good_label = good_label
         self.pomdp_quotient = None
         self.pomdp = None
 
-        options = GenerateMonitorVerifierDoubleOptions()
-        options.good_label = good_label
-        options.step_prefix = "step="
-        self.generator = GenerateMonitorVerifierDouble(mc, mon, expr_manager, options)
+        self.options = GenerateMonitorVerifierDoubleOptions()
+        self.options.good_label = good_label
+        self.options.step_prefix = "step="
+        self.generator = GenerateMonitorVerifierDouble(
+            mc, mon, expr_manager, self.options
+        )
 
     def apply_spec(self: Self, spec: str):
         """
@@ -63,10 +66,22 @@ class Verifier:
                 self.mc.labeling.add_label_to_state(self.good_label, s.id)
         logger.info(f"New good states become: {states}")
 
+    def set_risk(self: Self, risk_prop: str):
+        self.options.use_risk = True
+        self.generator = GenerateMonitorVerifierDouble(
+            self.mc, self.mon, self.expr_manager, self.options
+        )
+
+        prop = parse_properties(risk_prop)
+        result = model_checking(self.mc, prop[0])
+
+        self.generator.set_risk(result.get_values())
+        logger.info(f"Risk function becomes: {result.get_values()}")
+
     def create_product(self: Self):
         self.monitor_verifier = self.generator.create_product()
         self.pomdp = self.monitor_verifier.get_product()
-        with open("pomdp.dot", "w") as f:
+        with open(f"pomdp-{self.good_label}.dot", "w") as f:
             f.write(self.pomdp.to_dot())
 
     def check_storm_prop(self: Self, str_prop: str):
@@ -148,7 +163,7 @@ class Verifier:
             paths[-1].append(
                 (
                     f"--[{old_observation}, {action}]-->\t"
-                    f"s{simulator._report_state()}, val={valuation}, labels={' '.join(labels)}",
+                    f"s{simulator._report_state()}, val={compact_json_str(str(valuation))}, labels={' '.join(labels)}",
                     get_pos(valuation),
                     possible_next_states,
                 )

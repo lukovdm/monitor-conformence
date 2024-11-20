@@ -474,3 +474,6 @@ notebooks/*/*.pdf
 tests/*/*.pdf
 */*.gif
 **/*.dot
+**/*.svg
+**/*.txt
+notebooks/*.yaml

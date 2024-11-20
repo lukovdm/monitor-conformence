@@ -23,3 +23,7 @@ def hole_to_observations(assignment: Family) -> dict[int, str]:
         act = assignment.hole_to_option_labels[i][assignment.hole_options(i)[0]]
         action_map[obs] = act
     return action_map
+
+
+def compact_json_str(json_str: str):
+    return json_str.replace("    ", "").replace('"', "").replace("\n", "")

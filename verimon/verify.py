@@ -21,6 +21,7 @@ default_option = {
     "good_spec": 'P>0.9 [ "good" ]',
     "good_label": "good",
     "relative_error": 0.1,
+    "use_risk": False,
 }
 
 
@@ -146,8 +147,12 @@ def _verify_helper(
     mon = stormvogel_to_stormpy(mon_unroll)
     # mon = bisim_minimise_monitor(mon) Bisimulation minimisation removes choice labeling, whichi is essential for us
     model = Verifier(mc, mon, expr_manager, options["good_label"])
-    model.apply_spec(options["good_spec"])
-    logger.debug("Apply spec done")
+    if options["use_risk"]:
+        model.set_risk(options["good_spec"])
+        logger.debug("Apply risk done")
+    else:
+        model.apply_spec(options["good_spec"])
+        logger.debug("Apply spec done")
 
     model.create_product()
     logger.debug("creating product done")

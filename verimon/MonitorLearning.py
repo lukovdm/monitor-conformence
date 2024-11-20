@@ -19,12 +19,117 @@ from verimon.logger import logger, setup_logging, clear_logging
 from verimon.verify import false_positive, false_negative
 
 
+class FilteringSUL(SUL):
+    def __init__(
+        self,
+        mc: SparseDtmc,
+        initial_observation: str,
+        observation_classes: list[str],
+        spec: str,
+        threshold: float,
+        horizon: int,
+    ):
+        super().__init__()
+        self.observation_classes = observation_classes
+        self.initial_observation = initial_observation
+        self.threshold = threshold
+        self.spec = spec
+        self.mc = mc
+        self.horizon = horizon
+        self.observation_length = 0
+        self.logging_level = logging.DEBUG - 1
+
+        components = SparseModelComponents(mc.transition_matrix, mc.labeling)
+        try:
+            components.choice_labeling = mc.choice_labeling
+        except RuntimeError:
+            pass
+        try:
+            components.state_valuations = mc.state_valuations
+        except RuntimeError:
+            pass
+        components.observability_classes = FilteringSUL._labels_to_observations(
+            mc, observation_classes
+        )
+
+        self.pomdp = SparsePomdp(components)
+
+        self.tracker: NondeterministicBeliefTrackerDoubleSparse = (
+            create_nondeterminstic_belief_tracker(self.pomdp, 10000, 10000)
+        )
+
+        prop = parse_properties(spec)
+        result = model_checking(mc, prop[0])
+        logger.debug(
+            f"Filtering SUL is using the following risk function: {result.get_truth_values()}"
+        )
+        self.tracker.set_risk(result.get_truth_values())
+
+    def set_logging(self, log: bool):
+        if log:
+            self.logging_level = logging.DEBUG
+        else:
+            self.logging_level = logging.DEBUG - 1
+
+    def pre(self):
+        self.tracker.reset(self.observation_classes.index(self.initial_observation))
+        logger.log(self.logging_level, "reset")
+        self.observation_length = 0
+
+    def post(self):
+        pass
+
+    def step(self, observation: str):
+        if self.tracker.size() == 0:
+            logger.log(
+                self.logging_level,
+                f"Risk collapsed to 0 after observing {observation} ({self.observation_length})",
+            )
+            return False
+
+        if self.observation_length > self.horizon:
+            logger.log(
+                self.logging_level,
+                f"Risk collapsed to 0 after observing past the horizon ({self.observation_length})",
+            )
+            return False
+
+        if observation is not None:
+            obs = self.observation_classes.index(observation)
+            res = self.tracker.track(obs)
+            self.observation_length += 1
+            if not res:
+                logger.log(
+                    self.logging_level,
+                    f"Observing {observation} resulted in collapse, {res}",
+                )
+                return False
+
+        risk = self.tracker.obtain_current_risk(max=False)
+        logger.log(
+            self.logging_level,
+            f"Risk after observing {observation} ({self.observation_length}): {risk} | {self.threshold} [{[str(b) for b in self.tracker.obtain_beliefs()]}]",
+        )
+        return risk >= self.threshold
+
+    @staticmethod
+    def _labels_to_observations(mc: SparseDtmc, observation_classes: list[str]):
+        observations = []
+        for state in mc.states:
+            for label in mc.labeling.get_labels_of_state(state):
+                if label in observation_classes:
+                    observations.append(observation_classes.index(label))
+                    break
+
+        return observations
+
+
 class VerimonEqOracle(Oracle):
 
     def __init__(
         self,
         alphabet,
-        sul: SUL,
+        sul: FilteringSUL,
         mc: SparseDtmc,
         threshold: float,
         fp_slack: float,
@@ -33,6 +138,7 @@ class VerimonEqOracle(Oracle):
         spec: str,
         good_label: str,
         relative_error: float,
+        use_risk: bool,
         expression_manager: ExpressionManager,
     ):
         """
@@ -49,6 +155,7 @@ class VerimonEqOracle(Oracle):
         :param relative_error: the relative error for Paynt
         """
         super().__init__(alphabet, sul)
+        self.filter_sul = sul
         self.alphabet = alphabet
         self.mc = mc
         self.threshold = threshold
@@ -58,6 +165,7 @@ class VerimonEqOracle(Oracle):
         self.spec = spec
         self.good_label = good_label
         self.relative_error = relative_error
+        self.use_risk = use_risk
         self.expression_manager = expression_manager
 
     def find_cex(self, hypothesis: Dfa):
@@ -77,6 +185,7 @@ class VerimonEqOracle(Oracle):
                 "good_spec": self.spec,
                 "good_label": self.good_label,
                 "relative_error": self.relative_error,
+                "use_risk": self.use_risk,
             },
         )
         if res is not None:
@@ -106,6 +215,7 @@ class VerimonEqOracle(Oracle):
                 "good_spec": self.spec,
                 "good_label": self.good_label,
                 "relative_error": self.relative_error,
+                "use_risk": self.use_risk,
             },
         )
         if res is not None:
@@ -126,143 +236,18 @@ class VerimonEqOracle(Oracle):
         return None
 
     def _check_sul_on_trace(self, trace):
-        self.sul.pre()
+        self.filter_sul.set_logging(True)
+        self.filter_sul.pre()
         res = False
         for t in trace:
-            res = self.sul.step(t)
-        self.sul.post()
+            res = self.filter_sul.step(t)
+        self.filter_sul.post()
+        self.filter_sul.set_logging(False)
         return res
 
     @staticmethod
     def _check_hyp_on_trace(hypothesis: Dfa, trace):
         return hypothesis.compute_output_seq(hypothesis.initial_state, trace)[-1]
-
-
-class FilteringSUL(SUL):
-    def __init__(
-        self,
-        mc: SparseDtmc,
-        initial_observation: str,
-        observation_classes: list[str],
-        spec: str,
-        threshold: float,
-        horizon: int,
-    ):
-        super().__init__()
-        self.observation_classes = observation_classes
-        self.initial_observation = initial_observation
-        self.threshold = threshold
-        self.spec = spec
-        self.mc = mc
-        self.horizon = horizon
-        self.observation_length = 0
-
-        components = SparseModelComponents(mc.transition_matrix, mc.labeling)
-        try:
-            components.choice_labeling = mc.choice_labeling
-        except RuntimeError:
-            pass
-        try:
-            components.state_valuations = mc.state_valuations
-        except RuntimeError:
-            pass
-        components.observability_classes = FilteringSUL._labels_to_observations(
-            mc, observation_classes
-        )
-
-        self.pomdp = SparsePomdp(components)
-
-        self.tracker: NondeterministicBeliefTrackerDoubleSparse = (
-            create_nondeterminstic_belief_tracker(self.pomdp, 10000, 10000)
-        )
-
-        prop = parse_properties(spec)
-        result = model_checking(mc, prop[0])
-        self.tracker.set_risk(result.get_truth_values())
-
-    def pre(self):
-        self.tracker.reset(self.observation_classes.index(self.initial_observation))
-        logger.log(logging.DEBUG - 1, "reset")
-        self.observation_length = 0
-
-    def post(self):
-        pass
-
-    def step(self, observation: str):
-        if self.tracker.size() == 0:
-            logger.log(
-                logging.DEBUG - 1,
-                f"Risk collapsed to 0 after observing {observation} ({self.observation_length})",
-            )
-            return False
-
-        if self.observation_length > self.horizon:
-            logger.log(
-                logging.DEBUG - 1,
-                f"Risk collapsed to 0 after observing past the horizon ({self.observation_length})",
-            )
-            return False
-
-        if observation is not None:
-            obs = self.observation_classes.index(observation)
-            res = self.tracker.track(obs)
-            self.observation_length += 1
-            if not res:
-                logger.log(
-                    logging.DEBUG - 1,
-                    f"Observing {observation} resulted in collapse, {res}",
-                )
-                return False
-
-        risk = self.tracker.obtain_current_risk(max=False)
-        logger.log(
-            logging.DEBUG - 1,
-            f"Risk after observing {observation} ({self.observation_length}): {risk} | {self.threshold} [{[str(b) for b in self.tracker.obtain_beliefs()]}]",
-        )
-        return risk >= self.threshold
-
-    @staticmethod
-    def _labels_to_observations(mc: SparseDtmc, observation_classes: list[str]):
-        observations = []
-        for state in mc.states:
-            for label in mc.labeling.get_labels_of_state(state):
-                if label in observation_classes:
-                    observations.append(observation_classes.index(label))
-                    break
-
-        return observations
-
-
-# def learn_monitor(
-#     mc: SparseDtmc,
-#     initial_observation: str,
-#     observation_classes: list[str],
-#     spec: str,
-#     threshold: float,
-#     walks_per_state=100,
-#     walk_len=100,
-# ):
-#     filtering_sul = FilteringSUL(
-#         mc, initial_observation, observation_classes, spec, threshold
-#     )
-#     # eq_oracle = StatePrefixEqOracle(
-#     #     observation_classes,
-#     #     filtering_sul,
-#     #     walks_per_state=walks_per_state,
-#     #     walk_len=walk_len,
-#     # )
-#     eq_oracle = RandomWMethodEqOracle(
-#         observation_classes, filtering_sul, walks_per_state, walk_len
-#     )
-#     learned_monitor = run_Lstar(
-#         observation_classes,
-#         filtering_sul,
-#         eq_oracle,
-#         automaton_type="dfa",
-#         print_level=2,
-#     )
-
-#     return learned_monitor
 
 
 def aalpy_dfa_to_stormvogel(dfa_a: Dfa):
