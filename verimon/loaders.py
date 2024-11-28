@@ -1,6 +1,7 @@
 from math import sqrt
 from random import randrange
 
+from aalpy import Dfa
 from stormpy import (
     PrismProgram,
     PrismConstant,
@@ -239,3 +240,33 @@ def _get_sl_prism_consts(model) -> tuple[int, dict[int, int], dict[int, int]]:
             ] = c.definition.evaluate_as_int()
 
     return n, dict(ladders_list), dict(snakes_list)
+
+
+def aalpy_dfa_to_stormvogel(dfa_a: Dfa):
+    dfa_sv = new_mdp()
+
+    action_mapping = {}
+    for act in dfa_a.get_input_alphabet():
+        action_mapping[act] = dfa_sv.new_action(act, frozenset({act}))
+
+    state_mapping = {dfa_a.initial_state: dfa_sv.get_initial_state()}
+    dfa_sv.get_initial_state().add_label(dfa_a.initial_state.state_id)
+    if dfa_a.initial_state.is_accepting:
+        dfa_sv.get_initial_state().add_label("accepting")
+
+    for s in sorted(dfa_a.states, key=lambda q: q.state_id):
+        if s == dfa_a.initial_state:
+            continue
+
+        s_sv = dfa_sv.new_state(s.state_id)
+        state_mapping[s] = s_sv
+        if s.is_accepting:
+            s_sv.add_label("accepting")
+
+    for s in sorted(dfa_a.states, key=lambda q: q.state_id):
+        for act, dest_s in s.transitions.items():
+            state_mapping[s].add_transitions(
+                [(action_mapping[act], state_mapping[dest_s])]
+            )
+
+    return dfa_sv

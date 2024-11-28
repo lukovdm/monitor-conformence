@@ -96,7 +96,7 @@ learned_monitor = run_Lstar(
 )
 
 # %%
-from verimon.MonitorLearning import aalpy_dfa_to_stormvogel
+from verimon.loaders import aalpy_dfa_to_stormvogel
 from verimon.transformations import simulator_unroll, prune_monitor
 from verimon.algs import complement_model
 
@@ -107,7 +107,7 @@ mon = simulator_unroll(mon_cycl, horizon)
 prune_monitor(mon)
 print(len(mon.states))
 # %%
-from verimon.MonitorLearning import aalpy_dfa_to_stormvogel
+from verimon.loaders import aalpy_dfa_to_stormvogel
 from verimon.verify import *
 
 mon_cycl = aalpy_dfa_to_stormvogel(learned_monitor)

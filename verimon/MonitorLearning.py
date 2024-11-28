@@ -13,9 +13,9 @@ from stormpy.pomdp import (
     create_nondeterminstic_belief_tracker,
     NondeterministicBeliefTrackerDoubleSparse,
 )
-from stormvogel.model import new_mdp, Model
 
-from verimon.logger import logger, setup_logging, clear_logging
+from verimon.loaders import aalpy_dfa_to_stormvogel
+from verimon.logger import logger, setup_logging
 from verimon.verify import false_positive, false_negative
 
 
@@ -169,9 +169,8 @@ class VerimonEqOracle(Oracle):
         self.expression_manager = expression_manager
 
     def find_cex(self, hypothesis: Dfa):
-        setup_logging()
         hypothesis.visualize(
-            path=f"models/model{len(hypothesis.states)}", file_type="dot"
+            path=f"models/monitor{len(hypothesis.states)}", file_type="dot"
         )
         logger.debug("Finding false negative probability")
         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
@@ -200,7 +199,8 @@ class VerimonEqOracle(Oracle):
                 logging.INFO if in_sul else logging.WARN,
                 f"Trace should be in SUL: {in_sul}",
             )
-            clear_logging()
+            if in_hyp or not in_sul:
+                raise Exception("false negative found is not a false negative")
             return trace
 
         logger.debug("Finding false positive probability")
@@ -230,7 +230,8 @@ class VerimonEqOracle(Oracle):
                 logging.WARN if in_sul else logging.INFO,
                 f"Trace should not be in SUL: {in_sul}",
             )
-            clear_logging()
+            if not in_hyp or in_sul:
+                raise Exception("false positive found is not a false positive")
             return trace
 
         return None
@@ -250,31 +251,41 @@ class VerimonEqOracle(Oracle):
         return hypothesis.compute_output_seq(hypothesis.initial_state, trace)[-1]
 
 
-def aalpy_dfa_to_stormvogel(dfa_a: Dfa):
-    dfa_sv = new_mdp()
+def run_verimon(
+    mc: SparseDtmc,
+    alphabet: list[str],
+    spec: str,
+    good_label: str,
+    threshold: float,
+    horizon: int,
+    relative_error: float,
+    use_risk: bool,
+    fp_slack: float,
+    fn_slack: float,
+    expression_manager: ExpressionManager,
+):
+    sul = FilteringSUL(
+        mc,
+        alphabet[0],
+        alphabet,
+        spec,
+        threshold,
+        horizon,
+    )
 
-    action_mapping = {}
-    for act in dfa_a.get_input_alphabet():
-        action_mapping[act] = dfa_sv.new_action(act, frozenset({act}))
+    eq_oracle = VerimonEqOracle(
+        alphabet,
+        sul,
+        mc,
+        threshold,
+        fp_slack,
+        fn_slack,
+        horizon,
+        spec,
+        good_label,
+        relative_error,
+        use_risk,
+        expression_manager,
+    )
 
-    state_mapping = {dfa_a.initial_state: dfa_sv.get_initial_state()}
-    dfa_sv.get_initial_state().add_label(dfa_a.initial_state.state_id)
-    if dfa_a.initial_state.is_accepting:
-        dfa_sv.get_initial_state().add_label("accepting")
-
-    for s in sorted(dfa_a.states, key=lambda q: q.state_id):
-        if s == dfa_a.initial_state:
-            continue
-
-        s_sv = dfa_sv.new_state(s.state_id)
-        state_mapping[s] = s_sv
-        if s.is_accepting:
-            s_sv.add_label("accepting")
-
-    for s in sorted(dfa_a.states, key=lambda q: q.state_id):
-        for act, dest_s in s.transitions.items():
-            state_mapping[s].add_transitions(
-                [(action_mapping[act], state_mapping[dest_s])]
-            )
-
-    return dfa_sv
+    return run_Lstar(alphabet, sul, eq_oracle, automaton_type="dfa", print_level=2)

@@ -58,13 +58,13 @@ class Verifier:
         """
         prop = parse_properties(spec)
         result = model_checking(self.mc, prop[0])
-        states = []
-        for s in self.mc.states:
-            if result.at(s.id):
-                # Works since this attribute gets added during the stormvogel to stormpy conversion
-                states.append(s.id)
-                self.mc.labeling.add_label_to_state(self.good_label, s.id)
-        logger.info(f"New good states become: {states}")
+        self.mc.labeling.set_states(self.good_label, result.get_truth_values())
+        logger.info(
+            f"New good states become: {self.mc.labeling.get_states(self.good_label)}"
+        )
+        self.generator = GenerateMonitorVerifierDouble(
+            self.mc, self.mon, self.expr_manager, self.options
+        )
 
     def set_risk(self: Self, risk_prop: str):
         self.options.use_risk = True
@@ -79,9 +79,11 @@ class Verifier:
         logger.info(f"Risk function becomes: {result.get_values()}")
 
     def create_product(self: Self):
+        with open(f"models/mc-{self.good_label}.dot", "w") as f:
+            f.write(self.mc.to_dot())
         self.monitor_verifier = self.generator.create_product()
         self.pomdp = self.monitor_verifier.get_product()
-        with open(f"pomdp-{self.good_label}.dot", "w") as f:
+        with open(f"models/pomdp-{self.good_label}.dot", "w") as f:
             f.write(self.pomdp.to_dot())
 
     def check_storm_prop(self: Self, str_prop: str):
@@ -184,10 +186,11 @@ class Verifier:
 
     def trace_of_assignment(self: Self, assignment: Family):
         observation_map = self.monitor_verifier.observation_map
+        default_action_map = self.monitor_verifier.default_action_map
 
         sched = hole_to_observations(assignment)
 
-        with open("dot.dot", "w") as f:
+        with open("models/mon.dot", "w") as f:
             f.write(self.mon.to_dot())
 
         simulator: SparseSimulator = create_simulator(self.mon)  # type: ignore
@@ -202,7 +205,14 @@ class Verifier:
                 logger.warning("trace generation failed")
                 raise Exception()
             observation = observation_map[(step, accepting)]
-            action = sched[observation]
+            if observation not in sched:
+                logger.info(
+                    f"observation {observation} not in sched {simulator.available_actions()}"
+                )
+                action = default_action_map[observation]
+            else:
+                action = sched[observation]
+
             if action == "end":
                 break
 

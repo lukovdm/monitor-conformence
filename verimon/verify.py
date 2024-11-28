@@ -157,18 +157,22 @@ def _verify_helper(
     model.create_product()
     logger.debug("creating product done")
 
-    logger.debug("Creating trace")
+    logger.debug("Finding specified trace")
     assignment = model.check_paynt_prop(paynt_spec, options["relative_error"])
 
     if assignment is None:
         logger.info("no counter example during verification")
         return None
 
-    induced_mc = model.created_induced_mc(assignment)
-
     trace = model.trace_of_assignment(assignment)
     logger.info(f"Found trace: {trace}")
 
+    # l = model.simulate_paynt_assignment(assignment)
+    # logger.info(f"Simulated trace: {l}")
+
+    induced_mc = model.created_induced_mc(assignment)
+    with open(f"models/inducedmc-{paynt_spec}.dot", "w") as f:
+        f.write(induced_mc.to_dot())
     result_goal: float = model_checking(
         induced_mc, parse_properties('Pmax=? [F "goal"]')[0]
     ).at(induced_mc.initial_states[0])

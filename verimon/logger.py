@@ -37,7 +37,7 @@ def clear_logging():
     logger.handlers.clear()
 
 
-def setup_logging(level=logging.DEBUG):
+def setup_logging(level=logging.DEBUG, path=None):
     global logger
     logger.setLevel(level)
 
@@ -49,6 +49,9 @@ def setup_logging(level=logging.DEBUG):
     )
     formatter_debug = logging.Formatter(
         "\033[1;37m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
+    )
+    formatter_file = logging.Formatter(
+        "%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s"
     )
 
     time_filter = TimeFilter()
@@ -71,6 +74,15 @@ def setup_logging(level=logging.DEBUG):
     s_debug.setFormatter(formatter_debug)
 
     logger.handlers.clear()
+
+    if path:
+        file_time_filter = TimeFilter()
+        file_handler = logging.FileHandler(path)
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(formatter_file)
+        file_handler.addFilter(file_time_filter)
+        logger.addHandler(file_handler)
+
     logger.addHandler(s_warn)
     logger.addHandler(s_info)
     logger.addHandler(s_debug)

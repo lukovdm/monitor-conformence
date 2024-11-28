@@ -60,14 +60,14 @@ module sensor
 // notice that the sensor always reads the *old* fuel value.
     meter : [0..fuelCAP] init fuelCAP;
     [refuel] true -> (meter'=fuelCAP);
-    [north] mode=0 ->  0.10: (meter'=fuel-3) + 0.45: (meter'=fuel-2) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
-    [south] mode=0 ->  0.10: (meter'=fuel-3) + 0.45: (meter'=fuel-2) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
-    [east] mode=0 -> 0.10: (meter'=fuel-3) + 0.45: (meter'=fuel-2) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
-    [west]  mode=0 -> 0.10: (meter'=fuel-3) + 0.45: (meter'=fuel-2) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
-    [north] mode=1 ->  0.20: (meter'=fuel-3) + 0.3: (meter'=fuel-2) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
-    [south] mode=1 ->  0.20: (meter'=fuel-3) + 0.3: (meter'=fuel-2) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
-    [east] mode=1 -> 0.20: (meter'=fuel-3) + 0.3: (meter'=fuel-2) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
-    [west]  mode=1 -> 0.20: (meter'=fuel-3) + 0.3: (meter'=fuel-2) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
+    [north] mode=0 ->  0.10: (meter'=max(fuel-3, 0)) + 0.45: (meter'=max(fuel-2, 0)) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
+    [south] mode=0 ->  0.10: (meter'=max(fuel-3, 0)) + 0.45: (meter'=max(fuel-2, 0)) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
+    [east] mode=0 -> 0.10: (meter'=max(fuel-3, 0)) + 0.45: (meter'=max(fuel-2, 0)) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
+    [west]  mode=0 -> 0.10: (meter'=max(fuel-3, 0)) + 0.45: (meter'=max(fuel-2, 0)) + 0.4: (meter'=fuel-1) + 0.05: (meter'=fuel);
+    [north] mode=1 ->  0.20: (meter'=max(fuel-3, 0)) + 0.3: (meter'=max(fuel-2, 0)) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
+    [south] mode=1 ->  0.20: (meter'=max(fuel-3, 0)) + 0.3: (meter'=max(fuel-2, 0)) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
+    [east] mode=1 -> 0.20: (meter'=max(fuel-3, 0)) + 0.3: (meter'=max(fuel-2, 0)) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
+    [west]  mode=1 -> 0.20: (meter'=max(fuel-3, 0)) + 0.3: (meter'=max(fuel-2, 0)) + 0.3: (meter'=fuel-1) + 0.2: (meter'=fuel);
     [empty] true -> (meter'=0);
 endmodule
 
