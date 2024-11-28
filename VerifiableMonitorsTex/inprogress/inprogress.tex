@@ -1,35 +1,69 @@
-\documentclass{article}
+\documentclass[runningheads]{llncs}
 
 \usepackage[style=numeric]{biblatex}
 \usepackage{preamble}
 \usepackage{hyperref}
+\usepackage{mdframed}
+\usepackage{tikz}
+\newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
+\newcommand{\indicator}[1]{[#1]}
+\usetikzlibrary{automata, positioning, arrows.meta, fit}
+\tikzset{
+%->, % makes the edges directed
+>=stealth, % makes the arrow heads bold
+every state/.style={thick, fill=gray!10, minimum size=0.9cm}, % sets the properties for each ’state’ node
+initial text=$ $, % sets the text that appears on the start arrow
+}
+% \usepackage{tikz}
+\usetikzlibrary{patterns, intersections, positioning, shapes.geometric, calc,
+	automata, arrows, decorations.pathreplacing,decorations.pathmorphing}
 
 \addbibresource{zotero.bib}
 
-\title{Verifiable monitors}
-\author{Luko van der Maas}
+\title{Learning Verifiable Monitors for Hidden Markov Models}
+\author{Luko van der Maas \and Sebastian Junges }
+\institute{Radboud University, Nijmegen, the Netherlands}
 
 \begin{document}
 \maketitle
+\begin{abstract}
+	Runtime monitors observe a running system via sensors and must predict whether the system is at risk of violating a specification, i.e., runtime monitors classify system runs into safe and unsafe behavior. 
+	This paper presents a method to synthesise these classifiers, represented as finite automata, if the model is given by a known hidden Markov model. 
+	First, we develop a first method to verify the classifiers: We reformulate the verification problem as a search for misclassifications. We then cast  the search fo misclassifications into a probabilistic model synthesis problem. 
+	Second, we synthesise the monitors inductively by adopting ideas from model learning, thereby profiting from the ability to quickly classify individual behavior.  	
+	The outcome is a flexible synthesis loop that synthesises monitors which provably do not exhibit false negatives and have a controllable false positive rate.
+	Our experiments show the efficacy of a prototype for this loop to synthesise monitors with X states for an HMM with Y states. 
+\end{abstract}
+
+
+\section{Introduction}
+Runtime assurance is an essential ingredient in the deployment of safe autonomous systems. In particular, runtime monitors aim to provide assurance by flagging potentially dangerous system behavior. Therefore, a monitor receives a stream of observations about the system and outputs a verdict, such as an alarm when the system is violating some safety envolope. Various challenges in creating runtime monitors for (semi-)autonomous systems have been identified. Among them is that (1) the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does not include all information about the state of a systems, (2) that the behavior of the system or the sensors are subject to probabilistic uncertainty, (3) that the monitor is subject to resource constraints (time, memory, etc), and (4) that monitors are part of the safety-critical functionalities and should therefore be subject to extensive validation~\cite{}.
+
+We study a model-based setting, 
+where a discrete Hidden Markov Model (HMM) describes the system (including the sensors) and the monitor observes some features of the current state, but not the complete underlying state.
+Furthermore, we assume that every (hidden) state can be associated with a particular risk level, which describes, e.g., the probability that the system reaches a dangerous state within $k$ steps. 
+Roughly, the standard monitoring question is to decide whether \emph{a single  observation sequence} (henceforth \emph {a trace}) is potentially risky, i.e., whether the probability to reach a dangerous state in $k$ steps, conditioned on the trace, is above a threshold. This decision problem can be solved by tracking a state estimate along the trace.  In this paper, we ask whether a monitor makes correct verdicts on \emph{every} trace and show that we can effectively synthesise such monitors. 
+
+\begin{figure}
+TODO add figure	of an HMM running example.
+\caption{}
+\label{}
+\end{figure}
+
+HMMs are Markov chains (MCs) where every state is labelled with a distribution over observations, see Fig.~\ref{}. MCs can be seen as specifying a distribution over paths. A temporal specification categorises these paths as either good or bad. The standard model checking question on MCs is to compute the probability that a sampled path is good. 
+The common monitoring problem  do aim to compute the probability that a a sampled \emph{conditional} probability 
+
+By sampling an observation along every state on a path, we obtain a trace. 
+ 
+
+The key monitoring problem for HMMs is to consider the probability that something bad will happen, conditioned on the observations made so far.
+
+
+
 
 \section{Preliminaries}
 
-\begin{definition}
-    A deterministic finite automaton (DFA) $\dfa$ is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$ where:
-    \begin{itemize}
-        \item $\StsD$ is a finite set of states,
-        \item $\alphabet$ is an alphabet,
-        \item $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) transition function,
-        \item $\init$ is the initial state, and
-        \item $\final \subseteq \StsD$ is a set of accept (or: final) states.
-    \end{itemize}
-
-    From~\cite{baierPrinciplesModelChecking2008}
-\end{definition}
-
-\begin{definition}
-    The language $\lang(\dfa)$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$.
-\end{definition}
+\subsection{Hidden Markov Models}
 
 \begin{definition}
     A (discrete-time) Markov chain (MC) is a tuple $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ where:
@@ -62,6 +96,192 @@
     Given an MC $\mc$, the cylinder set $\Cyl(\pi)$ of a finite path $\pi$ is the set of all infinite extensions of $\pi$ in $\mc$.
 \end{definition}
 
+
+\subsection{Monitors}
+
+\begin{definition}
+    A deterministic finite automaton (DFA) $\dfa$ is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$ where:
+    \begin{itemize}
+        \item $\StsD$ is a finite set of states,
+        \item $\alphabet$ is an alphabet,
+        \item $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) transition function,
+        \item $\init$ is the initial state, and
+        \item $\final \subseteq \StsD$ is a set of accept (or: final) states.
+    \end{itemize}
+
+    From~\cite{baierPrinciplesModelChecking2008}
+\end{definition}
+
+\begin{definition}
+    The language $\lang(\dfa)$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$.
+\end{definition}
+
+
+\subsection{Problem Statement}
+We have two problems we want to solve. The no false alarms problem and the no missed alarms problem. They have slightly different problem statements and therefore also slightly different solutions.
+
+\subsection{No false alarms}
+All traces $\tau$ from the MC which are in the monitor have at least a probability $p\in I$ of reaching the good state.
+
+\begin{definition}
+    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
+    For all traces $\tau$ from the MC and in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\lang{\dfaB}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
+\end{definition}
+
+\subsection{No missed alarms}
+All traces $\tau$ which reach the good state with probability $p > t$, are in the monitor. By taking the contrapositive, we can instead show that all traces $\tau$ which are not in the monitor reach the good state with probability $p \leq t$.
+
+\begin{definition}
+    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
+    For all traces $\tau$ from the MC and not in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\overline{\lang{\dfaB}}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
+\end{definition}
+
+\begin{mdframed}
+	\textbf{Monitor verification problem}
+\end{mdframed}
+
+
+\section{Monitor Verification}
+\subsection{Complexity}
+
+\begin{theorem}
+The monitor verification problem is ???-complete.	
+\end{theorem}
+
+\subsubsection{Membership?}
+
+
+
+\subsubsection{Hardness}
+For hardness, we study the following simpler problem.
+\textcolor{red}{CTP = Conditional trace probability. }
+\begin{definition}[CTP Decision Problem]
+Given an HMM $\mc$ with colors $C$, a unary encoded horizon $H$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{H}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.	
+\end{definition}
+\begin{lemma}
+\label{lem:ctpdecnphard}
+	The CTP Decision Problem is NP-hard.
+\end{lemma}
+\sebastian{What about the probability of a trace being zero?}
+
+The result holds even for $\lambda = 1$ and acyclic HMMs. We illustrate the reduction from 3CNF.
+Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over $n$ variables $X$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an HMM with colours $C= \{ \#, \bot, \top \}$. We will create an HMM such that there is a trace with CPT $=1$ iff there is a satisfying assignment to the 3CNF formula.
+
+ Before we give a formal definition of the HMM, we give the following intuition, supported by Fig.~\ref{fig:hmmgadget}.
+We represent assignments $\alpha\colon X \rightarrow \{0,1\}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. This trace matches with $m$ paths through the HMM, one for each clause. That is, the HMM randomly selects a clause with probability $\frac{1}{m}$ in the initial state and then evaluates this clause $c_j$ with respect to an assignment.
+A path through a clause reads variable $x_i$ in state $s_{i,j}$ coloured with $\#$ and transitions to $s_{i,j}^\top$ and $s_{i,j}^\bot$, both with probability $0.5$. State $s_{i,j}^\top$ has colour $\top$, while $s_{i,j}^\bot$ has color $\bot$. Thus, the conditional probability to reach $s_{i,j}^\top$ is $\frac{1}{m}$ if $\alpha(x_i) = \top$ and $0$ otherwise.
+Then, if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. The idea is that (conditionally) reaching state $s'_{i,j}$ (with positive probability) means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while (conditionally) reaching $s_{i,j}$ (with positive probility) means that the clause is either unresolved or unsatisfied given the partial assignment.
+
+
+\begin{figure}[t]
+	\begin{tikzpicture}[every node/.style={font=\scriptsize}]
+		
+		\node[state] (s1) {$s_{1,j}$};
+		\node[state,right=0.4cm of s1,yshift=0.5cm,draw=green] (s1y) {$s_{1,j}^\top$};
+		\node[state,right=0.4cm of s1,yshift=-0.5cm,draw=red] (s1n) {$s_{1,j}^\bot$};
+		\node[state,above=1.2cm of s1,] (s1p) {$s'_{1,j}$};
+		\node[state,right=0.4cm of s1p,yshift=0.5cm] (s1yp) {$s_{1,j}'^\top$};
+		\node[state,right=0.4cm of s1p,yshift=-0.5cm] (s1np) {$s_{1,j}'^\bot$}; 
+		\node[state,right=1.8cm of s1,] (s2) {$s_{2,j}$};
+		\node[state,right=0.4cm of s2,yshift=0.5cm,draw=green] (s2y) {$s_{2,j}^\top$};
+		\node[state,right=0.4cm of s2,yshift=-0.5cm,draw=red] (s2n) {$s_{2,j}$};
+		\node[state,above=1.2cm of s2,] (s2p) {$s'_{2,j}$};
+		\node[state,right=0.4cm of s2p,yshift=0.5cm,draw=green] (s2yp) {$s_{2,j}'^\top$};
+		\node[state,right=0.4cm of s2p,yshift=-0.5cm,draw=red] (s2np) {$s_{2,j}'^\bot$}; 
+		\node[state,right=1.8cm of s2,] (s3) {$s_{3,j}$};
+		\node[state,right=0.4cm of s3,yshift=0.5cm,draw=green] (s3y) {$s_{3,j}^\top$};
+		\node[state,right=0.4cm of s3,yshift=-0.5cm,draw=red] (s3n) {$s_{3,j}^\bot$};
+		\node[state,above=1.2cm of s3,] (s3p) {$s'_{3,j}$};
+		\node[state,right=0.4cm of s3p,yshift=0.5cm,draw=green] (s3yp) {$s_{3,j}'^\top$};
+		\node[state,right=0.4cm of s3p,yshift=-0.5cm,draw=red] (s3np) {$s_{3,j}'^\bot$}; 
+		\node[state,right=1.8cm of s3,] (s4) {$s_{4,j}$};
+		\node[state,above=1.2cm of s4,] (s4p) {$s'_{4,j}$};
+		\node[state,right=0.8cm of s4,] (f) {$f$};
+		\node[state,above=1.2cm of f,] (t) {$t$};
+		
+		
+		\draw[->] (s1) edge node[above] {$0.5$} (s1y);
+		\draw[->] (s1) edge node[above] {$0.5$} (s1n);
+		\draw[->] (s2) edge node[above] {$0.5$} (s2y);
+		\draw[->] (s2) edge node[above] {$0.5$} (s2n);
+		\draw[->] (s3) edge node[above] {$0.5$} (s3y);
+		\draw[->] (s3) edge node[above] {$0.5$} (s3n);
+		\draw[->] (s1p) edge node[above] {$0.5$} (s1yp);
+		\draw[->] (s1p) edge node[above] {$0.5$} (s1np);
+		\draw[->] (s2p) edge node[above] {$0.5$} (s2yp);
+		\draw[->] (s2p) edge node[above] {$0.5$} (s2np);
+		\draw[->] (s3p) edge node[above] {$0.5$} (s3yp);
+		\draw[->] (s3p) edge node[above] {$0.5$} (s3np);
+		
+		\draw[->] (s1y) edge node[above] {$1$} (s2p);
+		\draw[->] (s1n) edge node[above] {$1$} (s2);
+		\draw[->] (s2y) edge node[above] {$1$} (s3);
+		\draw[->] (s2n) edge node[above] {$1$} (s3);
+		\draw[->] (s3y) edge node[above] {$1$} (s4p);
+		\draw[->] (s3n) edge node[above] {$1$} (s4);
+		\draw[->] (s1yp) edge node[above] {$1$} (s2p);
+		\draw[->] (s1np) edge node[above] {$1$} (s2p);
+		\draw[->] (s2yp) edge node[above] {$1$} (s3p);
+		\draw[->] (s2np) edge node[above] {$1$} (s3p);
+		\draw[->] (s3yp) edge node[above] {$1$} (s4p);
+		\draw[->] (s3np) edge node[above] {$1$} (s4p);
+		
+	\end{tikzpicture}
+	\caption{The main gadget for the reduction of Lemma~\ref{lem:ctpdecnphard}, demonstrated for the clause $x_1 \lor\neg x_3$ and variables $x_1, x_2, x_3$.}
+	\label{fig:hmmgadget}
+\end{figure}
+
+We construct the following HMM $\mc = (\Sts, \ptrans, \init, \Aps, \lbl)$ and set $\lambda = 1$:
+\begin{itemize}
+	\item 
+$\Sts = \{ s_{i,j}, s_{i,j}^\bot, s_{i,j}^\top,
+          s_{i,j}', s_{i,j}'^\bot, s_{i,j}'^\top 
+          \mid i \in \{1, \dots, n+1 \},  j \in \{ 1, \dots, m \} \} \cup \{ s_\init \}$.
+\item $\ptrans$ is given such that for all $i \in \{1,\dots, n\}, j \in \{1, \dots, m\}$:
+\begin{itemize}
+\item  $\ptrans(s_\init,s_{1,j}) = \frac{1}{m}$,
+\item  $\ptrans(s_{i,j},s_{i,j}^\top) = \ptrans(s_{i,j},s_{i,j}^\bot) = \frac{1}{2}= \ptrans(s'_{i,j},s_{i,j}'^\top) = \ptrans(s_{i,j}',s_{i,j}'^
+\bot)$,
+\item $\ptrans(s_{i,j}^\top,s'_{i+1,j}) = \indicator{x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\top,s_{i+1,j}) = \indicator{x_i \neq \ell_j^k \text{ for all k}}$,
+\item $\ptrans(s_{i,j}^\bot,s'_{i+1,j}) = \indicator{\neg x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\bot,s_{i+1,j}) = \indicator{\neg x_i \neq \ell_j^k \text{ for all k}}$
+\item $\ptrans(s'_{n+1,j}, t) = 1 = \ptrans(s_{n+1,j}, f)$
+\end{itemize}
+\item $c(s_{i,j}^\top) = (s_{i,j}'^\top) = \top$, 
+ $c(s_{i,j}^\bot) = (s_{i,j}'^\bot) = \bot$, 
+$c(s_{i,j}) = c(s'_{i,j}) = \# = c(s_\init) = c(t) = c(f)$.
+\item 
+
+\end{itemize}
+
+\begin{definition}[binary-CTP Decision Problem]
+Given an HMM $\mc$ with colors $C$, a binary encoded horizon $H$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{H}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.	
+\end{definition}
+
+%\begin{lemma}
+%\label{lem:ctpdecnphard}
+%	The bin-CTP Decision Problem is in EXPTIME and NP-hard.
+%\end{lemma}
+
+\textcolor{red}{I have no clue how to show that is PSPACE hard... The PSPACE hardness would somehow have to use the long horizons.... I also dont believe it is important.}
+
+\subsubsection{Approximability}
+
+Approximating the verification of monitors is also hard, in the sense that it is hard to approximate the maximal risk that a monitor admits.
+
+The maximal risk problem is an optimization problem 
+\begin{definition}[CTP Optimization Problem]
+	
+\end{definition}
+\begin{lemma}
+The CTP Optimization Problem is APX-hard.
+\end{lemma}
+We show this by means of an L-reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{}. The construction follows along the reduction for the NP-hardness.
+
+
+
+\subsection{Reduction to Policy Synthesis}
+
+
 \begin{definition}
     A Markov decision process is a tuple $\mdp=\left(\Sts, \Act, \ptrans, \init, \Aps, \lbl\right)$ where
     \begin{itemize}
@@ -79,25 +299,6 @@
     \end{itemize}
 
     From~\cite{baierPrinciplesModelChecking2008}
-\end{definition}
-
-\section{Problem Statements}
-We have two problems we want to solve. The no false alarms problem and the no missed alarms problem. They have slightly different problem statements and therefore also slightly different solutions.
-
-\subsection{No false alarms}
-All traces $\tau$ from the MC which are in the monitor have at least a probability $p\in I$ of reaching the good state.
-
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\lang{\dfaB}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
-
-\subsection{No missed alarms}
-All traces $\tau$ which reach the good state with probability $p > t$, are in the monitor. By taking the contrapositive, we can instead show that all traces $\tau$ which are not in the monitor reach the good state with probability $p \leq t$.
-
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and not in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\overline{\lang{\dfaB}}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
 \end{definition}
 
 \section{Algorithm}
@@ -145,14 +346,23 @@ By model checking the created POMDP, we don't yet ensure that every scheduler is
 \end{definition}
 Thus, a semi-consistent scheduler does not have to take and end action. However, by maximizing the probability of reaching either the $goal$ or $stop$ state, we ensure that if the $end$ action can be taken, it will be taken. And if a path takes the $end$ action, almost surely any other path will also take the $end$ action at some point. This property ensures that when maximizing semi-consistent schedulers we will always get a consistent scheduler, and thus a single trace.
 
+\section{Learning Monitors}
+
+\section{Experiments}
+
+\section{Related}
+LTLf
+
+\section{Conclusion}
+
+\printbibliography{}
+
+\appendix
+
 \section{Alternative formulations of the problem}
 Instead of giving a specification DFA, we could instead give a TL specification~\cite{lichtensteinGlory1985} which is evaluated for every state. Since TL has both future and past operators both now reachability, $\diamond\hspace{-.9em}- l$, and soon reachability, $\bigcirc^n \diamond\hspace{-.9em}- l$, for a label $l$ can be expressed. While using a specification DFA can only express now reachability.
 
 The only impact this reformulation of the problem would have is in step 1. Here, instead of taking the product MC, we check if the above described TL formula has a probability above a certain threshold. If that is the case we mark it with the $\circledcirc_\dfa$ label. This MC is then used for the subsequent steps.
 
-\section{Reformulation with monitors}
-
-
-\printbibliography{}
 
 \end{document}
