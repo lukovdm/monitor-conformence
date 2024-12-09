@@ -31,7 +31,7 @@ def remove_unreachable_states(model: Model):
 
 def complement_model(model: Model, accepting_label: str):
     bottom = None
-    for id, state in model.states.items():
+    for i, state in list(model.states.items()):
         # Invert the good states
         if accepting_label in state.labels:
             state.labels.remove(accepting_label)
@@ -40,9 +40,16 @@ def complement_model(model: Model, accepting_label: str):
 
         # Add missing transitions to bottom state
         for a in model.actions.values():
-            if id not in model.transitions or a not in model.transitions[id].transition:
+            if i not in model.transitions or list(a.labels)[0] not in [
+                list(a_s.labels)[0] for a_s in model.transitions[i].transition
+            ]:
+                logger.debug(
+                    f"In complement model, state {i} is missing action {a}, adding it"
+                )
                 if bottom is None:
                     bottom = model.new_state("bottom")
+                    for a_prime in model.actions.values():
+                        bottom.add_transitions([(a_prime, bottom)])
                 state.add_transitions([(a, bottom)])
 
 

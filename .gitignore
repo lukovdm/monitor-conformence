@@ -477,3 +477,4 @@ tests/*/*.pdf
 **/*.svg
 **/*.txt
 notebooks/*.yaml
+stats/

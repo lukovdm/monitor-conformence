@@ -1,0 +1,40 @@
+- name: snakes_ladders
+  type: LearningExperiment
+  file: tests/mc_u_nxn.pm
+  parameters:
+    n: 100
+    ladders:
+      1: 38
+      4: 14
+      9: 31
+      28: 64
+      40: 42
+      36: 44
+      51: 67
+      71: 91
+      80: 100
+    snakes:
+      98: 76
+      95: 75
+      93: 73
+      87: 24
+      64: 60
+      62: 19
+      55: 53
+      49: 11
+      47: 26
+      16: 6
+  spec: Pmax=? [F<3 "good"]
+  good_label: good
+  loader: snakes_ladders
+  horizon:
+    - 10
+    - 11
+    - 12
+    - 13
+    - 14
+    - 15
+  cq_alg: sampling
+  use_horizon_in_filtering:
+    - false
+    - true

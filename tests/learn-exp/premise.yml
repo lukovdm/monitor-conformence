@@ -1,0 +1,53 @@
+- type: LearningExperiment
+  name: refuel
+  file:
+    - tests/premise/refuel.nm
+    - tests/premise/refuelB.nm
+  parameters:
+    - constants: "N=3,ENERGY=3"
+    - constants: "N=4,ENERGY=3"
+    - constants: "N=3,ENERGY=4"
+  spec: Pmax=? [F<=3 "empty"]
+  good_label: empty
+  loader: pomdp
+  cq_alg: sampling
+
+- type: LearningExperiment
+  name: evade
+  file: tests/premise/evade-monitoring.nm
+  parameters:
+    constants: "N=4,RADIUS=2"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  horizon:
+    - 8
+    - 9
+    - 10
+  cq_alg: sampling
+
+- type: LearningExperiment
+  name: hidden_incentive
+  file: tests/premise/hidden-incentive.nm
+  parameters:
+    constants: "N=3"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  cq_alg: sampling
+
+- type: LearningExperiment
+  name: airport
+  file:
+    - tests/premise/airportA-3.nm
+    - tests/premise/airportB-3.nm
+    - tests/premise/airportA-7.nm
+    - tests/premise/airportB-7.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+    - constants: "DMAX=4,PMAX=4"
+    - constants: "DMAX=5,PMAX=5"
+  spec: Pmax=? [F<2 "crash"]
+  good_label: crash
+  loader: pomdp
+  cq_alg: sampling

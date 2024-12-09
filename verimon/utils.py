@@ -1,4 +1,6 @@
+import itertools
 from json import loads
+from typing import Any, Generator
 from paynt.family.family import Family
 from stormpy import SparsePomdp, SparseMdp, SparseModelComponents
 import re
@@ -26,4 +28,32 @@ def hole_to_observations(assignment: Family) -> dict[int, str]:
 
 
 def compact_json_str(json_str: str):
-    return json_str.replace("    ", "").replace('"', "").replace("\n", "")
+    return (
+        json_str.replace("    ", "").replace('"', "").replace("\n", "").replace(" ", "")
+    )
+
+
+# Class to store experiments
+class ObjectGroup:
+    def __init__(self, prod_class, *args, **kwargs) -> None:
+        self.prod_class = prod_class
+
+        self.argss = []
+        for arg in args:
+            if not isinstance(arg, list):
+                self.argss.append([arg])
+            else:
+                self.argss.append(arg)
+        self.kwargss: dict[str, Any] = {}
+        for k, v in kwargs.items():
+            if not isinstance(v, list):
+                self.kwargss[k] = [v]
+            else:
+                self.kwargss[k] = v
+
+    def get_objects(self) -> Generator[Any, None, None]:
+        for i, args in enumerate(itertools.product(*self.argss)):
+            for j, kwargs in enumerate(itertools.product(*self.kwargss.values())):
+                yield self.prod_class(
+                    variant=(i, j), *args, **dict(zip(self.kwargss.keys(), kwargs))
+                )

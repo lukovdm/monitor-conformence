@@ -35,6 +35,7 @@ class Verifier:
         mon: SparseMdp,
         expr_manager: ExpressionManager,
         good_label: str,
+        paynt_strategy: str = "ar",
     ) -> None:
         self.mc = SparseDtmc(mc)
         self.mon = SparseMdp(mon)
@@ -42,6 +43,7 @@ class Verifier:
         self.good_label = good_label
         self.pomdp_quotient = None
         self.pomdp = None
+        self.paynt_strategy = paynt_strategy
 
         self.options = GenerateMonitorVerifierDoubleOptions()
         self.options.good_label = good_label
@@ -79,12 +81,12 @@ class Verifier:
         logger.info(f"Risk function becomes: {result.get_values()}")
 
     def create_product(self: Self):
-        with open(f"models/mc-{self.good_label}.dot", "w") as f:
-            f.write(self.mc.to_dot())
+        # with open(f"models/mc-{self.good_label}.dot", "w") as f:
+        #     f.write(self.mc.to_dot())
         self.monitor_verifier = self.generator.create_product()
         self.pomdp = self.monitor_verifier.get_product()
-        with open(f"models/pomdp-{self.good_label}.dot", "w") as f:
-            f.write(self.pomdp.to_dot())
+        # with open(f"models/pomdp-{self.good_label}.dot", "w") as f:
+        #     f.write(self.pomdp.to_dot())
 
     def check_storm_prop(self: Self, str_prop: str):
         prop = parse_properties(str_prop)
@@ -113,23 +115,26 @@ class Verifier:
         )
 
         # synthesize 1-FSC
-        synthesizer: SynthesizerAR = (
-            paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
-                self.pomdp_quotient, "ar"
-            )
-        )
+        synthesizer = paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
+            self.pomdp_quotient, self.paynt_strategy
+        )  # type: ignore
         assignment = synthesizer.synthesize(
-            print_stats=False
-        )  # use print_stats=False to remove synthesis summary
+            print_stats=False, keep_optimum=True
+        )  # type: ignore  use print_stats=False to remove synthesis summary
+
+        if synthesizer.best_assignment_value == 0:
+            logger.info("max probability is 0, thus no counterexample found")
+            return None
 
         root_logger = logging.getLogger()
         root_logger.handlers.clear()
         if assignment is not None:
+            logger.info(f"counterexample found: {assignment}")
             logger.info(synthesizer.stat.get_summary())
-
             return assignment
         else:
-            logger.info("counterexample not found")
+            logger.info("no counterexamples above threshold")
+            return None
 
     def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):
         simulator: SparseSimulator = create_simulator(self.pomdp)
@@ -190,13 +195,13 @@ class Verifier:
 
         sched = hole_to_observations(assignment)
 
-        with open("models/mon.dot", "w") as f:
-            f.write(self.mon.to_dot())
+        # with open("models/mon.dot", "w") as f:
+        #     f.write(self.mon.to_dot())
 
         simulator: SparseSimulator = create_simulator(self.mon)  # type: ignore
         simulator.set_action_mode(SimulatorActionMode.GLOBAL_NAMES)
 
-        state, _, labels = simulator.restart()
+        prev_state, _, labels = simulator.restart()
         trace = []
         while True:
             step = int([l[5:] for l in labels if l.startswith("step=")][0])
@@ -206,10 +211,8 @@ class Verifier:
                 raise Exception()
             observation = observation_map[(step, accepting)]
             if observation not in sched:
-                logger.info(
-                    f"observation {observation} not in sched {simulator.available_actions()}"
-                )
                 action = default_action_map[observation]
+                logger.info(f"observation {observation} not in sched, taking {action}")
             else:
                 action = sched[observation]
 
@@ -219,6 +222,12 @@ class Verifier:
             trace.append(action)
 
             state, _, labels = simulator.step(action)
+            if state == prev_state:
+                logger.warning("loop detected")
+                raise Exception(
+                    f"Loop detected during trace generation in state {state} while taking action {action}"
+                )
+            prev_state = state
 
         return trace
 

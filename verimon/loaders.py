@@ -12,6 +12,8 @@ from stormpy import (
     SparseDtmc,
     SparseMdp,
     ExpressionManager,
+    DirectEncodingParserOptions,
+    build_model_from_drn,
 )
 import stormvogel
 from stormvogel.mapping import stormpy_to_stormvogel, stormvogel_to_stormpy
@@ -73,6 +75,16 @@ def load_defined_snl(path: str) -> tuple[Model, int, dict[int, int], dict[int, i
 def load_dfa(path: str) -> Model:
     dfa_prism = parse_prism_program(path)
     return _load_prism(dfa_prism)
+
+
+def load_dfa_drn(path: str) -> Model:
+    opts = DirectEncodingParserOptions()
+    opts.build_choice_labels = True
+    dfa_storm = build_model_from_drn(path, opts)
+    dfa = stormpy_to_stormvogel(dfa_storm)
+    if dfa is None:
+        raise Exception("Could not build model")
+    return dfa
 
 
 def load_dfa_stormpy(path: str) -> SparseMdp:
@@ -182,18 +194,22 @@ def _define_snl_constants(
                 value = snl_prism.expression_manager.create_integer(-1)
             else:
                 value = snl_prism.expression_manager.create_integer(
-                    ladders_list[int(const.name[1:-1]) - 1][
-                        0 if const.name[2] == "s" else 1
-                    ]
+                    int(
+                        ladders_list[int(const.name[1:-1]) - 1][
+                            0 if const.name[2] == "s" else 1
+                        ]
+                    )
                 )
         elif const.name.startswith("s"):
             if int(const.name[1:-1]) > len(snakes_list):
                 value = snl_prism.expression_manager.create_integer(-1)
             else:
                 value = snl_prism.expression_manager.create_integer(
-                    snakes_list[int(const.name[1:-1]) - 1][
-                        0 if const.name[2] == "s" else 1
-                    ]
+                    int(
+                        snakes_list[int(const.name[1:-1]) - 1][
+                            0 if const.name[2] == "s" else 1
+                        ]
+                    )
                 )
         else:
             continue

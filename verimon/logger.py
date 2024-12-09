@@ -1,6 +1,8 @@
+import contextlib
 import datetime
 import logging
 import sys
+from typing import IO
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -37,45 +39,17 @@ def clear_logging():
     logger.handlers.clear()
 
 
-def setup_logging(level=logging.DEBUG, path=None):
+def setup_logging(level=logging.DEBUG, path=None, output_to_stdout=True):
     global logger
+
     logger.setLevel(level)
-
-    formatter_warn = logging.Formatter(
-        "\033[1;33m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
-    )
-    formatter_info = logging.Formatter(
-        "\033[1;34m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
-    )
-    formatter_debug = logging.Formatter(
-        "\033[1;37m%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s \033[0m"
-    )
-    formatter_file = logging.Formatter(
-        "%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s - %(message)s"
-    )
-
-    time_filter = TimeFilter()
-
-    s_warn = logging.StreamHandler(sys.stdout)
-    s_warn.setLevel(logging.WARN)
-    s_warn.addFilter(time_filter)
-    s_warn.setFormatter(formatter_warn)
-
-    s_info = logging.StreamHandler(sys.stdout)
-    s_info.setLevel(logging.INFO)
-    s_info.addFilter(time_filter)
-    s_info.addFilter(filter_maker(logging.WARN))
-    s_info.setFormatter(formatter_info)
-
-    s_debug = logging.StreamHandler(sys.stdout)
-    s_debug.setLevel(logging.DEBUG)
-    s_debug.addFilter(time_filter)
-    s_debug.addFilter(filter_maker(logging.INFO))
-    s_debug.setFormatter(formatter_debug)
-
     logger.handlers.clear()
 
     if path:
+        formatter_file = logging.Formatter(
+            "%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s"
+        )
+
         file_time_filter = TimeFilter()
         file_handler = logging.FileHandler(path)
         file_handler.setLevel(logging.DEBUG)
@@ -83,6 +57,67 @@ def setup_logging(level=logging.DEBUG, path=None):
         file_handler.addFilter(file_time_filter)
         logger.addHandler(file_handler)
 
-    logger.addHandler(s_warn)
-    logger.addHandler(s_info)
-    logger.addHandler(s_debug)
+    if output_to_stdout:
+        time_filter = TimeFilter()
+
+        formatter_warn = logging.Formatter(
+            "\033[1;33m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
+        )
+        formatter_info = logging.Formatter(
+            "\033[1;34m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
+        )
+        formatter_debug = logging.Formatter(
+            "\033[1;37m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
+        )
+
+        s_warn = logging.StreamHandler(sys.__stdout__)
+        s_warn.setLevel(logging.WARN)
+        s_warn.addFilter(time_filter)
+        s_warn.setFormatter(formatter_warn)
+
+        s_info = logging.StreamHandler(sys.__stdout__)
+        s_info.setLevel(logging.INFO)
+        s_info.addFilter(time_filter)
+        s_info.addFilter(filter_maker(logging.WARN))
+        s_info.setFormatter(formatter_info)
+
+        s_debug = logging.StreamHandler(sys.__stdout__)
+        s_debug.setLevel(logging.DEBUG)
+        s_debug.addFilter(time_filter)
+        s_debug.addFilter(filter_maker(logging.INFO))
+        s_debug.setFormatter(formatter_debug)
+
+        logger.addHandler(s_warn)
+        logger.addHandler(s_info)
+        logger.addHandler(s_debug)
+
+
+def handle_exception(exc_type, exc_value, exc_traceback):
+    if not issubclass(exc_type, KeyboardInterrupt):
+        logger.critical(
+            "Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback)
+        )
+
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+
+class OutputLogger(IO[str]):
+    def __init__(self, level=logging.DEBUG):
+        self.logger = logger
+        self.level = level
+        self._redirector = contextlib.redirect_stdout(self)
+
+    def write(self, msg: str):
+        if msg and not msg.isspace():
+            self.logger.log(self.level, msg.strip())
+
+    def flush(self):
+        pass
+
+    def __enter__(self):
+        self._redirector.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        # let contextlib do any exception handling here
+        self._redirector.__exit__(exc_type, exc_value, traceback)
