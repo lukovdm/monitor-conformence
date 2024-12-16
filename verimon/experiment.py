@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from email.mime import base
 from enum import verify
 import json
 from operator import le
@@ -13,6 +14,7 @@ import yaml
 from verimon.generator import Verifier
 from verimon import loaders
 from verimon.MonitorLearning import (
+    FilteringSUL,
     run_sampling_learning,
     run_trad_learning,
     run_verimon,
@@ -76,7 +78,7 @@ class LearningExperiment(Experiment):
         use_random_eq: bool = True,
         verimon_walks_per_state: int = 100,
         verimon_walk_length: int = 11,
-        cq_alg: Literal["wrandom"] | Literal["sampling"] = "wrandom",
+        learning_algs: list[str] = ["verimon", "sampling"],
         use_horizon_in_filtering: bool = True,
         old_walks_per_state: int = 100000,
         old_walk_length: int | None = None,
@@ -108,70 +110,112 @@ class LearningExperiment(Experiment):
         self.use_random_eq = use_random_eq
         self.verimon_walks_per_state = verimon_walks_per_state
         self.verimon_walk_length = verimon_walk_length
-        self.cq_alg = cq_alg
+        self.learning_algs = learning_algs
         self.use_horizon_in_filtering = use_horizon_in_filtering
         self.old_walks_per_state = old_walks_per_state
         self.old_walk_length = old_walk_length
         self.loader = loader
 
     def _run_verimon(self, base_dir, mc, alphabet, initial_observation, expr_manager):
-        verimon_start_time = time()
-        (verimon_learned_monitor, verimon_info), stats = run_verimon(
-            mc,
-            alphabet,
-            initial_observation,
-            self.spec,
-            self.good_label,
-            self.threshold,
-            self.horizon,
-            self.relative_error,
-            self.use_risk,
-            self.fp_slack,
-            self.fn_slack,
-            expr_manager,
-            self.use_random_eq,
-            self.verimon_walks_per_state,
-            self.verimon_walk_length,
-            self.use_horizon_in_filtering,
-        )
-        verimon_time = time() - verimon_start_time
+        try:
+            logger.info("Running Verimon")
+            verimon_start_time = time()
+            (verimon_learned_monitor, verimon_info), stats = run_verimon(
+                mc,
+                alphabet,
+                initial_observation,
+                self.spec,
+                self.good_label,
+                self.threshold,
+                self.horizon,
+                self.relative_error,
+                self.use_risk,
+                self.fp_slack,
+                self.fn_slack,
+                expr_manager,
+                self.use_random_eq,
+                self.verimon_walks_per_state,
+                self.verimon_walk_length,
+                self.use_horizon_in_filtering,
+                base_dir,
+            )
+            verimon_time = time() - verimon_start_time
 
-        logger.info(
-            f"-----------------------------------\n"
-            f"Learning Finished.\n"
-            f'Learning Rounds:  {verimon_info["learning_rounds"]}\n'
-            f'Number of states: {verimon_info["automaton_size"]}\n'
-            f"Time (in seconds)\n"
-            f'  Total                  : {verimon_info["total_time"]}\n'
-            f'  Learning algorithm     : {verimon_info["learning_time"]}\n'
-            f'  Conformance checking   : {verimon_info["eq_oracle_time"]}\n'
-            f"Learning Algorithm\n"
-            f' # Membership Queries    : {verimon_info["queries_learning"]}\n'
-            f' # Steps                 : {verimon_info["steps_learning"]}\n'
-            f"Equivalence Query\n"
-            f' # Membership Queries    : {verimon_info["queries_eq_oracle"]}\n'
-            f' # Steps                 : {verimon_info["steps_eq_oracle"]}\n'
-            f' # EQ oracle used        : {stats["eq_used"]}\n'
-            f' # False positives found : {stats["fp_found"]}\n'
-            f' # False negatives found : {stats["fn_found"]}\n'
-            f"-----------------------------------"
-        )
-        verimon_learned_monitor.visualize(
-            path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon",
-            file_type="dot",
-        )
-        mon = aalpy_dfa_to_stormvogel(verimon_learned_monitor)
-        mon_storm = stormvogel_to_stormpy(mon)
-        export_to_drn(
-            mon_storm,
-            f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
-        )
-        return verimon_learned_monitor, verimon_time, stats
+            logger.info(
+                f"-----------------------------------\n"
+                f"Learning Finished.\n"
+                f'Learning Rounds:  {verimon_info["learning_rounds"]}\n'
+                f'Number of states: {verimon_info["automaton_size"]}\n'
+                f"Time (in seconds)\n"
+                f'  Total                  : {verimon_info["total_time"]}\n'
+                f'  Learning algorithm     : {verimon_info["learning_time"]}\n'
+                f'  Conformance checking   : {verimon_info["eq_oracle_time"]}\n'
+                f"Learning Algorithm\n"
+                f' # Membership Queries    : {verimon_info["queries_learning"]}\n'
+                f' # Steps                 : {verimon_info["steps_learning"]}\n'
+                f"Equivalence Query\n"
+                f' # Membership Queries    : {verimon_info["queries_eq_oracle"]}\n'
+                f' # Steps                 : {verimon_info["steps_eq_oracle"]}\n'
+                f' # EQ oracle used        : {stats["eq_used"]}\n'
+                f' # False positives found : {stats["fp_found"]}\n'
+                f' # False negatives found : {stats["fn_found"]}\n'
+                f"-----------------------------------"
+            )
+            verimon_learned_monitor.visualize(
+                path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon",
+                file_type="dot",
+            )
+            mon = aalpy_dfa_to_stormvogel(verimon_learned_monitor)
+            mon_storm = stormvogel_to_stormpy(mon)
+            export_to_drn(
+                mon_storm,
+                f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
+            )
+            logger.info("Verifying the verimon learned models")
+            fp_verimon_result, fn_verimon_result = self._run_verify(
+                mc,
+                verimon_learned_monitor,
+                expr_manager,
+                initial_observation,
+                alphabet,
+            )
 
-    def _run_trad(self, base_dir, mc, alphabet, initial_observation):
+            return {
+                "time": verimon_time,
+                "false_positive": (
+                    fp_verimon_result[0] if fp_verimon_result is not None else None
+                ),
+                "false_positive_trace": (
+                    fp_verimon_result[1] if fp_verimon_result is not None else None
+                ),
+                "false_negative": (
+                    fn_verimon_result[0] if fn_verimon_result is not None else None
+                ),
+                "false_negative_trace": (
+                    fn_verimon_result[1] if fn_verimon_result is not None else None
+                ),
+                "monitor_states": (len(verimon_learned_monitor.states)),
+                "eq_used": stats["eq_used"],
+                "fp_found": stats["fp_found"],
+                "fn_found": stats["fn_found"],
+                "fp_bounds": stats["fp_bounds"],
+                "fn_bounds": stats["fn_bounds"],
+                "product_time": stats["product_time"],
+                "paynt_time": stats["paynt_time"],
+                "eq_time": stats["eq_time"],
+                "counterexample_time": verimon_info["eq_oracle_time"],
+                "lstar_time": verimon_info["learning_time"],
+                "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.dot",
+                "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
+            }
+        except Exception as e:
+            logger.error(f"Error in Verimon: {e}", exc_info=e)
+            return {"error": str(e), "msg": e.__repr__()}
+
+    def _run_trad(self, alg, base_dir, mc, alphabet, initial_observation, expr_manager):
+        logger.info(f"Running {alg} learning")
         trad_start_time = time()
-        if self.cq_alg == "wrandom":
-            logger.info("Running traditional learning with weighted random walks")
+        if alg == "wrandom":
             trad_learned_monitor, trad_info = run_trad_learning(
                 mc,
                 alphabet,
@@ -184,8 +228,7 @@ class LearningExperiment(Experiment):
                 self.use_risk,
                 self.use_horizon_in_filtering,
             )
-        elif self.cq_alg == "sampling":
-            logger.info("Running traditional learning with sampling")
+        elif alg == "sampling":
             trad_learned_monitor, trad_info = run_sampling_learning(
                 mc,
                 alphabet,
@@ -199,7 +242,7 @@ class LearningExperiment(Experiment):
                 self.use_horizon_in_filtering,
             )
         else:
-            raise ValueError(f"Unknown learning algorithm: {self.cq_alg}")
+            raise ValueError(f"Unknown learning algorithm: {alg}")
 
         trad_time = time() - trad_start_time
         logger.info(
@@ -220,25 +263,57 @@ class LearningExperiment(Experiment):
             f"-----------------------------------"
         )
         trad_learned_monitor.visualize(
-            path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_trad",
+            path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}",
             file_type="dot",
         )
         mon = aalpy_dfa_to_stormvogel(trad_learned_monitor)
         mon_storm = stormvogel_to_stormpy(mon)
         export_to_drn(
             mon_storm,
-            f"{base_dir}/models/monitor_{self.name}_{self.variant}_trad.drn",
+            f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}.drn",
         )
-        return trad_learned_monitor, trad_time
+        logger.info(f"Verifying the {alg} learned models")
+        fp_trad_result, fn_trad_result = self._run_verify(
+            mc,
+            trad_learned_monitor,
+            expr_manager,
+            initial_observation,
+            alphabet,
+        )
+        return {
+            "time": trad_info["total_time"],
+            "lstar_time": trad_info["learning_time"],
+            "eq_time": trad_info["eq_oracle_time"],
+            "false_positive": fp_trad_result[0] if fp_trad_result else None,
+            "false_positive_trace": fp_trad_result[1] if fp_trad_result else None,
+            "false_negative": fn_trad_result[0] if fn_trad_result else None,
+            "false_negative_trace": fn_trad_result[1] if fn_trad_result else None,
+            "monitor_states": len(trad_learned_monitor.states),
+            "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}.dot",
+            "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}.drn",
+        }
 
-    def _run_verify(self, mc, learned_monitor, expr_manager) -> tuple[
-        tuple[float, list[str] | None, Family | None, Verifier | None, dict | None]
-        | None,
-        tuple[float, list[str] | None, Family | None, Verifier | None, dict | None]
-        | None,
+    def _run_verify(
+        self, mc, learned_monitor, expr_manager, initial_observation, alphabet
+    ) -> tuple[
+        tuple[
+            float | None, list[str] | None, Family | None, Verifier | None, dict | None
+        ],
+        tuple[
+            float | None, list[str] | None, Family | None, Verifier | None, dict | None
+        ],
     ]:
+        sul = FilteringSUL(
+            mc,
+            initial_observation,
+            alphabet,
+            self.spec,
+            self.threshold,
+            self.horizon if self.use_horizon_in_filtering else None,
+            self.use_risk,
+        )
+
         mon = aalpy_dfa_to_stormvogel(learned_monitor)
-        logger.info("Verifying the verimon learned models")
         try:
             fp_result = false_positive(
                 mc,
@@ -250,12 +325,14 @@ class LearningExperiment(Experiment):
                     "good_label": self.good_label,
                     "relative_error": self.relative_error,
                     "use_risk": self.use_risk,
+                    "filtering": sul,
+                    "model_path": base_dir + "/debug-models/",
                 },
             )
 
         except Exception as e:
             logger.error(f"Exception for fp: {e}")
-            fp_result = None
+            fp_result = None, None, None, None, None
 
         try:
             fn_result = false_negative(
@@ -268,12 +345,14 @@ class LearningExperiment(Experiment):
                     "good_label": self.good_label,
                     "relative_error": self.relative_error,
                     "use_risk": self.use_risk,
+                    "filtering": sul,
+                    "model_path": base_dir + "/debug-models/",
                 },
             )
 
         except Exception as e:
             logger.error(f"Exception for fn: {e}")
-            fn_result = None
+            fn_result = None, None, None, None, None
         return fp_result, fn_result
 
     # Function to run a single experiment
@@ -312,57 +391,20 @@ class LearningExperiment(Experiment):
             else:
                 raise ValueError("Unknown loader or missing parameters")
 
-            try:
-                logger.info("Running Verimon")
-                verimon_learned_monitor, verimon_time, verimon_stats = (
-                    self._run_verimon(
-                        base_dir, mc, alphabet, initial_observation, expr_manager
+            results = {}
+            for alg in self.learning_algs:
+                if alg == "verimon":
+                    results["verimon"] = self._run_verimon(
+                        base_dir,
+                        mc,
+                        alphabet,
+                        initial_observation,
+                        expr_manager,
                     )
-                )
-
-                logger.info("Verifying the verimon learned models")
-                fp_verimon_result, fn_verimon_result = self._run_verify(
-                    mc, verimon_learned_monitor, expr_manager
-                )
-
-                verimon_json = {
-                    "time": verimon_time,
-                    "false_positive": (
-                        fp_verimon_result[0] if fp_verimon_result is not None else None
-                    ),
-                    "false_positive_trace": (
-                        fp_verimon_result[1] if fp_verimon_result is not None else None
-                    ),
-                    "false_negative": (
-                        fn_verimon_result[0] if fn_verimon_result is not None else None
-                    ),
-                    "false_negative_trace": (
-                        fn_verimon_result[1] if fn_verimon_result is not None else None
-                    ),
-                    "monitor_states": (len(verimon_learned_monitor.states)),
-                    "eq_used": verimon_stats["eq_used"],
-                    "fp_found": verimon_stats["fp_found"],
-                    "fn_found": verimon_stats["fn_found"],
-                    "fp_bounds": verimon_stats["fp_bounds"],
-                    "fn_bounds": verimon_stats["fn_bounds"],
-                    "product_time": verimon_stats["product_time"],
-                    "paynt_time": verimon_stats["paynt_time"],
-                    "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.dot",
-                    "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
-                }
-            except Exception as e:
-                logger.error(f"Error in Verimon: {e}")
-                verimon_json = {"error": str(e)}
-
-            logger.info("Running traditional learning")
-            trad_learned_monitor, trad_time = self._run_trad(
-                base_dir, mc, alphabet, initial_observation
-            )
-
-            logger.info("Verifying the traditionally learned models")
-            fp_trad_result, fn_trad_result = self._run_verify(
-                mc, trad_learned_monitor, expr_manager
-            )
+                elif alg in ["sampling", "wrandom"]:
+                    results[alg] = self._run_trad(
+                        alg, base_dir, mc, alphabet, initial_observation, expr_manager
+                    )
 
             total_time = time() - start_time
 
@@ -377,18 +419,7 @@ class LearningExperiment(Experiment):
                 "mc_transitions": mc.nr_transitions,
                 "mc_observations": len(alphabet),
             },
-            "verimon": verimon_json,
-            "traditional": {
-                "time": trad_time,
-                "false_positive": fp_trad_result[0] if fp_trad_result else None,
-                "false_positive_trace": fp_trad_result[1] if fp_trad_result else None,
-                "false_negative": fn_trad_result[0] if fn_trad_result else None,
-                "false_negative_trace": fn_trad_result[1] if fn_trad_result else None,
-                "monitor_states": len(trad_learned_monitor.states),
-                "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_trad.dot",
-                "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_trad.drn",
-            },
-        }
+        } | results
         result_json_file = (
             f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
         )
@@ -515,7 +546,7 @@ class VerifyExperiment(Experiment):
 
             try:
                 verify_start = time()
-                result = verify_func(
+                result_goal, trace, assignment, model, stats = verify_func(
                     mc,
                     monitor,
                     self.horizon,
@@ -527,25 +558,26 @@ class VerifyExperiment(Experiment):
                         "relative_error": self.relative_error,
                         "use_risk": self.use_risk,
                         "paynt_strategy": self.paynt_strategy,
+                        "model_path": base_dir + "/debug-models/",
                     },
                 )
                 verify_time = time() - verify_start
 
-                if result is not None:
-                    result_goal, trace, _, model, stats = result
+                if result_goal is not None:
+                    if assignment:
+                        logger.info(f"Assignment: {assignment}")
+                        logger.info(f"PAYNT result: {assignment.analysis_result}")
                     verify_json = {
                         "goal_threshold": result_goal,
                         "trace": trace,
                         "time": verify_time,
-                        "product_time": stats["product_time"] if stats else None,
-                        "paynt_time": stats["paynt_time"] if stats else None,
                     }
                     if model:
                         with open(
                             f"{base_dir}/models/pomdp_{self.name}_{self.variant}.dot",
                             "w",
                         ) as f:
-                            f.write(model.pomdp.to_dot())
+                            f.write(model.pomdp.to_dot())  # type: ignore
                         export_to_drn(
                             model.pomdp,
                             f"{base_dir}/models/pomdp_{self.name}_{self.variant}.drn",
@@ -553,6 +585,8 @@ class VerifyExperiment(Experiment):
                 else:
                     verify_json = {
                         "error": "No result",
+                        "product_time": stats["product_time"] if stats else None,
+                        "paynt_time": stats["paynt_time"] if stats else None,
                     }
             except Exception as e:
                 logger.error(f"Error in verification: {e}", exc_info=e)
@@ -657,7 +691,11 @@ if __name__ == "__main__":
 
     if args.experiment:
         group = next(
-            (group for group in experiments if group.argss[0][0] == args.experiment),
+            (
+                group
+                for group in experiments
+                if group.kwargss["name"][0] == args.experiment
+            ),
             None,
         )
         if group:

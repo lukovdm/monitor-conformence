@@ -1,0 +1,11 @@
+- type: VerifyExperiment
+  name: compare_paynt_strat
+  results_file: 
+    - stats/exp-2024-12-09_09-35-32-snl/json/2024-12-09_09-35-32_snakes_ladders_(0, 9).json
+  monitor_from: verimon
+  search: fn
+  threshold: null
+  paynt_strategy:
+    - cegis
+    - ar
+    - hybrid

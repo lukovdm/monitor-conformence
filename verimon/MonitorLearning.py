@@ -1,4 +1,5 @@
 import logging
+from time import time
 from typing import Any
 
 from aalpy import SUL, run_Lstar, Dfa, RandomWMethodEqOracle, Oracle
@@ -41,6 +42,7 @@ class FilteringSUL(SUL):
         self.horizon = horizon
         self.observation_length = 0
         self.do_logging = False
+        self.last_risk = 0
 
         components = SparseModelComponents(mc.transition_matrix, mc.labeling)
         try:
@@ -118,7 +120,19 @@ class FilteringSUL(SUL):
             logger.debug(
                 f"Risk after observing {observation} ({self.observation_length}): {risk} | {self.threshold} [{[str(b) for b in self.tracker.obtain_beliefs()]}]",
             )
+
+        self.last_risk = risk
         return risk >= self.threshold
+
+    def steps(self, trace):
+        self.set_logging(True)
+        self.pre()
+        res = False
+        for t in trace:
+            self.step(t)
+        self.post()
+        self.set_logging(False)
+        return self.last_risk
 
     @staticmethod
     def _labels_to_observations(mc: SparseDtmc, observation_classes: list[str]):
@@ -180,7 +194,7 @@ class VerimonEqOracle(Oracle):
         use_random_eq: bool = False,
         walks_per_state: int = 100,
         walk_len: int = 100,
-        do_asserts: bool = True,
+        base_dir: str | None = None,
     ):
         """
 
@@ -208,6 +222,7 @@ class VerimonEqOracle(Oracle):
         self.relative_error = relative_error
         self.use_risk = use_risk
         self.expression_manager = expression_manager
+        self.base_dir = base_dir
 
         self.stats = {
             "num_rounds": 0,
@@ -218,6 +233,7 @@ class VerimonEqOracle(Oracle):
             "fn_bounds": [],
             "paynt_time": 0.0,
             "product_time": 0.0,
+            "eq_time": 0.0,
         }
 
         if use_random_eq:
@@ -238,13 +254,14 @@ class VerimonEqOracle(Oracle):
         # )
 
         if self.eq_orcale is not None:
+            start_eq_time = time()
             logger.debug("Trying eq oracle")
             logger.debug(
                 f"Finding fn using eq oracle, threshold: {self.threshold + self.fn_slack}"
             )
             self.filter_sul.threshold = self.threshold + self.fn_slack
             cex = self.eq_orcale.find_cex(hypothesis)
-            if self._check_hyp_on_trace(
+            if cex is None or self._check_hyp_on_trace(
                 hypothesis, cex
             ):  # We found a counter example but it is not a false negative, thus we ignore it
                 logger.debug(
@@ -252,7 +269,7 @@ class VerimonEqOracle(Oracle):
                 )
                 self.filter_sul.threshold = self.threshold - self.fp_slack
                 cex = self.eq_orcale.find_cex(hypothesis)
-                if not self._check_hyp_on_trace(
+                if cex is None or not self._check_hyp_on_trace(
                     hypothesis, cex
                 ):  # We found a counter example but it is not a false positive, thus we ignore it
                     logger.debug("No counter example found using eq oracle")
@@ -261,6 +278,7 @@ class VerimonEqOracle(Oracle):
             self.filter_sul.threshold = self.threshold
             self.num_steps = self.eq_orcale.num_steps
             self.num_queries = self.eq_orcale.num_queries
+            self.stats["eq_time"] += time() - start_eq_time
             if cex is not None:
                 self.stats["eq_used"] += 1
                 self.stats["fn_bounds"].append(None)
@@ -270,7 +288,7 @@ class VerimonEqOracle(Oracle):
 
         logger.debug("Finding false negative probability")
         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
-        res = false_negative(
+        result, trace, _, _, stats = false_negative(
             self.mc,
             mon_cycl,
             self.horizon,
@@ -281,10 +299,19 @@ class VerimonEqOracle(Oracle):
                 "good_label": self.good_label,
                 "relative_error": self.relative_error,
                 "use_risk": self.use_risk,
-            },
+                "filtering": self.filter_sul,
+            }
+            | (
+                {"model_path": self.base_dir + "/debug-models"}
+                if self.base_dir is not None
+                else {}
+            ),
         )
-        if res is not None:
-            result, trace, _, _, stats = res
+
+        self.stats["paynt_time"] += stats["paynt_time"]
+        self.stats["product_time"] += stats["product_time"]
+
+        if result is not None:
             in_hyp = self._check_hyp_on_trace(hypothesis, trace)
             logger.log(
                 logging.WARN if in_hyp else logging.INFO,
@@ -301,13 +328,11 @@ class VerimonEqOracle(Oracle):
             self.stats["fn_found"] += 1
             self.stats["fn_bounds"].append(result)
             self.stats["fp_bounds"].append(None)
-            self.stats["paynt_time"] += stats["paynt_time"]
-            self.stats["product_time"] += stats["product_time"]
             return trace
 
         logger.debug("Finding false positive probability")
         mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
-        res = false_positive(
+        result, trace, _, _, stats = false_positive(
             self.mc,
             mon_cycl,
             self.horizon,
@@ -318,10 +343,19 @@ class VerimonEqOracle(Oracle):
                 "good_label": self.good_label,
                 "relative_error": self.relative_error,
                 "use_risk": self.use_risk,
-            },
+                "filtering": self.filter_sul,
+            }
+            | (
+                {"model_path": self.base_dir + "/debug-models"}
+                if self.base_dir is not None
+                else {}
+            ),
         )
-        if res is not None:
-            result, trace, _, _, stats = res
+
+        self.stats["paynt_time"] += stats["paynt_time"]
+        self.stats["product_time"] += stats["product_time"]
+
+        if result is not None:
             in_hyp = self._check_hyp_on_trace(hypothesis, trace)
             logger.log(
                 logging.INFO if in_hyp else logging.WARN,
@@ -338,8 +372,6 @@ class VerimonEqOracle(Oracle):
             self.stats["fp_found"] += 1
             self.stats["fp_bounds"].append(result)
             self.stats["fn_bounds"].append(None)
-            self.stats["paynt_time"] += stats["paynt_time"]
-            self.stats["product_time"] += stats["product_time"]
             return trace
 
         return None
@@ -376,6 +408,7 @@ def run_verimon(
     walks_per_state: int,
     walk_len: int,
     use_horizon_in_filtering: bool,
+    base_dir: str | None = None,
 ) -> tuple[tuple[Dfa, dict], dict]:
     sul = FilteringSUL(
         mc,
@@ -403,6 +436,7 @@ def run_verimon(
         use_random_eq,
         walks_per_state,
         walk_len,
+        base_dir,
     )
 
     return (

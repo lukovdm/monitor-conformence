@@ -35,7 +35,7 @@ class Verifier:
         mon: SparseMdp,
         expr_manager: ExpressionManager,
         good_label: str,
-        paynt_strategy: str = "ar",
+        paynt_strategy: str = "cegis",
     ) -> None:
         self.mc = SparseDtmc(mc)
         self.mon = SparseMdp(mon)
@@ -98,7 +98,7 @@ class Verifier:
 
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
-    ) -> Family | None:
+    ) -> tuple[Family, float | None] | None:
         paynt.cli.setup_logger()
         paynt.utils.timer.GlobalTimer.start()
 
@@ -129,9 +129,15 @@ class Verifier:
         root_logger = logging.getLogger()
         root_logger.handlers.clear()
         if assignment is not None:
-            logger.info(f"counterexample found: {assignment}")
+            logger.info(
+                f"counterexample found: {assignment} ({synthesizer.quotient.specification.optimality.optimum if synthesizer.quotient.specification.optimality else None})"
+            )
             logger.info(synthesizer.stat.get_summary())
-            return assignment
+            return assignment, (
+                synthesizer.quotient.specification.optimality.optimum
+                if synthesizer.quotient.specification.optimality
+                else None
+            )
         else:
             logger.info("no counterexamples above threshold")
             return None

@@ -10,7 +10,8 @@
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
   loader: pomdp
-  cq_alg: sampling
+  learning_algs: 
+    - [sampling, verimon]
 
 - type: LearningExperiment
   name: evade
@@ -24,7 +25,8 @@
     - 8
     - 9
     - 10
-  cq_alg: sampling
+  learning_algs: 
+    - [sampling, verimon]
 
 - type: LearningExperiment
   name: hidden_incentive
@@ -34,7 +36,8 @@
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   loader: pomdp
-  cq_alg: sampling
+  learning_algs: 
+    - [sampling, verimon]
 
 - type: LearningExperiment
   name: airport
@@ -50,4 +53,5 @@
   spec: Pmax=? [F<2 "crash"]
   good_label: crash
   loader: pomdp
-  cq_alg: sampling
+  learning_algs: 
+    - [sampling, verimon]

@@ -1,0 +1,23 @@
+- type: LearningExperiment
+  name: compare-trad
+  file:
+    - tests/premise/airportB-3.nm
+    - tests/premise/airportB-7.nm
+  parameters: 
+    constants: "DMAX=4,PMAX=4"
+  spec: Pmax=? [F<2 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [sampling]
+  old_walks_per_state:
+    - 100
+    - 1000
+    - 10000
+    - 100000
+  threshold:
+    - 0.1
+    - 0.2
+    - 0.4
+  fp_slack: 0.2
+  fn_slack: 0.05

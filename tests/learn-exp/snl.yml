@@ -34,7 +34,6 @@
     - 13
     - 14
     - 15
-  cq_alg: sampling
   use_horizon_in_filtering:
     - false
     - true

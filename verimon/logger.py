@@ -11,6 +11,10 @@ logger.propagate = False
 class TimeFilter(logging.Filter):
 
     def filter(self, record):
+        if record.levelno == logging.DEBUG + 1:
+            record.relative = ""
+            return True
+
         try:
             last = self.last
         except AttributeError:
@@ -26,6 +30,30 @@ class TimeFilter(logging.Filter):
 
         self.last = record.relativeCreated
         return True
+
+
+class MultiLineFormatter(logging.Formatter):
+    """Multi-line formatter."""
+
+    def get_header_length(self, record):
+        """Get the header length of a given record."""
+        rec = logging.LogRecord(
+            name=record.name,
+            level=record.levelno,
+            pathname=record.pathname,
+            lineno=record.lineno,
+            msg="",
+            args=(),
+            exc_info=None,
+        )
+        rec.relative = record.relative
+        return len(super().format(rec))
+
+    def format(self, record):
+        """Format a record with added indentation."""
+        indent = " " * self.get_header_length(record)
+        head, *trailing = super().format(record).splitlines(True)
+        return head + "".join(indent + line for line in trailing)
 
 
 def filter_maker(level):
@@ -44,9 +72,10 @@ def setup_logging(level=logging.DEBUG, path=None, output_to_stdout=True):
 
     logger.setLevel(level)
     logger.handlers.clear()
+    logging.addLevelName(logging.DEBUG + 1, "PRINT")
 
     if path:
-        formatter_file = logging.Formatter(
+        formatter_file = MultiLineFormatter(
             "%(levelname)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s"
         )
 
@@ -60,13 +89,13 @@ def setup_logging(level=logging.DEBUG, path=None, output_to_stdout=True):
     if output_to_stdout:
         time_filter = TimeFilter()
 
-        formatter_warn = logging.Formatter(
+        formatter_warn = MultiLineFormatter(
             "\033[1;33m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
         )
-        formatter_info = logging.Formatter(
+        formatter_info = MultiLineFormatter(
             "\033[1;34m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
         )
-        formatter_debug = logging.Formatter(
+        formatter_debug = MultiLineFormatter(
             "\033[1;37m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
         )
 
@@ -102,7 +131,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 
 class OutputLogger(IO[str]):
-    def __init__(self, level=logging.DEBUG):
+    def __init__(self, level=logging.DEBUG + 1):
         self.logger = logger
         self.level = level
         self._redirector = contextlib.redirect_stdout(self)
