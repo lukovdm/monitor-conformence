@@ -470,7 +470,7 @@ TSWLatexianTemp*
 #*Notes.bib
 
 *.drn
-notebooks/*/*.pdf
+notebooks/**/*.pdf
 tests/*/*.pdf
 */*.gif
 **/*.dot

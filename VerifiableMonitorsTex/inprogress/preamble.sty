@@ -3,6 +3,8 @@
 
 \RequirePackage{amsmath}
 \RequirePackage{amssymb}
+\RequirePackage{marvosym}
+\usepackage{ wasysym }
 
 \newif\if@myfiledraft
 \DeclareOption{draft}{\@myfiledrafttrue}
@@ -20,6 +22,8 @@
 \newcommand{\mdp}{\mathcal{M}}          % Markov Decision Process
 \newcommand{\dfa}{\mathcal{A}}          % Deterministic Finite Automaton
 \newcommand{\dfaB}{\mathcal{B}}         % Another DFA (if needed)
+\newcommand{\RR}{\mathbb{R}}
+\newcommand{\NN}{\mathbb{N}}
 
 % Properties
 \newcommand{\Sts}{S}                 % Set of states (general)
@@ -34,6 +38,9 @@
 \newcommand{\lbl}{L}               % Labeling function
 \newcommand{\Colors}{C}
 \newcommand{\obsf}{{obs}}
+
+% Symbols
+\newcommand{\happy}{{\blacksmiley}}
 
 % Functions
 \newcommand{\Prob}{{Pr}}

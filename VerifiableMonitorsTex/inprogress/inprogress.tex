@@ -156,8 +156,15 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
     \label{}
 \end{figure}
 
-
-\section{Preliminaries}
+\section{Monitor Verification}
+In this section we will discuss:
+\begin{itemize}
+    \item HMM and monitors
+    \item Formal monitor verification problem
+    \item Translation to CTP problem (refer to Complexity section)
+    \item MDPs and translation to consisitent policy synthesis for MDPs
+    \item Solving consistent policy synthesis for MDPs using PAYNT
+\end{itemize}
 
 \subsection{Hidden Markov Models}
 
@@ -179,6 +186,8 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 
     From~\cite{baierPrinciplesModelChecking2008}
 \end{definition}\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
+\todo[inline]{Add Full HMM tuple}
+\todo[inline]{Add paths}
 
 \begin{definition}
     The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $mc$.
@@ -187,13 +196,6 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 \begin{definition}
     Given an MC $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$, the paths conforming to a trace $\tau$ are defined as \[\Paths(\tau) = \{\pi \in \Pi^{fin}\ |\ \obsf(\pi) = \tau\}\]
 \end{definition}
-
-\begin{definition}
-    Given an MC $\mc$, the cylinder set $\Cyl(\pi)$ of a finite path $\pi$ is the set of all infinite extensions of $\pi$ in $\mc$.
-\end{definition}
-
-
-\subsection{Monitors}
 
 \begin{definition}
     A deterministic finite automaton (DFA) $\dfa$ is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$ where:
@@ -212,33 +214,161 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
     The language $\lang(\dfa)$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$.
 \end{definition}
 
-
 \subsection{Problem Statement}
-We have two problems we want to solve. The no false alarms problem and the no missed alarms problem. They have slightly different problem statements and therefore also slightly different solutions.
+The monitor verification problem consists of two sub problems. The no false alarms problem, and the no missed alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the missed alarm problem in the following sections. How to adapt to no false alarms can be found in \cref{ssec:nfa}.
 
-\subsection{No false alarms}
-All traces $\tau$ from the MC which are in the monitor have at least a probability $p\in I$ of reaching the good state.
-
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\lang{\dfaB}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
-
-\subsection{No missed alarms}
-All traces $\tau$ which reach the good state with probability $p > t$, are in the monitor. By taking the contrapositive, we can instead show that all traces $\tau$ which are not in the monitor reach the good state with probability $p \leq t$.
-
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and not in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\overline{\lang{\dfaB}}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
+The no false alarms problem entails ensuring that all traces from the MC, which are in the monitor, have at least a risk $\lambda^{fa}$, the \emph{false alarm threshold}. The no missed alarms problem entails instead, that traces not in the monitor have at most a risk $\lambda^{ma}$, the \emph{missed alarm threshold}.
 
 \begin{mdframed}
-    \textbf{Monitor verification problem}
+    \textbf{Monitor verification problem}\\
+    Given a HMM $\mc$ with a state risk function $r: \Sts \to \RR_{\leq 0}$, a DAG monitor DFA $\dfa$ with as alphabet the observations of $\mc$, a pair of risk thresholds $\lambda^{fa}, \lambda^{ma}\in[0,\inf)$, and a horizon $h\in\NN^+$. Decide both $R_r^{\min}(\dfa) > \lambda^{fa}$ and $R_r^{\max}(\overline{\dfa}) < \lambda^{ma}$, where the \emph{weighted extreme risk function} $R_r^{\min/\max}\colon DFA \to \RR_{\leq 0}$ is defined as
+    \[
+        R_r^{\min/\max}(\dfa) := \underset{\tau\in\lang{\mc}\cap\lang{\dfa}}{\min/\max} \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow})
+    \]
 \end{mdframed}
 
+\subsection{CTP problem}
+\begin{definition}[CTP Decision Problem]
+    Given an HMM $\mc$ with colors $C$, a unary encoded horizon $H$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{H}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
+\end{definition}
 
-\section{Monitor Verification}
-\subsection{Complexity}
+\subsection{Reduction to Policy Synthesis}
+\begin{definition}
+    A Markov decision process is a tuple $\mdp=\left(\Sts, \Act, \ptrans, \init, \Aps, \lbl\right)$ where
+    \begin{itemize}
+        \item $\Sts$ is a countable set of states,
+        \item $\Act$ is a set of actions,
+        \item $\ptrans$ : $\Sts \times \Act \times \Sts \rightarrow[0,1]$ is the transition probability function such that for all states $s \in \Sts$ and actions $\alpha \in \Act$:
+
+              \[
+                  \sum_{s^{\prime} \in \Sts} \ptrans\left(s, \alpha, s^{\prime}\right) \in\{0,1\}
+              \]
+
+        \item $\init$ is the initial state,
+        \item $\Aps$ is a set of atomic propositions, and
+        \item $\lbl: S \rightarrow 2^{\Aps}$ is a labeling function.
+    \end{itemize}
+
+    From~\cite{baierPrinciplesModelChecking2008}
+\end{definition}
+
+\todo[inline]{Add assumption of no transitions to the initial state}
+
+We transform the HMM into a POMDP in which you choose which color states to transition into. The observations in the POMDP will not be the colors of the states, but instead the amount of steps from the initial state. Finally, we will add end actions to all states, if the state we end in is in $G$, we transition to a goal state, otherwise we transition to a stop state. We detail this transformation in two steps.
+\todo[inline]{Can also unfold here on the horizon and use that for the observations.}
+
+\paragraph{Step 1}
+Transition function of the POMDP becomes:
+\begin{align*}
+    P'(s, c, q) :=
+    \begin{cases}
+        P^\mc(s,q)                                       & \text{if } \obsf(q) = c \\
+        1 - \sum_{q'\in S\ |\ \obsf(q') = c} P^\mc(s,q') & \text{if } q = \iota    \\
+        0                                                & \text{otherwise}
+    \end{cases}
+\end{align*}
+The observation function of the POMDP becomes the amount of steps from the initial state to the current state.
+\begin{remark}
+    Note that any states at the horizon automatically get a return transition to the initial state with probability 1.
+\end{remark}
+
+\paragraph{Step 2}
+We add two states to the POMDP, a goal state and a stop state. Both are sink states.
+Every HMM state gets a new end transition:
+\begin{align*}
+    P'(s, end, goal) :=
+    \begin{cases}
+        1 & \text{if } s \in G \\
+        0 & \text{otherwise}
+    \end{cases} \\
+    P'(s, end, stop) :=
+    \begin{cases}
+        1 & \text{if } s \notin G \\
+        0 & \text{otherwise}
+    \end{cases}
+\end{align*}
+
+\subsection{Performing policy synthesis using memoryless policies}
+
+\subsection{Adapting to no false alarms}\label{ssec:nfa}
+
+
+% \section{Problem Statements}
+% We have two problems we want to solve. The no false alarms problem and the no missed alarms problem. They have slightly different problem statements and therefore also slightly different solutions.
+
+% \subsection{No false alarms}
+% All traces $\tau$ from the MC which are in the monitor have at least a probability $p\in I$ of reaching the good state.
+
+% \begin{definition}
+%     Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
+%     For all traces $\tau$ from the MC and in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\lang{\dfaB}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
+% \end{definition}
+
+% \subsection{No missed alarms}
+% All traces $\tau$ which reach the good state with probability $p > t$, are in the monitor. By taking the contrapositive, we can instead show that all traces $\tau$ which are not in the monitor reach the good state with probability $p \leq t$.
+
+% \begin{definition}
+%     Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
+%     For all traces $\tau$ from the MC and not in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\overline{\lang{\dfaB}}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
+% \end{definition}
+
+% \section{Outline}
+% See \cref{fig:outline} for an outline of the algorithm.
+
+% \begin{figure}[h]
+%     \includegraphics[width=\textwidth]{images/rM drawing 2024-11-28-13.42.46.png}
+%     \caption{Outline of the algorithm.}
+%     \label{fig:outline}
+% \end{figure}
+
+% \section{Algorithm}
+% Our algorithm will proceed in four steps. First, we take the MC product~\cite{baierPrinciplesModelChecking2008} of the MC $\mc$ and the specification $\dfa$. Then, we will combine the product MC with the monitor into an MDP. Next we will add end transitions to this MDP for all states that are accepted by the underlying monitor. Lastly, we use Paynt~\cite{andriushchenkoPAYNTToolInductive2021} to model check the created MDP.
+
+% \subsection{Applying the specification to the MC}
+% We take the MC product as defined by \citeauthor{baierPrinciplesModelChecking2008}~\cite{baierPrinciplesModelChecking2008} to create the product MC $\mc \oplus \dfa$.
+
+% \paragraph{Intuition}
+% The created product MC is the original MC, but every good state is labeled.
+
+% \subsection{Constructing the product MDP}
+% To create the MDP, we first create its states. The states are the product of the states of the product MC and the monitor. These are denoted as $\langle s, q_\dfaB\rangle$ for $s \in \Sts_{\mc \oplus \dfa}$, and $q_\dfaB \in \StsD_\dfaB$. As actions in the product MDP we take the observations $\Colors$ of the MC $\mc$.
+
+% The transitions in the MDP are defined here in two steps. First we create a not-yet-normalized transition function $P'$ on the states in the MDP. Next, we normalize the transition function by creating redirecting all remaining probability mass of an action in a state towards the initial state in $P''$.
+% \begin{align*}
+%     \large P'(\langle s, q\rangle , c, \langle s', q'\rangle) =  & \begin{cases}P(s, s') & \text{if } obs(s') = c \land q' = \delta(q, c)\\ 0 & \text{otherwise}\end{cases}                                                                                                                                              \\
+%     \large P''(\langle s, q\rangle , c, \langle s', q'\rangle) = & \begin{cases}1 - \sum_{s''\in S}\sum_{q''\in Q}P'(\langle s, q\rangle , c, \langle s'', q''\rangle) & \text{if } s' = \iota_{\mc\oplus\dfa} \land q' = \iota_\dfaB\\ P'(\langle s, q\rangle , c, \langle s', q'\rangle) & \text{otherwise}\end{cases}
+% \end{align*}
+
+% Lastly, the atomic propositions are $\{\circledcirc_\dfa, \circledcirc_\dfaB\}$, where accepting states in the product MC are labeled by $\circledcirc_\dfa$ and accepting states in the monitor are labeled by $\circledcirc_\dfaB$.
+
+% \paragraph{Intuition}
+% The created MDP can be seen as the original product MC $\mc\oplus\dfa$, where we can choose which observation to observe, but only if the monitor contains the transition labeled by the observation.
+
+% \subsection{Adding end transitions}
+% We add two new states to the MDP, the $goal$ and $stop$ states, each only having a self loop. Next, we will add an $end$ action to every state with the label $\circledcirc_\dfaB$. If the state also contains the $\circledcirc_\dfa$ label, we direct the $end$ action to the $goal$ state, otherwise we direct the $end$ action to the stop state.
+
+% \paragraph{Intuition}
+% Since we are talking about finite traces in the monitor, we need to give the MDP a way to end a path. This is done by taking the $end$ action. If we take the end action in a good state of the product MDP, we reach the $goal$ state, if it was a bad state, then we reach the $stop$ state.
+
+% \subsection{Model checking using Paynt}
+% We create a POMDP which will be model checked by Paynt~\cite{andriushchenkoPAYNTToolInductive2021} for reachability of the goal state. The observations in this POMDP are the states of the monitor. Using this POMDP we calculate \[\mathbb{P}_{\max}[\diamond goal]\] to find the maximum probability and \[1-\mathbb{P}_{\max}[\diamond stop]\] to find the minimum probability. Finally, we can verify this upper and lower bound with the interval $I$.
+
+% \paragraph{Intuition}
+% In order to find the traces in the monitor which give the maximum and minimum probability of reaching a good state, we associate a trace $\tau$ with a scheduler $\sigma_\tau$ in an MDP. Such a scheduler is called consistent.
+% \begin{definition}
+%     A \emph{consistent scheduler} is a scheduler which generates only one trace
+%     \[\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = \cdots\iota\tau e^\star\]
+%     where $\iota$ is the observation of the initial state and $e$ is the observation of the $goal$ and $stop$ state.
+% \end{definition}
+% By model checking the created POMDP, we don't yet ensure that every scheduler is consistent, instead we only ensure semi-consistence.
+% \begin{definition}
+%     A semi-consistent scheduler $\sigma$ is a scheduler which has the following property \[\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^+)^\star\] where $\tau^+$ can be a different prefix of $\tau$ for every loop in $()^\star$.
+% \end{definition}
+% Thus, a semi-consistent scheduler does not have to take and end action. However, by maximizing the probability of reaching either the $goal$ or $stop$ state, we ensure that if the $end$ action can be taken, it will be taken. And if a path takes the $end$ action, almost surely any other path will also take the $end$ action at some point. This property ensures that when maximizing semi-consistent schedulers we will always get a consistent scheduler, and thus a single trace.
+
+\section{Learning Monitors}
+
+\section{Complexity}
 
 \begin{theorem}
     The monitor verification problem is ???-complete.
@@ -251,9 +381,7 @@ All traces $\tau$ which reach the good state with probability $p > t$, are in th
 \subsubsection{Hardness}
 For hardness, we study the following simpler problem.
 \textcolor{red}{CTP = Conditional trace probability. }
-\begin{definition}[CTP Decision Problem]
-    Given an HMM $\mc$ with colors $C$, a unary encoded horizon $H$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{H}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
-\end{definition}
+
 \begin{lemma}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is NP-hard.
@@ -374,103 +502,6 @@ The maximal risk problem is an optimization problem
 We show this by means of an L-reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{}. The construction follows along the reduction for the NP-hardness.
 
 
-
-\subsection{Reduction to Policy Synthesis}
-
-
-\begin{definition}
-    A Markov decision process is a tuple $\mdp=\left(\Sts, \Act, \ptrans, \init, \Aps, \lbl\right)$ where
-    \begin{itemize}
-        \item $\Sts$ is a countable set of states,
-        \item $\Act$ is a set of actions,
-        \item $\ptrans$ : $\Sts \times \Act \times \Sts \rightarrow[0,1]$ is the transition probability function such that for all states $s \in \Sts$ and actions $\alpha \in \Act$:
-
-              \[
-                  \sum_{s^{\prime} \in \Sts} \ptrans\left(s, \alpha, s^{\prime}\right) \in\{0,1\}
-              \]
-
-        \item $\init$ is the initial state,
-        \item $\Aps$ is a set of atomic propositions, and
-        \item $\lbl: S \rightarrow 2^{\Aps}$ is a labeling function.
-    \end{itemize}
-
-    From~\cite{baierPrinciplesModelChecking2008}
-\end{definition}
-
-\section{Problem Statements}
-We have two problems we want to solve. The no false alarms problem and the no missed alarms problem. They have slightly different problem statements and therefore also slightly different solutions.
-
-\subsection{No false alarms}
-All traces $\tau$ from the MC which are in the monitor have at least a probability $p\in I$ of reaching the good state.
-
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\lang{\dfaB}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
-
-\subsection{No missed alarms}
-All traces $\tau$ which reach the good state with probability $p > t$, are in the monitor. By taking the contrapositive, we can instead show that all traces $\tau$ which are not in the monitor reach the good state with probability $p \leq t$.
-
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and not in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\overline{\lang{\dfaB}}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
-
-\section{Outline}
-See \cref{fig:outline} for an outline of the algorithm.
-
-\begin{figure}[h]
-    \includegraphics[width=\textwidth]{images/rM drawing 2024-11-28-13.42.46.png}
-    \caption{Outline of the algorithm.}
-    \label{fig:outline}
-\end{figure}
-
-\section{Algorithm}
-Our algorithm will proceed in four steps. First, we take the MC product~\cite{baierPrinciplesModelChecking2008} of the MC $\mc$ and the specification $\dfa$. Then, we will combine the product MC with the monitor into an MDP. Next we will add end transitions to this MDP for all states that are accepted by the underlying monitor. Lastly, we use Paynt~\cite{andriushchenkoPAYNTToolInductive2021} to model check the created MDP.
-
-\subsection{Applying the specification to the MC}
-We take the MC product as defined by \citeauthor{baierPrinciplesModelChecking2008}~\cite{baierPrinciplesModelChecking2008} to create the product MC $\mc \oplus \dfa$.
-
-\paragraph{Intuition}
-The created product MC is the original MC, but every good state is labeled.
-
-\subsection{Constructing the product MDP}
-To create the MDP, we first create its states. The states are the product of the states of the product MC and the monitor. These are denoted as $\langle s, q_\dfaB\rangle$ for $s \in \Sts_{\mc \oplus \dfa}$, and $q_\dfaB \in \StsD_\dfaB$. As actions in the product MDP we take the observations $\Colors$ of the MC $\mc$.
-
-The transitions in the MDP are defined here in two steps. First we create a not-yet-normalized transition function $P'$ on the states in the MDP. Next, we normalize the transition function by creating redirecting all remaining probability mass of an action in a state towards the initial state in $P''$.
-\begin{align*}
-    \large P'(\langle s, q\rangle , c, \langle s', q'\rangle) =  & \begin{cases}P(s, s') & \text{if } obs(s') = c \land q' = \delta(q, c)\\ 0 & \text{otherwise}\end{cases}                                                                                                                                              \\
-    \large P''(\langle s, q\rangle , c, \langle s', q'\rangle) = & \begin{cases}1 - \sum_{s''\in S}\sum_{q''\in Q}P'(\langle s, q\rangle , c, \langle s'', q''\rangle) & \text{if } s' = \iota_{\mc\oplus\dfa} \land q' = \iota_\dfaB\\ P'(\langle s, q\rangle , c, \langle s', q'\rangle) & \text{otherwise}\end{cases}
-\end{align*}
-
-Lastly, the atomic propositions are $\{\circledcirc_\dfa, \circledcirc_\dfaB\}$, where accepting states in the product MC are labeled by $\circledcirc_\dfa$ and accepting states in the monitor are labeled by $\circledcirc_\dfaB$.
-
-\paragraph{Intuition}
-The created MDP can be seen as the original product MC $\mc\oplus\dfa$, where we can choose which observation to observe, but only if the monitor contains the transition labeled by the observation.
-
-\subsection{Adding end transitions}
-We add two new states to the MDP, the $goal$ and $stop$ states, each only having a self loop. Next, we will add an $end$ action to every state with the label $\circledcirc_\dfaB$. If the state also contains the $\circledcirc_\dfa$ label, we direct the $end$ action to the $goal$ state, otherwise we direct the $end$ action to the stop state.
-
-\paragraph{Intuition}
-Since we are talking about finite traces in the monitor, we need to give the MDP a way to end a path. This is done by taking the $end$ action. If we take the end action in a good state of the product MDP, we reach the $goal$ state, if it was a bad state, then we reach the $stop$ state.
-
-\subsection{Model checking using Paynt}
-We create a POMDP which will be model checked by Paynt~\cite{andriushchenkoPAYNTToolInductive2021} for reachability of the goal state. The observations in this POMDP are the states of the monitor. Using this POMDP we calculate \[\mathbb{P}_{\max}[\diamond goal]\] to find the maximum probability and \[1-\mathbb{P}_{\max}[\diamond stop]\] to find the minimum probability. Finally, we can verify this upper and lower bound with the interval $I$.
-
-\paragraph{Intuition}
-In order to find the traces in the monitor which give the maximum and minimum probability of reaching a good state, we associate a trace $\tau$ with a scheduler $\sigma_\tau$ in an MDP. Such a scheduler is called consistent.
-\begin{definition}
-    A \emph{consistent scheduler} is a scheduler which generates only one trace
-    \[\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = \cdots\iota\tau e^\star\]
-    where $\iota$ is the observation of the initial state and $e$ is the observation of the $goal$ and $stop$ state.
-\end{definition}
-By model checking the created POMDP, we don't yet ensure that every scheduler is consistent, instead we only ensure semi-consistence.
-\begin{definition}
-    A semi-consistent scheduler $\sigma$ is a scheduler which has the following property \[\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^+)^\star\] where $\tau^+$ can be a different prefix of $\tau$ for every loop in $()^\star$.
-\end{definition}
-Thus, a semi-consistent scheduler does not have to take and end action. However, by maximizing the probability of reaching either the $goal$ or $stop$ state, we ensure that if the $end$ action can be taken, it will be taken. And if a path takes the $end$ action, almost surely any other path will also take the $end$ action at some point. This property ensures that when maximizing semi-consistent schedulers we will always get a consistent scheduler, and thus a single trace.
-
-\section{Learning Monitors}
 
 \section{Experiments}
 
