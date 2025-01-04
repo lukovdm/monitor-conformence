@@ -13,6 +13,11 @@
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\indicator}[1]{[#1]}
 
+
+\newcommand{\Distr}{\Delta}
+\newcommand{\Obs}{Z}
+\newcommand{\act}{a}
+
 \renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}}
 \usetikzlibrary{automata, positioning, arrows.meta, fit}
 \tikzset{
@@ -28,63 +33,80 @@
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing}
 
 \addbibresource{zotero.bib}
+\addbibresource{literature.bib}
 
 \title{Learning Verified Monitors for Hidden~Markov~Models}
 \author{Luko van der Maas \and Sebastian Junges }
 \institute{Radboud University, Nijmegen, the Netherlands}
 
-\addbibresource{zotero.bib}
 
 \newcommand{\alg}{ToVer\xspace}
 
 \begin{document}
 \maketitle
 \begin{abstract}
-    Runtime monitors observe a running system via sensors and must predict whether the system is at risk of violating a specification, i.e., runtime monitors classify system runs into safe and unsafe behavior.
-    This paper presents a method to synthesise these classifiers, represented as finite automata, if the model is given by a known hidden Markov model.
-    First, we develop the first method to verify the classifiers: We reformulate the verification problem as a search for misclassifications. We then cast  the search fo misclassifications into a probabilistic model synthesis problem.
-    Second, we synthesise the monitors inductively by adopting ideas from active automata learning, thereby profiting from the ability to quickly classify individual behavior.
-    The outcome is a flexible synthesis loop that synthesises monitors which provably do not exhibit false negatives and have a controllable false positive rate.
-    Our experiments show the efficacy of a prototype for this loop to synthesise monitors with X states for an HMM with Y states.
+Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is safe or unsafe. That is,  the probability of being in a dangerous state conditioned on these observations exceeds some acceptable threshold. 
+The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite state machines.  
+First, we establish the coNP-hardness of checking whether a finite state machine  is indeed a correct monitor, i.e., a monitor without misclassifications.
+Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem. 
+Third, we integrate the verification routine into an active automata learning routine to synthesise correct monitors.
+Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks. 
+%
+% In particular, we provide a verification procedure that can establish the absence of mi
+%This paper contributes the first correct-by-construction synthesis approach for  such monitors, represented as finite automata. We assume that the system is described by a known hidden Markov model.
+%
+%
+%    Runtime monitors observe a running system via sensors and must predict whether the system is at risk of violating a specification, i.e., runtime monitors classify observed traces as being safe or unsafe. 
+%    This paper presents a method to synthesise these classifiers represented as finite automata, if the model is given by a known hidden Markov model.
+%    First, we develop the first method to verify such monitors: We reformulate the verification problem as a search for misclassifications. We then cast  the search fo misclassifications into a probabilistic model synthesis problem.
+%    Second, we synthesise the monitors inductively by adopting ideas from active automata learning, thereby profiting from the ability to quickly classify individual behavior.
+%    The outcome is a flexible synthesis loop that synthesises monitors which provably do not exhibit false negatives and have a controllable false positive rate.
+%    Our experiments show the efficacy of a prototype for this loop to synthesise monitors with X states for an HMM with Y states.
 \end{abstract}
-
-TODO abstract does not match intro in terminology.
-
 
 \section{Introduction}
 Runtime assurance is an essential ingredient in the deployment of safe autonomous systems.
-In particular, runtime monitors aim to provide assurance by flagging potentially dangerous system behavior, based on the currently available information.
-More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., an alarm that the system is violating some safety envolope.
-Various challenges in creating runtime monitors for (semi-)autonomous systems have been identified. Among them is that
-(1)~the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does not include all information about the state of a systems,
-(2)~that the behaviour of the system and/or the sensors may be subject to probabilistic uncertainty,
-(3)~that the monitor itself is subject to resource constraints (time, memory, etc), and
-(4)~that monitors are part of the safety-critical functionalities and should therefore be subject to extensive validation~\cite{}.
-The first two challenges can be addressed (partially) by modelling the system as a hidden Markov model (HMM),
-challenges (3) and (4) can be partially addressed by representing a monitor as, e.g., a (small) finite state machine.
+Runtime monitors provide assurance by flagging potentially dangerous system behavior by observing a system execution. 
+More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envolope. A monitor is correct, if it correctly raises such alarms based on a formal specification. 
+Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{}, such as:
+(1)~the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does uniquely identify the state of a system,
+(2)~the behavior of the system and/or the sensors may be subject to probabilistic uncertainty,
+(3)~the monitor itself is subject to resource constraints (time, memory, etc), and
+(4)~the monitor is itself safety-critical and should therefore be subject to extensive validation.
+Challenges (1,2) can be (partially) addressed  by modelling the system as a hidden Markov model (HMM), Challenges (3,4) can be (partially) addressed by representing a monitor as, e.g., a (small) finite state machine. 
 Concretely, this paper focusses on the following question:
 \emph{Is a given finite state machine a correct monitor for a given HMM?}
 The paper studies the complexity of this problem, provides a practical verification procedure, and embeds this verification procedure into a learning framework.
 
 \paragraph{What are HMMs?}
-In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM). HMMs, like Markov chains (MCs), describe system behavior subject to probabilistic uncertainty.
-Paths are sequences of states that describe system executions.
+In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM).
+Markov chains (MCs) describe system behavior subject to probabilistic uncertainty.
+Paths through an MC are sequences of states that describe system executions.
 % MCs can be seen as specifying a distribution over these paths. 
-HMMs extend MCs by labelling their states with colours (aka \emph{observations})
+HMMs extend MCs by labelling their states with colours (aka \emph{observations}).
 Intuitively, the observations can be used to model the information that the monitor receives.
 In HMMs, every path can be lifted to a sequence of observations, which we call a \emph{trace}.
 The trace associated to a system execution describes the information received by the monitor.
 
 
 % where every state is labelled with a distribution over observations, see Fig.~\ref{}. Paths are sequences of states and MCs can be seen as specifying a distribution over these paths. An HMM extends MCs by assigning to every state a colour (an \emph{observation}). A trace is a sequence of these observations. 
-\paragraph{What is the monitoring problem on HMMs?}
-The standard verification task for MCs is to compute the probability that a  path violates some temporal specification. The monitoring question on HMMs is to compute the \emph{conditional} probability of a path violating a specification, given that the path prefix matches some given observation trace.
-This conditional probability is the \emph{risk of a trace}. A monitor thus maps traces to risks. The risks can be computed in polynomial time, either via a reduction to model checking, or by a (forward) filtering that tracks a distribution over the current system state.
+
+\paragraph{Risk of a trace.}
+In runtime monitoring, an essential task is to estimate whether the current system is dangerous. In the simplest setting, a specification describes a set of states is dangerous. The risk of a trace is then the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace. 
+For a given trace, we may compute this risk, e.g., either via a reduction to model checking~\cite{} or by a (forward) filtering that tracks a distribution over the current states~\cite{}. 
+
 
 \paragraph{What are correct monitors?}
-Many monitors are used to raise an alarm if the risk of a trace exceeds some threshold. We call a monitor \emph{correct} (for an HMM, a specification, and a threshold) if it correctly classifies the risk of every trace as below  or above  the threshold. Thus, the traces are partitioned into safe and unsafe traces.
-A correct monitor raises an alarm exactly on the unsafe traces. To check whether a monitor is correct, we will utilise two checks: First, we check whether the monitor correctly raises an alarm on every unsafe trace (no false negatives) and second, we check whether the monitor correctly raises no alarm on every safe trace (no false positives).
-In terms of a formal languages, these are two inclusion checks.
+Often, we are not interested in this precise risk, but rather want to  partition the set of horizon-bounded traces into safe and unsafe traces: 
+Unsafe traces are traces whose risk does exceed some fixed \emph{acceptable threshold}, all other traces are safe. 
+Indeed, a \emph{correct} monitor obtains a trace and raises an alarm iff a trace is not safe. The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm) exactly the unsafe traces. We note that in this paper, we only consider traces that are bounded by some fixed horizon. 
+
+\paragraph{Illustrative toy example.}
+\sebastian{TODO make more concrete, add Fig.}
+As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{}. A car can be in three states: It can be on a dry road, on an icy patch, or it can drifted off the road. The HMM in \Cref{fig:centralexample} describes the situation, where a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. We can define the trace risk as the probability to be off-road, conditioned on a a trace, such as $dry \cdot  ice \cdot  ice$. In \cref{}, we depict a finite automaton that describes the set of traces that end with two consecutive icy patches. 
+The key verification question in this paper is now: Is this a correct monitor for threshold $0.9$? Put differently, does it raise an alarm iff the trace risk is above $0.9$. 
+
+%A correct monitor behaves as follows: First, it does raise an alarm on each unsafe trace (no false negatives) and second, it does \emph{not} raise an alarm on each safe trace (no false positives). %In terms of a formal languages, these are two inclusion checks.
 
 
 %We study whether monitor makes correct verdicts on \emph{every} (bounded) trace, and show that we can effectively synthesise such monitors.
@@ -94,60 +116,64 @@ In terms of a formal languages, these are two inclusion checks.
 
 \begin{figure}[t]
     TODO add HMM / image of system feeding a trace into a monitor?
-    \caption{}
+    \caption{An HMM and a correct monitor that raises an alarm if the probability of being off-road is above $0.8$.}
     \label{}
 \end{figure}
 
-
-\paragraph{Illustrative example.}
-TODO I guess here is a good place ot make things more concrete.
-
-\paragraph{Complexity.}
-To study the decision problem for correct monitors,
-we consider a simpler problem that asks whether there is a bounded trace in the HMM that induces a risk above a given threshold, i.e., whether there is a false negative. \footnote{The results also apply to checking for false positives.} The problem is clearly in NP.
-We show that this simplified problem is already strongly NP-hard (Thm~\ref{}) and the corresponding optimization problem, that asks to approximate the risk of the trace with the heighest risk, is APX-hard (Thm~\ref{}).
-Intuitively, this means that there is little hope for an efficient approximation algorithm.
+%  road, it can be o
 
 
-\paragraph{Reduction to probabilistic synthesis.}
-While the problem is thus in general not tractable, we suggest to utilise recent advances in the synthesis of probabilistic systems. We concentrate on proving the absence of false negatives, a similar reduction works for showing the absence of false positives.
+
+\paragraph{Novel complexity results.}
+Deciding whether a monitor is correct is coNP-complete (\Cref{lem:complexity}).
+In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace. 
+We consider a simpler variant of this problem that asks whether there is a bounded trace in the HMM that is unsafe. \footnote{The results also apply to checking for safe traces.} 
+The problem is clearly in NP (assuming that the bound is unary encoded). 
+We show that this simplified problem is also strongly NP-hard (\Cref{lem:ctpdecnphard}) and the corresponding optimization problem, that asks to approximate the risk of the trace with the heighest risk, is APX-hard (\Cref{lem:ctpapxhard}).
+Intuitively, APX-hardness means that the existence of an efficient approximation algorithm would have major complexity-theoretic implications.
+
+
+\paragraph{Our verification approach.}
+While deciding whether a monitor is correct is thus in general not tractable, we suggest to utilise recent advances in the synthesis of probabilistic systems.
+We concentrate on proving the absence of missed alarms, i.e., we concentrate on showing that the monitor correctly identifies every unsafe trace. A similar reduction works for showing the absence of spurious alarm.
 First, for a single trace, computing the risk can be reduced to computing a reachability probability in a MC that is intuitively a kind of product between a DFA that accepts exactly the trace and the HMM~\cite{}.
 Thus, it is natural to reduce our problem to the question: Is there a DFA (accepting exactly one trace, accepted by our monitor)
-\footnote{Alternatively, in Section~\ref{sec:useparametersynthesis}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{}.}
 such that the probability in the product MC exceeds a threshold.
-If the answer is no, then the monitor has no false negatives.
-This decision problem can be solved using (exact) probabilistic model synthesis methods~\cite{} as implemented in the tool Paynt~\cite{}.
+If the answer is no, then the monitor has no missed alarms.
+This decision problem can be solved using (exact) probabilistic model synthesis methods~\cite{} as implemented in the tool Paynt~\cite{}\footnote{Alternatively, in Section~\ref{sec:useparametersynthesis}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. We discuss our verification approach in \Cref{sec:monver}.
 
-\paragraph{Learning monitors with active automata learning.}
-Ultimately, we do not only want to verify a monitor, but we want to construct it.
+\paragraph{Our learning approach. }
+Ultimately, we do not only want to verify the correctness of a monitor, but we want to construct such a monitor.
 Above, we already mentioned that the monitors are formal languages. When considering bounded trace, these monitors are regular, and can thus be captured using DFAs.
-Inspired by~\cite{}, we investigate learning these monitors using active automata learning~\cite{}.
-To use active automata learning,
-we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented by computing the risk for a single trace as above and comparing it to a threshold, while the equivalence oracle can be implemented using the two inclusion checks as above.
+Inspired by a recent short paper~\cite{}, we investigate learning these monitors:  
+We choose to do this using active automata learning~\cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}, which closely relates to other popular oracle-guided inductive synthesis loops~\cite{}. 
+To use active automata learning (AAL),
+we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented by computing the risk for a single trace as above and comparing it to a threshold, while the equivalence oracle can be implemented by checking for the absence of missed and false alarms.
+Practically, some minor modifications are necessary to embed our approach in  AAL framework: We have to handle the finite horizon, resolve some traces that are not relevant for the monitor, and we combine conformance and equivalence queries to boost performance. 
 
-\paragraph{Putting it together.} In Fig.~\ref{}, we outline our proposed framework to learn a monitor.  TODO explain
+\paragraph{Putting it together.} In Fig.~\ref{}, we outline our proposed framework to learn a monitor.  \sebastian{TODO explain framework}
 
-
-\paragraph{Practical considerations in using active automata learning.}
-Practically, some modifcations are important:
-\begin{itemize}
-    \item Finite horizon
-    \item dont care
-    \item combining conformance and equivalence queries?
-\end{itemize}
+%
+%\paragraph{Practical considerations in using active automata learning.}
+%Practically, some modifcations are important:
+%\begin{itemize}
+%    \item Finite horizon
+%    \item dont care
+%    \item combining conformance and equivalence queries?
+%\end{itemize}
 
 
 \paragraph{Empirical evaluation.}
-TODO potentially summarise results of the empirical eval here.
+\sebastian{TODO summarise results of the empirical eval here.}
 
 
 
 \paragraph{Contributions.}
 In summary, this paper provides a first framework to learn runtime monitors --- encoded as finite automata --- that are verified to be correct with respect to a given HMM. The main contributions are as follows:
-(1) We study the monitor verification problem and show the hardness of the problem, even in an approximative setting.
-(2) We reduce the monitor verification problem to a probabilistic synthesis problem that search for a counterexample. In the absence of a counterexample, we can conclude that the monitor is correct.
-(3) We learn monitors by using the verifier above to answer equivalence queries in conjunction with off-the-shelf active automata learning.
-(4) We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks. Our prototype can handle HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
+(1)~We study monitor verification and show complexity-theoretic hardness of the underlying problem, even in an approximative setting.
+(2)~We reduce the monitor verification to probabilistic model synthesis problems that exhaustively search for a counterexample.
+(3)~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning.
+(4)~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks. Our prototype can handle HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
 
 
 
@@ -160,80 +186,161 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 \end{figure}
 
 \section{Problem statement}
-In this section we will discuss:
-\begin{itemize}
-    \item HMM and monitors
-    \item Formal monitor verification problem
-\end{itemize}
+In this section, we recap standard notions on stochastic models and finite automata and introduce the formal problem statement. 
 
-\subsection{Hidden Markov Models}
+\paragraph{Notation.}
+Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$. 
 
-\begin{definition}
-    A (discrete-time) Markov chain (MC) is a tuple $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ where:
-    \begin{itemize}
-        \item $\Sts$ is a countable, nonempty set of states,
-        \item $\ptrans: \Sts \times \Sts \rightarrow[0,1]$ is the transition probability function such that for all states $s$ :
 
-              \[
-                  \sum_{s^{\prime} \in \Sts} \ptrans\left(s, s^{\prime}\right)=1
-              \]
-        \item $\init$ is the initial state, and
-        \item $\Aps$ is a set of atomic propositions, and
-        \item $\lbl: \Sts \rightarrow 2^{\Aps}$ is a labeling function.
-    \end{itemize}
+\subsection{Models}
+In this section, we briefly introduce MDPs, which are important later, and HMMs which are crucial to the problem statement. Details can be found in \cite{baierPrinciplesModelChecking2008}. 
 
-    Additionally, observations can be added to an MC by adding a Set of observations $O$, together with an observation function $\obsf\colon \Sts \to O$.
 
-    From~\cite{baierPrinciplesModelChecking2008}
-\end{definition}\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
-HMMs create both traces and paths. Paths $\pi$ are sequences of state, the set of all infinite paths is $\Pi^\mc$. The set of finite paths is donoted by $\Pi_{fin}^\mc$ and the set of paths of at most length $h$ are $\Pi_h^\mc$. If the HMM is clear from the context, the $\mc$ is dropped. Traces $\tau$ are sequences of observations, and the set of Traces of a HMM is the language $\lang{\mc}$ of the HMM. The set of paths which have a trace $\tau$ is given by $\Paths(\tau) = \{\pi \in \Pi^{fin}\ |\ \obsf(\pi) = \tau\}$
-\todo[inline]{Add Full HMM tuple}
-
-\begin{definition}
-    The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $mc$.
+\begin{definition}[MDP]
+	A \emph{Markov decision process} (MDP) is a tuple $\mdp = \left(\Sts, \init, \Act, \ptrans \right)$ with a  countable nonempty set  $\Sts$ of \emph{states},  the \emph{initial state} $\init \in \Sts$, the \emph{partial transition function} $\ptrans\colon \Sts \times \Act \rightharpoonup \Distr(\Sts)$. 
 \end{definition}
+We use $\Act(s) = \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of enabled actions. We assume that there are no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
+A path $\pi$ in an MDP is a sequence $s_0\act_0s_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. %The set of all infinite paths is $\Pi^\mc$. 
+The set of (finite) paths is denoted by $\Pi_{fin}^\mdp$ and the set of paths of at most length $h$ are $\Pi_h^\mdp$. If the MDP is clear from the context, the $\mdp$ is dropped. 
+
+A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs also as tuple $\left(\Sts, \init,  \ptrans \right)$ and write $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$.  Paths in a MC can be simplified to be sequences of (only) states.
+
+
+
+
+%\begin{definition}
+    The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $mc$.
+%\end{definition}
 \todo[inline]{Condition probability on traces defined using $\Paths$}
+
+\begin{definition}[HMMs]
+A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Non-deterministic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{}}, and $r\colon \Sts \to \RR_{\geq 0}$, 
+\end{definition}
+
+
+
+%
+%
+%\begin{definition}
+%    A (discrete-time) Markov chain (MC) is a tuple $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ where:
+%    %\begin{itemize}
+%     %   \item 
+%        $\Sts$ is a countable, nonempty set of states,
+%        %\item
+%         $\ptrans\colon \Sts \times \Sts \rightarrow[0,1]$ is the transition probability function such that for all states $s$ :
+%
+%              \[
+%                  \sum_{s^{\prime} \in \Sts} \ptrans\left(s, s^{\prime}\right)=1
+%              \]
+%        \item $\init$ is the initial state, and
+%        \item $\Aps$ is a set of atomic propositions, and
+%        \item $\lbl: \Sts \rightarrow 2^{\Aps}$ is a labeling function.
+%    \end{itemize}
+%
+%    Additionally, observations can be added to an MC by adding a Set of observations $O$, together with an observation function $\obsf\colon \Sts \to O$.
+%
+%    From~\cite{baierPrinciplesModelChecking2008}
+%\end{definition}
+%\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
+Notions such as paths are lifted from MCs. Furthermore, traces $\tau$ are sequences of observations, and the set of traces of a HMM is the language $\lang{\mc}$ of the HMM. The set $\Paths(\tau)$ contains all paths that correspond to a trace $\tau$, $\Paths(\tau) = \{\pi \in \Pi^{fin}\ |\ \obsf(\pi) = \tau\}$. 
+\sebastian{Also needs things like the probability of a trace. }
+
+
+\begin{example}
+	
+\end{example}
+
 
 \begin{definition}
     A deterministic finite automaton (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of states, $\alphabet$ is an alphabet, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) transition function, $\init$ is the initial state, and $\final \subseteq \StsD$ is a set of accept (or: final) states.
-    From~\cite{baierPrinciplesModelChecking2008}
 \end{definition}
+Let $\varepsilon$ denote the empty word. We lift the transition relation to words, which is defined recursively: $\trans^*(q, \varepsilon) = \varepsilon$ if $a \in \alphabet$ and $\trans^*(q, w \cdot a) = \trans(\trans^*(q,w), a)$.  
 
-\begin{definition}
-    The language $\lang(\dfa)$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$.
-\end{definition}
+    The \emph{language} $\lang{\dfa}$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$, $\lang{\dfa} = \{ w \in \alphabet^* \mid \trans^*(\init, w) \in \final \}$.
 
-\subsection{Problem Statement}
+\subsection{Formal Problem Statement}
 The monitor verification problem consists of two sub problems. The no false alarms problem, and the no missed alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the missed alarm problem in the following sections. In \cref{ssec:nfa} we will adapt to the no false alarms problem.
 
 The no missed alarms problem entails ensuring that all traces from the MC, which are not in the monitor, have at most a risk of $\lambda$.
 
-\begin{mdframed}
-    \textbf{No missed alarm problem}\\
-    Given a HMM $\mc$ with a state risk function $r: \Sts \to \RR_{\geq 0}$, a DAG monitor DFA $\dfa$ with as alphabet the observations of $\mc$, a risk thresholds $\lambda\in[0,\inf)$, and a horizon $h\in\NN^+$. Decide $R^{\max}_r(\overline{\dfa}) < \lambda$, where the \emph{weighted maximum risk function} $R_r^{\max}\colon DFA \to \RR_{\geq 0}$ is defined as
-    \[
-        R_r^{\max}(\dfa) := \underset{\tau\in\lang{\mc}\cap\lang{\dfa}}{\max} \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow})
-    \]
-\end{mdframed}
+\newcommand{\safetraces}[2]{\mathbb{S}_{#1}^{#2}}
+\newcommand{\unsafetraces}[2]{\mathbb{U}_{#1}^{#2}}
+\newcommand{\missedalarms}[2]{\mathsf{mA}_{#1}^{#2}}
+\newcommand{\falsealarms}[2]{\mathsf{fA}_{#1}^{#2}}
+\newcommand{\defeq}{:=}
 
-\begin{mdframed}
-    \textbf{No false alarm problem}\\
-    Given a HMM $\mc$ with a state risk function $r: \Sts \to \RR_{\geq 0}$, a DAG monitor DFA $\dfa$ with as alphabet the observations of $\mc$, a risk thresholds $\lambda\in[0,\inf)$, and a horizon $h\in\NN^+$. Decide $R^{\min}_r(\dfa) > \lambda$, where the \emph{weighted minimum risk function} $R_r^{\min}\colon DFA \to \RR_{\geq 0}$ is defined as
-    \[
-        R_r^{\min}(\dfa) := \underset{\tau\in\lang{\mc}\cap\lang{\dfa}}{\min} \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow})
-    \]
-\end{mdframed}
-These two problems allow one to check if a monitor is included in the perfect monitor for a threshold and the other way around respectively. Thus, if DFA $\dfa$ passes bothe the no missed alarms check and the no false alarms check, we know for certain it is a correct monitor.
 
+\begin{definition}[Risk of a trace]
+	Given a HMM $\mc$. The risk of trace $\tau \in \lang{\mc}$ is: \[ R_r(\tau) \defeq \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
+\end{definition}
+The risk of a trace can be used to partition the set of all traces. 
+\begin{definition}[Safe traces/Unsafe traces]
+Given a HMM $\mc$, a \emph{safe threshold} $\lambda_s \in \mathbb{R}$ and an \emph{unsafe threshold} $\lambda_u \in \mathbb{R}$ with $\lambda_s \leq \lambda_u$. 
+	 A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is an \emph{unsafe trace} (for $\mc$ and $\lambda_u$). Conversely, trace $\tau$ is a \emph{safe trace}, if $R(\tau) < \lambda_s$ (for $\mc$ and $\lambda_u$). 
+\end{definition}
+In the definition above, we deliberately do not require $\lambda_s = \lambda_u$. In particular, by picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe. We write $\safetraces{\mc,\lambda_s}{\leq h}$ to denote the set of safe traces of length at most $h$ and $\unsafetraces{\mc,\lambda_u}{\leq h}$ for the set of unsafe traces of length at most $h$. We often omit the sub/superscripts.
+
+
+\begin{example}
+\end{example}
+
+We are now ready to define correct monitors. 
+\begin{definition}[Monitor]
+	A DFA $\dfa$ is a monitor for HMM $\mc$ if the alphabet for $\dfa$ coincides with the observations in $\mc$.
+\end{definition}
+\begin{definition}[Missed/False alarms]
+	Given a monitor $\dfa$ for HMM $\mc$, a horizon $h$, and thresholds $\lambda_s \leq \lambda_u \in \mathbb{R}$, the set of \emph{missed alarms} is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \unsafetraces{\mc,\lambda_u}{\leq h} \setminus \lang{\dfa}$. The set of \emph{false alarms} is $\falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \safetraces{\mc,\lambda_s}{\leq h} \cap \lang{\dfa}$.
+	% a safe trace $\tau \in \Obs^{\leq h}$ with $R(\tau) > \lambda_s$ and $\tau \not\in \lang{\dfa}$ is a \emph{missed alarm}. Conversely, trace $\tau$ is a \emph{false alarm}, if $R(\tau) < \lambda_u$ and $\tau \in \lang{\dfa}$. 
+\end{definition}
+We drop the sub/superscripts whenever possible. In terms of a classification problem, missed alarms can be seen as false negatives while false alarms are false positives. 
+\begin{definition}[Correct monitor]
+Given thresholds $\lambda_s,\lambda_u$ and horizon $h$, a monitor $\dfa$ for $\mc$ is \emph{correct} if $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) = \emptyset = \falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)$.
+\end{definition}
+Equivalently, a monitor is correct if it raises an alarm for every unsafe trace and for no safe trace:
+\begin{corollary}[Correct monitor]
+	A monitor $\dfa$ for HMM $\mc$ with $ \unsafetraces{\mc,\lambda_u}{\leq h} \subseteq \lang{\dfa} \subseteq \alphabet^* \setminus \safetraces{\mc, \lambda_s}{\leq h}$ is a correct monitor. 
+\end{corollary}
+
+\begin{mdframed}\textbf{Problem statements.} This paper tackles the following problem statements: 
+Given HMM $\mc$, thresholds $\lambda_s,\lambda_u$ and horizon $h$,
+\begin{enumerate}
+	\item Given monitor $\dfa$ for $\mc$, are there missed alarms, i.e., is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)\! = \emptyset$?
+	\item Given monitor $\dfa$ for $\mc$, are there false alarms, i.e., is $\falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)\! = \emptyset$?
+	\item Find a correct monitor $\dfa$ for $\mc$ w.r.t.\ $\lambda_s, \lambda_u$ and $h$.
+\end{enumerate}	
+\end{mdframed}
+Problem statements 1 and 2 together allow checking whether a monitor is correct. 
+\begin{remark}
+A correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finite and thus regular.
+\end{remark}
+
+%
+%\begin{mdframed}
+%    \textbf{No missed alarm problem}\\
+%    Given a HMM $\mc$ with a state risk function $r\colon \Sts \to \RR_{\geq 0}$, a DAG monitor DFA $\dfa$ with as alphabet the observations of $\mc$, a risk thresholds $\lambda\in[0,\inf)$, and a horizon $h\in\NN^+$. Decide $R^{\max}_r(\overline{\dfa}) < \lambda$, where the \emph{weighted maximum risk function} $R_r^{\max}\colon DFA \to \RR_{\geq 0}$ is defined as
+%    \[
+%        R_r^{\max}(\dfa) := \underset{\tau\in\lang{\mc}\cap\lang{\dfa}}{\max} \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow})
+%    \]
+%\end{mdframed}
+%
+%\begin{mdframed}
+%    \textbf{No false alarm problem}\\
+%    Given a HMM $\mc$ with a state risk function $r: \Sts \to \RR_{\geq 0}$, a DAG monitor DFA $\dfa$ with as alphabet the observations of $\mc$, a risk thresholds $\lambda\in[0,\inf)$, and a horizon $h\in\NN^+$. Decide $R^{\min}_r(\dfa) > \lambda$, where the \emph{weighted minimum risk function} $R_r^{\min}\colon DFA \to \RR_{\geq 0}$ is defined as
+%    \[
+%        R_r^{\min}(\dfa) := \underset{\tau\in\lang{\mc}\cap\lang{\dfa}}{\min} \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow})
+%    \]
+%\end{mdframed}
+%These two problems allow one to check if a monitor is included in the perfect monitor for a threshold and the other way around respectively. Thus, if DFA $\dfa$ passes bothe the no missed alarms check and the no false alarms check, we know for certain it is a correct monitor.
+%
 We discuss our solution to the no missed alarms problem in \cref{sec:monver}, we adapt the solution to the no false alarm problem in \cref{ssec:nfa}.
-
-\paragraph{Monitor Learing problem}
-The previous two inclusion checks for the building blocks for the \emph{verified monitor learning problem}. In the verified monitor learning problem we try to learn a correct monitor for a HMM and a certain threshold.
-
-\begin{mdframed}
-    \textbf{Verified monitor learning problem}\\
-    \dots
-\end{mdframed}
+%
+%\paragraph{Monitor Learing problem}
+%The previous two inclusion checks for the building blocks for the \emph{verified monitor learning problem}. In the verified monitor learning problem we try to learn a correct monitor for a HMM and a certain threshold.
+%
+%\begin{mdframed}
+%    \textbf{Verified monitor learning problem}\\
+%    \dots
+%\end{mdframed}
 
 \paragraph{Central example}
 We now introduce the central example used in this paper. And explain how the monitor verification problem and verified monitor learning problem apply to it.
@@ -487,32 +594,36 @@ By model checking the created POMDP, we don't yet ensure that every scheduler is
 \section{Learning Monitors}
 
 \section{Complexity}\label{sec:compl}
-
 \begin{theorem}
-    The monitor verification problem is ???-complete.
+\label{lem:complexity}
+    Checking whether a monitor is correct with respect to a unary encoded horizon is coNP-complete.
 \end{theorem}
+In fact, we study in this section the dual to this problem:
+\begin{definition}
+	
+\end{definition}
+NP-membership follows for the monitor co-verification as false alarms or a missed alarm (of length up to horizon) are witnesses. Verifying whether this trace is indeed a false alarm can be done in polynomial time by first checking whether the automaton accepts it and then computing the trace risk and comparing it to the thresholds. Each of these steps can be done in polynomial time.  \sebastian{Maybe this result is so crucial that we should explain somewhere how this works in polynomial time.}
 
-\subsubsection{Membership?}
-
-
-
-\subsubsection{Hardness}
-For hardness, we study the following simpler problem.
-\textcolor{red}{CTP = Conditional trace probability. }
-
+For hardness, we show NP-hardness of the CTP problem from~\Cref{def:CTPproblem}. As a solution to the monitor co-verification problem suffices to solve the CTP problem, this implies NP harndess of the former. 
 \begin{lemma}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is NP-hard.
 \end{lemma}
 \sebastian{What about the probability of a trace being zero?}
 
-The result holds even for $\lambda = 1$ and acyclic HMMs. We illustrate the reduction from 3CNF.
-Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over $n$ variables $X$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an HMM with colours $C= \{ \#, \bot, \top \}$. We will create an HMM such that there is a trace with CPT $=1$ iff there is a satisfying assignment to the 3CNF formula.
+The result holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem  from 3CNF. We outline the construction below.
 
-Before we give a formal definition of the HMM, we give the following intuition, supported by Fig.~\ref{fig:hmmgadget}.
-We represent assignments $\alpha\colon X \rightarrow \{0,1\}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. This trace matches with $m$ paths through the HMM, one for each clause. That is, the HMM randomly selects a clause with probability $\frac{1}{m}$ in the initial state and then evaluates this clause $c_j$ with respect to an assignment.
-A path through a clause reads variable $x_i$ in state $s_{i,j}$ coloured with $\#$ and transitions to $s_{i,j}^\top$ and $s_{i,j}^\bot$, both with probability $0.5$. State $s_{i,j}^\top$ has colour $\top$, while $s_{i,j}^\bot$ has color $\bot$. Thus, the conditional probability to reach $s_{i,j}^\top$ is $\frac{1}{m}$ if $\alpha(x_i) = \top$ and $0$ otherwise.
-Then, if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. The idea is that (conditionally) reaching state $s'_{i,j}$ (with positive probability) means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while (conditionally) reaching $s_{i,j}$ (with positive probility) means that the clause is either unresolved or unsatisfied given the partial assignment.
+Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk is a state $t$. By construction, there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. Note that there is a trace with risk $1$ iff there is a trace where all corresponding paths end in state $t$.  
+
+Before we give a formal definition of $\mc_\varphi$, we give some intuition, supported by Fig.~\ref{fig:hmmgadget}.
+We represent assignments $\alpha\colon X \rightarrow \{0,1\}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. 
+This trace matches with exactly $m$ paths through the HMM, one for each clause. That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ in the initial state and then `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$.  
+
+That is, a path through clause $c_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ and $s_{i,j}^\bot$, both with probability $\nicefrac{1}{2}$. 
+State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, \bot$, respectively. 
+Thus, the conditional probability to reach $s_{i,j}^\top$ is $\nicefrac{1}{m}$ if $\alpha(x_i) = \top$ and $0$ otherwise.
+Then, if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. 
+The idea is that (conditionally) reaching state $s'_{i,j}$ with positive cconditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment. Thus, $t$ 
 
 
 \begin{figure}[t]
@@ -522,8 +633,8 @@ Then, if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition
         \node[state,right=0.4cm of s1,yshift=0.5cm,draw=green] (s1y) {$s_{1,j}^\top$};
         \node[state,right=0.4cm of s1,yshift=-0.5cm,draw=red] (s1n) {$s_{1,j}^\bot$};
         \node[state,above=1.2cm of s1,] (s1p) {$s'_{1,j}$};
-        \node[state,right=0.4cm of s1p,yshift=0.5cm] (s1yp) {$s_{1,j}'^\top$};
-        \node[state,right=0.4cm of s1p,yshift=-0.5cm] (s1np) {$s_{1,j}'^\bot$};
+        \node[state,right=0.4cm of s1p,yshift=0.5cm,draw=green] (s1yp) {$s_{1,j}'^\top$};
+        \node[state,right=0.4cm of s1p,yshift=-0.5cm,draw=red] (s1np) {$s_{1,j}'^\bot$};
         \node[state,right=1.8cm of s1,] (s2) {$s_{2,j}$};
         \node[state,right=0.4cm of s2,yshift=0.5cm,draw=green] (s2y) {$s_{2,j}^\top$};
         \node[state,right=0.4cm of s2,yshift=-0.5cm,draw=red] (s2n) {$s_{2,j}$};
@@ -538,9 +649,12 @@ Then, if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition
         \node[state,right=0.4cm of s3p,yshift=-0.5cm,draw=red] (s3np) {$s_{3,j}'^\bot$};
         \node[state,right=1.8cm of s3,] (s4) {$s_{4,j}$};
         \node[state,above=1.2cm of s4,] (s4p) {$s'_{4,j}$};
+        
         \node[state,right=0.8cm of s4,] (f) {$f$};
         \node[state,above=1.2cm of f,] (t) {$t$};
-
+  		\draw[->] (s4) edge (f);
+        \draw[->] (s4p) edge (t);
+      
 
         \draw[->] (s1) edge node[above] {$0.5$} (s1y);
         \draw[->] (s1) edge node[above] {$0.5$} (s1n);
@@ -594,17 +708,17 @@ We construct the following HMM $\mc = (\Sts, \ptrans, \init, \Aps, \lbl)$ and se
     \item
 
 \end{itemize}
-
-\begin{definition}[binary-CTP Decision Problem]
-    Given an HMM $\mc$ with colors $C$, a binary encoded horizon $H$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{H}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
-\end{definition}
+%
+%\begin{definition}[binary-CTP Decision Problem]
+%    Given an HMM $\mc$ with colors $C$, a binary encoded horizon $H$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{H}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
+%\end{definition}
 
 %\begin{lemma}
 %\label{lem:ctpdecnphard}
 %	The bin-CTP Decision Problem is in EXPTIME and NP-hard.
 %\end{lemma}
-
-\textcolor{red}{I have no clue how to show that is PSPACE hard... The PSPACE hardness would somehow have to use the long horizons.... I also dont believe it is important.}
+%
+%\textcolor{red}{I have no clue how to show that is PSPACE hard... The PSPACE hardness would somehow have to use the long horizons.... I also dont believe it is important.}
 
 \subsubsection{Approximability}
 
@@ -615,6 +729,7 @@ The maximal risk problem is an optimization problem
 
 \end{definition}
 \begin{lemma}
+\label{lem:ctpapxhard}
     The CTP Optimization Problem is APX-hard.
 \end{lemma}
 We show this by means of an L-reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{}. The construction follows along the reduction for the NP-hardness.
@@ -640,9 +755,19 @@ We also evaluate the learning algorithm by looking at the following questions:
 \end{description}
 
 \section{Related}
-LTLf
+\begin{itemize}
+\item LTLf
+\item Predictors or so by Ziemek et al.
+\item MDPs as Distribution transformers 
+\end{itemize}
 
-\section{Conclusion}
+
+\section{Conclusion and Future Work}
+
+\begin{itemize}
+	\item Long traces (complexity and practical implementation). 
+	\item Unbounded traces (It woudl be great if we can add why this is hard)
+\end{itemize}
 
 \printbibliography{}
 
