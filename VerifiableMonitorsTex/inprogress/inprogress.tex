@@ -113,9 +113,46 @@ The key verification question in this paper is now: Is this a correct monitor fo
 
 
 
-
+\sebastian{Do we also want a small figure of a system feeding observations into a monitor? }
 \begin{figure}[t]
-    TODO add HMM / image of system feeding a trace into a monitor?
+   \begin{subfigure}{0.45\textwidth}
+        \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
+            \node[state,initial, draw=blue] (qs) {$q_s$};
+            \node[state, draw=orange] (qb) [right of=qs] {$q_b$};
+            \node[state, draw=orange] (qc) [below of=qb] {$q_c$};
+
+            \draw[->] (qs) edge[bend left] node[above] {$\frac{9}{10}$} (qb);
+            \draw[->] (qs) edge node[below left] {$\frac{1}{10}$} (qc);
+            \draw[->] (qb) edge[bend left] node[above] {$\frac{1}{2}$} (qs);
+            \draw[->] (qb) edge[loop right] node {$\frac{1}{4}$} ();
+            \draw[->] (qb) edge node[right] {$\frac{1}{4}$} (qc);
+            \draw[->] (qc) edge[loop right] node {$1$} ();
+        \end{tikzpicture}
+        \caption{Example HMM, where the orange states $q_b$ and $q_c$ have the observation $bend$ and the blue state $q_s$ has the observation $straight$.}
+        \label{fig:centralhmm}
+    \end{subfigure}
+    \hfill
+%    \begin{subfigure}{0.45\textwidth}
+%        \includegraphics[width=\textwidth]{images/rM drawing 2024-12-18-15.01.17}
+%        \caption{Situation modeled by \cref{fig:centralhmm}. The cars are labeled by the state in the HMM they represent.}
+%    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \center
+        \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
+            \node[state,initial] (q0) {$s_1$};
+            \node[state] (q1) [right of=q0] {$s_2$};
+            \node[state, accepting] (q2) [right of=q1] {$s_3$};
+
+            \draw[->] (q0) edge[loop above, blue] node {$staight$} ();
+            \draw[->] (q0) edge[orange] node[below] {$curve$} (q1);
+            \draw[->] (q1) edge[blue, bend right] node[above] {$straight$} (q0);
+            \draw[->] (q1) edge[orange] node[below] {$curve$} (q2);
+            \draw[->] (q2) edge[orange, loop right] node {$curve$} ();
+            \draw[->] (q2) edge[blue, loop above] node {$straight$} ();
+        \end{tikzpicture}
+        \caption{An example monitor for the HMM in \cref{fig:centralhmm}, which raises an alarm as soon as two steps in a curve have been observed.}
+        \label{fig:centralmon}
+    \end{subfigure}
     \caption{An HMM and a correct monitor that raises an alarm if the probability of being off-road is above $0.8$.}
     \label{}
 \end{figure}
@@ -345,52 +382,11 @@ We discuss our solution to the no missed alarms problem in \cref{sec:monver}, we
 \paragraph{Central example}
 We now introduce the central example used in this paper. And explain how the monitor verification problem and verified monitor learning problem apply to it.
 \begin{example}
-    We consider a car going down a road with corners in it. Whenever the car is in a corner it has a chance of not steering the correct amount and going of the road. This system is modeled using a HMM as described in \cref{fig:centralexample}.
-
-    The car contains a monitor which can only observe if the car is in a corner or not and tries to warn the car is almost going of the road. An example of such a monitor is given in \cref{fig:centralmon}. The monitor verification problem becomes verifying that for all possible sequences of straight and corner observations which can occur in the HMM and which do not occur in the the monitor, the risk is below a certain $\lambda$.
-
     Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \st, \cor, \cor$ and $\tau_2 = \st, \cor$ have risks $\frac{19}{40}, \frac{4}{40}$ respectively. If $\lambda$ is $\frac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor. And its risk is below $\lambda$. Thus the monitor does not have an missed alarms.
 \end{example}\todo{Include verified monitor learning problem}
 
 \begin{figure}[t]
-    \begin{subfigure}{0.45\textwidth}
-        \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
-            \node[state,initial, draw=blue] (qs) {$q_s$};
-            \node[state, draw=orange] (qb) [right of=qs] {$q_b$};
-            \node[state, draw=orange] (qc) [below of=qb] {$q_c$};
-
-            \draw[->] (qs) edge[bend left] node[above] {$\frac{9}{10}$} (qb);
-            \draw[->] (qs) edge node[below left] {$\frac{1}{10}$} (qc);
-            \draw[->] (qb) edge[bend left] node[above] {$\frac{1}{2}$} (qs);
-            \draw[->] (qb) edge[loop right] node {$\frac{1}{4}$} ();
-            \draw[->] (qb) edge node[right] {$\frac{1}{4}$} (qc);
-            \draw[->] (qc) edge[loop right] node {$1$} ();
-        \end{tikzpicture}
-        \caption{Example HMM, where the orange states $q_b$ and $q_c$ have the observation $bend$ and the blue state $q_s$ has the observation $straight$.}
-        \label{fig:centralhmm}
-    \end{subfigure}
-    \hfill
-    \begin{subfigure}{0.45\textwidth}
-        \includegraphics[width=\textwidth]{images/rM drawing 2024-12-18-15.01.17}
-        \caption{Situation modeled by \cref{fig:centralhmm}. The cars are labeled by the state in the HMM they represent.}
-    \end{subfigure}
-    \begin{subfigure}{\textwidth}
-        \center
-        \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
-            \node[state,initial] (q0) {$s_1$};
-            \node[state] (q1) [right of=q0] {$s_2$};
-            \node[state, accepting] (q2) [right of=q1] {$s_3$};
-
-            \draw[->] (q0) edge[loop above, blue] node {$staight$} ();
-            \draw[->] (q0) edge[orange] node[below] {$curve$} (q1);
-            \draw[->] (q1) edge[blue, bend right] node[above] {$straight$} (q0);
-            \draw[->] (q1) edge[orange] node[below] {$curve$} (q2);
-            \draw[->] (q2) edge[orange, loop right] node {$curve$} ();
-            \draw[->] (q2) edge[blue, loop above] node {$straight$} ();
-        \end{tikzpicture}
-        \caption{An example monitor for the HMM in \cref{fig:centralhmm}, which raises an alarm as soon as two steps in a curve have been observed.}
-        \label{fig:centralmon}
-    \end{subfigure}
+    
     \caption{Central example to the paper}
     \label{fig:centralexample}
 \end{figure}
