@@ -17,6 +17,9 @@
 \newcommand{\Distr}{\Delta}
 \newcommand{\Obs}{Z}
 \newcommand{\act}{a}
+\newcommand{\alarms}{\langle h+1, alarm\rangle}
+\newcommand{\safes}{\langle h+1, safe\rangle}
+\newcommand{\igs}{\langle h+1, ignore\rangle}
 
 \renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}}
 \usetikzlibrary{automata, positioning, arrows.meta, fit}
@@ -31,7 +34,7 @@
     return/.style={color=lightgray, , line width=1mm},
 }
 \usetikzlibrary{patterns, intersections, positioning, shapes.geometric, calc,
-	automata, arrows, decorations.pathreplacing,decorations.pathmorphing}
+	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
 
 \addbibresource{zotero.bib}
 \addbibresource{literature.bib}
@@ -67,14 +70,14 @@
 \section{Introduction}
 Runtime assurance is an essential ingredient in the deployment of safe autonomous systems.
 Runtime monitors provide assurance by flagging potentially dangerous system behavior by observing a system execution.
-More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envolope. A monitor is correct, if it correctly raises such alarms based on a formal specification.
+More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envelope. A monitor is correct, if it correctly raises such alarms based on a formal specification.
 Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{}, such as:
 (1)~the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does uniquely identify the state of a system,
 (2)~the behavior of the system and/or the sensors may be subject to probabilistic uncertainty,
 (3)~the monitor itself is subject to resource constraints (time, memory, etc), and
 (4)~the monitor is itself safety-critical and should therefore be subject to extensive validation.
 Challenges (1,2) can be (partially) addressed  by modelling the system as a hidden Markov model (HMM), Challenges (3,4) can be (partially) addressed by representing a monitor as, e.g., a (small) finite state machine.
-Concretely, this paper focusses on the following question:
+Concretely, this paper focuses on the following question:
 \emph{Is a given finite state machine a correct monitor for a given HMM?}
 The paper studies the complexity of this problem, provides a practical verification procedure, and embeds this verification procedure into a learning framework.
 
@@ -115,7 +118,7 @@ The key verification question in this paper is now: Is this a correct monitor fo
 
 \sebastian{Do we also want a small figure of a system feeding observations into a monitor? }
 \begin{figure}[t]
-    \begin{subfigure}{0.45\textwidth}
+    \begin{subfigure}{0.4\textwidth}
         \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
             \node[state,initial, dry] (qd) {$q_d$};
             \node[state, icy] (qi) [right of=qd] {$q_i$};
@@ -123,7 +126,6 @@ The key verification question in this paper is now: Is this a correct monitor fo
 
             \draw[->] (qd) edge[bend left] node[above] {$\frac{9}{10}$} (qi);
             \draw[->] (qd) edge node[below left] {$\frac{1}{10}$} (qc);
-            \draw[->] (qd) edge[loop below] node[below] {$?$} ();
             \draw[->] (qi) edge[bend left] node[above] {$\frac{1}{2}$} (qd);
             \draw[->] (qi) edge[loop right] node {$\frac{1}{4}$} ();
             \draw[->] (qi) edge node[right] {$\frac{1}{4}$} (qc);
@@ -137,10 +139,11 @@ The key verification question in this paper is now: Is this a correct monitor fo
     %        \includegraphics[width=\textwidth]{images/rM drawing 2024-12-18-15.01.17}
     %        \caption{Situation modeled by \cref{fig:centralhmm}. The cars are labeled by the state in the HMM they represent.}
     %    \end{subfigure}
-    \begin{subfigure}{0.45\textwidth}
+    \begin{subfigure}{0.55\textwidth}
         \center
         \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
             \node[state,initial] (q0) {$s_1$};
+            \node (A) [left= 0.5cm of q0] {$\dfa:$};
             \node[state] (q1) [right of=q0] {$s_2$};
             \node[state, accepting] (q2) [right of=q1] {$s_3$};
 
@@ -150,8 +153,22 @@ The key verification question in this paper is now: Is this a correct monitor fo
             \draw[->] (q1) edge[icy] node[below] {$\icy$} (q2);
             \draw[->] (q2) edge[icy, loop right] node {$\icy$} ();
             \draw[->] (q2) edge[dry, loop above] node {$\dry$} ();
+
+            \begin{scope}[yshift=-2cm]
+                \node[state,initial] (q0) {$s_1$};
+                \node (B) [left= 0.5cm of q0] {$\dfaB:$};
+                \node[state, accepting] (q1) [right of=q0] {$s_2$};
+                \node[state] (q2) [right of=q1] {$s_3$};
+
+                \draw[->] (q0) edge[loop above, dry] node {$\dry$} ();
+                \draw[->] (q0) edge[icy] node[below] {$\icy$} (q1);
+                \draw[->] (q1) edge[dry, bend right] node[above] {$\dry$} (q0);
+                \draw[->] (q1) edge[icy] node[below] {$\icy$} (q2);
+                \draw[->] (q2) edge[icy, loop right] node {$\icy$} ();
+                \draw[->] (q2) edge[dry, loop above] node {$\dry$} ();
+            \end{scope}
         \end{tikzpicture}
-        \caption{An example monitor for the HMM in \cref{fig:centralhmm}, which raises an alarm as soon as two steps in on an $\icy$ section have been observed.}
+        \caption{Two example monitors for the HMM in \cref{fig:centralhmm}, correct monitor $\dfa$ and faulty monitor $\dfaB$. $\dfa$ raises an alarm as soon as two steps on an $\icy$ section have been observed. While $\dfaB$ raises an alarm after exactly one step on icy road has been observed.}
         \label{fig:centralmon}
     \end{subfigure}
     \caption{An HMM and a correct monitor that raises an alarm if the probability of being off-road is above $0.8$.}
@@ -396,52 +413,36 @@ We now introduce the central example used in this paper. And explain how the mon
 
 \section{Monitor Verification}
 \label{sec:monver}
-In this section we will discuss our solution to the monitor correctness problem. We focuss on the no missed alarms problem with traces of the length of the horizon. We will solve this using policy synthesis of colored MDPs.
+In this section we will discuss our solution to the monitor correctness problem. We focus on the no missed alarms problem with traces of exactly the length of the horizon. We will solve this using policy synthesis of colored MDPs. At the end, we will generalize our construction to both the no false alarms problem and traces of length at most the horizon.
 
 \subsection{Colored MDPs}
+Policy synthesis for colored MDPs has seen recent successes\cite{andriushchenkoPAYNTToolInductive2021}. We will reduce our problem into a colored MDP policy synthesis problem.
 
 \begin{definition}[Colored MDP]
-    MDP with colors
-
-    Color consistent schedulers: \dots
+    Given an MDP $\mdp$, with states in $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c\colon \Sts \to C)$. $C$ is the set of colors, and $c$ maps states to colors.
 \end{definition}
-
+We will only consider policies for colored MDPs, which act equally for states of the same colors \footnote{Colored MDPs with color consistent policies coincide with memoryless policies for POMDPs. However, since POMDPs often consider not only memoryless policies, we will use colored MDPs.}.
+\begin{definition}[Color consistent scheduler]
+    A scheduler $\sigma$ for a colored MDP $\mdpc$ with states in $\Sts$ is color consistent if for every two states $s$ and $s'$
+    \[ c(s) = c(s') \Rightarrow \sigma(s) = \sigma(s') \]
+\end{definition}
+We now present the theorem we focus on in this section.
 \begin{theorem}
-    For a HMM with monitor, threshold, and horizon there exists a transform $f(\ldots)$ into colored MDPs, such that if there exists a color-consistent scheduler for $f(\ldots)$ with $\Prob>\lambda$ then there is a trace $\tau \in \missedalarms{}{}(\dfa)$
+    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there exists a transformation $f$ into colored MDPs, such that iff there exists a color-consistent policy for $f(\mc, \dfa, \lambda_s, h, r)$ with $\Prob>\lambda$ then there is a trace $\tau \in \missedalarms{}{}(\dfa)$
 \end{theorem}
-
+Following from the transformation we will present we also have:
 \begin{corollary}
-    There is a one to one correspondence between a found $\tau$ and a color consistent scheduler.
+    There is a one to one correspondence between a found $\tau$ and a color consistent policy.
 \end{corollary}
+Remark that the no missed alarms problem contains several elements which are no longer present in the colored MDP. We will have to incorporate the monitor, horizon, observations, and risk. Furthermore, recall that the no missed alarms problem is stated in terms of a conditional probability on the trace. Policy synthesis cannot take conditional probabilities into account, thus we will also incorporate this in the transformation.
 
+For clarity’s sake, we describe our transformation in several steps. Only at the end do we move from HMMs to colored MDPs. Here we give a quick outline of the algorithm. In \cref{ssec:ctp} we will first move the monitor into the HMM. Secondly we will transform the HMM to both include the horizon and the risk. In \cref{ssec:polsyn} we resolve the conditioning on traces, while also removing the observations from the model, by transforming into colored MDPs.
 
-\section{Old Monitor Verification}
-In this section we will discuss our solution to the monitor correctness problem. We start by describing a solution to simplified version of the no missed alarms problem, where we only consider traces of exactly the horizon length. In \cref{ssec:nfa} we generalize this to both traces of at the length of the horizon and to the no false alarms problem.
-
-We will tackle the no missed alarms problem by first reducing the problem in a series of steps. We first reduce to the novel Conditional trace probability (CTP) problem in \cref{ssec:ctp}. Next, we further simply the problem by looking at the even simpler asyclic CTP (ACTP) problem in \cref{ssec:actp}. In \cref{ssec:polsyn}, we reduce the ACTP problem to a consistent policy synthesis problem on MDPs. Lastly, we show how to solve this consistent policy synthesis problem using PAYNT\cite{andriushchenkoPAYNTToolInductive2021} in \cref{ssec:paynt}.
-
-\subsection{CTP Problem}\label{ssec:ctp}
-We will solve the Monitor verification problem by looking at the simpler \emph{Conditional trace probability} (CTP) problem. We will show a reduction from the Co-Monitor Verification Problem to CTP.
-\begin{definition}[CTP Decision Problem]
-    Given an HMM $\mc$ with colors $C$, a unary encoded horizon $h$, a set of goal states $G$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that $\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in G}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$.
-
-\end{definition}
-As we will be shown in \cref{sec:compl} the CTP problem is NP-complete.
-
-The CTP problem differs from the monitor verification problem in two important aspects. First, the CTP problem no longer considers the monitor and the risk. Second, instead of deciding there are no missed alarm traces, we have to find a missed alarm trace. Finding a trace is similar to the dual of the no missed alarms problem.
-\begin{definition}[Missed Alarms (MA) Problem]
-    Given a HMM $\mc$ with an associated monitor $\dfa$, a missed alarm thresholds $\lambda_s\in[0,\inf)$, and a horizon $h\in\NN^+$. Find a trace $\tau \in \missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)$.
-\end{definition}
-\todo{Dubious contractions}Finding a trace in the MA problem disproves the no MA problem for the same inputs.
-
-\paragraph{Reduction to CTP}
-In order to translate the co-MV problem to the CTP problem we combine the monitor and the HMM using the {baierPrinciplesModelChecking2008}. The monitor has to be complete, however, this can be ensured without loss of generality.
-\todo{Maybe say complement of the monitor because missed alarms} Our central example transformed into a CTP decision problem can be found in \cref{fig:ctphmm}.
-
+\subsection{(A)CTP Problem}\label{ssec:ctp}
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
-        \node[state,initial, dry] (qd1) {$\langle d,1\rangle$};
+        \node[state,initial, dry, accepting] (qd1) {$\langle d,1\rangle$};
         \node[state, icy] (qi2) [right of=qd1] {$\langle i,2\rangle$};
         \node[state, icy] (qc2) [below of=qi2] {$\langle c,2\rangle$};
         \node[state, icy, accepting] (qi3) [right of=qi2] {$\langle i,3\rangle$};
@@ -465,51 +466,36 @@ In order to translate the co-MV problem to the CTP problem we combine the monito
         \draw[->] (qd3) edge node[below right] {$\frac{1}{10}$} (qc3);
         \draw[->] (qd3) edge[loop below] node[below] {$?$} ();
     \end{tikzpicture}
-    \caption{The central example HMM transformed into the CTP problem, using the Product Markov Chain construction \cite{baierPrinciplesModelChecking2008}. States are named with their HMM state, $\{d,i,c\}$ and their monitor state, $\{1,2,3\}$. States with the accepting label are marked as accepting states.}
+    \caption{The central example HMM and faulty monitor $\dfaB$ transformed into the CTP problem. States are named with their HMM state, $\{d,i,c\}$ and their monitor state, $\{1,2,3\}$. States in the alarm states set $A$ have been marked accepting.}
     \label{fig:ctphmm}
 \end{figure}
+First, we show how the dual of the no missed alarms problem, the exists missed alarm problem, can be transformed into the simpler \emph{Conditional trace probability} (CTP) problem. Finally, we will further simply the problem by incorporating both the horizon and risk such that we are left with acyclic HMMs. We will discuss this intermediate problem as the Acyclic CTP (ACTP) problem.
 
-\subsection{Asyclic CTP problem}\label{ssec:actp}
-We further simplify the monitor verification problem by incorporating the horizon, the goal states and the risk into the HMM. This results in the acyclic CTP (ACTP) problem.
+The exists missed alarm problem, questions whether there is a trace $\tau$ such that $\tau \in \missedalarms{}{}(\dfa)$. Obviously, when such a trace exists, $\missedalarms{}{}(\dfa) \neq \emptyset$, thus disproving the no missed alarms problem for $\dfa$.
 
-\begin{definition}[Asyclic CTP problem]
-    Given an acyclic HMM $\mc$ with colors $C$, an alarm state $a$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^\star$ such that $\sum_{\pi\in\Pi^\mc_{h}}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
+\subsubsection{CTP problem}
+Before we combine the HMM and the monitor, we have to modify the monitor. Since we are looking for missed alarms, we are interested in all traces that are not in the monitor. We thus take the complement of the monitor.
+
+We transform the HMM using the Product Markov Chain construction from \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008}. It combines a DFA and a MC by taking the product of the states and using the obvious initial states and transition function. We extend this to HMMs, by letting the observation function observe the model states. This extension allows us to apply the Product Markov Chain construction to our model HMM and complemented monitor DFA, resulting in a product HMM. We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
+
+The resulting product HMM can be seen as the model of a simplified version of the no missed alarms problem, the CTP problem.
+
+\begin{definition}[CTP Decision Problem]
+    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, a risk function $r\colon S \to \RR^+$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that $$\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$$
 \end{definition}
-\todo[inline]{Explain problem}
+As we will be shown in \cref{sec:compl} the CTP problem is NP-complete. By using the above reduction to exists missed alarm problem, it is easy to show that the no missed alarms problem is co-NP-complete.
 
-\subsubsection{Reduction}
-Given an instance of the CTP problem with HMM $\mcctp=\left(\Sts, \ptrans, \init, C, \obsf, r \right)$, good states $G$, horizon $h$, risk function $r$, and threshold $\lambda$, we reduce the CTP problem to an ACTP problem.
+Our example HMM with monitor $\dfaB$ from \cref{fig:centralexample} transformed into the CTP problem can be seen in \cref{fig:ctphmm}.
 
-We unroll $\mcctp$ over the horizon $h$, creating the unrolled HMM \todo{get better name for tussenstap hmm} $\mcactp = (\Sts \times \{1,\ldots,h\}, \ptrans', \iota\times\{1\}, C, \obsf')$. $\ptrans'$ is defined as
-\[\ptrans'(\langle s, i\rangle, \langle q, i+1\rangle) = \ptrans(s, q)\]
-for $i \in \{1,\ldots,h-1\}$. $\obsf'$ ignores the horizon. The horizon states get transitions to three new states, the $alarm$, $safe$ and $ignore$ states according to the normalized risk $r$.
-\begin{align*}
-    \ptrans'(\langle s, h\rangle, alarm)  & = \begin{cases}
-                                                  r'(s) & \text{if } s \in G \\
-                                                  0     & \text{otherwise}
-                                              \end{cases}     \\
-    \ptrans'(\langle s, h\rangle, safe)   & = \begin{cases}
-                                                  1 - r'(s) & \text{if } s \in G \\
-                                                  0         & \text{otherwise}
-                                              \end{cases} \\
-    \ptrans'(\langle s, h\rangle, ignore) & = \begin{cases}
-                                                  1 & \text{if } s \notin G \\
-                                                  0 & \text{otherwise}
-                                              \end{cases}
-\end{align*}
-The $alarm$, $safe$ and $ignore$ states become sink states. The $alarm$ and $safe$ sates get the $end$ observation, while the $ignore$ state gets the $\ig$ observation.
-
-This reduction applied to the example $\mcctp$ can be seen in \cref{fig:actp}
-
-
+\subsubsection{ACTP problem}
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
         \node[state,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, dry] (qd2) [right = .8cm of qd1] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, icy] (qi2) [right = .8cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
 
-        \node[state, icy] (qi2) [below of= qd2] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+        % \node[state, dry] (qd2) [above of = qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
 
         \node[state, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
@@ -519,9 +505,9 @@ This reduction applied to the example $\mcctp$ can be seen in \cref{fig:actp}
 
         \node[state, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
 
-        \node[state] (safe) [right = .8cm of qi3] {$safe$};
-        \node[state] (alarm) [below of=safe] {$alarm$};
-        \node[state, draw=gray] (ignore) [above of=safe] {$ignore$};
+        \node[state] (safe) [right = .8cm of qi3] {$\safes$};
+        \node[state] (alarm) [below of=safe] {$\alarms$};
+        \node[state, draw=gray] (ignore) [above of=safe] {$\igs$};
 
         \draw[->] (qi3) edge node[above] {$1$} (safe);
 
@@ -529,17 +515,17 @@ This reduction applied to the example $\mcctp$ can be seen in \cref{fig:actp}
 
         \draw[->] (qc3) edge node[above] {$1$} (alarm);
 
-        \draw[->] (qd1) edge node[above] {$\frac{1}{2}$} (qd2);
+        % \draw[->] (qd1) edge node[above] {$\frac{1}{2}$} (qd2);
         \draw[->] (qd1) edge node[above] {$\frac{4}{10}$} (qi2);
         \draw[->] (qd1) edge node[below left] {$\frac{1}{10}$} (qc2);
 
-        \draw[->] (qd2) edge node[above, near start] {$\frac{1}{2}$} (qd3);
-        \draw[->] (qd2) edge node[above, near start] {$\frac{1}{4}$} (qi3);
-        \draw[->] (qd2) edge node[above, near start] {$\frac{1}{4}$} (qc3);
+        % \draw[->] (qd2) edge node[above, near start] {$\frac{1}{2}$} (qd3);
+        % \draw[->] (qd2) edge node[above, near start] {$\frac{1}{4}$} (qi3);
+        % \draw[->] (qd2) edge node[above, near start] {$\frac{1}{4}$} (qc3);
 
-        \draw[->] (qi2) edge node[near end, above] {$\frac{1}{2}$} (qd3);
-        \draw[->] (qi2) edge node[near end, above] {$\frac{1}{4}$} (qi3);
-        \draw[->] (qi2) edge node[near end, above right] {$\frac{1}{4}$} (qc3);
+        \draw[->] (qi2) edge node[above] {$\frac{1}{2}$} (qd3);
+        \draw[->] (qi2) edge node[above] {$\frac{1}{4}$} (qi3);
+        \draw[->] (qi2) edge node[above right] {$\frac{1}{4}$} (qc3);
 
         \draw[->] (qc2) edge node[below] {$1$} (qc3);
 
@@ -547,61 +533,54 @@ This reduction applied to the example $\mcctp$ can be seen in \cref{fig:actp}
         \draw[->] (alarm) edge[loop right] node[right] {$1$} ();
         \draw[->] (ignore) edge[loop right] node[right] {$1$} ();
     \end{tikzpicture}
-    \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation.}
+    \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \atop \langle s,j\rangle \right\rangle$.}
     \label{fig:actp}
 \end{figure}
+We further simplify the problem by combine the horizon, risk and the newly created alarm states set into the HMM. The resulting HMM can be seen as the model for the acyclic CTP problem.
 
+\todo{Should I more properly introduce the CTP HMM with its contents? I do use them later on.}
+We will build up the ACTP HMM by creating its transition function $\ptrans'$, all other elements of the ACTP HMM are easily derivable.
+To include the horizon into the ACTP HMM, we unroll the CTP HMM over the horizon $h$. The ACTP HMM has states in $\{1,\ldots,h\}\times\Sts$. The ACTP transition function $\ptrans'$ on non-horizon states behaves as expected:
+\[\ptrans'(\langle i, s\rangle, \langle i+1, q\rangle) = \ptrans(s, q)\]
+with $i \in \{1,\ldots,h-1\}$. The horizon states, $\langle h, s \rangle$ for $s \in \Sts$, transition to one of three states, $\alarms$, $\safes$ or $\igs$ state. Horizon states in $A$ will transition to $\alarms$ and $\safes$ according to the \todo{Mention normalizing risk more prominently somewhere?} normalized risk. Horizon states not in $A$ transition to $\igs$ instead.
+\begin{align*}
+    \ptrans'(\langle h, s\rangle, \alarms) & = \begin{cases}
+                                                   r'(s) & \text{if } s \in G \\
+                                                   0     & \text{otherwise}
+                                               \end{cases}     \\
+    \ptrans'(\langle h, s\rangle, \safes)  & = \begin{cases}
+                                                   1 - r'(s) & \text{if } s \in G \\
+                                                   0         & \text{otherwise}
+                                               \end{cases} \\
+    \ptrans'(\langle h, s\rangle, \igs)    & = \begin{cases}
+                                                   1 & \text{if } s \notin G \\
+                                                   0 & \text{otherwise}
+                                               \end{cases}
+\end{align*}
+The $\alarms$, $\safes$ and $\igs$ states become sink states. The $\alarms$ and $\safes$ sates get the $end$ observation, while the $\igs$ state gets the $\ig$ observation.
+
+We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no false alarms problem.
+
+\begin{remark}
+    Note that we ignore all states in $A$ that are not horizon states. However, since we only consider traces which are of length exactly the horizon, we only need to consider the alarm states which are encountered after horizon steps.
+\end{remark}
+
+Using the above transformed HMM we can define the ACTP problem.
+\begin{definition}[Asyclic CTP problem]
+    Given an acyclic HMM $\mc$ with observations $Z$, an alarm state $a$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
+\end{definition}
+In the ACTP HMM we no longer consider the risk of a trace, instead we only reason about the probability of reaching the alarm state. The ACTP problem thus contains a threshold between in the interval $(0,1]$. We also no longer need to consider the horizon, as all traces consist of a horizon number of observation in $Z$ and an infinite sequence of either $end$ or $\ig$ observations.
+
+The ACTP transformation applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}.
 
 \subsection{Reduction to Consistent Policy Synthesis}\label{ssec:polsyn}
-We will reduce the ACTP problem into a consistent policy synthesis problem on MDPs. We will transform the model such that conditioning on a trace in the HMM is equivalent to calculating the probability for a consistent policy in an MDP. Then, finding a trace with a probability above a threshold comes down to finding a consistent policy with a probability above a threshold.
-
-Restricting the policies to a consistent subset will be essential in making this equivalence work.
-
-\begin{definition}
-    A consistent policy $\sigma$ is a policy which has the following property with $\iota$ the observation of the initial state and $e$ is the \en observation
-    \[\exists_{\tau\in C^\star}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^<)^+\iota\tau e^\star\]
-    Thus, the trace of a path obtained using $\sigma$ is a finite sequence of initial observations and prefixes of $\tau$ finished by observing the initial state, fully $\tau$ and an infinite amount of end observations.
-\end{definition}\todo{Technically there are no observations in the MDP, we could rewrite in terms of the actions taken by the MDP, but might be less intuitive}
-However, we are not able to enforce this form of consistency in our policies. Instead, we look at semi-consistent schedulers.
-\todo{Mention fairness somewhere?}
-\begin{definition}
-    A semi-consistent policy $\sigma$ is a policy which has the following property \[\exists_{\tau\in C^\star}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^<)^+(\iota\tau e^\star \mid (\iota\tau^<)^\star)\]
-    Thus, a semi-consistent scheduler is a consistent scheduler where the induced trace never has to observe an end state.
-\end{definition}\todo{This is quite a lot of non-intuitive notation, how could I do it differently}
-We claim that the maximal semi-consistent policy for reachability of the $goal$ or $stop$ states will always be a consistent policy if an \en transition can be taken. \todo{Give proof?}
-
-\todo[inline]{Write something about how it does not matter what we do with ignore states. As they are never reached by a maximal consistent scheduler, which can reach $a$}
-
-The resulting problem statement given this claim:
-\begin{definition}[Consistent policy synthesis problem]
-    For an MDP $\mdp$, a threshold $\lambda_s$, and an alarm state $a$. Find a policy $\sigma \in \Sigma^{semi-cons}$ such that:
-    \[\Prob^{\sigma,\mdp}(\lozenge a) > \lambda_s \]
-\end{definition}
-
-\subsubsection{Reduction}
-We will reduce the ACTP problem with a HMM $\mcactp = (\Sts \times \NN^{+\leq h} \cup \{alarm, safe, ignore\}, \ptrans'', \iota', \obsf'', C\cup \{\ig, \en\})$ and a threshold $\lambda$ into an MDP such that a consistent policy coincides with a trace in $\mcactp$.
-
-Intuitively, we will let the MDP choose its next observation. Any probability not going towards this observation will be redirected to the initial state, thus resetting the path.
-
-We construct the policy synthesis MDP $\mdp = (\Sts\times\NN^{< h},\allowbreak C \cup \{\ig, \en\},\allowbreak \ptrans''',\allowbreak \iota'',\allowbreak \{\alarm, \safe\},\allowbreak L'')$
-where $\ptrans'''$ is definded as
-\begin{align*}
-    \ptrans'''(\langle s, i\rangle , c, \langle q, i+1 \rangle) :=
-    \begin{cases}
-        \ptrans''(\langle s, i\rangle, \langle q, i+1 \rangle) & \text{if } \obsf(q) = c \\
-        1 - \sum_{q'\in S\ |\ \obsf(q') = c} P^\mc(s,q')       & \text{if } q = \iota    \\
-        0                                                      & \text{otherwise}
-    \end{cases}
-\end{align*}
-
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
         \node[state,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, dry] (qd2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
-
-        \node[state, icy] (qi2) [below of= qd2] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+        \node[state, icy] (qi2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+        % \node[state, dry] (qd2) [above of=qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
         \node[state, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
         \node[state, icy] (qi3) [right = 1.5cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
@@ -610,75 +589,99 @@ where $\ptrans'''$ is definded as
 
         \node[state] (safe) [right = 1.5cm of qi3] {$safe$};
         \node[state] (alarm) [below of=safe] {$alarm$};
-        \node[state, opacity=0.5] (ignore) [above of=safe] {$ignore$};
 
-        \node[action] (qd1o) at ($(qd1)!0.5!(qi2)$)  {};
-        \node[action] (qd1b) at ($(qd1)!0.5!(qd2)$) {};
-        \node[action] (qd2b) at ($(qd2)!0.5!(qd3)$) {};
-        \node[action] (qd2o) at ($(qd2)!0.5!(qi3)$)  {};
-        \node[action] (qi2b) at ($(qi2)!0.5!(qi3)$) {};
-        \node[action] (qi2o) at ($(qi2)!0.5!(qc3)$)  {};
-        \node[action] (qc2o)  at ($(qc2)!0.5!(qc3)$) {};
+        \node[action] (qd1i) at ($(qd1)!0.5!(qi2)$)  {};
+        % \node[action] (qd1d) at ($(qd1)!0.5!(qd2)$) {};
+        % \node[action] (qd2d) at ($(qd2)!0.5!(qd3)$) {};
+        % \node[action] (qd2i) at ($(qd2)!0.5!(qi3)$)  {};
+        \node[action] (qi2d) at ($(qi2)!0.5!(qd3)$) {};
+        \node[action] (qi2i) at ($(qi2)!0.5!(qi3)$)  {};
+        \node[action] (qc2d) at ($(qc2)!0.6!(qd1|-qc2)$) {};
+        \node[action] (qc2i) at ($(qc2)!0.5!(qc3)$) {};
 
         \node[action] (qi3e) at ($(qi3)!0.6!(safe)$) {};
-        \node[action] (qd3e) at ($(qd3)!0.6!(ignore)$) {};
+        \node[action] (qd3e) at ($(qd3)!0.6!(qi2|-qd3)$) {};
         \node[action] (qc3e) at ($(qc3)!0.6!(alarm)$) {};
 
         \draw (qi3) edge node[below] {$\en$} (qi3e);
         \draw[->] (qi3e) edge node[above] {$1$} (safe);
 
         \draw (qd3) edge node[above] {$\ig$} (qd3e);
-        \draw[->] (qd3e) edge node[above] {$1$} (ignore);
+        \draw[return, ->] (qd3e) edge[bend right=20] node[above] {$1$} (qd1);
 
         \draw (qc3) edge node[below] {$\en$} (qc3e);
         \draw[->] (qc3e) edge node[above] {$1$} (alarm);
 
-        \draw (qd1) edge node[above] {$\dry$} (qd1b);
-        \draw[->] (qd1b) edge node[above] {$\frac{1}{2}$} (qd2);
-        \draw[return, ->] (qd1b) edge[bend right=60] node[above] {$?$} (qd1);
-        \draw (qd1) edge node[above] {$\icy$} (qd1o);
-        \draw[->] (qd1o) edge node[above] {$\frac{4}{10}$} (qi2);
-        \draw[->] (qd1o) edge node[below left] {$\frac{1}{10}$} (qc2);
-        \draw[return, ->] (qd1o) edge[bend left] node[below] {$?$} (qd1);
+        % \draw (qd1) edge node[above] {$\dry$} (qd1d);
+        % \draw[->] (qd1d) edge node[above] {$\frac{1}{2}$} (qd2);
+        % \draw[return, ->] (qd1d) edge[bend right=60] node[above] {$?$} (qd1);
+        \draw (qd1) edge node[below] {$\icy$} (qd1i);
+        \draw[->] (qd1i) edge node[above] {$\frac{4}{10}$} (qi2);
+        \draw[->] (qd1i) edge node[below] {$\frac{1}{10}$} (qc2);
 
-        \draw (qd2) edge node[above] {$\dry$} (qd2b);
-        \draw[->] (qd2b) edge node[above] {$\frac{1}{2}$} (qd3);
-        \draw[return, ->] (qd2b) edge[bend right=60] node[above] {$?$} (qd1);
-        \draw (qd2) edge node[above] {$\icy$} (qd2o);
-        \draw[->] (qd2o) edge node[above] {$\frac{1}{4}$} (qi3);
-        \draw[->] (qd2o) edge node[above right] {$\frac{1}{4}$} (qc3);
+        % \draw (qd2) edge node[above] {$\dry$} (qd2d);
+        % \draw[->] (qd2d) edge node[above] {$\frac{1}{2}$} (qd3);
+        % \draw[return, ->] (qd2d) edge[bend right=60] node[above] {$?$} (qd1);
+        % \draw (qd2) edge node[above] {$\icy$} (qd2i);
+        % \draw[->] (qd2i) edge node[above] {$\frac{1}{4}$} (qi3);
+        % \draw[->] (qd2i) edge node[above right] {$\frac{1}{4}$} (qc3);
 
-        \draw (qi2) edge node[above] {$\dry$} (qi2b);
-        \draw[->] (qi2b) edge node[above] {$\frac{1}{2}$} (qd3);
-        \draw (qi2) edge node[below] {$\icy$} (qi2o);
-        \draw[->] (qi2o) edge node[above] {$\frac{1}{4}$} (qi3);
-        \draw[->] (qi2o) edge node[above right] {$\frac{1}{4}$} (qc3);
+        \draw (qi2) edge node[above] {$\dry$} (qi2d);
+        \draw[->] (qi2d) edge node[above] {$\frac{1}{2}$} (qd3);
+        \draw[->,return] (qi2d) edge[bend right] node[below] {$\frac{1}{2}$} (qd1);
+        \draw (qi2) edge node[below] {$\icy$} (qi2i);
+        \draw[->] (qi2i) edge node[above] {$\frac{1}{4}$} (qi3);
+        \draw[->] (qi2i) edge node[below] {$\frac{1}{4}$} (qc3);
+        \begin{scope}[on background layer]
+            \draw[->,return] (qi2i) edge[bend right=20] node[above] {$\frac{1}{2}$} (qd1);
+        \end{scope}
 
-        \draw (qc2) edge node[below] {$\icy$} (qc2o);
-        \draw[->] (qc2o) edge node[below] {$1$} (qc3);
+        \draw (qc2) edge node[below] {$\icy$} (qc2i);
+        \draw[->] (qc2i) edge node[below] {$1$} (qc3);
+        \draw (qc2) edge node[below] {$\dry$} (qc2d);
+        \draw[->, return] (qc2d) edge[bend left] node[above] {$1$} (qd1);
 
         \draw (safe) edge[loop right] node {$\en$} (safe);
         \draw (alarm) edge[loop right] node {$\en$} (alarm);
-        \draw (ignore) edge[loop right] node {$\ig$} (ignore);
     \end{tikzpicture}
     \caption{The central example transformed into an mdp to be used as the model in the MDP policy synthesis problem. Every state has an action which contains only transitions to states which had the observation related to that action.\todo[inline]{bad explanation}}
     \label{fig:mdpex}
 \end{figure}
+In the ACTP HMM we only have the observations and conditional probability on a trace left. To incorporate this into the model we will use one novel idea. Instead of transitioning to a state and observing it, we will allow the model to choose what observation to observe. We thus move away from HMMs and into MDPs. This has two results. Firstly, instead of talking about sequences of observations, instead we will consider sequences of actions taken. Secondly, any trace can be transformed into a policy of the MDP. We will first discuss how to create this MDP. Afterward, we show how to ensure how, traces and policies can be made equivalent by coloring the MDP.
 
-\subsection{Policy Synthesis using Memoryless Policies}\label{ssec:paynt}
-Using colored MDPS
-\begin{itemize}
-    \item Our consistence coincides with colored MDPs from \cite{}.
-    \item Use step value as color.
-    \item Solve maximal reachability of colored MDPs using PAYNT.
-\end{itemize}
+We construct the policy synthesis MDP where the transition function $\ptrans''$ is defined as
+\begin{align*}
+    \ptrans''(s , z, q) :=
+    \begin{cases}
+        \ptrans'(s, q)                                     & \text{if } \obsf(q) = z \\
+        \sum_{q'\in S\ |\ \obsf(q') \neq z} \ptrans'(s,q') & \text{if } q = \iota    \\
+        0                                                  & \text{otherwise}
+    \end{cases}
+\end{align*}
+Thus we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state. \todo{Should we give a reason why this is correct? And not normalizing the probabilities?} We fully remove the ignore action and ignore state, as they should never be taken\footnote{The ignore state was included in ACTP to ensure we had no deadlock states.}.
 
-\noindent Using POMDPs
-\begin{itemize}
-    \item Our consistence coincides with memoryless policies for POMDPs.
-    \item Use step value as observation.
-    \item Solve maximal reachability using PAYNT.
-\end{itemize}
+The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
+\begin{definition}[Trace consistent policy]
+    Given two sets $\Sts$ and $Z$ and an MDP $\mdp$ with states in $\NN\times\Sts$, and actions in $Z\cup\{end\}$. Together with a trace $\tau \in Z^\star$. A \emph{trace consistent policy} is of the form
+    \begin{align*}
+        \sigma_\tau(\langle i, s \rangle) = \begin{cases}
+                                                \tau^{(i)} & \text{if } i \leq |\tau| \\
+                                                end        & \text{otherwise}
+                                            \end{cases}
+    \end{align*}
+\end{definition}
+\begin{corollary}
+    There exists a map $t(\sigma_\tau) = \tau$ which, given a trace consistent policy $\sigma_\tau$ finds its associated trace $\tau$.
+\end{corollary}
+However, when finding the maximal trace, we might not find a trace consistent policy. To fix this we color the MDP such that color-consistent policies coincide with trace consistent policies on our MDPs. As colors $C$, we take the set $\{1,\ldots,h\}$ of steps until the horizon, and as coloring function take the projection $c(\langle i,s \rangle) = i$. Given that all $end$ states sinks, color consistent policies with the trace consistent policies.
+
+\begin{remark}
+    All states gain all actions in $\ptrans''$, we can later prune any actions for all states $S^C$ of a color $C$ when these actions only redirect to the initial state from $S^C$.
+\end{remark}
+
+Now finding a trace with the conditional trace probability above $\lambda_s$ coincides with finding a color consistent policy such that
+\[\Prob^{\sigma}(\lozenge \alarms) > \lambda_s \]
+
 
 \subsection{Adapting to No False Alarms and Smaller Traces}\label{ssec:nfa}
 \begin{itemize}
@@ -884,89 +887,188 @@ We also evaluate the learning algorithm by looking at the following questions:
 
 \appendix
 
-\section{Alternative formulations of the problem}
-Instead of giving a specification DFA, we could instead give a TL specification~\cite{lichtensteinGlory1985} which is evaluated for every state. Since TL has both future and past operators both now reachability, $\diamond\hspace{-.9em}- l$, and soon reachability, $\bigcirc^n \diamond\hspace{-.9em}- l$, for a label $l$ can be expressed. While using a specification DFA can only express now reachability.
 
-The only impact this reformulation of the problem would have is in step 1. Here, instead of taking the product MC, we check if the above described TL formula has a probability above a certain threshold. If that is the case we mark it with the $\circledcirc_\dfa$ label. This MC is then used for the subsequent steps.
+% \section{Old Monitor Verification}
+% In this section we will discuss our solution to the monitor correctness problem. We start by describing a solution to simplified version of the no missed alarms problem, where we only consider traces of exactly the horizon length. In \cref{ssec:nfa} we generalize this to both traces of at the length of the horizon and to the no false alarms problem.
 
-\section{Reformulation with monitors}
+% We will tackle the no missed alarms problem by first reducing the problem in a series of steps. We first reduce to the novel Conditional trace probability (CTP) problem in \cref{ssec:ctp}. Next, we further simply the problem by looking at the even simpler asyclic CTP (ACTP) problem in \cref{ssec:actp}. In \cref{ssec:polsyn}, we reduce the ACTP problem to a consistent policy synthesis problem on MDPs. Lastly, we show how to solve this consistent policy synthesis problem using PAYNT\cite{andriushchenkoPAYNTToolInductive2021} in \cref{ssec:paynt}.
 
-\subsection{Benchmarks}
+% \subsection{CTP Problem}
+% We will solve the Monitor verification problem by looking at the simpler \emph{Conditional trace probability} (CTP) problem. We will show a reduction from the Co-Monitor Verification Problem to CTP.
+% \begin{definition}[CTP Decision Problem]
+%     Given an HMM $\mc$ with colors $C$, a unary encoded horizon $h$, a set of goal states $G$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that $\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in G}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$.
 
+% \end{definition}
+% As we will be shown in \cref{sec:compl} the CTP problem is NP-complete.
 
-\section{Problem Statements}
-We have two problems we want to solve. The no false alarms problem and the no missed alarms problem. They have slightly different problem statements and therefore also slightly different solutions.
+% The CTP problem differs from the monitor verification problem in two important aspects. First, the CTP problem no longer considers the monitor and the risk. Second, instead of deciding there are no missed alarm traces, we have to find a missed alarm trace. Finding a trace is similar to the dual of the no missed alarms problem.
+% \begin{definition}[Missed Alarms (MA) Problem]
+%     Given a HMM $\mc$ with an associated monitor $\dfa$, a missed alarm thresholds $\lambda_s\in[0,\inf)$, and a horizon $h\in\NN^+$. Find a trace $\tau \in \missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)$.
+% \end{definition}
+% \todo{Dubious contractions}Finding a trace in the MA problem disproves the no MA problem for the same inputs.
 
-\subsection{No false alarms}
-All traces $\tau$ from the MC which are in the monitor have at least a probability $p\in I$ of reaching the good state.
+% \paragraph{Reduction to CTP}
+% In order to translate the co-MV problem to the CTP problem we combine the monitor and the HMM using the {baierPrinciplesModelChecking2008}. The monitor has to be complete, however, this can be ensured without loss of generality.
+% \todo{Maybe say complement of the monitor because missed alarms} Our central example transformed into a CTP decision problem can be found in \cref{fig:ctphmm}.
 
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\lang{\dfaB}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
+% \subsection{Asyclic CTP problem}\label{ssec:actp}
+% We further simplify the monitor verification problem by incorporating the horizon, the goal states and the risk into the HMM. This results in the acyclic CTP (ACTP) problem.
 
-\subsection{No missed alarms}
-All traces $\tau$ which reach the good state with probability $p > t$, are in the monitor. By taking the contrapositive, we can instead show that all traces $\tau$ which are not in the monitor reach the good state with probability $p \leq t$.
+% \begin{definition}[Asyclic CTP problem]
+%     Given an acyclic HMM $\mc$ with colors $C$, an alarm state $a$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^\star$ such that $\sum_{\pi\in\Pi^\mc_{h}}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
+% \end{definition}
+% \todo[inline]{Explain problem}
 
-\begin{definition}
-    Given a Markov chain $\mc=\left(\Sts, \ptrans, \init, \Aps, \lbl\right)$ with observations in the set of colors $\Colors$, a specification DFA $\dfa=\left(\StsD_{\dfa}, 2^\Aps, \trans_{\dfa}, \init_{\dfa}, \final_{\dfa}\right)$, $\Aps$, and a DAG monitor DFA $\dfaB=\left(\StsD_{\dfaB}, C, \trans_{\dfaB}, \init_{\dfaB}, \final_{\dfaB}\right)$.
-    For all traces $\tau$ from the MC and not in the monitor, the probability of $\pi\in\lang{\dfa}$ given that $\pi$ conforms to $\tau$ is in a given interval $I$ \[\underset{\tau\in\lang{\mc}\cap\overline{\lang{\dfaB}}}{\inter^I} \Prob^\mc(\pi\in\lang{\dfa}\ |\ \pi\in \Cyl(\Paths(\tau)))\]
-\end{definition}
+% \subsubsection{Reduction}
+% Given an instance of the CTP problem with HMM $\mcctp=\left(\Sts, \ptrans, \init, C, \obsf, r \right)$, good states $G$, horizon $h$, risk function $r$, and threshold $\lambda$, we reduce the CTP problem to an ACTP problem.
 
-\section{Outline}
-See \cref{fig:outline} for an outline of the algorithm.
+% We unroll $\mcctp$ over the horizon $h$, creating the unrolled HMM \todo{get better name for tussenstap hmm} $\mcactp = (\Sts \times \{1,\ldots,h\}, \ptrans', \iota\times\{1\}, C, \obsf')$. $\ptrans'$ is defined as
+% \[\ptrans'(\langle s, i\rangle, \langle q, i+1\rangle) = \ptrans(s, q)\]
+% for $i \in \{1,\ldots,h-1\}$. $\obsf'$ ignores the horizon. The horizon states get transitions to three new states, the $alarm$, $safe$ and $ignore$ states according to the normalized risk $r$.
+% \begin{align*}
+%     \ptrans'(\langle s, h\rangle, alarm)  & = \begin{cases}
+%                                                   r'(s) & \text{if } s \in G \\
+%                                                   0     & \text{otherwise}
+%                                               \end{cases}     \\
+%     \ptrans'(\langle s, h\rangle, safe)   & = \begin{cases}
+%                                                   1 - r'(s) & \text{if } s \in G \\
+%                                                   0         & \text{otherwise}
+%                                               \end{cases} \\
+%     \ptrans'(\langle s, h\rangle, ignore) & = \begin{cases}
+%                                                   1 & \text{if } s \notin G \\
+%                                                   0 & \text{otherwise}
+%                                               \end{cases}
+% \end{align*}
+% The $alarm$, $safe$ and $ignore$ states become sink states. The $alarm$ and $safe$ sates get the $end$ observation, while the $ignore$ state gets the $\ig$ observation.
 
-\begin{figure}[h]
-    \includegraphics[width=\textwidth]{images/rM drawing 2024-11-28-13.42.46.png}
-    \caption{Outline of the algorithm.}
-    \label{fig:outline}
-\end{figure}
+% This reduction applied to the example $\mcctp$ can be seen in \cref{fig:actp}
 
-\section{Algorithm}
-Our algorithm will proceed in four steps. First, we take the MC product~\cite{baierPrinciplesModelChecking2008} of the MC $\mc$ and the specification $\dfa$. Then, we will combine the product MC with the monitor into an MDP. Next we will add end transitions to this MDP for all states that are accepted by the underlying monitor. Lastly, we use Paynt~\cite{andriushchenkoPAYNTToolInductive2021} to model check the created MDP.
+% \subsection{Reduction to Consistent Policy Synthesis}
+% We will reduce the ACTP problem into a consistent policy synthesis problem on MDPs. We will transform the model such that conditioning on a trace in the HMM is equivalent to calculating the probability for a consistent policy in an MDP. Then, finding a trace with a probability above a threshold comes down to finding a consistent policy with a probability above a threshold.
 
-\subsection{Applying the specification to the MC}
-We take the MC product as defined by \citeauthor{baierPrinciplesModelChecking2008}~\cite{baierPrinciplesModelChecking2008} to create the product MC $\mc \oplus \dfa$.
+% Restricting the policies to a consistent subset will be essential in making this equivalence work.
 
-\paragraph{Intuition}
-The created product MC is the original MC, but every good state is labeled.
+% \begin{definition}
+%     A consistent policy $\sigma$ is a policy which has the following property with $\iota$ the observation of the initial state and $e$ is the \en observation
+%     \[\exists_{\tau\in C^\star}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^<)^+\iota\tau e^\star\]
+%     Thus, the trace of a path obtained using $\sigma$ is a finite sequence of initial observations and prefixes of $\tau$ finished by observing the initial state, fully $\tau$ and an infinite amount of end observations.
+% \end{definition}\todo{Technically there are no observations in the MDP, we could rewrite in terms of the actions taken by the MDP, but might be less intuitive}
+% However, we are not able to enforce this form of consistency in our policies. Instead, we look at semi-consistent schedulers.
+% \todo{Mention fairness somewhere?}
+% \begin{definition}
+%     A semi-consistent policy $\sigma$ is a policy which has the following property \[\exists_{\tau\in C^\star}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^<)^+(\iota\tau e^\star \mid (\iota\tau^<)^\star)\]
+%     Thus, a semi-consistent scheduler is a consistent scheduler where the induced trace never has to observe an end state.
+% \end{definition}\todo{This is quite a lot of non-intuitive notation, how could I do it differently}
+% We claim that the maximal semi-consistent policy for reachability of the $goal$ or $stop$ states will always be a consistent policy if an \en transition can be taken. \todo{Give proof?}
 
-\subsection{Constructing the product MDP}
-To create the MDP, we first create its states. The states are the product of the states of the product MC and the monitor. These are denoted as $\langle s, q_\dfaB\rangle$ for $s \in \Sts_{\mc \oplus \dfa}$, and $q_\dfaB \in \StsD_\dfaB$. As actions in the product MDP we take the observations $\Colors$ of the MC $\mc$.
+% \todo[inline]{Write something about how it does not matter what we do with ignore states. As they are never reached by a maximal consistent scheduler, which can reach $a$}
 
-The transitions in the MDP are defined here in two steps. First we create a not-yet-normalized transition function $P'$ on the states in the MDP. Next, we normalize the transition function by creating redirecting all remaining probability mass of an action in a state towards the initial state in $P''$.
-\begin{align*}
-    \large P'(\langle s, q\rangle , c, \langle s', q'\rangle) =  & \begin{cases}P(s, s') & \text{if } obs(s') = c \land q' = \delta(q, c)\\ 0 & \text{otherwise}\end{cases}                                                                                                                                              \\
-    \large P''(\langle s, q\rangle , c, \langle s', q'\rangle) = & \begin{cases}1 - \sum_{s''\in S}\sum_{q''\in Q}P'(\langle s, q\rangle , c, \langle s'', q''\rangle) & \text{if } s' = \iota_{\mc\oplus\dfa} \land q' = \iota_\dfaB\\ P'(\langle s, q\rangle , c, \langle s', q'\rangle) & \text{otherwise}\end{cases}
-\end{align*}
+% The resulting problem statement given this claim:
+% \begin{definition}[Consistent policy synthesis problem]
+%     For an MDP $\mdp$, a threshold $\lambda_s$, and an alarm state $a$. Find a policy $\sigma \in \Sigma^{semi-cons}$ such that:
+%     \[\Prob^{\sigma,\mdp}(\lozenge a) > \lambda_s \]
+% \end{definition}
 
-Lastly, the atomic propositions are $\{\circledcirc_\dfa, \circledcirc_\dfaB\}$, where accepting states in the product MC are labeled by $\circledcirc_\dfa$ and accepting states in the monitor are labeled by $\circledcirc_\dfaB$.
+% \subsubsection{Reduction}
+% We will reduce the ACTP problem with a HMM $\mcactp = (\Sts \times \NN^{+\leq h} \cup \{alarm, safe, ignore\}, \ptrans'', \iota', \obsf'', C\cup \{\ig, \en\})$ and a threshold $\lambda$ into an MDP such that a consistent policy coincides with a trace in $\mcactp$.
 
-\paragraph{Intuition}
-The created MDP can be seen as the original product MC $\mc\oplus\dfa$, where we can choose which observation to observe, but only if the monitor contains the transition labeled by the observation.
+% Intuitively, we will let the MDP choose its next observation. Any probability not going towards this observation will be redirected to the initial state, thus resetting the path.
 
-\subsection{Adding end transitions}
-We add two new states to the MDP, the $goal$ and $stop$ states, each only having a self loop. Next, we will add an $end$ action to every state with the label $\circledcirc_\dfaB$. If the state also contains the $\circledcirc_\dfa$ label, we direct the $end$ action to the $goal$ state, otherwise we direct the $end$ action to the stop state.
+% We construct the policy synthesis MDP $\mdp = (\Sts\times\NN^{< h},\allowbreak C \cup \{\ig, \en\},\allowbreak \ptrans''',\allowbreak \iota'',\allowbreak \{\alarm, \safe\},\allowbreak L'')$
+% where $\ptrans'''$ is definded as
+% \begin{align*}
+%     \ptrans'''(\langle s, i\rangle , c, \langle q, i+1 \rangle) :=
+%     \begin{cases}
+%         \ptrans''(\langle s, i\rangle, \langle q, i+1 \rangle) & \text{if } \obsf(q) = c \\
+%         1 - \sum_{q'\in S\ |\ \obsf(q') = c} P^\mc(s,q')       & \text{if } q = \iota    \\
+%         0                                                      & \text{otherwise}
+%     \end{cases}
+% \end{align*}
 
-\paragraph{Intuition}
-Since we are talking about finite traces in the monitor, we need to give the MDP a way to end a path. This is done by taking the $end$ action. If we take the end action in a good state of the product MDP, we reach the $goal$ state, if it was a bad state, then we reach the $stop$ state.
+% \begin{figure}[t]
+%     \centering
+%     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
+%         \node[state,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
-\subsection{Model checking using Paynt}
-We create a POMDP which will be model checked by Paynt~\cite{andriushchenkoPAYNTToolInductive2021} for reachability of the goal state. The observations in this POMDP are the states of the monitor. Using this POMDP we calculate \[\mathbb{P}_{\max}[\diamond goal]\] to find the maximum probability and \[1-\mathbb{P}_{\max}[\diamond stop]\] to find the minimum probability. Finally, we can verify this upper and lower bound with the interval $I$.
+%         \node[state, dry] (qd2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
 
-\paragraph{Intuition}
-In order to find the traces in the monitor which give the maximum and minimum probability of reaching a good state, we associate a trace $\tau$ with a scheduler $\sigma_\tau$ in an MDP. Such a scheduler is called consistent.
-\begin{definition}
-    A \emph{consistent scheduler} is a scheduler which generates only one trace
-    \[\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = \cdots\iota\tau e^\star\]
-    where $\iota$ is the observation of the initial state and $e$ is the observation of the $goal$ and $stop$ state.
-\end{definition}
-By model checking the created POMDP, we don't yet ensure that every scheduler is consistent, instead we only ensure semi-consistence.
-\begin{definition}
-    A semi-consistent scheduler $\sigma$ is a scheduler which has the following property \[\exists_{\tau\in\Sigma_{obs}}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^+)^\star\] where $\tau^+$ can be a different prefix of $\tau$ for every loop in $()^\star$.
-\end{definition}
-Thus, a semi-consistent scheduler does not have to take and end action. However, by maximizing the probability of reaching either the $goal$ or $stop$ state, we ensure that if the $end$ action can be taken, it will be taken. And if a path takes the $end$ action, almost surely any other path will also take the $end$ action at some point. This property ensures that when maximizing semi-consistent schedulers we will always get a consistent scheduler, and thus a single trace.
+%         \node[state, icy] (qi2) [below of= qd2] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+%         \node[state, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
-\printbibliography{}
+%         \node[state, icy] (qi3) [right = 1.5cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
+%         \node[state, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
+%         \node[state, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
+
+%         \node[state] (safe) [right = 1.5cm of qi3] {$safe$};
+%         \node[state] (alarm) [below of=safe] {$alarm$};
+%         \node[state, opacity=0.5] (ignore) [above of=safe] {$ignore$};
+
+%         \node[action] (qd1o) at ($(qd1)!0.5!(qi2)$)  {};
+%         \node[action] (qd1b) at ($(qd1)!0.5!(qd2)$) {};
+%         \node[action] (qd2b) at ($(qd2)!0.5!(qd3)$) {};
+%         \node[action] (qd2o) at ($(qd2)!0.5!(qi3)$)  {};
+%         \node[action] (qi2b) at ($(qi2)!0.5!(qi3)$) {};
+%         \node[action] (qi2o) at ($(qi2)!0.5!(qc3)$)  {};
+%         \node[action] (qc2o)  at ($(qc2)!0.5!(qc3)$) {};
+
+%         \node[action] (qi3e) at ($(qi3)!0.6!(safe)$) {};
+%         \node[action] (qd3e) at ($(qd3)!0.6!(ignore)$) {};
+%         \node[action] (qc3e) at ($(qc3)!0.6!(alarm)$) {};
+
+%         \draw (qi3) edge node[below] {$\en$} (qi3e);
+%         \draw[->] (qi3e) edge node[above] {$1$} (safe);
+
+%         \draw (qd3) edge node[above] {$\ig$} (qd3e);
+%         \draw[->] (qd3e) edge node[above] {$1$} (ignore);
+
+%         \draw (qc3) edge node[below] {$\en$} (qc3e);
+%         \draw[->] (qc3e) edge node[above] {$1$} (alarm);
+
+%         \draw (qd1) edge node[above] {$\dry$} (qd1b);
+%         \draw[->] (qd1b) edge node[above] {$\frac{1}{2}$} (qd2);
+%         \draw[return, ->] (qd1b) edge[bend right=60] node[above] {$?$} (qd1);
+%         \draw (qd1) edge node[above] {$\icy$} (qd1o);
+%         \draw[->] (qd1o) edge node[above] {$\frac{4}{10}$} (qi2);
+%         \draw[->] (qd1o) edge node[below left] {$\frac{1}{10}$} (qc2);
+%         \draw[return, ->] (qd1o) edge[bend left] node[below] {$?$} (qd1);
+
+%         \draw (qd2) edge node[above] {$\dry$} (qd2b);
+%         \draw[->] (qd2b) edge node[above] {$\frac{1}{2}$} (qd3);
+%         \draw[return, ->] (qd2b) edge[bend right=60] node[above] {$?$} (qd1);
+%         \draw (qd2) edge node[above] {$\icy$} (qd2o);
+%         \draw[->] (qd2o) edge node[above] {$\frac{1}{4}$} (qi3);
+%         \draw[->] (qd2o) edge node[above right] {$\frac{1}{4}$} (qc3);
+
+%         \draw (qi2) edge node[above] {$\dry$} (qi2b);
+%         \draw[->] (qi2b) edge node[above] {$\frac{1}{2}$} (qd3);
+%         \draw (qi2) edge node[below] {$\icy$} (qi2o);
+%         \draw[->] (qi2o) edge node[above] {$\frac{1}{4}$} (qi3);
+%         \draw[->] (qi2o) edge node[above right] {$\frac{1}{4}$} (qc3);
+
+%         \draw (qc2) edge node[below] {$\icy$} (qc2o);
+%         \draw[->] (qc2o) edge node[below] {$1$} (qc3);
+
+%         \draw (safe) edge[loop right] node {$\en$} (safe);
+%         \draw (alarm) edge[loop right] node {$\en$} (alarm);
+%         \draw (ignore) edge[loop right] node {$\ig$} (ignore);
+%     \end{tikzpicture}
+%     \caption{The central example transformed into an mdp to be used as the model in the MDP policy synthesis problem. Every state has an action which contains only transitions to states which had the observation related to that action.\todo[inline]{bad explanation}}
+%     \label{fig:mdpex}
+% \end{figure}
+
+% \subsection{Policy Synthesis using Memoryless Policies}\label{ssec:paynt}
+% Using colored MDPS
+% \begin{itemize}
+%     \item Our consistence coincides with colored MDPs from \cite{}.
+%     \item Use step value as color.
+%     \item Solve maximal reachability of colored MDPs using PAYNT.
+% \end{itemize}
+
+% \noindent Using POMDPs
+% \begin{itemize}
+%     \item Our consistence coincides with memoryless policies for POMDPs.
+%     \item Use step value as observation.
+%     \item Solve maximal reachability using PAYNT.
+% \end{itemize}
 
 \end{document}
