@@ -115,6 +115,96 @@ The key verification question in this paper is now: Is this a correct monitor fo
 %We study whether monitor makes correct verdicts on \emph{every} (bounded) trace, and show that we can effectively synthesise such monitors.
 
 
+\sebastian{I parked this figure here from the proposal}
+
+\begin{figure}[b!]
+\vspace{-3mm}
+\begin{minipage}{.6\textwidth}
+\centering
+
+
+\tikzset{
+  pics/alarm/.style args={#1}{
+     code={
+       \draw[fill=black] (0,0) rectangle (3,0.3);
+       \draw[rounded corners, fill=black] (0.2,0.2) rectangle (2.8,0.5);
+       \draw[fill=#1] (0.5,0.5) -- (0.5,1.5) to[out=90,in=90] (2.5,1.5) -- (2.5,0.5) -- (0.5,0.5);
+       \draw[very thick, color=#1!50!white,fill=#1!50!white] (1.5,1.1) -- (1.9,1.4) -- (1.9,0.8) -- (1.5,1.1); 
+       \draw[very thick, color=#1!50!white,fill=#1!50!white] (1.5,1.1) -- (1.1,1.4) -- (1.1,0.8) -- (1.5,1.1); 
+       \draw[very thick, fill=#1!50!white,color=#1!60!white] (1.5,1.1) -- (1.6,0.5) -- (1.4,0.5) -- (1.5,1.1);       
+       
+       \draw[very thick, color=#1] (0.7, 2.1) -- (0.6, 2.4);
+       \draw[very thick, color=#1] (2.3, 2.1) -- (2.4, 2.4); 
+       \draw[very thick, color=#1] (1.15, 2.2) -- (1.1, 2.5);
+       \draw[very thick, color=#1] (1.85, 2.2) -- (1.9, 2.5);
+       
+     }
+  }
+}
+\scalebox{0.4}{
+\begin{tikzpicture}
+    \node (syscenter) {};
+	\node[rectangle, draw, below=0.3cm of syscenter] (env) {\scriptsize Env};
+	\node[rectangle, draw, above=0.3cm of syscenter] (controller) {\scriptsize Contr};
+	\node[rectangle, draw, left=0.3cm of syscenter] (act) {\scriptsize Actuator};
+	\node[rectangle, draw, right=0.3cm of syscenter] (sensor) {\scriptsize Sensor};
+	
+	\node[rectangle, draw, dotted, very thick, fit=(env)(controller)(act)(sensor)] (Sys) {};
+	\node[below=0.2cm of Sys] {\small \textcolor{green!50!black}{System}};
+	\node[rectangle, draw, right=3cm of syscenter, minimum height=2.4cm] (monitor) {\small\textcolor{green!50!black}{Monitor}};
+	\node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=0.7cm, align=center, minimum width=1.5cm] (model) {\scriptsize (imprecise)\\\small \textcolor{green!50!black}{Model}};
+	\node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=-0.7cm, minimum width=1.5cm] (inference) {\scriptsize{inference}};
+	 
+	
+	\node[rectangle, below=0.2cm of monitor] (alarm) {\textcolor{green!50!black}{ok}/\textcolor{red!50!black}{alarm}};
+	\draw[->] (env) edge[bend right=45] (sensor);
+	\draw[->] (sensor) edge[bend right=45] (controller);
+	\draw[->,dashed] (controller) edge[bend right=45] (sensor);
+	
+	\draw[->] (controller) edge[bend right=45] (act);
+	\draw[->] (act) edge[bend right=45] (env);
+	
+	\draw[->] (sensor) -- node[above] {\scriptsize{observation}} (monitor);
+	\draw[->] (monitor) -- (alarm);
+	
+	\draw[->] (monitor.317) -- node[above,align=center] {\scriptsize{observation}\\[-5pt] \scriptsize{trace}} (inference.west |- monitor.317);
+	\draw[<-] (monitor.305) -- node[below] {\scriptsize{risk level}} (inference.west |- monitor.305);
+	
+	\draw[<-,dotted] (model) -- node[right] {\scriptsize{uses}} (inference);
+	\draw[->,dotted] (model) -- +(0,0.7) -| node[pos=0.25,above] {\scriptsize{models}} (Sys);
+	
+\end{tikzpicture}
+}	
+\vspace{-3mm}
+\caption{White-box monitoring of systems}
+\label{fig:monitors}
+\end{minipage}\quad%
+\begin{minipage}{.35\textwidth}
+	\begin{tikzpicture}
+	    
+		\node[rectangle, minimum height=2.5cm, draw] (learner) {\rotatebox{90}{\scriptsize{learner}}};
+		\node[rectangle,right=1.7cm of learner, yshift=0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (mq) {\scriptsize{Membership?}\\[-3pt] \scriptsize{(the monitor)}};
+		\node[rectangle,right=1.7cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Acceptance?}};
+		\node[rectangle, right=0.7cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Inclusion}};
+		\node[rectangle, right=0.7cm of mq, draw, minimum width=1.4cm, minimum height=1cm,align=center] (model) {\scriptsize{(imprecise)}\\ \scriptsize{Model}};
+		\node[above=5mm of learner] (dummy)  {};
+		
+		\draw[->] (learner.75) -- node[above,align=center] {\scriptsize{observation}\\[-5pt]\scriptsize{trace}} (mq.west |- learner.75);
+		\draw[<-] (learner.72) -- node[below,align=center] {\scriptsize{ok/alarm}} (mq.west |- learner.72);
+		\draw[->] (learner.285) -- node[above,align=center] {\scriptsize{state machine/}\\[-5pt]\scriptsize{set o.~traces}} (eq.west |- learner.285);
+			\draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
+		\draw[->] (eq) --node[right] {\scriptsize sample} (mq);
+		
+		\draw[->] (eq) --node[above] {\scriptsize verify} (inc);
+		\draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
+		\draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
+		
+	\end{tikzpicture}
+	\caption{Learning monitors.}
+	\label{fig:learning}
+\end{minipage}
+\end{figure}
+
 
 \sebastian{Do we also want a small figure of a system feeding observations into a monitor? }
 \begin{figure}[t]
