@@ -20,6 +20,7 @@
 \newcommand{\alarms}{\langle h+1, alarm\rangle}
 \newcommand{\safes}{\langle h+1, safe\rangle}
 \newcommand{\igs}{\langle h+1, ignore\rangle}
+\newcommand{\ccSched}{\Sigma_c}
 
 \renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}}
 \usetikzlibrary{automata, positioning, arrows.meta, fit}
@@ -503,32 +504,38 @@ We now introduce the central example used in this paper. And explain how the mon
 
 \section{Monitor Verification}
 \label{sec:monver}
-In this section we will discuss our solution to the monitor correctness problem. We focus on the no missed alarms problem with traces of exactly the length of the horizon. We will solve this using policy synthesis of colored MDPs. At the end, we will generalize our construction to both the no false alarms problem and traces of length at most the horizon.
+In this section we present our approach to the monitor correctness problem, which essentially reduces checking the existence of missed alarms to a policy synthesis problem on colored MDPs. The latter is well studied. We first formalise this policy synthesi problem and then discuss the transformation in multiple steps. 
+In our presentation, we focus on the no missed alarms problem with traces of exactly the length of the horizon. At the end of the section, we  generalize our construction to both the no false alarms problem and traces of length at most the horizon.
 
-\subsection{Colored MDPs}
-Policy synthesis for colored MDPs has seen recent successes\cite{andriushchenkoPAYNTToolInductive2021}. We will reduce our problem into a colored MDP policy synthesis problem.
 
+\subsection{Relating Missed Alarms with Color-Consistent Policies}
+Colored (Labelled) MDPs are a mild extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplified the notion of colored MDPs from \cite{} suffices for our needs:
 \begin{definition}[Colored MDP]
-    Given an MDP $\mdp$, with states in $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c\colon \Sts \to C)$. $C$ is the set of colors, and $c$ maps states to colors.
+    Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$ maps states to colors.
 \end{definition}
-We will only consider policies for colored MDPs, which act equally for states of the same colors \footnote{Colored MDPs with color consistent policies coincide with memoryless policies for POMDPs. However, since POMDPs often consider not only memoryless policies, we will use colored MDPs.}.
-\begin{definition}[Color consistent scheduler]
-    A scheduler $\sigma$ for a colored MDP $\mdpc$ with states in $\Sts$ is color consistent if for every two states $s$ and $s'$
-    \[ c(s) = c(s') \Rightarrow \sigma(s) = \sigma(s') \]
+\begin{definition}[Color-consistent scheduler]
+    A memoryless scheduler $\sigma$ for a colored MDP $\mdpc$ is \emph{color consistent}\footnote{Colored MDPs with color-consistent policies coincide with memoryless policies for partially observable MDPs. However, POMDPs often consider history-dependent (belief-based) policies. We use colored MDPs to avoid any confusion.} if for every two states $s$ and $s'$
+    \[ c(s) = c(s') \quad\text{ implies }\quad  \sigma(s) = \sigma(s'). \]
 \end{definition}
-We now present the theorem we focus on in this section.
-\begin{theorem}
-    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there exists a transformation $f$ into colored MDPs, such that iff there exists a color-consistent policy for $f(\mc, \dfa, \lambda_s, h, r)$ with $\Prob>\lambda$ then there is a trace $\tau \in \missedalarms{}{}(\dfa)$
+The set of all color-consistent schedulers is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color consistent policy such that the induced reachability probability is above (or below) a certain threshold. Policy synthesis for colored MDPs is NP-hard.
+%We now present the theorem we focus on in this section.
+\begin{theorem}[Main theorem]
+\label{thm:maintheorem}
+    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there exists a colored MDP $\mdpc$ and a $\lambda$ such that 
+    \[ \exists \sigma \in \ccSched. \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{theorem}
-Following from the transformation we will present we also have:
-\begin{corollary}
-    There is a one to one correspondence between a found $\tau$ and a color consistent policy.
-\end{corollary}
-Remark that the no missed alarms problem contains several elements which are no longer present in the colored MDP. We will have to incorporate the monitor, horizon, observations, and risk. Furthermore, recall that the no missed alarms problem is stated in terms of a conditional probability on the trace. Policy synthesis cannot take conditional probabilities into account, thus we will also incorporate this in the transformation.
+Our proof is constructive. Furthermore, we show that we can use the construction to find a $\tau \in \missedalarms{}{}(\dfa)$, whenever such a $\tau$ exists.
+%Following from the transformation we will present we also have:
+%\begin{corollary}
+%    There is a one to one correspondence between a found $\tau$ and a color consistent policy.
+%\end{corollary}
 
-For clarity’s sake, we describe our transformation in several steps. Only at the end do we move from HMMs to colored MDPs. Here we give a quick outline of the algorithm. In \cref{ssec:ctp} we will first move the monitor into the HMM. Secondly we will transform the HMM to both include the horizon and the risk. In \cref{ssec:polsyn} we resolve the conditioning on traces, while also removing the observations from the model, by transforming into colored MDPs.
+\paragraph{Outline of the proof.}
+In the remainder of this section, we outline the transformation from the HMM into the MDP. We observe that on the right hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
+Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities. 
+We describe our transformation in several steps. In \Cref{ssec:ctp} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning on traces, while replacing observations from the HMM.
 
-\subsection{(A)CTP Problem}\label{ssec:ctp}
+\subsection{(Acyclic) Conditional Trace Probability Problem}\label{ssec:ctp}
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
@@ -559,23 +566,45 @@ For clarity’s sake, we describe our transformation in several steps. Only at t
     \caption{The central example HMM and faulty monitor $\dfaB$ transformed into the CTP problem. States are named with their HMM state, $\{d,i,c\}$ and their monitor state, $\{1,2,3\}$. States in the alarm states set $A$ have been marked accepting.}
     \label{fig:ctphmm}
 \end{figure}
-First, we show how the dual of the no missed alarms problem, the exists missed alarm problem, can be transformed into the simpler \emph{Conditional trace probability} (CTP) problem. Finally, we will further simply the problem by incorporating both the horizon and risk such that we are left with acyclic HMMs. We will discuss this intermediate problem as the Acyclic CTP (ACTP) problem.
+First, we show how asking for a missed alarm can be rephrased into the conceptually simpler \emph{conditional trace probability} (CTP) problem.
+We will further simplify the problem by incorporating both the horizon and risk such that we are left with a problem purely on acyclic HMMs. 
+%We will discuss this intermediate problem as the Acyclic CTP (ACTP) problem.
 
-The exists missed alarm problem, questions whether there is a trace $\tau$ such that $\tau \in \missedalarms{}{}(\dfa)$. Obviously, when such a trace exists, $\missedalarms{}{}(\dfa) \neq \emptyset$, thus disproving the no missed alarms problem for $\dfa$.
+%The exists missed alarm problem, questions whether there is a trace $\tau$ such that $\tau \in \missedalarms{}{}(\dfa)$. Obviously, when such a trace exists, $\missedalarms{}{}(\dfa) \neq \emptyset$, thus disproving the no missed alarms problem for $\dfa$.
 
 \subsubsection{CTP problem}
+
+
 Before we combine the HMM and the monitor, we have to modify the monitor. Since we are looking for missed alarms, we are interested in all traces that are not in the monitor. We thus take the complement of the monitor.
-
-We transform the HMM using the Product Markov Chain construction from \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008}. It combines a DFA and a MC by taking the product of the states and using the obvious initial states and transition function. We extend this to HMMs, by letting the observation function observe the model states. This extension allows us to apply the Product Markov Chain construction to our model HMM and complemented monitor DFA, resulting in a product HMM. We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
-
-The resulting product HMM can be seen as the model of a simplified version of the no missed alarms problem, the CTP problem.
-
-\begin{definition}[CTP Decision Problem]
-    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, a risk function $r\colon S \to \RR^+$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that $$\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$$
-\end{definition}
-As we will be shown in \cref{sec:compl} the CTP problem is NP-complete. By using the above reduction to exists missed alarm problem, it is easy to show that the no missed alarms problem is co-NP-complete.
-
+Next, we take (a mild variation of) a standard product construction between HMM and DFA.
+\begin{example}
+\sebastian{I think it is good to first give the example because it allows readers to skip the formal def. }	
 Our example HMM with monitor $\dfaB$ from \cref{fig:centralexample} transformed into the CTP problem can be seen in \cref{fig:ctphmm}.
+\end{example}
+
+
+\sebastian{It might be that we want to move the formal def to the appendix, but I woudl still prefer to have a formal statement rather than a lengthy textual explanation.}
+\begin{definition}
+	
+\end{definition}
+In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
+We state the decision problem that needs to be solved on the product HMM as it is key to our computational complexity analysis in \Cref{sec:compl}.
+\begin{definition}[CTP Decision Problem]
+    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, a risk function $r\colon S \to \RR^+$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that \[\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]
+\end{definition}
+Indeed, the following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement. 
+\begin{lemma}
+
+\end{lemma}
+
+
+We transform the HMM using the Product Markov Chain construction from \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008}.
+ It combines a DFA and a MC by taking the product of the states and using the obvious initial states and transition function. We extend this to HMMs, by letting the observation function observe the model states. This extension allows us to apply the Product Markov Chain construction to our model HMM and complemented monitor DFA, resulting in a product HMM. 
+ We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
+%
+%The resulting product HMM can be seen as the model of a simplified version of the no missed alarms problem, the CTP problem.
+%As we will be shown in \cref{sec:compl} the CTP problem is NP-complete. By using the above reduction to exists missed alarm problem, it is easy to show that the no missed alarms problem is co-NP-complete.
+
 
 \subsubsection{ACTP problem}
 \begin{figure}[t]
