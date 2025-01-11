@@ -12,6 +12,7 @@
 \usepackage{subcaption}
 \usepackage{xcolor}
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
+\newcommand{\sj}[1]{\todo[color=red!50!white]{\footnotesize{#1}}}
 \newcommand{\indicator}[1]{[#1]}
 
 \newcommand{\Distr}{\Delta}
@@ -440,13 +441,13 @@ We are now ready to define correct monitors.
     Given a monitor $\dfa$ for HMM $\mc$, a horizon $h$, and thresholds $\lambda_s \leq \lambda_u \in \mathbb{R}$, the set of \emph{missed alarms} is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \unsafetraces{\mc,\lambda_u}{\leq h} \setminus \lang{\dfa}$. The set of \emph{false alarms} is $\falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \safetraces{\mc,\lambda_s}{\leq h} \cap \lang{\dfa}$.
     % a safe trace $\tau \in \Obs^{\leq h}$ with $R(\tau) > \lambda_s$ and $\tau \not\in \lang{\dfa}$ is a \emph{missed alarm}. Conversely, trace $\tau$ is a \emph{false alarm}, if $R(\tau) < \lambda_u$ and $\tau \in \lang{\dfa}$. 
 \end{definition}
-We drop the sub/superscripts whenever possible. In terms of a classification problem, missed alarms can be seen as false negatives while false alarms are false positives.
+We often drop the sub/superscripts. In terms of a classification problem, missed alarms are false negatives, while false alarms are false positives.
 \begin{definition}[Correct monitor]
     Given thresholds $\lambda_s,\lambda_u$ and horizon $h$, a monitor $\dfa$ for $\mc$ is \emph{correct} if $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) = \emptyset = \falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)$.
 \end{definition}
-Equivalently, a monitor is correct if it raises an alarm for every unsafe trace and for no safe trace:
-\begin{corollary}[Correct monitor]
-    A monitor $\dfa$ for HMM $\mc$ with $ \unsafetraces{\mc,\lambda_u}{\leq h} \subseteq \lang{\dfa} \subseteq \alphabet^* \setminus \safetraces{\mc, \lambda_s}{\leq h}$ is a correct monitor.
+A correct monitor raises an alarm for all unsafe traces and for no safe trace:
+\begin{corollary}%[Correct monitor]
+   A monitor $\dfa$ is correct iff $ \unsafetraces{\mc,\lambda_u}{\leq h} \subseteq \lang{\dfa} \subseteq \alphabet^* \setminus \safetraces{\mc, \lambda_s}{\leq h}$.% is a correct monitor.
 \end{corollary}
 
 \begin{mdframed}\textbf{Problem statements.} This paper tackles the following problem statements:
@@ -535,7 +536,7 @@ In the remainder of this section, we outline the transformation from the HMM int
 Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities. 
 We describe our transformation in several steps. In \Cref{ssec:ctp} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning on traces, while replacing observations from the HMM.
 
-\subsection{(Acyclic) Conditional Trace Probability Problem}\label{ssec:ctp}
+\subsection{The (Acyclic) Conditional Trace Probability Problem}\label{ssec:ctp}
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
@@ -576,31 +577,32 @@ We will further simplify the problem by incorporating both the horizon and risk 
 
 
 Before we combine the HMM and the monitor, we have to modify the monitor. Since we are looking for missed alarms, we are interested in all traces that are not in the monitor. We thus take the complement of the monitor.
-Next, we take (a mild variation of) a standard product construction between HMM and DFA.
+Next, we take (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008}\sj{when citing a book it is good to cite section} between HMM and DFA.  We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
 \begin{example}
-\sebastian{I think it is good to first give the example because it allows readers to skip the formal def. }	
-Our example HMM with monitor $\dfaB$ from \cref{fig:centralexample} transformed into the CTP problem can be seen in \cref{fig:ctphmm}.
+\sebastian{I think it is good to first give the example because it allows readers to skip the formal def. I would maybe explain the example with one or two more lines.}	
+\Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. In particular, when starting in the initial states $d$ and $1$, respectively, ...
 \end{example}
-
-
-\sebastian{It might be that we want to move the formal def to the appendix, but I woudl still prefer to have a formal statement rather than a lengthy textual explanation.}
-\begin{definition}
-	
+\begin{definition}[HMM product]
+\label{def:product}
+\sebastian{It might be that we want to move the formal def to the appendix, but I woudl still prefer to have a formal statement rather than a lengthy textual explanation.}	
 \end{definition}
 In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
 We state the decision problem that needs to be solved on the product HMM as it is key to our computational complexity analysis in \Cref{sec:compl}.
 \begin{definition}[CTP Decision Problem]
-    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, a risk function $r\colon S \to \RR^+$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that \[\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]
+\label{def:CTPdecprob}
+    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, and a threshold $\lambda_s \in (0,1]$,  \[\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]\sj{check notation for paths of length $h$}
 \end{definition}
-Indeed, the following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement. 
+We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, A, \lambda_s)$.
+The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement\sj{Nevetheless, we should have a (slightly) more formal proof}. 
 \begin{lemma}
-
+Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
+    \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{lemma}
 
+%
+%We transform the HMM using the Product Markov Chain construction from \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008}.
+% It combines a DFA and a MC by taking the product of the states and using the obvious initial states and transition function. We extend this to HMMs, by letting the observation function observe the model states. This extension allows us to apply the Product Markov Chain construction to our model HMM and complemented monitor DFA, resulting in a product HMM. 
 
-We transform the HMM using the Product Markov Chain construction from \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008}.
- It combines a DFA and a MC by taking the product of the states and using the obvious initial states and transition function. We extend this to HMMs, by letting the observation function observe the model states. This extension allows us to apply the Product Markov Chain construction to our model HMM and complemented monitor DFA, resulting in a product HMM. 
- We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
 %
 %The resulting product HMM can be seen as the model of a simplified version of the no missed alarms problem, the CTP problem.
 %As we will be shown in \cref{sec:compl} the CTP problem is NP-complete. By using the above reduction to exists missed alarm problem, it is easy to show that the no missed alarms problem is co-NP-complete.
@@ -654,14 +656,24 @@ We transform the HMM using the Product Markov Chain construction from \citeautho
     \end{tikzpicture}
     \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \atop \langle s,j\rangle \right\rangle$.}
     \label{fig:actp}
-\end{figure}
+\end{figure}\sj{For the figure, states dont need to be circles :-)}
 We further simplify the problem by combine the horizon, risk and the newly created alarm states set into the HMM. The resulting HMM can be seen as the model for the acyclic CTP problem.
 
-\todo{Should I more properly introduce the CTP HMM with its contents? I do use them later on.}
+\begin{example}	
+\sebastian{Similar to above, I think it is easier to first explain what you are doing by example. Also nicely concrete.} The ACTP transformation applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}.
+\end{example}
+
+\begin{definition}[Unrolling]
+	
+\end{definition}
+
+
+\todo{Should I more properly introduce the CTP HMM with its contents? I do use them later on.}\sj{yes. I made a start.}
 We will build up the ACTP HMM by creating its transition function $\ptrans'$, all other elements of the ACTP HMM are easily derivable.
-To include the horizon into the ACTP HMM, we unroll the CTP HMM over the horizon $h$. The ACTP HMM has states in $\{1,\ldots,h\}\times\Sts$. The ACTP transition function $\ptrans'$ on non-horizon states behaves as expected:
+To include the horizon into the ACTP HMM, we unroll the CTP HMM over the horizon $h$. The ACTP HMM has states in $\{1,\ldots,h\}\times\Sts$ \sj{And three  additional states?}. The ACTP transition function $\ptrans'$ on non-horizon states behaves as expected:
 \[\ptrans'(\langle i, s\rangle, \langle i+1, q\rangle) = \ptrans(s, q)\]
 with $i \in \{1,\ldots,h-1\}$. The horizon states, $\langle h, s \rangle$ for $s \in \Sts$, transition to one of three states, $\alarms$, $\safes$ or $\igs$ state. Horizon states in $A$ will transition to $\alarms$ and $\safes$ according to the \todo{Mention normalizing risk more prominently somewhere?} normalized risk. Horizon states not in $A$ transition to $\igs$ instead.
+\sj{Is the $G$ in the definitions below intended to be $A$ states?}
 \begin{align*}
     \ptrans'(\langle h, s\rangle, \alarms) & = \begin{cases}
                                                    r'(s) & \text{if } s \in G \\
@@ -678,11 +690,17 @@ with $i \in \{1,\ldots,h-1\}$. The horizon states, $\langle h, s \rangle$ for $s
 \end{align*}
 The $\alarms$, $\safes$ and $\igs$ states become sink states. The $\alarms$ and $\safes$ sates get the $end$ observation, while the $\igs$ state gets the $\ig$ observation.
 
-We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no false alarms problem.
+\footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no false alarms problem.}
 
 \begin{remark}
     Note that we ignore all states in $A$ that are not horizon states. However, since we only consider traces which are of length exactly the horizon, we only need to consider the alarm states which are encountered after horizon steps.
 \end{remark}
+
+\begin{lemma} 
+
+	
+\end{lemma}
+
 
 Using the above transformed HMM we can define the ACTP problem.
 \begin{definition}[Asyclic CTP problem]
@@ -690,7 +708,7 @@ Using the above transformed HMM we can define the ACTP problem.
 \end{definition}
 In the ACTP HMM we no longer consider the risk of a trace, instead we only reason about the probability of reaching the alarm state. The ACTP problem thus contains a threshold between in the interval $(0,1]$. We also no longer need to consider the horizon, as all traces consist of a horizon number of observation in $Z$ and an infinite sequence of either $end$ or $\ig$ observations.
 
-The ACTP transformation applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}.
+
 
 \subsection{Reduction to Consistent Policy Synthesis}\label{ssec:polsyn}
 \begin{figure}[t]
