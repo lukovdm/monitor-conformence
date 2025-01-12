@@ -525,14 +525,14 @@ The set of all color-consistent schedulers is denoted $\ccSched$. Policy synthes
     Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there exists a colored MDP $\mdpc$ and a $\lambda$ such that 
     \[ \exists \sigma \in \ccSched. \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{theorem}
-Our proof is constructive. Furthermore, we show that we can use the construction to find a $\tau \in \missedalarms{}{}(\dfa)$, whenever such a $\tau$ exists.
+Our proof is constructive and we show that we can use the construction to find a $\tau \in \missedalarms{}{}(\dfa)$, whenever such a $\tau$ exists.
 %Following from the transformation we will present we also have:
 %\begin{corollary}
 %    There is a one to one correspondence between a found $\tau$ and a color consistent policy.
 %\end{corollary}
 
 \paragraph{Outline of the proof.}
-In the remainder of this section, we outline the transformation from the HMM into the MDP. We observe that on the right hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
+The proof is a direct consequences of \Cref{lem:toctp,lem:toactp,lem:tocoloredmdp} below. Before we discuss these lemmas, we observe that on the right hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
 Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities. 
 We describe our transformation in several steps. In \Cref{ssec:ctp} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning on traces, while replacing observations from the HMM.
 
@@ -584,6 +584,7 @@ Next, we take (a mild variation of) a standard product construction~\cite{baierP
 \end{example}
 \begin{definition}[HMM product]
 \label{def:product}
+Given 
 \sebastian{It might be that we want to move the formal def to the appendix, but I woudl still prefer to have a formal statement rather than a lengthy textual explanation.}	
 \end{definition}
 In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
@@ -595,6 +596,7 @@ We state the decision problem that needs to be solved on the product HMM as it i
 We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, A, \lambda_s)$.
 The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement\sj{Nevetheless, we should have a (slightly) more formal proof}. 
 \begin{lemma}
+\label{lem:toctp}
 Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
     \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{lemma}
@@ -664,12 +666,15 @@ We further simplify the problem by combine the horizon, risk and the newly creat
 \end{example}
 
 \begin{definition}[Unrolling]
+\label{def:acyclichmm}
+	The (risk-)unrolling of an HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $A \subseteq \Sts$ is a tuple with HMM $\mc_{\blacktriangleright h} = \left(\{1,\hdots,h\} \times \Sts \cup \{ s_a, s_i, s_s \}, (1,\init), \ptrans', \Obs', \obsf', r' \right)$ with \sj{move description from below into this def}.
 	
+	The state $s_a$ is called the \emph{alarm state}.
 \end{definition}
 
 
 \todo{Should I more properly introduce the CTP HMM with its contents? I do use them later on.}\sj{yes. I made a start.}
-We will build up the ACTP HMM by creating its transition function $\ptrans'$, all other elements of the ACTP HMM are easily derivable.
+We will build up the ACTP HMM by creating its transition function $\ptrans'$, all other elements of the ACTP HMM are easily derivable.\sj{Try to write in a way that readers dont need to think to much. Never tell them that they should think about it themselves :-)}
 To include the horizon into the ACTP HMM, we unroll the CTP HMM over the horizon $h$. The ACTP HMM has states in $\{1,\ldots,h\}\times\Sts$ \sj{And three  additional states?}. The ACTP transition function $\ptrans'$ on non-horizon states behaves as expected:
 \[\ptrans'(\langle i, s\rangle, \langle i+1, q\rangle) = \ptrans(s, q)\]
 with $i \in \{1,\ldots,h-1\}$. The horizon states, $\langle h, s \rangle$ for $s \in \Sts$, transition to one of three states, $\alarms$, $\safes$ or $\igs$ state. Horizon states in $A$ will transition to $\alarms$ and $\safes$ according to the \todo{Mention normalizing risk more prominently somewhere?} normalized risk. Horizon states not in $A$ transition to $\igs$ instead.
@@ -692,21 +697,27 @@ The $\alarms$, $\safes$ and $\igs$ states become sink states. The $\alarms$ and 
 
 \footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no false alarms problem.}
 
-\begin{remark}
+\begin{remark}\sj{not sure what the remark states}
     Note that we ignore all states in $A$ that are not horizon states. However, since we only consider traces which are of length exactly the horizon, we only need to consider the alarm states which are encountered after horizon steps.
 \end{remark}
 
 \begin{lemma} 
+\label{lem:toactp}
+    Given an HMM $\mc$, horizon $h$, alarm states $A$ and threshold $\lambda$:
+     \[ \exists \tau \in \mathsf{CTP}(\mc, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
+     where $z_\mathsf{end}$ is the final observation and $s_a$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
 
+    % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 	
 \end{lemma}
-
-
-Using the above transformed HMM we can define the ACTP problem.
-\begin{definition}[Asyclic CTP problem]
-    Given an acyclic HMM $\mc$ with observations $Z$, an alarm state $a$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
-\end{definition}
-In the ACTP HMM we no longer consider the risk of a trace, instead we only reason about the probability of reaching the alarm state. The ACTP problem thus contains a threshold between in the interval $(0,1]$. We also no longer need to consider the horizon, as all traces consist of a horizon number of observation in $Z$ and an infinite sequence of either $end$ or $\ig$ observations.
+The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\sj{Put a slightly longer proof in the appendix}
+%
+%
+%Using the above transformed HMM we can define the ACTP problem.
+%\begin{definition}[Asyclic CTP problem]
+%    Given an acyclic HMM $\mc$ with observations $Z$, an alarm state $a$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
+%\end{definition}
+%In the ACTP HMM we no longer consider the risk of a trace, instead we only reason about the probability of reaching the alarm state. The ACTP problem thus contains a threshold between in the interval $(0,1]$. We also no longer need to consider the horizon, as all traces consist of a horizon number of observation in $Z$ and an infinite sequence of either $end$ or $\ig$ observations.
 
 
 
@@ -784,6 +795,23 @@ In the ACTP HMM we no longer consider the risk of a trace, instead we only reaso
     \caption{The central example transformed into an mdp to be used as the model in the MDP policy synthesis problem. Every state has an action which contains only transitions to states which had the observation related to that action.\todo[inline]{bad explanation}}
     \label{fig:mdpex}
 \end{figure}
+
+For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachability probability exceeds a threshold. We reformulate this into a policy synthesis problem in MDPs. The transformation combines two ideas: First, in every state, the policy can select the next observation, inspired by~\cite{}. Second, we reformulate conditional reachability probabilities by (standard) regular reachability probabilities, using a construction in \cite{}.
+\begin{example}
+	
+\end{example}
+
+\sebastian{The definition below needs either that we use the horizon in the states explicitly, or that we use a depth funciton or so that gives us the distance of every state to a particular state.}
+\begin{definition}
+	Given an acyclic HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm state $s_a$ and end observation $z_\text{end}$ as in \Cref{def:acyclichmm}, we define the colored MDP $\left(\left(\Sts, \init, \Act, \ptrans' \right), C, c\right)$ as 
+\end{definition}
+
+\begin{lemma}
+	  \[  \exists \sigma \in \ccSched.  \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
+\end{lemma}
+
+
+
 In the ACTP HMM we only have the observations and conditional probability on a trace left. To incorporate this into the model we will use one novel idea. Instead of transitioning to a state and observing it, we will allow the model to choose what observation to observe. We thus move away from HMMs and into MDPs. This has two results. Firstly, instead of talking about sequences of observations, instead we will consider sequences of actions taken. Secondly, any trace can be transformed into a policy of the MDP. We will first discuss how to create this MDP. Afterward, we show how to ensure how, traces and policies can be made equivalent by coloring the MDP.
 
 We construct the policy synthesis MDP where the transition function $\ptrans''$ is defined as
@@ -802,8 +830,8 @@ The above construction allows for conditioning on a trace $\tau$ by constructing
     Given two sets $\Sts$ and $Z$ and an MDP $\mdp$ with states in $\NN\times\Sts$, and actions in $Z\cup\{end\}$. Together with a trace $\tau \in Z^\star$. A \emph{trace consistent policy} is of the form
     \begin{align*}
         \sigma_\tau(\langle i, s \rangle) = \begin{cases}
-                                                \tau^{(i)} & \text{if } i \leq |\tau| \\
-                                                end        & \text{otherwise}
+                                                \tau^{(i)} & \text{if } i \leq |\tau|, \\
+                                                end        & \text{otherwise.}
                                             \end{cases}
     \end{align*}
 \end{definition}
