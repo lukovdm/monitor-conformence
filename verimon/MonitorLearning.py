@@ -7,17 +7,22 @@ from stormpy import (
     SparseDtmc,
     SparsePomdp,
     SparseModelComponents,
+    SparseExactDtmc,
+    SparseExactPomdp,
+    SparseExactModelComponents,
     parse_properties,
     model_checking,
     ExpressionManager,
+    Rational,
 )
 from stormpy.pomdp import (
     create_nondeterminstic_belief_tracker,
     NondeterministicBeliefTrackerDoubleSparse,
+    NondeterministicBeliefTrackerExactSparse,
 )
 from stormpy.simulator import create_simulator, SparseSimulator
 
-from verimon.loaders import aalpy_dfa_to_stormvogel
+from verimon.loaders import aalpy_dfa_to_stormpy, aalpy_dfa_to_stormvogel
 from verimon.logger import logger, setup_logging
 from verimon.verify import false_positive, false_negative
 
@@ -29,7 +34,7 @@ class FilteringSUL(SUL):
         initial_observation: str,
         observation_classes: list[str],
         spec: str,
-        threshold: float,
+        threshold: float | Rational,
         horizon: int | None,
         use_risk: bool,
     ):
@@ -44,25 +49,46 @@ class FilteringSUL(SUL):
         self.do_logging = False
         self.last_risk = 0
 
-        components = SparseModelComponents(mc.transition_matrix, mc.labeling)
-        try:
-            components.choice_labeling = mc.choice_labeling
-        except RuntimeError:
-            pass
-        try:
-            components.state_valuations = mc.state_valuations
-        except RuntimeError:
-            pass
-        components.observability_classes = FilteringSUL._labels_to_observations(
-            mc,
-            observation_classes,
-        )
+        if mc.is_exact:
+            components = SparseExactModelComponents(mc.transition_matrix, mc.labeling)
+            try:
+                components.choice_labeling = mc.choice_labeling
+            except RuntimeError:
+                pass
+            try:
+                components.state_valuations = mc.state_valuations
+            except RuntimeError:
+                pass
+            components.observability_classes = FilteringSUL._labels_to_observations(
+                mc,
+                observation_classes,
+            )
 
-        self.pomdp = SparsePomdp(components)
+            self.pomdp = SparseExactPomdp(components)
 
-        self.tracker: NondeterministicBeliefTrackerDoubleSparse = (
-            create_nondeterminstic_belief_tracker(self.pomdp, 10000, 10000)
-        )
+            self.tracker: NondeterministicBeliefTrackerExactSparse = (
+                create_nondeterminstic_belief_tracker(self.pomdp, 10000, 10000)
+            )
+        else:
+            components = SparseModelComponents(mc.transition_matrix, mc.labeling)
+            try:
+                components.choice_labeling = mc.choice_labeling
+            except RuntimeError:
+                pass
+            try:
+                components.state_valuations = mc.state_valuations
+            except RuntimeError:
+                pass
+            components.observability_classes = FilteringSUL._labels_to_observations(
+                mc,
+                observation_classes,
+            )
+
+            self.pomdp = SparsePomdp(components)
+
+            self.tracker: NondeterministicBeliefTrackerDoubleSparse = (
+                create_nondeterminstic_belief_tracker(self.pomdp, 10000, 10000)
+            )
 
         prop = parse_properties(spec)
         result = model_checking(mc, prop[0])
@@ -287,7 +313,7 @@ class VerimonEqOracle(Oracle):
                 return cex
 
         logger.debug("Finding false negative probability")
-        mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
+        mon_cycl = aalpy_dfa_to_stormpy(hypothesis, self.mc.is_exact)
         result, trace, _, _, stats = false_negative(
             self.mc,
             mon_cycl,
@@ -331,7 +357,7 @@ class VerimonEqOracle(Oracle):
             return trace
 
         logger.debug("Finding false positive probability")
-        mon_cycl = aalpy_dfa_to_stormvogel(hypothesis)
+        mon_cycl = aalpy_dfa_to_stormpy(hypothesis, self.mc.is_exact)
         result, trace, _, _, stats = false_positive(
             self.mc,
             mon_cycl,

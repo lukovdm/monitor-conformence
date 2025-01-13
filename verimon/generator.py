@@ -1,4 +1,5 @@
 import logging
+from operator import is_
 from typing import Self
 
 import paynt.cli
@@ -15,10 +16,15 @@ from stormpy import (
     parse_properties,
     model_checking,
     SparseDtmc,
+    SparseExactDtmc,
     SparseMdp,
+    SparseExactMdp,
     ExpressionManager,
+    Rational,
 )
 from stormpy.pomdp import (
+    GenerateMonitorVerifierExact,
+    GenerateMonitorVerifierExactOptions,
     GenerateMonitorVerifierDouble,
     GenerateMonitorVerifierDoubleOptions,
 )
@@ -31,26 +37,48 @@ from verimon.utils import compact_json_str, get_pos, hole_to_observations
 class Verifier:
     def __init__(
         self: Self,
-        mc: SparseDtmc,
-        mon: SparseMdp,
+        mc: SparseDtmc | SparseExactDtmc,
+        mon: SparseMdp | SparseExactMdp,
         expr_manager: ExpressionManager,
         good_label: str,
-        paynt_strategy: str = "cegis",
+        paynt_strategy: str = "ar",
     ) -> None:
-        self.mc = SparseDtmc(mc)
-        self.mon = SparseMdp(mon)
+        if mc.is_exact ^ mon.is_exact:
+            raise Exception(
+                f"MC and MON must have the same exactness: mc={mc.is_exact}, mon={mon.is_exact}"
+            )
+        if mc.is_exact:
+            self.mc = SparseExactDtmc(mc)
+        else:
+            self.mc = SparseDtmc(mc)
+        if mon.is_exact:
+            self.mon = SparseExactMdp(mon)
+        else:
+            self.mon = SparseMdp(mon)
+
         self.expr_manager = expr_manager
         self.good_label = good_label
         self.pomdp_quotient = None
         self.pomdp = None
+
+        if mc.is_exact and paynt_strategy != "ar":
+            raise ValueError("Only AR strategy is supported for exact models")
         self.paynt_strategy = paynt_strategy
 
-        self.options = GenerateMonitorVerifierDoubleOptions()
-        self.options.good_label = good_label
-        self.options.step_prefix = "step="
-        self.generator = GenerateMonitorVerifierDouble(
-            mc, mon, expr_manager, self.options
-        )
+        if self.mc.is_exact:
+            self.options = GenerateMonitorVerifierExactOptions()
+            self.options.good_label = good_label
+            self.options.step_prefix = "step="
+            self.generator = GenerateMonitorVerifierExact(
+                mc, mon, expr_manager, self.options
+            )
+        else:
+            self.options = GenerateMonitorVerifierDoubleOptions()
+            self.options.good_label = good_label
+            self.options.step_prefix = "step="
+            self.generator = GenerateMonitorVerifierDouble(
+                mc, mon, expr_manager, self.options
+            )
 
     def apply_spec(self: Self, spec: str):
         """
@@ -64,15 +92,25 @@ class Verifier:
         logger.info(
             f"New good states become: {self.mc.labeling.get_states(self.good_label)}"
         )
-        self.generator = GenerateMonitorVerifierDouble(
-            self.mc, self.mon, self.expr_manager, self.options
-        )
+        if self.mc.is_exact:
+            self.generator = GenerateMonitorVerifierExact(
+                self.mc, self.mon, self.expr_manager, self.options
+            )
+        else:
+            self.generator = GenerateMonitorVerifierDouble(
+                self.mc, self.mon, self.expr_manager, self.options
+            )
 
     def set_risk(self: Self, risk_prop: str):
         self.options.use_risk = True
-        self.generator = GenerateMonitorVerifierDouble(
-            self.mc, self.mon, self.expr_manager, self.options
-        )
+        if self.mc.is_exact:
+            self.generator = GenerateMonitorVerifierExact(
+                self.mc, self.mon, self.expr_manager, self.options
+            )
+        else:
+            self.generator = GenerateMonitorVerifierDouble(
+                self.mc, self.mon, self.expr_manager, self.options
+            )
 
         prop = parse_properties(risk_prop)
         result = model_checking(self.mc, prop[0])
@@ -98,16 +136,24 @@ class Verifier:
 
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
-    ) -> tuple[Family, float | None] | None:
+    ) -> tuple[Family, float | Rational | None] | None:
         paynt.cli.setup_logger()
         paynt.utils.timer.GlobalTimer.start()
 
         formula = PrismParser.parse_property(str_prop)
-        prop = paynt.verification.property.construct_property(formula, relative_error)
+        prop = paynt.verification.property.construct_property(
+            formula, relative_error, self.pomdp.is_exact
+        )
         specification = paynt.verification.property.Specification([prop])
-
         paynt.verification.property.Property.initialize()
-        explicit_quotient = payntbind.synthesis.addMissingChoiceLabels(self.pomdp)
+
+        if self.pomdp.is_exact:
+            explicit_quotient = payntbind.synthesis.addMissingChoiceLabelsExact(
+                self.pomdp
+            )
+        else:
+            explicit_quotient = payntbind.synthesis.addMissingChoiceLabels(self.pomdp)
+
         if explicit_quotient is None:
             explicit_quotient = self.pomdp
         self.pomdp_quotient = paynt.quotient.pomdp.PomdpQuotient(
@@ -124,6 +170,7 @@ class Verifier:
 
         if synthesizer.best_assignment_value == 0:
             logger.info("max probability is 0, thus no counterexample found")
+            logger.info(synthesizer.stat.get_summary())
             return None
 
         root_logger = logging.getLogger()
@@ -140,6 +187,7 @@ class Verifier:
             )
         else:
             logger.info("no counterexamples above threshold")
+            logger.info(synthesizer.stat.get_summary())
             return None
 
     def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):

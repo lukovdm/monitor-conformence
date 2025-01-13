@@ -1,3 +1,10 @@
+from stormpy import (
+    SparseExactMdp,
+    SparseMdp,
+    StateLabeling,
+    SparseExactModelComponents,
+    SparseModelComponents,
+)
 from stormvogel.model import Model
 
 from verimon.logger import logger
@@ -27,6 +34,47 @@ def remove_unreachable_states(model: Model):
 
     reassign_ids(model)
     logger.info(f"Removed {len(states)} unreachable states")
+
+
+def complement_stormpy_mon(mon: SparseMdp | SparseExactMdp, accepting_label: str):
+    new_labeling = StateLabeling(len(mon.states))
+    for label in mon.labeling.get_labels():
+        new_labeling.add_label(label)
+
+    for s in mon.states:
+        labels = s.labels
+        if accepting_label in labels:
+            labels.remove(accepting_label)
+        else:
+            labels.add(accepting_label)
+        for label in labels:
+            new_labeling.add_label_to_state(label, s.id)
+
+    if mon.is_exact:
+        components = SparseExactModelComponents(mon.transition_matrix, new_labeling)
+        try:
+            components.choice_labeling = mon.choice_labeling
+        except RuntimeError:
+            pass
+        try:
+            components.state_valuations = mon.state_valuations
+        except RuntimeError:
+            pass
+
+        return SparseExactMdp(components)
+
+    else:
+        components = SparseModelComponents(mon.transition_matrix, new_labeling)
+        try:
+            components.choice_labeling = mon.choice_labeling
+        except RuntimeError:
+            pass
+        try:
+            components.state_valuations = mon.state_valuations
+        except RuntimeError:
+            pass
+
+        return SparseMdp(components)
 
 
 def complement_model(model: Model, accepting_label: str):

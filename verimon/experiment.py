@@ -7,6 +7,7 @@ import os
 import argparse
 from datetime import datetime
 from time import time
+import traceback
 from typing import Any, Literal
 from setproctitle import getproctitle, setproctitle
 import yaml
@@ -22,10 +23,11 @@ from verimon.MonitorLearning import (
 from verimon.logger import OutputLogger, clear_logging, setup_logging, logger
 from verimon.utils import ObjectGroup
 from verimon.verify import false_positive, false_negative, true_negative, true_positive
-from verimon.loaders import aalpy_dfa_to_stormvogel
+from verimon.loaders import aalpy_dfa_to_stormpy, aalpy_dfa_to_stormvogel
 
 from stormvogel.mapping import stormvogel_to_stormpy
-from stormpy import export_to_drn
+from stormpy import export_to_drn, Rational
+from stormpy.utility import sharpen
 
 from paynt.family.family import Family
 
@@ -49,7 +51,7 @@ class Experiment(ABC):
     def run(self, timestamp: str, base_dir: str):
         proc_title = getproctitle()
         proc_title = proc_title.split("<")[0]
-        setproctitle(f"{proc_title} <{self.name} ({self.variant})>")
+        setproctitle(f"{proc_title} <{self.name} {self.variant}>")
         # Setup logging
         log_file = f"{base_dir}/logs/{timestamp}-{self.name}-{self.variant}.log"
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
@@ -82,6 +84,7 @@ class LearningExperiment(Experiment):
         use_horizon_in_filtering: bool = True,
         old_walks_per_state: int = 100000,
         old_walk_length: int | None = None,
+        use_exact: bool = False,
         variant: Any | None = None,
     ):
         old_walk_length = (
@@ -115,6 +118,7 @@ class LearningExperiment(Experiment):
         self.old_walks_per_state = old_walks_per_state
         self.old_walk_length = old_walk_length
         self.loader = loader
+        self.use_exact = use_exact
 
     def _run_verimon(self, base_dir, mc, alphabet, initial_observation, expr_manager):
         try:
@@ -209,7 +213,7 @@ class LearningExperiment(Experiment):
                 "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
             }
         except Exception as e:
-            logger.error(f"Error in Verimon: {e}", exc_info=e)
+            logger.error(f"Error in Verimon: {traceback.format_exc()}")
             return {"error": str(e), "msg": e.__repr__()}
 
     def _run_trad(self, alg, base_dir, mc, alphabet, initial_observation, expr_manager):
@@ -313,7 +317,7 @@ class LearningExperiment(Experiment):
             self.use_risk,
         )
 
-        mon = aalpy_dfa_to_stormvogel(learned_monitor)
+        mon = aalpy_dfa_to_stormpy(learned_monitor, mc.is_exact)
         try:
             fp_result = false_positive(
                 mc,
@@ -331,7 +335,7 @@ class LearningExperiment(Experiment):
             )
 
         except Exception as e:
-            logger.error(f"Exception for fp: {e}")
+            logger.error(f"Exception for fp: {traceback.format_exc()}")
             fp_result = None, None, None, None, None
 
         try:
@@ -351,13 +355,22 @@ class LearningExperiment(Experiment):
             )
 
         except Exception as e:
-            logger.error(f"Exception for fn: {e}")
+            logger.error(f"Exception for fn: {traceback.format_exc()}")
             fn_result = None, None, None, None, None
         return fp_result, fn_result
 
     # Function to run a single experiment
     def run(self, timestamp: str, base_dir: str):
         super().run(timestamp, base_dir)
+
+        self.threshold = (
+            sharpen(3, self.threshold) if self.use_exact else self.threshold
+        )
+        self.fp_slack = sharpen(5, self.fp_slack) if self.use_exact else self.fp_slack
+        self.fn_slack = sharpen(5, self.fn_slack) if self.use_exact else self.fn_slack
+        self.relative_error = (
+            sharpen(5, self.relative_error) if self.use_exact else self.relative_error
+        )
 
         start_time = time()
 
@@ -376,7 +389,9 @@ class LearningExperiment(Experiment):
                     observations,
                     mc,
                     expr_manager,
-                ) = loaders.pomdp_to_mc(self.file, self.parameters["constants"])
+                ) = loaders.pomdp_to_stormpy_mc(
+                    self.file, self.parameters["constants"], self.use_exact
+                )
                 alphabet = list(observations)
             elif self.loader == "snakes_ladders" and self.parameters:
                 mc_sl_u_nxn = "tests/snake_ladder/mc_u_nxn.pm"
@@ -385,6 +400,7 @@ class LearningExperiment(Experiment):
                     self.parameters["n"],
                     self.parameters["ladders"],
                     self.parameters["snakes"],
+                    self.use_exact,
                 )
                 alphabet = ["init", "normal", "snake", "ladder"]
                 initial_observation = "init"
@@ -408,24 +424,25 @@ class LearningExperiment(Experiment):
 
             total_time = time() - start_time
 
-        # Write results as json
-        result_json = {
-            "experiment": self.__dict__,
-            "time": {
-                "total": total_time,
-            },
-            "mc": {
-                "mc_states": len(mc.states),
-                "mc_transitions": mc.nr_transitions,
-                "mc_observations": len(alphabet),
-            },
-        } | results
-        result_json_file = (
-            f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
-        )
-        os.makedirs(os.path.dirname(result_json_file), exist_ok=True)
-        with open(result_json_file, "w") as f:
-            json.dump(result_json, f, indent=4)
+            # Write results as json
+
+            result_json = {
+                "experiment": self.__dict__,
+                "time": {
+                    "total": total_time,
+                },
+                "mc": {
+                    "mc_states": len(mc.states),
+                    "mc_transitions": mc.nr_transitions,
+                    "mc_observations": len(alphabet),
+                },
+            } | results
+            result_json_file = (
+                f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
+            )
+            os.makedirs(os.path.dirname(result_json_file), exist_ok=True)
+            with open(result_json_file, "w") as f:
+                json.dump(result_json, f, indent=4, default=str)
 
 
 class VerifyExperiment(Experiment):
@@ -589,7 +606,7 @@ class VerifyExperiment(Experiment):
                         "paynt_time": stats["paynt_time"] if stats else None,
                     }
             except Exception as e:
-                logger.error(f"Error in verification: {e}", exc_info=e)
+                logger.error(f"Error in verification: {traceback.format_exc()}")
                 verify_json = {"error": str(e)}
 
             total_time = time() - start_time
@@ -660,7 +677,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Run experiments concurrently",
     )
+    parser.add_argument("--debug", action="store_true", help="Enable debug pausing")
     args = parser.parse_args()
+
+    if args.debug:
+        import os
+
+        input("Press Enter to continue... " + str(os.getpid()))
 
     data = [exp for f in args.files for exp in yaml.load(f, Loader=yaml.FullLoader)]
     experiments = []
@@ -679,14 +702,15 @@ if __name__ == "__main__":
     if args.list_experiments:
         print("Available experiments:")
         for group in experiments:
+            print(f"- {group.kwargss['name'][0]}")
             for exp in group.get_objects():
-                print(f"- {exp.name} ({exp.variant})")
+                print(f"\t- {exp.name} {exp.variant}")
         exit()
 
     if args.print:
         for group in experiments:
             for exp in group.get_objects():
-                print(f"{exp.name} ({exp.variant}) {yaml.dump(exp.__dict__)}")
+                print(f"{exp.name} ({exp.variant}) {str(exp.__dict__)}")
         exit()
 
     if args.experiment:
@@ -713,15 +737,30 @@ if __name__ == "__main__":
 
     if args.concurrent:
         import concurrent.futures
+        from multiprocessing import Pool
 
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [
-                executor.submit(group.prod_class.run, exp, timestamp, base_dir)
-                for group in experiments
-                for exp in group.get_objects()
-            ]
-            for future in concurrent.futures.as_completed(futures):
-                future.result()
+        with Pool() as pool:
+            for group in experiments:
+                for exp in group.get_objects():
+                    pool.apply_async(exp.run, (timestamp, base_dir))
+
+            # On keyboard interrupt, terminate all processes
+            try:
+                pool.close()
+                pool.join()
+            except KeyboardInterrupt:
+                pool.terminate()
+                print("Terminating all processes")
+                pool.join()
+
+        # with concurrent.futures.ProcessPoolExecutor() as executor:
+        #     futures = [
+        #         executor.submit(group.prod_class.run, exp, timestamp, base_dir)
+        #         for group in experiments
+        #         for exp in group.get_objects()
+        #     ]
+        #     for future in concurrent.futures.as_completed(futures):
+        #         future.result()
     else:
         for group in experiments:
             for exp in group.get_objects():

@@ -1,9 +1,19 @@
+from hmac import new
+from typing import Any
 from stormpy import (
     parse_properties,
     model_checking,
     SparseMdp,
+    SparseExactMdp,
+    ExactSparseMatrixBuilder,
+    SparseMatrixBuilder,
     perform_sparse_bisimulation,
     BisimulationType,
+    StateLabeling,
+    ChoiceLabeling,
+    SparseExactModelComponents,
+    SparseModelComponents,
+    Rational,
 )
 from stormvogel.mapping import stormvogel_to_stormpy
 from stormvogel.model import Model, new_mdp, State, Branch, Transition
@@ -64,6 +74,101 @@ def _breath_first_ordering(mon: Model) -> dict[int, int]:
                     queue.append(s)
 
     return ordering
+
+
+def stormpy_simulator_unroll(mon: SparseMdp | SparseExactMdp, horizon):
+    # Based on simulator_unroll from verimon/transformations.py
+    states: dict[tuple[int, int], int] = {(0, mon.initial_states[0]): 0}
+    state_labels: dict[int, set[str]] = {
+        new_s: set(["step=0", "init"]) for new_s in states.values()
+    }
+    labels = set(["step=0", "init", "horizon"]).union(mon.labeling.get_labels())
+    for h in range(horizon + 1):
+        labels.add(f"step={h}")
+
+    action_labels_map: dict[int, set[str]] = {}
+    action_labels = set(mon.choice_labeling.get_labels())
+
+    queue = [(i, new_s, s) for (i, new_s), s in states.items()]
+    horizon_queue = []
+
+    if mon.is_exact:
+        builder = ExactSparseMatrixBuilder(0, 0, 0, False, True)
+    else:
+        builder = SparseMatrixBuilder(0, 0, 0, False, True)
+
+    current_row = 0
+    while queue:
+        i, new_s, s = queue.pop(0)
+        builder.new_row_group(current_row)
+        old_state = mon.states[s]
+        state_labels[new_s].update(old_state.labels.difference(["init"]))
+
+        for action in old_state.actions:
+            action_labels_map[current_row] = action.labels
+
+            new_row_dict: dict[int, Any] = {}
+            for transition in action.transitions:
+                dest_s = transition.column
+                if (i + 1, dest_s) in states:
+                    new_dest_s = states[(i + 1, dest_s)]
+                else:
+                    new_dest_s = len(states)
+                    states[(i + 1, dest_s)] = new_dest_s
+                    state_labels[new_dest_s] = set(["step=" + str(i + 1)])
+                    if i + 1 == horizon - 1:
+                        state_labels[new_dest_s].add("horizon")
+                        horizon_queue.append((new_dest_s, dest_s))
+                    else:
+                        queue.append((i + 1, new_dest_s, dest_s))
+
+                new_row_dict[new_dest_s] = transition.value()
+
+            for new_dest_s, value in sorted(new_row_dict.items()):
+                builder.add_next_value(current_row, new_dest_s, value)
+
+            current_row += 1
+
+    for new_s, s in horizon_queue:
+        builder.new_row_group(current_row)
+        old_state = mon.states[s]
+        state_labels[new_s].update(old_state.labels.difference(["init"]))
+
+        for action in old_state.actions:
+            action_labels_map[current_row] = action.labels
+            builder.add_next_value(
+                current_row, new_s, Rational(1.0) if mon.is_exact else 1.0
+            )
+            current_row += 1
+
+    matrix = builder.build(overridden_column_count=len(states))
+
+    # Create state labeling
+    labeling = StateLabeling(len(states))
+    for label in labels:
+        labeling.add_label(label)
+
+    for state, labels in state_labels.items():
+        for label in labels:
+            labeling.add_label_to_state(label, state)
+
+    # Create choice labeling
+    choice_labeling = ChoiceLabeling(len(action_labels_map))
+    for label in action_labels:
+        choice_labeling.add_label(label)
+
+    for action, labels in action_labels_map.items():
+        for label in labels:
+            choice_labeling.add_label_to_choice(label, action)
+
+    if mon.is_exact:
+        components = SparseExactModelComponents(matrix, labeling)
+        components.choice_labeling = choice_labeling
+        return SparseExactMdp(components)
+    else:
+        components = SparseModelComponents(matrix, labeling)
+        components.choice_labeling = choice_labeling
+        return SparseMdp(components)
 
 
 def simulator_unroll(mon: Model, horizon):

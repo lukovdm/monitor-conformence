@@ -1,7 +1,9 @@
 from math import sqrt
 from random import randrange
+from typing import Any
 
 from aalpy import Dfa
+from numpy import matrix
 from stormpy import (
     PrismProgram,
     PrismConstant,
@@ -9,11 +11,21 @@ from stormpy import (
     parse_prism_program,
     BuilderOptions,
     build_sparse_model_with_options,
+    build_sparse_exact_model_with_options,
     SparseDtmc,
+    SparseExactDtmc,
     SparseMdp,
+    SparseExactMdp,
     ExpressionManager,
     DirectEncodingParserOptions,
     build_model_from_drn,
+    ExactSparseMatrixBuilder,
+    SparseMatrixBuilder,
+    StateLabeling,
+    ChoiceLabeling,
+    Rational,
+    SparseExactModelComponents,
+    SparseModelComponents,
 )
 import stormvogel
 from stormvogel.mapping import stormpy_to_stormvogel, stormvogel_to_stormpy
@@ -52,7 +64,7 @@ def load_snl(path: str, n: int, ladders: dict[int, int], snakes: dict[int, int])
 
 
 def load_snl_stormpy(
-    path: str, n: int, ladders: dict[int, int], snakes: dict[int, int]
+    path: str, n: int, ladders: dict[int, int], snakes: dict[int, int], use_exact=False
 ) -> tuple[SparseDtmc, ExpressionManager]:
     snl_prism: PrismProgram = parse_prism_program(path)
     if not snl_prism.has_undefined_constants:
@@ -62,7 +74,17 @@ def load_snl_stormpy(
     options.set_build_all_labels()
     options.set_build_choice_labels()
     options.set_build_state_valuations()
-    return build_sparse_model_with_options(prism, options), snl_prism.expression_manager
+
+    if use_exact:
+        return (
+            build_sparse_exact_model_with_options(prism, options),
+            snl_prism.expression_manager,
+        )
+    else:
+        return (
+            build_sparse_model_with_options(prism, options),
+            snl_prism.expression_manager,
+        )
 
 
 def load_defined_snl(path: str) -> tuple[Model, int, dict[int, int], dict[int, int]]:
@@ -94,6 +116,114 @@ def load_dfa_stormpy(path: str) -> SparseMdp:
     options.set_build_choice_labels()
     options.set_build_state_valuations()
     return build_sparse_model_with_options(dfa_prism, options)
+
+
+def load_dfa_stormpy_exact(path: str) -> SparseMdp:
+    dfa_prism = parse_prism_program(path)
+    options = BuilderOptions()
+    options.set_build_all_labels()
+    options.set_build_choice_labels()
+    options.set_build_state_valuations()
+    return build_sparse_exact_model_with_options(dfa_prism, options)
+
+
+def pomdp_to_stormpy_mc(
+    path: str, constants: str, use_exact: bool
+) -> tuple[str, set[str], SparseDtmc | SparseExactDtmc, ExpressionManager]:
+    prism = parse_prism_program(path)
+    symb, _ = preprocess_symbolic_input(prism, [], constants)
+    symb = symb.as_prism_program()
+
+    options = BuilderOptions()
+    options.set_build_all_labels()
+    options.set_build_choice_labels()
+    options.set_build_state_valuations()
+    options.set_build_observation_valuations()
+    if use_exact:
+        pomdp_stormpy = build_sparse_exact_model_with_options(symb, options)
+    else:
+        pomdp_stormpy = build_sparse_model_with_options(symb, options)
+
+    state_labeling = StateLabeling(len(pomdp_stormpy.states))
+    for label in pomdp_stormpy.labeling.get_labels():
+        state_labeling.add_label(label)
+
+    # Get observation classes and and them as labels
+    observation_classes: set[str] = set()
+    initial_observation = compact_json_str(
+        str(
+            pomdp_stormpy.observation_valuations.get_json(
+                pomdp_stormpy.get_observation(pomdp_stormpy.initial_states[0])
+            )
+        )
+    )
+
+    for state in pomdp_stormpy.states:
+        obs_string = compact_json_str(
+            str(
+                pomdp_stormpy.observation_valuations.get_json(
+                    pomdp_stormpy.get_observation(state.id)
+                )
+            )
+        )
+        observation_classes.add(obs_string)
+
+    for obs in observation_classes:
+        state_labeling.add_label(obs)
+
+    # Create transition matrix
+    if use_exact:
+        builder = ExactSparseMatrixBuilder(0, 0, 0, False, False)
+    else:
+        builder = SparseMatrixBuilder(0, 0, 0, False, False)
+    for s in pomdp_stormpy.states:
+        # Set labels
+        for label in s.labels:
+            state_labeling.add_label_to_state(label, s.id)
+
+        state_labeling.add_label_to_state(
+            compact_json_str(
+                str(
+                    pomdp_stormpy.observation_valuations.get_json(
+                        pomdp_stormpy.get_observation(s.id)
+                    )
+                )
+            ),
+            s.id,
+        )
+
+        # Set transition
+        amount_of_actions = len(s.actions)
+        new_row_dict: dict[int, Any] = {}
+        for action in s.actions:
+            for transition in action.transitions:
+                dest_s = transition.column
+                if dest_s in new_row_dict:
+                    new_row_dict[dest_s] += transition.value() / amount_of_actions
+                else:
+                    new_row_dict[dest_s] = transition.value() / amount_of_actions
+
+        for new_dest_s, value in sorted(new_row_dict.items()):
+            builder.add_next_value(s.id, new_dest_s, value)
+
+    matrix = builder.build(overridden_column_count=len(pomdp_stormpy.states))
+
+    if use_exact:
+        components = SparseExactModelComponents(matrix, state_labeling)
+        return (
+            initial_observation,
+            observation_classes,
+            SparseExactDtmc(components),
+            prism.expression_manager,
+        )
+    else:
+        components = SparseModelComponents(matrix, state_labeling)
+        return (
+            initial_observation,
+            observation_classes,
+            SparseDtmc(components),
+            prism.expression_manager,
+        )
 
 
 def pomdp_to_mc(
@@ -286,3 +416,53 @@ def aalpy_dfa_to_stormvogel(dfa_a: Dfa):
             )
 
     return dfa_sv
+
+
+def aalpy_dfa_to_stormpy(dfa_a: Dfa, use_exact: bool):
+    state_labeling = StateLabeling(len(dfa_a.states))
+    state_labeling.add_label("accepting")
+    state_labeling.add_label("init")
+
+    choice_labeling = ChoiceLabeling(sum([len(s.transitions) for s in dfa_a.states]))
+
+    for label in dfa_a.get_input_alphabet():
+        choice_labeling.add_label(label)
+
+    state_mapping = {
+        dfa_s.state_id: i
+        for i, dfa_s in enumerate(sorted(dfa_a.states, key=lambda q: q.state_id))
+    }
+
+    state_labeling.add_label_to_state(
+        "init", state_mapping[dfa_a.initial_state.state_id]
+    )
+
+    if use_exact:
+        builder = ExactSparseMatrixBuilder(0, 0, 0, False, True)
+    else:
+        builder = SparseMatrixBuilder(0, 0, 0, False, True)
+    current_row = 0
+    for s in sorted(dfa_a.states, key=lambda q: q.state_id):
+        if s.is_accepting:
+            state_labeling.add_label_to_state("accepting", state_mapping[s.state_id])
+
+        builder.new_row_group(current_row)
+        for act, dest_s in s.transitions.items():
+            builder.add_next_value(
+                current_row,
+                state_mapping[dest_s.state_id],
+                Rational(1.0) if use_exact else 1.0,
+            )
+            choice_labeling.add_label_to_choice(act, current_row)
+            current_row += 1
+
+    matrix = builder.build(overridden_column_count=len(dfa_a.states))
+
+    if use_exact:
+        components = SparseExactModelComponents(matrix, state_labeling)
+        components.choice_labeling = choice_labeling
+        return SparseExactMdp(components)
+    else:
+        components = SparseModelComponents(matrix, state_labeling)
+        components.choice_labeling = choice_labeling
+        return SparseMdp(components)

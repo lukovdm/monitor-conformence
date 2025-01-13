@@ -12,32 +12,34 @@
   loader: pomdp
   learning_algs: 
     - [sampling, verimon]
+  use_exact: true
 
 - type: LearningExperiment
   name: evade
   file: tests/premise/evade-monitoring.nm
   parameters:
     constants: "N=4,RADIUS=2"
-  spec: Pmax=? [F<=4 "crash"]
+  spec: Pmax=? [F<=3 "crash"]
   good_label: crash
   loader: pomdp
   horizon:
     - 8
     - 9
-    - 10
   learning_algs: 
     - [sampling, verimon]
+  use_exact: true
 
 - type: LearningExperiment
   name: hidden_incentive
   file: tests/premise/hidden-incentive.nm
   parameters:
     constants: "N=3"
-  spec: Pmax=? [F<=4 "crash"]
+  spec: Pmax=? [F<=3 "crash"]
   good_label: crash
   loader: pomdp
   learning_algs: 
     - [sampling, verimon]
+  use_exact: true
 
 - type: LearningExperiment
   name: airport
@@ -50,8 +52,9 @@
     - constants: "DMAX=3,PMAX=3"
     - constants: "DMAX=4,PMAX=4"
     - constants: "DMAX=5,PMAX=5"
-  spec: Pmax=? [F<2 "crash"]
+  spec: Pmax=? [F<=2 "crash"]
   good_label: crash
   loader: pomdp
   learning_algs: 
     - [sampling, verimon]
+  use_exact: true

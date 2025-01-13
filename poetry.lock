@@ -2401,6 +2401,17 @@ files = [
 global = ["pybind11-global (==2.13.6)"]
 
 [[package]]
+name = "pybind11-stubgen"
+version = "2.5.1"
+description = "PEP 561 type stubs generator for pybind11 modules"
+optional = false
+python-versions = "~=3.7"
+files = [
+    {file = "pybind11-stubgen-2.5.1.tar.gz", hash = "sha256:4427a67038a00c5ac1637ffa6c65728c67c5b1251ecc23c7704152be0b14cc0b"},
+    {file = "pybind11_stubgen-2.5.1-py3-none-any.whl", hash = "sha256:544d49df57da827c8761e7f6ef6bca996df80a33c9fd21c2521d694d4e72fe8d"},
+]
+
+[[package]]
 name = "pycarl"
 version = "2.3.0"
 description = "pycarl - Python Bindings for CArL"
@@ -3555,4 +3566,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "241533e2b8b702e6400ad92fd4eea7872b54009c877403b8f9247e631b20aa2d"
+content-hash = "d8098762a7aef3d80a972958f9cb4fe3e36d2a9d0d9f0ab9cd96e0b4ea657c44"

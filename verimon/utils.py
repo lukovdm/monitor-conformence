@@ -1,3 +1,4 @@
+import enum
 import itertools
 from json import loads
 from typing import Any, Generator
@@ -44,16 +45,41 @@ class ObjectGroup:
                 self.argss.append([arg])
             else:
                 self.argss.append(arg)
+        self.arg_prod_indexes = [i for i, arg in enumerate(args) if len(arg) > 1]
         self.kwargss: dict[str, Any] = {}
         for k, v in kwargs.items():
             if not isinstance(v, list):
                 self.kwargss[k] = [v]
             else:
                 self.kwargss[k] = v
+        self.kwargss_prod_keys = [k for k, v in self.kwargss.items() if len(v) > 1]
 
     def get_objects(self) -> Generator[Any, None, None]:
-        for i, args in enumerate(itertools.product(*self.argss)):
-            for j, kwargs in enumerate(itertools.product(*self.kwargss.values())):
-                yield self.prod_class(
-                    variant=(i, j), *args, **dict(zip(self.kwargss.keys(), kwargs))
+        for args in itertools.product(*self.argss):
+            for kwargs in itertools.product(*self.kwargss.values()):
+                kwargs = dict(zip(self.kwargss.keys(), kwargs))
+                variant = (
+                    "("
+                    + ",".join(
+                        [
+                            self.__value_to_str(arg)
+                            for i, arg in enumerate(args)
+                            if i in self.arg_prod_indexes
+                        ]
+                    )
+                    + ("," if self.arg_prod_indexes and self.kwargss_prod_keys else "")
+                    + ",".join(
+                        [
+                            str(k) + "=" + self.__value_to_str(v)
+                            for k, v in kwargs.items()
+                            if k in self.kwargss_prod_keys
+                        ]
+                    )
+                    + ")"
                 )
+                yield self.prod_class(variant=variant, *args, **kwargs)
+
+    def __value_to_str(self, value):
+        if isinstance(value, str) and "/" in value:
+            return value.split("/")[-1]
+        return str(value)

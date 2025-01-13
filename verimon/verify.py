@@ -1,6 +1,9 @@
 from copy import deepcopy
+from datetime import datetime
+from operator import is_
 import os
 from time import time
+import traceback
 
 from paynt.family.family import Family
 
@@ -9,6 +12,9 @@ from stormpy import (
     model_checking,
     parse_properties,
     SparseDtmc,
+    SparseExactDtmc,
+    SparseMdp,
+    SparseExactMdp,
     ExpressionManager,
     export_to_drn,
     Rational,
@@ -16,12 +22,13 @@ from stormpy import (
 from stormvogel.mapping import stormvogel_to_stormpy
 from stormvogel.model import Model
 
-from verimon.algs import complement_model
+from verimon.algs import complement_model, complement_stormpy_mon
 from verimon.generator import Verifier
 from verimon.logger import logger
 from verimon.transformations import (
     prune_monitor,
     simulator_unroll,
+    stormpy_simulator_unroll,
 )
 
 default_option = {
@@ -29,13 +36,13 @@ default_option = {
     "good_label": "good",
     "relative_error": 0.1,
     "use_risk": False,
-    "paynt_strategy": "cegis",
+    "paynt_strategy": "ar",
 }
 
 
 def false_positive(
-    mc: SparseDtmc,
-    mon: Model,
+    mc: SparseDtmc | SparseExactDtmc,
+    mon: SparseMdp | SparseExactMdp,
     horizon: int,
     expr_manager: ExpressionManager,
     threshold: float | None = None,
@@ -61,8 +68,8 @@ def false_positive(
 
 
 def false_negative(
-    mc: SparseDtmc,
-    mon: Model,
+    mc: SparseDtmc | SparseExactDtmc,
+    mon: SparseMdp | SparseExactMdp,
     horizon: int,
     expr_manager: ExpressionManager,
     threshold: float | None = None,
@@ -77,8 +84,7 @@ def false_negative(
     else:
         paynt_spec = f'P>{threshold} [F "goal"]'
 
-    mon_c = deepcopy(mon)
-    complement_model(mon_c, "accepting")
+    mon_c = complement_stormpy_mon(mon, "accepting")
 
     res = _verify_helper(
         mc, mon_c, paynt_spec, horizon, expr_manager, default_option | options
@@ -91,8 +97,8 @@ def false_negative(
 
 
 def true_positive(
-    mc: SparseDtmc,
-    mon: Model,
+    mc: SparseDtmc | SparseExactDtmc,
+    mon: SparseMdp | SparseExactMdp,
     horizon: int,
     expr_manager: ExpressionManager,
     threshold: float | None = None,
@@ -118,8 +124,8 @@ def true_positive(
 
 
 def true_negative(
-    mc: SparseDtmc,
-    mon: Model,
+    mc: SparseDtmc | SparseExactDtmc,
+    mon: SparseMdp | SparseExactMdp,
     horizon: int,
     expr_manager: ExpressionManager,
     threshold: float | None = None,
@@ -133,8 +139,7 @@ def true_negative(
     else:
         paynt_spec = f'P>{threshold} [F "stop"]'
 
-    mon_c = deepcopy(mon)
-    complement_model(mon_c, "accepting")
+    mon_c = complement_stormpy_mon(mon, "accepting")
 
     res = _verify_helper(
         mc, mon_c, paynt_spec, horizon, expr_manager, default_option | options
@@ -147,8 +152,8 @@ def true_negative(
 
 
 def _verify_helper(
-    mc: SparseDtmc,
-    mon_cycl: Model,
+    mc: SparseDtmc | SparseExactDtmc,
+    mon_cycl: SparseMdp | SparseExactMdp,
     paynt_spec: str,
     horizon: int,
     expr_manager: ExpressionManager,
@@ -161,20 +166,9 @@ def _verify_helper(
 
     logger.debug("Building model")
 
-    mon_unroll = simulator_unroll(mon_cycl, horizon)
+    mon = stormpy_simulator_unroll(mon_cycl, horizon)
     logger.debug("Unrolling done")
 
-    # try:
-    #     prune_monitor(mon_unroll)
-    # except RuntimeError as e:
-    #     raise Exception(
-    #         "Monitor horizon probably not deep enough, no accepting states in monitor",
-    #         e,
-    #     )
-
-    # logger.debug("Pruning done")
-
-    mon = stormvogel_to_stormpy(mon_unroll)
     # mon = bisim_minimise_monitor(mon) Bisimulation minimisation removes choice labeling, whichi is essential for us
     model = Verifier(
         mc, mon, expr_manager, options["good_label"], options["paynt_strategy"]
@@ -193,7 +187,8 @@ def _verify_helper(
 
     if "model_path" in options:
         os.makedirs(options["model_path"], exist_ok=True)
-        path = f"{options['model_path']}/pomdp-null-{len(model.pomdp.states)}-{paynt_spec}.drn"
+        timestamp = time()
+        path = f"{options['model_path']}/pomdp-null-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn"
         export_to_drn(
             model.pomdp,
             path,
@@ -208,10 +203,10 @@ def _verify_helper(
         try:
             os.rename(
                 path,
-                f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.pomdp.states)}-{paynt_spec}.drn",
+                f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn",
             )
         except Exception as e:
-            logger.error(f"Could not rename file: {e}")
+            logger.error(f"Could not rename file: {traceback.format_exc()}")
 
     if res is None:
         logger.info("no counter example during verification")
@@ -243,7 +238,9 @@ def _verify_helper(
     ).at(induced_mc.initial_states[0])
     logger.info(f"Goal probability counterexample: {result_goal}")
 
-    if abs(1 - (result_stop + result_goal)) > 0.05:
+    if (mc.is_exact and result_stop + result_goal != 1) or (
+        not mc.is_exact and abs(1 - (result_stop + result_goal)) > 0.05
+    ):
         raise Exception(
             "Inconsistent scheduler found during maximisation, this should not happen",
             result_stop,
@@ -256,16 +253,16 @@ def _verify_helper(
         else:
             diff = abs(value - result_stop)
 
-        if diff > 0.05:
+        if (mc.is_exact and diff != 0) or (not mc.is_exact and diff > 0.05):
+            logger.warning(
+                f"paynt value and checking value differ: {value} vs goal:{result_goal} or stop:{result_stop}"
+            )
             if "model_path" in options:
                 os.makedirs(options["model_path"], exist_ok=True)
                 export_to_drn(
                     induced_mc,
-                    f"{options['model_path']}/induced-chck-{value}-{diff}.drn",
+                    f"{options['model_path']}/induced-chck-{datetime.now()}.drn",
                 )
-            logger.warning(
-                f"paynt value and checking value differ: {value} vs goal:{result_goal} or stop:{result_stop}"
-            )
 
         if "filtering" in options:
             logger.info("Checking results using filtering")
@@ -276,15 +273,17 @@ def _verify_helper(
                 value = 1 - value
 
             diff_filtering = abs(res_filtering - value)
-            if diff_filtering > 0.05:
+            if (mc.is_exact and diff_filtering != 0) or (
+                not mc.is_exact and diff_filtering > 0.05
+            ):
+                logger.warning(
+                    f"Paynt value and filtering value differ: {value} vs {res_filtering}"
+                )
                 if "model_path" in options:
                     os.makedirs(options["model_path"], exist_ok=True)
                     export_to_drn(
                         induced_mc,
-                        f"{options['model_path']}/induced-filter-{value}-{diff_filtering}.drn",
+                        f"{options['model_path']}/induced-filter-{datetime.now()}.drn",
                     )
-                logger.warning(
-                    f"Paynt value and filtering value differ: {value} vs {res_filtering}"
-                )
 
     return result_goal, trace, assignment, model, stats
