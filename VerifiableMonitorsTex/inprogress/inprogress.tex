@@ -28,7 +28,7 @@
 \tikzset{
     %->, % makes the edges directed
     >=stealth, % makes the arrow heads bold
-    every state/.style={thick, fill=gray!10, minimum size=0.9cm}, % sets the properties for each ’state’ node
+    every state/.style={thick, fill=gray!10, minimum size=0.8cm,inner sep=1pt}, % sets the properties for each ’state’ node
     initial text=$ $, % sets the text that appears on the start arrow
     action/.style={circle, fill, inner sep=1pt},
     icy/.style={draw=cyan},
@@ -874,43 +874,48 @@ Now finding a trace with the conditional trace probability above $\lambda_s$ coi
     \item Use Random walk with MQ as pre-EQ
 \end{itemize}
 
-\section{Complexity}\label{sec:compl}
+\section{Computational Complexity}\label{sec:compl}
 \begin{theorem}
     \label{lem:complexity}
-    Checking whether a monitor is correct with respect to a unary encoded horizon is coNP-complete.
+    Checking whether a monitor is correct given a unary encoded horizon is coNP-complete.
 \end{theorem}
-In fact, we study in this section the dual to this problem:
-\begin{definition}
+In fact, we study in this section the dual to this problem, i.e., checking the existence of a counterexample. We call this problem \emph{monitor co-verification}. For monitor co-verification, \emph{membership} in NP follows as false alarms or a missed alarm (of length up to horizon) are witnesses.
+Verifying whether a trace is indeed a false alarm can be done in polynomial time by first checking whether the automaton accepts it and then computing the trace risk and comparing it to the thresholds. 
+Each of these steps can be done in polynomial time~\cite{}.  \sj{Maybe this result is so crucial that we should explain somewhere how this works in polynomial time. I guess it also follows from the construciton in section 3 if we restrict the monitor to just contain one trace?}
 
-\end{definition}
-NP-membership follows for the monitor co-verification as false alarms or a missed alarm (of length up to horizon) are witnesses. Verifying whether this trace is indeed a false alarm can be done in polynomial time by first checking whether the automaton accepts it and then computing the trace risk and comparing it to the thresholds. Each of these steps can be done in polynomial time.  \sebastian{Maybe this result is so crucial that we should explain somewhere how this works in polynomial time.}
-
-For hardness, we show NP-hardness of the CTP problem from~\Cref{def:CTPproblem}. As a solution to the monitor co-verification problem suffices to solve the CTP problem, this implies NP harndess of the former.
+To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}. As a solution to the monitor co-verification problem suffices to solve the CTP problem (using a trivial monitor), this implies NP hardness of the former.
 \begin{lemma}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is NP-hard.
 \end{lemma}
-\sebastian{What about the probability of a trace being zero?}
+The lemma holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem  from 3CNF. We outline the construction below.
 
-The result holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem  from 3CNF. We outline the construction below.
+Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
 
-Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk is a state $t$. By construction, there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. Note that there is a trace with risk $1$ iff there is a trace where all corresponding paths end in state $t$.
+Before we give a formal definition of $\mc_\varphi$, we give some intuition.
+We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$ defined below. Next, we show that the gadget reaches positive risk in every gadget only if the corresponding clause is satisfied by the assignment.
 
-Before we give a formal definition of $\mc_\varphi$, we give some intuition, supported by Fig.~\ref{fig:hmmgadget}.
-We represent assignments $\alpha\colon X \rightarrow \{0,1\}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$.
-This trace matches with exactly $m$ paths through the HMM, one for each clause. That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ in the initial state and then `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$.
-
-That is, a path through clause $c_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ and $s_{i,j}^\bot$, both with probability $\nicefrac{1}{2}$.
-State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, \bot$, respectively.
-Thus, the conditional probability to reach $s_{i,j}^\top$ is $\nicefrac{1}{m}$ if $\alpha(x_i) = \top$ and $0$ otherwise.
-Then, if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$.
-The idea is that (conditionally) reaching state $s'_{i,j}$ with positive cconditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment. Thus, $t$
-
-
+The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.  We enter the gadget with trace $\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$, i.e., the first observation has been matched by the initial state. 
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. Thus, in every gadget, there is only one path that corresponds to a given trace and so they can be used interchangeably.  
+State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, \bot$, respectively. We note that a path  reaches $s_{i,j}^\top$ if $\alpha(x_i) = \top$ and (analogously for $\bot$).
+From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. A path ends in $t$ only via a state $s'_{i,j}$, which is only possible if the path visits a state corresponding to a literal in the clause. Thus, (conditionally) reaching state $s'_{i,j}$ with positive cconditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment. 
 \begin{figure}[t]
+\begin{subfigure}{0.13\textwidth}
+	\begin{tikzpicture}
+		\node[circle, inner sep=4pt, initial, initial above, initial text=,draw] (s1) {};
+		\node[right=0.3cm of s1] (ci) {$\vdots$};
+		\node[rectangle, draw, above=0.8cm of ci] (c1) {$\mathcal{G}_{c_1}$};
+		\node[rectangle, draw, below=0.8cm of ci] (cn) {$\mathcal{G}_{c_m}$};
+		\draw[->] (s1) edge node[right] {$\nicefrac{1}{m}$} (c1);
+		\draw[->] (s1) edge node[right] {$\nicefrac{1}{m}$} (cn);
+	\end{tikzpicture}
+	\caption{HMM.}
+	\label{fig:gadgetsconnected}
+\end{subfigure}
+\begin{subfigure}{0.86\textwidth}
     \begin{tikzpicture}[every node/.style={font=\scriptsize}]
 
-        \node[state] (s1) {$s_{1,j}$};
+        \node[state,initial text=,initial] (s1) {$s_{1,j}$};
         \node[state,right=0.4cm of s1,yshift=0.5cm,draw=green] (s1y) {$s_{1,j}^\top$};
         \node[state,right=0.4cm of s1,yshift=-0.5cm,draw=red] (s1n) {$s_{1,j}^\bot$};
         \node[state,above=1.2cm of s1,] (s1p) {$s'_{1,j}$};
@@ -931,7 +936,7 @@ The idea is that (conditionally) reaching state $s'_{i,j}$ with positive ccondit
         \node[state,right=1.8cm of s3,] (s4) {$s_{4,j}$};
         \node[state,above=1.2cm of s4,] (s4p) {$s'_{4,j}$};
 
-        \node[state,right=0.8cm of s4,] (f) {$f$};
+        \node[state,right=0.4cm of s4,] (f) {$f$};
         \node[state,above=1.2cm of f,] (t) {$t$};
         \draw[->] (s4) edge (f);
         \draw[->] (s4p) edge (t);
@@ -954,8 +959,8 @@ The idea is that (conditionally) reaching state $s'_{i,j}$ with positive ccondit
         \draw[->] (s1n) edge node[above] {$1$} (s2);
         \draw[->] (s2y) edge node[above] {$1$} (s3);
         \draw[->] (s2n) edge node[above] {$1$} (s3);
-        \draw[->] (s3y) edge node[above] {$1$} (s4p);
-        \draw[->] (s3n) edge node[above] {$1$} (s4);
+        \draw[->] (s3y) edge node[above] {$1$} (s4);
+        \draw[->] (s3n) edge node[above] {$1$} (s4p);
         \draw[->] (s1yp) edge node[above] {$1$} (s2p);
         \draw[->] (s1np) edge node[above] {$1$} (s2p);
         \draw[->] (s2yp) edge node[above] {$1$} (s3p);
@@ -964,11 +969,13 @@ The idea is that (conditionally) reaching state $s'_{i,j}$ with positive ccondit
         \draw[->] (s3np) edge node[above] {$1$} (s4p);
 
     \end{tikzpicture}
-    \caption{The main gadget for the reduction of Lemma~\ref{lem:ctpdecnphard}, demonstrated for the clause $x_1 \lor\neg x_3$ and variables $x_1, x_2, x_3$.}
+    \caption{Gadget demonstrated for $x_1 \lor\neg x_3$}
     \label{fig:hmmgadget}
+    \end{subfigure}
+    \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.} 
 \end{figure}
 
-We construct the following HMM $\mc = (\Sts, \ptrans, \init, \Aps, \lbl)$ and set $\lambda = 1$:
+Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and set $\lambda = 1$:
 \begin{itemize}
     \item
           $\Sts = \{ s_{i,j}, s_{i,j}^\bot, s_{i,j}^\top,
@@ -983,12 +990,12 @@ We construct the following HMM $\mc = (\Sts, \ptrans, \init, \Aps, \lbl)$ and se
               \item $\ptrans(s_{i,j}^\bot,s'_{i+1,j}) = \indicator{\neg x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\bot,s_{i+1,j}) = \indicator{\neg x_i \neq \ell_j^k \text{ for all k}}$
               \item $\ptrans(s'_{n+1,j}, t) = 1 = \ptrans(s_{n+1,j}, f)$
           \end{itemize}
-    \item $c(s_{i,j}^\top) = (s_{i,j}'^\top) = \top$,
-          $c(s_{i,j}^\bot) = (s_{i,j}'^\bot) = \bot$,
-          $c(s_{i,j}) = c(s'_{i,j}) = \# = c(s_\init) = c(t) = c(f)$.
-    \item
-
+    \item $\Obs = \{\top, \bot, \#\}$ and $\obsf(s_{i,j}^\top) = (s_{i,j}'^\top) = \top$,
+          $\obsf(s_{i,j}^\bot) = (s_{i,j}'^\bot) = \bot$,
+          $\obsf(s_{i,j}) = \obsf(s'_{i,j}) = \# = \obsf(s_\init) = \obsf(t) = \obsf(f)$.
+    \item $r(t) = 1$ and $r(s) = 0$ for all $s \in \Sts \setminus \{ t\}$.
 \end{itemize}
+The construction runs in polynomial time. The formal proof of its correctness follows the explanation above precisely. 
 %
 %\begin{definition}[binary-CTP Decision Problem]
 %    Given an HMM $\mc$ with colors $C$, a binary encoded horizon $h$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{h}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
