@@ -11,16 +11,25 @@
 \usepackage{xspace}
 \usepackage{subcaption}
 \usepackage{xcolor}
+\usepackage{nccmath}
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
-\newcommand{\sj}[1]{\todo[color=red!50!white]{\footnotesize{#1}}}
+\newcommand{\sj}[1]{\todo[color=red!50!white]{\footnotesize{SJ: #1}}}
+\newcommand{\lm}[1]{\todo[color=cyan!50!white]{\footnotesize{Luko: #1}}}
 \newcommand{\indicator}[1]{[#1]}
 
 \newcommand{\Distr}{\Delta}
 \newcommand{\Obs}{Z}
 \newcommand{\act}{a}
-\newcommand{\alarms}{\langle h+1, alarm\rangle}
-\newcommand{\safes}{\langle h+1, safe\rangle}
-\newcommand{\igs}{\langle h+1, ignore\rangle}
+
+\newcommand{\actps}[3]{\left\langle #1, \langle #2, #3\rangle \right\rangle}
+\newcommand{\actpas}[3]{\left\langle #1, \atop \langle #2, #3\rangle \right\rangle}
+\newcommand{\alarmas}[1][h+1]{\left\langle #1, \atop alarm\right\rangle}
+\newcommand{\safeas}[1][h+1]{\left\langle #1, \atop safe\right\rangle}
+\newcommand{\igas}[1][h+1]{\left\langle #1, \atop ignore\right\rangle}
+\newcommand{\alarms}[1][h+1]{\left\langle #1, alarm\right\rangle}
+\newcommand{\safes}[1][h+1]{\left\langle #1, safe\right\rangle}
+\newcommand{\igs}[1][h+1]{\left\langle #1, ignore\right\rangle}
+
 \newcommand{\ccSched}{\Sigma_c}
 
 \renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}}
@@ -33,9 +42,10 @@
     action/.style={circle, fill, inner sep=1pt},
     icy/.style={draw=cyan},
     dry/.style={draw=brown},
-    return/.style={color=lightgray, , line width=1mm},
+    return/.style={color=lightgray, line width=1mm},
+    other/.style={rounded rectangle}
 }
-\usetikzlibrary{patterns, intersections, positioning, shapes.geometric, calc,
+\usetikzlibrary{patterns, intersections, positioning, shapes.geometric, shapes.misc, calc,
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
 
 \addbibresource{zotero.bib}
@@ -120,91 +130,91 @@ The key verification question in this paper is now: Is this a correct monitor fo
 \sebastian{I parked this figure here from the proposal}
 
 \begin{figure}[b!]
-\vspace{-3mm}
-\begin{minipage}{.6\textwidth}
-\centering
+    \vspace{-3mm}
+    \begin{minipage}{.6\textwidth}
+        \centering
 
 
-\tikzset{
-  pics/alarm/.style args={#1}{
-     code={
-       \draw[fill=black] (0,0) rectangle (3,0.3);
-       \draw[rounded corners, fill=black] (0.2,0.2) rectangle (2.8,0.5);
-       \draw[fill=#1] (0.5,0.5) -- (0.5,1.5) to[out=90,in=90] (2.5,1.5) -- (2.5,0.5) -- (0.5,0.5);
-       \draw[very thick, color=#1!50!white,fill=#1!50!white] (1.5,1.1) -- (1.9,1.4) -- (1.9,0.8) -- (1.5,1.1); 
-       \draw[very thick, color=#1!50!white,fill=#1!50!white] (1.5,1.1) -- (1.1,1.4) -- (1.1,0.8) -- (1.5,1.1); 
-       \draw[very thick, fill=#1!50!white,color=#1!60!white] (1.5,1.1) -- (1.6,0.5) -- (1.4,0.5) -- (1.5,1.1);       
-       
-       \draw[very thick, color=#1] (0.7, 2.1) -- (0.6, 2.4);
-       \draw[very thick, color=#1] (2.3, 2.1) -- (2.4, 2.4); 
-       \draw[very thick, color=#1] (1.15, 2.2) -- (1.1, 2.5);
-       \draw[very thick, color=#1] (1.85, 2.2) -- (1.9, 2.5);
-       
-     }
-  }
-}
-\scalebox{0.4}{
-\begin{tikzpicture}
-    \node (syscenter) {};
-	\node[rectangle, draw, below=0.3cm of syscenter] (env) {\scriptsize Env};
-	\node[rectangle, draw, above=0.3cm of syscenter] (controller) {\scriptsize Contr};
-	\node[rectangle, draw, left=0.3cm of syscenter] (act) {\scriptsize Actuator};
-	\node[rectangle, draw, right=0.3cm of syscenter] (sensor) {\scriptsize Sensor};
-	
-	\node[rectangle, draw, dotted, very thick, fit=(env)(controller)(act)(sensor)] (Sys) {};
-	\node[below=0.2cm of Sys] {\small \textcolor{green!50!black}{System}};
-	\node[rectangle, draw, right=3cm of syscenter, minimum height=2.4cm] (monitor) {\small\textcolor{green!50!black}{Monitor}};
-	\node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=0.7cm, align=center, minimum width=1.5cm] (model) {\scriptsize (imprecise)\\\small \textcolor{green!50!black}{Model}};
-	\node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=-0.7cm, minimum width=1.5cm] (inference) {\scriptsize{inference}};
-	 
-	
-	\node[rectangle, below=0.2cm of monitor] (alarm) {\textcolor{green!50!black}{ok}/\textcolor{red!50!black}{alarm}};
-	\draw[->] (env) edge[bend right=45] (sensor);
-	\draw[->] (sensor) edge[bend right=45] (controller);
-	\draw[->,dashed] (controller) edge[bend right=45] (sensor);
-	
-	\draw[->] (controller) edge[bend right=45] (act);
-	\draw[->] (act) edge[bend right=45] (env);
-	
-	\draw[->] (sensor) -- node[above] {\scriptsize{observation}} (monitor);
-	\draw[->] (monitor) -- (alarm);
-	
-	\draw[->] (monitor.317) -- node[above,align=center] {\scriptsize{observation}\\[-5pt] \scriptsize{trace}} (inference.west |- monitor.317);
-	\draw[<-] (monitor.305) -- node[below] {\scriptsize{risk level}} (inference.west |- monitor.305);
-	
-	\draw[<-,dotted] (model) -- node[right] {\scriptsize{uses}} (inference);
-	\draw[->,dotted] (model) -- +(0,0.7) -| node[pos=0.25,above] {\scriptsize{models}} (Sys);
-	
-\end{tikzpicture}
-}	
-\vspace{-3mm}
-\caption{White-box monitoring of systems}
-\label{fig:monitors}
-\end{minipage}\quad%
-\begin{minipage}{.35\textwidth}
-	\begin{tikzpicture}
-	    
-		\node[rectangle, minimum height=2.5cm, draw] (learner) {\rotatebox{90}{\scriptsize{learner}}};
-		\node[rectangle,right=1.7cm of learner, yshift=0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (mq) {\scriptsize{Membership?}\\[-3pt] \scriptsize{(the monitor)}};
-		\node[rectangle,right=1.7cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Acceptance?}};
-		\node[rectangle, right=0.7cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Inclusion}};
-		\node[rectangle, right=0.7cm of mq, draw, minimum width=1.4cm, minimum height=1cm,align=center] (model) {\scriptsize{(imprecise)}\\ \scriptsize{Model}};
-		\node[above=5mm of learner] (dummy)  {};
-		
-		\draw[->] (learner.75) -- node[above,align=center] {\scriptsize{observation}\\[-5pt]\scriptsize{trace}} (mq.west |- learner.75);
-		\draw[<-] (learner.72) -- node[below,align=center] {\scriptsize{ok/alarm}} (mq.west |- learner.72);
-		\draw[->] (learner.285) -- node[above,align=center] {\scriptsize{state machine/}\\[-5pt]\scriptsize{set o.~traces}} (eq.west |- learner.285);
-			\draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
-		\draw[->] (eq) --node[right] {\scriptsize sample} (mq);
-		
-		\draw[->] (eq) --node[above] {\scriptsize verify} (inc);
-		\draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
-		\draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
-		
-	\end{tikzpicture}
-	\caption{Learning monitors.}
-	\label{fig:learning}
-\end{minipage}
+        \tikzset{
+            pics/alarm/.style args={#1}{
+                    code={
+                            \draw[fill=black] (0,0) rectangle (3,0.3);
+                            \draw[rounded corners, fill=black] (0.2,0.2) rectangle (2.8,0.5);
+                            \draw[fill=#1] (0.5,0.5) -- (0.5,1.5) to[out=90,in=90] (2.5,1.5) -- (2.5,0.5) -- (0.5,0.5);
+                            \draw[very thick, color=#1!50!white,fill=#1!50!white] (1.5,1.1) -- (1.9,1.4) -- (1.9,0.8) -- (1.5,1.1);
+                            \draw[very thick, color=#1!50!white,fill=#1!50!white] (1.5,1.1) -- (1.1,1.4) -- (1.1,0.8) -- (1.5,1.1);
+                            \draw[very thick, fill=#1!50!white,color=#1!60!white] (1.5,1.1) -- (1.6,0.5) -- (1.4,0.5) -- (1.5,1.1);
+
+                            \draw[very thick, color=#1] (0.7, 2.1) -- (0.6, 2.4);
+                            \draw[very thick, color=#1] (2.3, 2.1) -- (2.4, 2.4);
+                            \draw[very thick, color=#1] (1.15, 2.2) -- (1.1, 2.5);
+                            \draw[very thick, color=#1] (1.85, 2.2) -- (1.9, 2.5);
+
+                        }
+                }
+        }
+        \scalebox{0.4}{
+            \begin{tikzpicture}
+                \node (syscenter) {};
+                \node[rectangle, draw, below=0.3cm of syscenter] (env) {\scriptsize Env};
+                \node[rectangle, draw, above=0.3cm of syscenter] (controller) {\scriptsize Contr};
+                \node[rectangle, draw, left=0.3cm of syscenter] (act) {\scriptsize Actuator};
+                \node[rectangle, draw, right=0.3cm of syscenter] (sensor) {\scriptsize Sensor};
+
+                \node[rectangle, draw, dotted, very thick, fit=(env)(controller)(act)(sensor)] (Sys) {};
+                \node[below=0.2cm of Sys] {\small \textcolor{green!50!black}{System}};
+                \node[rectangle, draw, right=3cm of syscenter, minimum height=2.4cm] (monitor) {\small\textcolor{green!50!black}{Monitor}};
+                \node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=0.7cm, align=center, minimum width=1.5cm] (model) {\scriptsize (imprecise)\\\small \textcolor{green!50!black}{Model}};
+                \node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=-0.7cm, minimum width=1.5cm] (inference) {\scriptsize{inference}};
+
+
+                \node[rectangle, below=0.2cm of monitor] (alarm) {\textcolor{green!50!black}{ok}/\textcolor{red!50!black}{alarm}};
+                \draw[->] (env) edge[bend right=45] (sensor);
+                \draw[->] (sensor) edge[bend right=45] (controller);
+                \draw[->,dashed] (controller) edge[bend right=45] (sensor);
+
+                \draw[->] (controller) edge[bend right=45] (act);
+                \draw[->] (act) edge[bend right=45] (env);
+
+                \draw[->] (sensor) -- node[above] {\scriptsize{observation}} (monitor);
+                \draw[->] (monitor) -- (alarm);
+
+                \draw[->] (monitor.317) -- node[above,align=center] {\scriptsize{observation}\\[-5pt] \scriptsize{trace}} (inference.west |- monitor.317);
+                \draw[<-] (monitor.305) -- node[below] {\scriptsize{risk level}} (inference.west |- monitor.305);
+
+                \draw[<-,dotted] (model) -- node[right] {\scriptsize{uses}} (inference);
+                \draw[->,dotted] (model) -- +(0,0.7) -| node[pos=0.25,above] {\scriptsize{models}} (Sys);
+
+            \end{tikzpicture}
+        }
+        \vspace{-3mm}
+        \caption{White-box monitoring of systems}
+        \label{fig:monitors}
+    \end{minipage}\quad%
+    \begin{minipage}{.35\textwidth}
+        \begin{tikzpicture}
+
+            \node[rectangle, minimum height=2.5cm, draw] (learner) {\rotatebox{90}{\scriptsize{learner}}};
+            \node[rectangle,right=1.7cm of learner, yshift=0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (mq) {\scriptsize{Membership?}\\[-3pt] \scriptsize{(the monitor)}};
+            \node[rectangle,right=1.7cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Acceptance?}};
+            \node[rectangle, right=0.7cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Inclusion}};
+            \node[rectangle, right=0.7cm of mq, draw, minimum width=1.4cm, minimum height=1cm,align=center] (model) {\scriptsize{(imprecise)}\\ \scriptsize{Model}};
+            \node[above=5mm of learner] (dummy)  {};
+
+            \draw[->] (learner.75) -- node[above,align=center] {\scriptsize{observation}\\[-5pt]\scriptsize{trace}} (mq.west |- learner.75);
+            \draw[<-] (learner.72) -- node[below,align=center] {\scriptsize{ok/alarm}} (mq.west |- learner.72);
+            \draw[->] (learner.285) -- node[above,align=center] {\scriptsize{state machine/}\\[-5pt]\scriptsize{set o.~traces}} (eq.west |- learner.285);
+            \draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
+            \draw[->] (eq) --node[right] {\scriptsize sample} (mq);
+
+            \draw[->] (eq) --node[above] {\scriptsize verify} (inc);
+            \draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
+            \draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
+
+        \end{tikzpicture}
+        \caption{Learning monitors.}
+        \label{fig:learning}
+    \end{minipage}
 \end{figure}
 
 
@@ -348,7 +358,7 @@ In this section, we briefly introduce MDPs, which are important later, and HMMs 
 \end{definition}
 We use $\Act(s) = \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of enabled actions. We assume that there are no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
 A path $\pi$ in an MDP is a sequence $s_0\act_0s_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. %The set of all infinite paths is $\Pi^\mc$. 
-The set of (finite) paths is denoted by $\Pi_{fin}^\mdp$ and the set of paths of at most length $h$ are $\Pi_h^\mdp$. If the MDP is clear from the context, the $\mdp$ is dropped.
+The set of (finite) paths is denoted by $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. If the MDP is clear from the context, the $\mdp$ is dropped.
 
 A policy for an MDP is a function $\sigma\colon \Pi^\mc \to \Act$, which given a path through the MDP, gives a action. Given a policy, a MDP can be induced into a MC. Policy synthesis for an MDP for a property $\phi$ thus entails finding a policy for an MDP such that the induced MC entails $\phi$.
 
@@ -360,7 +370,7 @@ A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \i
 %\begin{definition}
 The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $mc$.
 %\end{definition}
-\todo[inline]{Condition probability on traces defined using $\Paths$}
+\lm{Condition probability on traces defined using $\Paths$}
 
 \begin{definition}[HMMs]
     A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Non-deterministic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{}}, and $r\colon \Sts \to \RR_{\geq 0}$,
@@ -447,7 +457,7 @@ We often drop the sub/superscripts. In terms of a classification problem, missed
 \end{definition}
 A correct monitor raises an alarm for all unsafe traces and for no safe trace:
 \begin{corollary}%[Correct monitor]
-   A monitor $\dfa$ is correct iff $ \unsafetraces{\mc,\lambda_u}{\leq h} \subseteq \lang{\dfa} \subseteq \alphabet^* \setminus \safetraces{\mc, \lambda_s}{\leq h}$.% is a correct monitor.
+    A monitor $\dfa$ is correct iff $ \unsafetraces{\mc,\lambda_u}{\leq h} \subseteq \lang{\dfa} \subseteq \alphabet^* \setminus \safetraces{\mc, \lambda_s}{\leq h}$.% is a correct monitor.
 \end{corollary}
 
 \begin{mdframed}\textbf{Problem statements.} This paper tackles the following problem statements:
@@ -495,7 +505,7 @@ We discuss our solution to the no missed alarms problem in \cref{sec:monver}, we
 We now introduce the central example used in this paper. And explain how the monitor verification problem and verified monitor learning problem apply to it.
 \begin{example}
     Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\frac{19}{40}, \frac{4}{40}$ respectively. If $\lambda$ is $\frac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor. And its risk is below $\lambda$. Thus the monitor does not have an missed alarms.
-\end{example}\todo{Include verified monitor learning problem}
+\end{example}\lm{Include verified monitor learning problem}
 
 \begin{figure}[t]
 
@@ -505,7 +515,7 @@ We now introduce the central example used in this paper. And explain how the mon
 
 \section{Monitor Verification}
 \label{sec:monver}
-In this section we present our approach to the monitor correctness problem, which essentially reduces checking the existence of missed alarms to a policy synthesis problem on colored MDPs. The latter is well studied. We first formalise this policy synthesi problem and then discuss the transformation in multiple steps. 
+In this section we present our approach to the monitor correctness problem, which essentially reduces checking the existence of missed alarms to a policy synthesis problem on colored MDPs. The latter is well studied. We first formalise this policy synthesi problem and then discuss the transformation in multiple steps.
 In our presentation, we focus on the no missed alarms problem with traces of exactly the length of the horizon. At the end of the section, we  generalize our construction to both the no false alarms problem and traces of length at most the horizon.
 
 
@@ -521,10 +531,11 @@ Colored (Labelled) MDPs are a mild extension to MDPs that allow expressing depen
 The set of all color-consistent schedulers is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color consistent policy such that the induced reachability probability is above (or below) a certain threshold. Policy synthesis for colored MDPs is NP-hard.
 %We now present the theorem we focus on in this section.
 \begin{theorem}[Main theorem]
-\label{thm:maintheorem}
-    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there exists a colored MDP $\mdpc$ and a $\lambda$ such that 
+    \label{thm:maintheorem}
+    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there exists a colored MDP $\mdpc$ and a $\lambda$ such that
     \[ \exists \sigma \in \ccSched. \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{theorem}
+\lm{Should we also list the risk function $r$ in this theorem?}
 Our proof is constructive and we show that we can use the construction to find a $\tau \in \missedalarms{}{}(\dfa)$, whenever such a $\tau$ exists.
 %Following from the transformation we will present we also have:
 %\begin{corollary}
@@ -532,8 +543,8 @@ Our proof is constructive and we show that we can use the construction to find a
 %\end{corollary}
 
 \paragraph{Outline of the proof.}
-The proof is a direct consequences of \Cref{lem:toctp,lem:toactp,lem:tocoloredmdp} below. Before we discuss these lemmas, we observe that on the right hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
-Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities. 
+The proof is a direct consequences of \Cref{lem:toctp,lem:toactp,lem:tocoloredmdp} below. Before we discuss these lemmas, we observe that on the left-hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
+Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities.
 We describe our transformation in several steps. In \Cref{ssec:ctp} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning on traces, while replacing observations from the HMM.
 
 \subsection{The (Acyclic) Conditional Trace Probability Problem}\label{ssec:ctp}
@@ -568,7 +579,7 @@ We describe our transformation in several steps. In \Cref{ssec:ctp} we encode th
     \label{fig:ctphmm}
 \end{figure}
 First, we show how asking for a missed alarm can be rephrased into the conceptually simpler \emph{conditional trace probability} (CTP) problem.
-We will further simplify the problem by incorporating both the horizon and risk such that we are left with a problem purely on acyclic HMMs. 
+We will further simplify the problem by incorporating both the horizon and risk such that we are left with a problem purely on acyclic HMMs.
 %We will discuss this intermediate problem as the Acyclic CTP (ACTP) problem.
 
 %The exists missed alarm problem, questions whether there is a trace $\tau$ such that $\tau \in \missedalarms{}{}(\dfa)$. Obviously, when such a trace exists, $\missedalarms{}{}(\dfa) \neq \emptyset$, thus disproving the no missed alarms problem for $\dfa$.
@@ -577,27 +588,40 @@ We will further simplify the problem by incorporating both the horizon and risk 
 
 
 Before we combine the HMM and the monitor, we have to modify the monitor. Since we are looking for missed alarms, we are interested in all traces that are not in the monitor. We thus take the complement of the monitor.
-Next, we take (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008}\sj{when citing a book it is good to cite section} between HMM and DFA.  We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
+Next, we take (a mild variation of) a standard product construction~\cite[Section~10.3]{baierPrinciplesModelChecking2008} between HMM and DFA.  We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
 \begin{example}
-\sebastian{I think it is good to first give the example because it allows readers to skip the formal def. I would maybe explain the example with one or two more lines.}	
-\Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. In particular, when starting in the initial states $d$ and $1$, respectively, ...
+    \Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. In particular, when starting in the initial states $d$ and $1$, respectively, the HMM can transition to the $i$ state with probability $\frac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to the $2$ state. This results in the new product state of $i$ and $2$, with a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\frac{9}{10}$.
+
+    The set of Alarm states are all the states in monitor $\dfaB$ which do not accept. Thus they are the initial $\langle d, 1\rangle$ state and any product states where the monitor is in state $3$.
 \end{example}
 \begin{definition}[HMM product]
-\label{def:product}
-Given 
-\sebastian{It might be that we want to move the formal def to the appendix, but I woudl still prefer to have a formal statement rather than a lengthy textual explanation.}	
+    \label{def:product}
+    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and a monitor for $\mc$, $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F)$. The product HMM $\mc_{\times \dfa}$ is the HMM:
+    \begin{align*}
+        \mc_{\times \dfa}                                    & = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r') \\
+        \ptrans'(\langle s, q\rangle)(\langle s', q'\rangle) & = \begin{cases}
+                                                                     \ptrans(s, s') & \text{if } \delta(q, \obsf(s')) = q' \\
+                                                                     0              & \text{otherwise}
+                                                                 \end{cases}    \\
+        \obsf'(\langle s, q\rangle)                          & = \obsf(s)                                                               \\
+        r'(\langle s, q\rangle)                              & = r(s)
+    \end{align*}
+    The alarm states become:
+    \begin{align*}
+        A = S\times F
+    \end{align*}
 \end{definition}
 In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
 We state the decision problem that needs to be solved on the product HMM as it is key to our computational complexity analysis in \Cref{sec:compl}.
 \begin{definition}[CTP Decision Problem]
-\label{def:CTPdecprob}
-    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, and a threshold $\lambda_s \in (0,1]$,  \[\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]\sj{check notation for paths of length $h$}
+    \label{def:CTPdecprob}
+    Given a HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, and a threshold $\lambda_s \in (0,1]$,  \[\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]\textsl{}
 \end{definition}
 We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, A, \lambda_s)$.
-The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement\sj{Nevetheless, we should have a (slightly) more formal proof}. 
+The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement\sj{Nevetheless, we should have a (slightly) more formal proof}.
 \begin{lemma}
-\label{lem:toctp}
-Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
+    \label{lem:toctp}
+    Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
     \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{lemma}
 
@@ -614,23 +638,23 @@ Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
-        \node[state,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other, initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, icy] (qi2) [right = .8cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+        \node[state, other, icy] (qi2) [right = .8cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
 
-        % \node[state, dry] (qd2) [above of = qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
+        % \node[state, other,  dry] (qd2) [above of = qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
+        \node[state, other, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
-        \node[state, icy] (qi3) [right = 2cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
+        \node[state, other, icy] (qi3) [right = 2cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
 
-        \node[state, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
+        \node[state, other, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
 
-        \node[state] (safe) [right = .8cm of qi3] {$\safes$};
-        \node[state] (alarm) [below of=safe] {$\alarms$};
-        \node[state, draw=gray] (ignore) [above of=safe] {$\igs$};
+        \node[state, other]  (safe) [right = .8cm of qi3] {$\safeas[4]$};
+        \node[state, other]  (alarm) [below of=safe] {$\alarmas[4]$};
+        \node[state, other, draw=gray] (ignore) [above of=safe] {$\igas[4]$};
 
         \draw[->] (qi3) edge node[above] {$1$} (safe);
 
@@ -658,59 +682,52 @@ Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def
     \end{tikzpicture}
     \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \atop \langle s,j\rangle \right\rangle$.}
     \label{fig:actp}
-\end{figure}\sj{For the figure, states dont need to be circles :-)}
-We further simplify the problem by combine the horizon, risk and the newly created alarm states set into the HMM. The resulting HMM can be seen as the model for the acyclic CTP problem.
+\end{figure}
+We further simplify the problem by combining the horizon, risk and the newly created alarm states set into the HMM. The resulting HMM can be seen as the model for the acyclic CTP problem.
 
-\begin{example}	
-\sebastian{Similar to above, I think it is easier to first explain what you are doing by example. Also nicely concrete.} The ACTP transformation applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}.
+\begin{example}
+    The ACTP transformation applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}. We unroll the CTP HMM for a horizon of 3. Thus, the initial state becomes the tuple of step $1$ and the initial state from the CTP HMM, $\langle d, 1\rangle$. Any transition in the model increases the step value by $1$, $\actps{1}{d}{1}$ transitions to $\actps{2}{c}{2}$. In state $\actps{3}{i}{3}$ we are at the horizon, and the CTP part of the state is part of the alarm states. Thus, the monitor wants to raise an alarm here. We now transition with probability 1 to the $\safes[4]$ state and probability 0 to the $\alarms[4]$ state, since the normalized risk of $d$ is 0. The horizon state $\actps{3}{d}{1}$ is not in $A$, thus we transition to the $\igs[4]$ state.
 \end{example}
 
 \begin{definition}[Unrolling]
-\label{def:acyclichmm}
-	The (risk-)unrolling of an HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $A \subseteq \Sts$ is a tuple with HMM $\mc_{\blacktriangleright h} = \left(\{1,\hdots,h\} \times \Sts \cup \{ s_a, s_i, s_s \}, (1,\init), \ptrans', \Obs', \obsf', r' \right)$ with \sj{move description from below into this def}.
-	
-	The state $s_a$ is called the \emph{alarm state}.
+    \label{def:acyclichmm}
+    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$, risk $r$ and alarm states $A \subseteq \Sts$ is
+    \begin{align*}
+        \mc_{\blacktriangleright h}                                                                        & = \left(\{1,\hdots,h\} \times \Sts \cup \{ alarm, safe, ignore \}, (1,\init), \ptrans', \Obs \cup \{end, \ig\}, \obsf'\right) \\
+        \intertext[0.1em]{The risk function is normalied as $r'$:}
+        r' (s)                                                                                             & = \frac{r(s)}{\max_{s\in\Sts} r(s)}                                                                                           \\
+        \intertext[0.1em]{The unrolled transition relation $\ptrans'$ is defined as expected. At the horizon we transition to the three new states alarm, safe and ignore\footnote{We add an $\igas$ state, instead of redirecting all traces we don't care about to the $\safeas$ state, to more easily modify the transformation for the no false alarms problem.} according to the risk.}
+        \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle)(\langle i+1, q\rangle)           & = \ptrans(s)(q)                                                                                                               \\
+        \ptrans'(\langle h, s\rangle)\left(\left\langle h+1, a\right\rangle\right)                         & = \begin{cases}
+                                                                                                                   r'(s)     & \text{if } s \in A \land a = alarm     \\
+                                                                                                                   1 - r'(s) & \text{if } s \in A \land a = safe      \\
+                                                                                                                   1         & \text{if } s \notin A \land a = ignore \\
+                                                                                                                   0         & \text{otherwise}
+                                                                                                               \end{cases}                                                                          \\
+        \ptrans'\left(\left\langle h+1, a\right\rangle\right)\left(\left\langle h+1, a\right\rangle\right) & = 1                                                                                                                           \\
+        \intertext{We observe the $end$ and $\ig$ observations in the $\alarms$, $\safes$ and $\igs$ states respectively.}
+        \obsf'(\langle i, s\rangle)                                                                        & = \obsf(s)                                                                                                                    \\
+        \obsf'(\langle h, a\rangle)                                                                        & = \begin{cases}
+                                                                                                                   end & \text{if } a \in \{alarm, safe\} \\
+                                                                                                                   \ig & \text{if } a = ignore
+                                                                                                               \end{cases}
+    \end{align*}
 \end{definition}
 
-
-\todo{Should I more properly introduce the CTP HMM with its contents? I do use them later on.}\sj{yes. I made a start.}
-We will build up the ACTP HMM by creating its transition function $\ptrans'$, all other elements of the ACTP HMM are easily derivable.\sj{Try to write in a way that readers dont need to think to much. Never tell them that they should think about it themselves :-)}
-To include the horizon into the ACTP HMM, we unroll the CTP HMM over the horizon $h$. The ACTP HMM has states in $\{1,\ldots,h\}\times\Sts$ \sj{And three  additional states?}. The ACTP transition function $\ptrans'$ on non-horizon states behaves as expected:
-\[\ptrans'(\langle i, s\rangle, \langle i+1, q\rangle) = \ptrans(s, q)\]
-with $i \in \{1,\ldots,h-1\}$. The horizon states, $\langle h, s \rangle$ for $s \in \Sts$, transition to one of three states, $\alarms$, $\safes$ or $\igs$ state. Horizon states in $A$ will transition to $\alarms$ and $\safes$ according to the \todo{Mention normalizing risk more prominently somewhere?} normalized risk. Horizon states not in $A$ transition to $\igs$ instead.
-\sj{Is the $G$ in the definitions below intended to be $A$ states?}
-\begin{align*}
-    \ptrans'(\langle h, s\rangle, \alarms) & = \begin{cases}
-                                                   r'(s) & \text{if } s \in G \\
-                                                   0     & \text{otherwise}
-                                               \end{cases}     \\
-    \ptrans'(\langle h, s\rangle, \safes)  & = \begin{cases}
-                                                   1 - r'(s) & \text{if } s \in G \\
-                                                   0         & \text{otherwise}
-                                               \end{cases} \\
-    \ptrans'(\langle h, s\rangle, \igs)    & = \begin{cases}
-                                                   1 & \text{if } s \notin G \\
-                                                   0 & \text{otherwise}
-                                               \end{cases}
-\end{align*}
-The $\alarms$, $\safes$ and $\igs$ states become sink states. The $\alarms$ and $\safes$ sates get the $end$ observation, while the $\igs$ state gets the $\ig$ observation.
-
-\footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no false alarms problem.}
-
-\begin{remark}\sj{not sure what the remark states}
+\begin{remark}\sj{not sure what the remark states}\lm{There are also states in A which are not on the horizon. They are not conisdered since they do not produce traces of length $h$.}
     Note that we ignore all states in $A$ that are not horizon states. However, since we only consider traces which are of length exactly the horizon, we only need to consider the alarm states which are encountered after horizon steps.
 \end{remark}
 
-\begin{lemma} 
-\label{lem:toactp}
+\begin{lemma}
+    \label{lem:toactp}
     Given an HMM $\mc$, horizon $h$, alarm states $A$ and threshold $\lambda$:
-     \[ \exists \tau \in \mathsf{CTP}(\mc, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
-     where $z_\mathsf{end}$ is the final observation and $s_a$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
+    \[ \exists \tau \in \mathsf{CTP}(\mc, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
+    where $z_\mathsf{end}$ is the final observation and $s_a$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
 
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
-	
+
 \end{lemma}
-The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\sj{Put a slightly longer proof in the appendix}
+The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\lm{I am not sure about either $s_a$ or $alarm$, the first is shorter, but the second is a lot more descriptive}\sj{Put a slightly longer proof in the appendix}
 %
 %
 %Using the above transformed HMM we can define the ACTP problem.
@@ -725,18 +742,18 @@ The proof of the lemma essentially starts by using that the lhs of the lemma is 
 \begin{figure}[t]
     \centering
     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
-        \node[state,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, icy] (qi2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
-        % \node[state, dry] (qd2) [above of=qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
-        \node[state, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
+        \node[state, other, icy] (qi2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+        % \node[state, other, dry] (qd2) [above of=qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
-        \node[state, icy] (qi3) [right = 1.5cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
-        \node[state, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
-        \node[state, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
+        \node[state, other, icy] (qi3) [right = 1.5cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
+        \node[state, other, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
 
-        \node[state] (safe) [right = 1.5cm of qi3] {$safe$};
-        \node[state] (alarm) [below of=safe] {$alarm$};
+        \node[state, other] (safe) [right = 1.5cm of qi3] {$\safeas[3]$};
+        \node[state, other] (alarm) [below of=safe] {$\alarmas[3]$};
 
         \node[action] (qd1i) at ($(qd1)!0.5!(qi2)$)  {};
         % \node[action] (qd1d) at ($(qd1)!0.5!(qd2)$) {};
@@ -798,24 +815,26 @@ The proof of the lemma essentially starts by using that the lhs of the lemma is 
 
 For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachability probability exceeds a threshold. We reformulate this into a policy synthesis problem in MDPs. The transformation combines two ideas: First, in every state, the policy can select the next observation, inspired by~\cite{}. Second, we reformulate conditional reachability probabilities by (standard) regular reachability probabilities, using a construction in \cite{}.
 \begin{example}
-	
+
 \end{example}
 
 \sebastian{The definition below needs either that we use the horizon in the states explicitly, or that we use a depth funciton or so that gives us the distance of every state to a particular state.}
 \begin{definition}
-	Given an acyclic HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm state $s_a$ and end observation $z_\text{end}$ as in \Cref{def:acyclichmm}, we define the colored MDP $\left(\left(\Sts, \init, \Act, \ptrans' \right), C, c\right)$ with $\Act = \Obs$,
-	\begin{align*}
-    \ptrans'(s , z, q) :=
-    \begin{cases}
-        \ptrans'(s, q)                                     & \text{if } \obsf(q) = z \\
-        \sum_{q'\in S\ |\ \obsf(q') \neq z} \ptrans'(s,q') & \text{if } q = \iota    \\
-        0                                                  & \text{otherwise}
-    \end{cases}
-\end{align*} 
-$C = \{1,\ldots,h\}$ and $c$ is given such that $c(\langle i,s \rangle) = i$.
+    Given a set of states $\Sts$, and an acyclic HMM $\mc = \left(\Sts' \subseteq^{fin} \NN \times \Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm state $s_a$, and an $\ig$ and $end$ observation as in \Cref{def:acyclichmm}, we define the colored MDP $\left(\left(\Sts', \init, \Act, \ptrans' \right), C, c\right)$ with $\Act = \Obs\setminus\{\ig\}$,
+    \begin{align*}
+        \ptrans'(s, z, q) :=
+        \begin{cases}
+            \ptrans'(s, q)                                      & \text{if } \obsf(q) = z \\
+            \sum_{q'\in S'\ |\ \obsf(q') \neq z} \ptrans'(s,q') & \text{if } q = \iota    \\
+            0                                                   & \text{otherwise}
+        \end{cases}
+    \end{align*}
+    $C = \{1,\ldots,h\}$ and $c$ is given such that $c(\langle i,s \rangle) = i$.
 \end{definition}
-Thus we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state. The idea behind this construction 
-\todo{Should we give a reason why this is correct? And not normalizing the probabilities?} We fully remove the ignore action and ignore state, as they should never be taken\footnote{The ignore state was included in ACTP to ensure we had no deadlock states.}\sj{What are the ingore action and ignore state?}.
+Thus we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state.
+
+The idea behind this construction
+\lm{Should we give a reason why this is correct? And not normalizing the probabilities?} We fully remove the ignore action and ignore state, as they should never be taken\footnote{The ignore state was included in ACTP to ensure we had no deadlock states.}\sj{What are the ingore action and ignore state?}.
 
 
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
@@ -832,7 +851,7 @@ The above construction allows for conditioning on a trace $\tau$ by constructing
 
 
 \begin{lemma}
-	  \[  \exists \sigma \in \ccSched.  \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
+    \[  \exists \sigma \in \ccSched.  \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
 \end{lemma}
 
 
@@ -849,7 +868,7 @@ However, when finding the maximal trace, we might not find a trace consistent po
 \end{remark}
 
 Now finding a trace with the conditional trace probability above $\lambda_s$ coincides with finding a color consistent policy such that
-\[\Prob^{\sigma}(\lozenge \alarms) > \lambda_s \]
+\[\Prob^{\sigma}(\lozenge \alarmas) > \lambda_s \]
 
 
 \subsection{Adapting to No False Alarms and Smaller Traces}\label{ssec:nfa}
@@ -880,7 +899,7 @@ Now finding a trace with the conditional trace probability above $\lambda_s$ coi
     Checking whether a monitor is correct given a unary encoded horizon is coNP-complete.
 \end{theorem}
 In fact, we study in this section the dual to this problem, i.e., checking the existence of a counterexample. We call this problem \emph{monitor co-verification}. For monitor co-verification, \emph{membership} in NP follows as false alarms or a missed alarm (of length up to horizon) are witnesses.
-Verifying whether a trace is indeed a false alarm can be done in polynomial time by first checking whether the automaton accepts it and then computing the trace risk and comparing it to the thresholds. 
+Verifying whether a trace is indeed a false alarm can be done in polynomial time by first checking whether the automaton accepts it and then computing the trace risk and comparing it to the thresholds.
 Each of these steps can be done in polynomial time~\cite{}.  \sj{Maybe this result is so crucial that we should explain somewhere how this works in polynomial time. I guess it also follows from the construciton in section 3 if we restrict the monitor to just contain one trace?}
 
 To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}. As a solution to the monitor co-verification problem suffices to solve the CTP problem (using a trivial monitor), this implies NP hardness of the former.
@@ -895,84 +914,84 @@ Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, 
 Before we give a formal definition of $\mc_\varphi$, we give some intuition.
 We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$ defined below. Next, we show that the gadget reaches positive risk in every gadget only if the corresponding clause is satisfied by the assignment.
 
-The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.  We enter the gadget with trace $\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$, i.e., the first observation has been matched by the initial state. 
-A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. Thus, in every gadget, there is only one path that corresponds to a given trace and so they can be used interchangeably.  
+The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.  We enter the gadget with trace $\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$, i.e., the first observation has been matched by the initial state.
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. Thus, in every gadget, there is only one path that corresponds to a given trace and so they can be used interchangeably.
 State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, \bot$, respectively. We note that a path  reaches $s_{i,j}^\top$ if $\alpha(x_i) = \top$ and (analogously for $\bot$).
-From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. A path ends in $t$ only via a state $s'_{i,j}$, which is only possible if the path visits a state corresponding to a literal in the clause. Thus, (conditionally) reaching state $s'_{i,j}$ with positive cconditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment. 
+From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. A path ends in $t$ only via a state $s'_{i,j}$, which is only possible if the path visits a state corresponding to a literal in the clause. Thus, (conditionally) reaching state $s'_{i,j}$ with positive cconditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment.
 \begin{figure}[t]
-\begin{subfigure}{0.13\textwidth}
-	\begin{tikzpicture}
-		\node[circle, inner sep=4pt, initial, initial above, initial text=,draw] (s1) {};
-		\node[right=0.3cm of s1] (ci) {$\vdots$};
-		\node[rectangle, draw, above=0.8cm of ci] (c1) {$\mathcal{G}_{c_1}$};
-		\node[rectangle, draw, below=0.8cm of ci] (cn) {$\mathcal{G}_{c_m}$};
-		\draw[->] (s1) edge node[right] {$\nicefrac{1}{m}$} (c1);
-		\draw[->] (s1) edge node[right] {$\nicefrac{1}{m}$} (cn);
-	\end{tikzpicture}
-	\caption{HMM.}
-	\label{fig:gadgetsconnected}
-\end{subfigure}
-\begin{subfigure}{0.86\textwidth}
-    \begin{tikzpicture}[every node/.style={font=\scriptsize}]
-
-        \node[state,initial text=,initial] (s1) {$s_{1,j}$};
-        \node[state,right=0.4cm of s1,yshift=0.5cm,draw=green] (s1y) {$s_{1,j}^\top$};
-        \node[state,right=0.4cm of s1,yshift=-0.5cm,draw=red] (s1n) {$s_{1,j}^\bot$};
-        \node[state,above=1.2cm of s1,] (s1p) {$s'_{1,j}$};
-        \node[state,right=0.4cm of s1p,yshift=0.5cm,draw=green] (s1yp) {$s_{1,j}'^\top$};
-        \node[state,right=0.4cm of s1p,yshift=-0.5cm,draw=red] (s1np) {$s_{1,j}'^\bot$};
-        \node[state,right=1.8cm of s1,] (s2) {$s_{2,j}$};
-        \node[state,right=0.4cm of s2,yshift=0.5cm,draw=green] (s2y) {$s_{2,j}^\top$};
-        \node[state,right=0.4cm of s2,yshift=-0.5cm,draw=red] (s2n) {$s_{2,j}$};
-        \node[state,above=1.2cm of s2,] (s2p) {$s'_{2,j}$};
-        \node[state,right=0.4cm of s2p,yshift=0.5cm,draw=green] (s2yp) {$s_{2,j}'^\top$};
-        \node[state,right=0.4cm of s2p,yshift=-0.5cm,draw=red] (s2np) {$s_{2,j}'^\bot$};
-        \node[state,right=1.8cm of s2,] (s3) {$s_{3,j}$};
-        \node[state,right=0.4cm of s3,yshift=0.5cm,draw=green] (s3y) {$s_{3,j}^\top$};
-        \node[state,right=0.4cm of s3,yshift=-0.5cm,draw=red] (s3n) {$s_{3,j}^\bot$};
-        \node[state,above=1.2cm of s3,] (s3p) {$s'_{3,j}$};
-        \node[state,right=0.4cm of s3p,yshift=0.5cm,draw=green] (s3yp) {$s_{3,j}'^\top$};
-        \node[state,right=0.4cm of s3p,yshift=-0.5cm,draw=red] (s3np) {$s_{3,j}'^\bot$};
-        \node[state,right=1.8cm of s3,] (s4) {$s_{4,j}$};
-        \node[state,above=1.2cm of s4,] (s4p) {$s'_{4,j}$};
-
-        \node[state,right=0.4cm of s4,] (f) {$f$};
-        \node[state,above=1.2cm of f,] (t) {$t$};
-        \draw[->] (s4) edge (f);
-        \draw[->] (s4p) edge (t);
-
-
-        \draw[->] (s1) edge node[above] {$0.5$} (s1y);
-        \draw[->] (s1) edge node[above] {$0.5$} (s1n);
-        \draw[->] (s2) edge node[above] {$0.5$} (s2y);
-        \draw[->] (s2) edge node[above] {$0.5$} (s2n);
-        \draw[->] (s3) edge node[above] {$0.5$} (s3y);
-        \draw[->] (s3) edge node[above] {$0.5$} (s3n);
-        \draw[->] (s1p) edge node[above] {$0.5$} (s1yp);
-        \draw[->] (s1p) edge node[above] {$0.5$} (s1np);
-        \draw[->] (s2p) edge node[above] {$0.5$} (s2yp);
-        \draw[->] (s2p) edge node[above] {$0.5$} (s2np);
-        \draw[->] (s3p) edge node[above] {$0.5$} (s3yp);
-        \draw[->] (s3p) edge node[above] {$0.5$} (s3np);
-
-        \draw[->] (s1y) edge node[above] {$1$} (s2p);
-        \draw[->] (s1n) edge node[above] {$1$} (s2);
-        \draw[->] (s2y) edge node[above] {$1$} (s3);
-        \draw[->] (s2n) edge node[above] {$1$} (s3);
-        \draw[->] (s3y) edge node[above] {$1$} (s4);
-        \draw[->] (s3n) edge node[above] {$1$} (s4p);
-        \draw[->] (s1yp) edge node[above] {$1$} (s2p);
-        \draw[->] (s1np) edge node[above] {$1$} (s2p);
-        \draw[->] (s2yp) edge node[above] {$1$} (s3p);
-        \draw[->] (s2np) edge node[above] {$1$} (s3p);
-        \draw[->] (s3yp) edge node[above] {$1$} (s4p);
-        \draw[->] (s3np) edge node[above] {$1$} (s4p);
-
-    \end{tikzpicture}
-    \caption{Gadget demonstrated for $x_1 \lor\neg x_3$}
-    \label{fig:hmmgadget}
+    \begin{subfigure}{0.13\textwidth}
+        \begin{tikzpicture}
+            \node[circle, inner sep=4pt, initial, initial above, initial text=,draw] (s1) {};
+            \node[right=0.3cm of s1] (ci) {$\vdots$};
+            \node[rectangle, draw, above=0.8cm of ci] (c1) {$\mathcal{G}_{c_1}$};
+            \node[rectangle, draw, below=0.8cm of ci] (cn) {$\mathcal{G}_{c_m}$};
+            \draw[->] (s1) edge node[right] {$\nicefrac{1}{m}$} (c1);
+            \draw[->] (s1) edge node[right] {$\nicefrac{1}{m}$} (cn);
+        \end{tikzpicture}
+        \caption{HMM.}
+        \label{fig:gadgetsconnected}
     \end{subfigure}
-    \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.} 
+    \begin{subfigure}{0.86\textwidth}
+        \begin{tikzpicture}[every node/.style={font=\scriptsize}]
+
+            \node[state,initial text=,initial] (s1) {$s_{1,j}$};
+            \node[state,right=0.4cm of s1,yshift=0.5cm,draw=green] (s1y) {$s_{1,j}^\top$};
+            \node[state,right=0.4cm of s1,yshift=-0.5cm,draw=red] (s1n) {$s_{1,j}^\bot$};
+            \node[state,above=1.2cm of s1,] (s1p) {$s'_{1,j}$};
+            \node[state,right=0.4cm of s1p,yshift=0.5cm,draw=green] (s1yp) {$s_{1,j}'^\top$};
+            \node[state,right=0.4cm of s1p,yshift=-0.5cm,draw=red] (s1np) {$s_{1,j}'^\bot$};
+            \node[state,right=1.8cm of s1,] (s2) {$s_{2,j}$};
+            \node[state,right=0.4cm of s2,yshift=0.5cm,draw=green] (s2y) {$s_{2,j}^\top$};
+            \node[state,right=0.4cm of s2,yshift=-0.5cm,draw=red] (s2n) {$s_{2,j}$};
+            \node[state,above=1.2cm of s2,] (s2p) {$s'_{2,j}$};
+            \node[state,right=0.4cm of s2p,yshift=0.5cm,draw=green] (s2yp) {$s_{2,j}'^\top$};
+            \node[state,right=0.4cm of s2p,yshift=-0.5cm,draw=red] (s2np) {$s_{2,j}'^\bot$};
+            \node[state,right=1.8cm of s2,] (s3) {$s_{3,j}$};
+            \node[state,right=0.4cm of s3,yshift=0.5cm,draw=green] (s3y) {$s_{3,j}^\top$};
+            \node[state,right=0.4cm of s3,yshift=-0.5cm,draw=red] (s3n) {$s_{3,j}^\bot$};
+            \node[state,above=1.2cm of s3,] (s3p) {$s'_{3,j}$};
+            \node[state,right=0.4cm of s3p,yshift=0.5cm,draw=green] (s3yp) {$s_{3,j}'^\top$};
+            \node[state,right=0.4cm of s3p,yshift=-0.5cm,draw=red] (s3np) {$s_{3,j}'^\bot$};
+            \node[state,right=1.8cm of s3,] (s4) {$s_{4,j}$};
+            \node[state,above=1.2cm of s4,] (s4p) {$s'_{4,j}$};
+
+            \node[state,right=0.4cm of s4,] (f) {$f$};
+            \node[state,above=1.2cm of f,] (t) {$t$};
+            \draw[->] (s4) edge (f);
+            \draw[->] (s4p) edge (t);
+
+
+            \draw[->] (s1) edge node[above] {$0.5$} (s1y);
+            \draw[->] (s1) edge node[above] {$0.5$} (s1n);
+            \draw[->] (s2) edge node[above] {$0.5$} (s2y);
+            \draw[->] (s2) edge node[above] {$0.5$} (s2n);
+            \draw[->] (s3) edge node[above] {$0.5$} (s3y);
+            \draw[->] (s3) edge node[above] {$0.5$} (s3n);
+            \draw[->] (s1p) edge node[above] {$0.5$} (s1yp);
+            \draw[->] (s1p) edge node[above] {$0.5$} (s1np);
+            \draw[->] (s2p) edge node[above] {$0.5$} (s2yp);
+            \draw[->] (s2p) edge node[above] {$0.5$} (s2np);
+            \draw[->] (s3p) edge node[above] {$0.5$} (s3yp);
+            \draw[->] (s3p) edge node[above] {$0.5$} (s3np);
+
+            \draw[->] (s1y) edge node[above] {$1$} (s2p);
+            \draw[->] (s1n) edge node[above] {$1$} (s2);
+            \draw[->] (s2y) edge node[above] {$1$} (s3);
+            \draw[->] (s2n) edge node[above] {$1$} (s3);
+            \draw[->] (s3y) edge node[above] {$1$} (s4);
+            \draw[->] (s3n) edge node[above] {$1$} (s4p);
+            \draw[->] (s1yp) edge node[above] {$1$} (s2p);
+            \draw[->] (s1np) edge node[above] {$1$} (s2p);
+            \draw[->] (s2yp) edge node[above] {$1$} (s3p);
+            \draw[->] (s2np) edge node[above] {$1$} (s3p);
+            \draw[->] (s3yp) edge node[above] {$1$} (s4p);
+            \draw[->] (s3np) edge node[above] {$1$} (s4p);
+
+        \end{tikzpicture}
+        \caption{Gadget demonstrated for $x_1 \lor\neg x_3$}
+        \label{fig:hmmgadget}
+    \end{subfigure}
+    \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
 \end{figure}
 
 Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and set $\lambda = 1$:
@@ -995,7 +1014,7 @@ Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and
           $\obsf(s_{i,j}) = \obsf(s'_{i,j}) = \# = \obsf(s_\init) = \obsf(t) = \obsf(f)$.
     \item $r(t) = 1$ and $r(s) = 0$ for all $s \in \Sts \setminus \{ t\}$.
 \end{itemize}
-The construction runs in polynomial time. The formal proof of its correctness follows the explanation above precisely. 
+The construction runs in polynomial time. The formal proof of its correctness follows the explanation above precisely.
 %
 %\begin{definition}[binary-CTP Decision Problem]
 %    Given an HMM $\mc$ with colors $C$, a binary encoded horizon $h$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{h}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
@@ -1026,20 +1045,20 @@ We show this by means of an L-reduction from MAX-3SAT, which is an inapproximabl
 
 \section{Experiments}
 We build our tool in the python programming language on top of the model checker Storm \cite{henselProbabilisticModelChecker2022} and the POMDP model checker PAYNT \cite{andriushchenkoPAYNTToolInductive2021}. This tool includes both the \alg verifier algorithm and the learning algorithm employing \alg for equality queries.
-\todo[inline]{TODO: Write further description of the tool.}
+\lm[inline]{TODO: Write further description of the tool.}
 
 \paragraph{Benchmarks}
 We evaluate both the \alg verifier and the learning algorithm. We evaluate the \alg verifier using the following questions:
 \begin{description}
     \item[$\textbf{Q}_{VM}^1$] How does the runtime of \alg verifier depend on its parameters?
     \item[$\textbf{Q}_{VM}^2$] How much does the \alg verification depend on PAYNT?
-    \item[$\textbf{Q}_{VM}^3$] Which PAYNT strategy is the most efficient in the \alg benchmarks? \todo{Maybe not a full question?}
+    \item[$\textbf{Q}_{VM}^3$] Which PAYNT strategy is the most efficient in the \alg benchmarks? \lm{Maybe not a full question?}
 \end{description}
 We also evaluate the learning algorithm by looking at the following questions:
 \begin{description}
     \item[$\textbf{Q}_{L}^1$] Does \alg learning guarantee a better bound then learning using a sampling EQ?
     \item[$\textbf{Q}_{L}^2$] How do the \alg learning monitors and sampling learning monitors compare in size?
-    \item[$\textbf{Q}_{L}^3$] Do monitors learned without a horizon limit in MQ generalize to outside the horizon?\todo{Again, maybe less relevant?}
+    \item[$\textbf{Q}_{L}^3$] Do monitors learned without a horizon limit in MQ generalize to outside the horizon?\lm{Again, maybe less relevant?}
 \end{description}
 
 \section{Related}
@@ -1062,189 +1081,5 @@ We also evaluate the learning algorithm by looking at the following questions:
 \printbibliography{}
 
 \appendix
-
-
-% \section{Old Monitor Verification}
-% In this section we will discuss our solution to the monitor correctness problem. We start by describing a solution to simplified version of the no missed alarms problem, where we only consider traces of exactly the horizon length. In \cref{ssec:nfa} we generalize this to both traces of at the length of the horizon and to the no false alarms problem.
-
-% We will tackle the no missed alarms problem by first reducing the problem in a series of steps. We first reduce to the novel Conditional trace probability (CTP) problem in \cref{ssec:ctp}. Next, we further simply the problem by looking at the even simpler asyclic CTP (ACTP) problem in \cref{ssec:actp}. In \cref{ssec:polsyn}, we reduce the ACTP problem to a consistent policy synthesis problem on MDPs. Lastly, we show how to solve this consistent policy synthesis problem using PAYNT\cite{andriushchenkoPAYNTToolInductive2021} in \cref{ssec:paynt}.
-
-% \subsection{CTP Problem}
-% We will solve the Monitor verification problem by looking at the simpler \emph{Conditional trace probability} (CTP) problem. We will show a reduction from the Co-Monitor Verification Problem to CTP.
-% \begin{definition}[CTP Decision Problem]
-%     Given an HMM $\mc$ with colors $C$, a unary encoded horizon $h$, a set of goal states $G$, and a threshold $\lambda_s \in (0,1]$, find a trace $\tau \in \lang{\mc}$ such that $\sum_{\pi\in\Pi^\mc_H\mid\pi_\downarrow \in G}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$.
-
-% \end{definition}
-% As we will be shown in \cref{sec:compl} the CTP problem is NP-complete.
-
-% The CTP problem differs from the monitor verification problem in two important aspects. First, the CTP problem no longer considers the monitor and the risk. Second, instead of deciding there are no missed alarm traces, we have to find a missed alarm trace. Finding a trace is similar to the dual of the no missed alarms problem.
-% \begin{definition}[Missed Alarms (MA) Problem]
-%     Given a HMM $\mc$ with an associated monitor $\dfa$, a missed alarm thresholds $\lambda_s\in[0,\inf)$, and a horizon $h\in\NN^+$. Find a trace $\tau \in \missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)$.
-% \end{definition}
-% \todo{Dubious contractions}Finding a trace in the MA problem disproves the no MA problem for the same inputs.
-
-% \paragraph{Reduction to CTP}
-% In order to translate the co-MV problem to the CTP problem we combine the monitor and the HMM using the {baierPrinciplesModelChecking2008}. The monitor has to be complete, however, this can be ensured without loss of generality.
-% \todo{Maybe say complement of the monitor because missed alarms} Our central example transformed into a CTP decision problem can be found in \cref{fig:ctphmm}.
-
-% \subsection{Asyclic CTP problem}\label{ssec:actp}
-% We further simplify the monitor verification problem by incorporating the horizon, the goal states and the risk into the HMM. This results in the acyclic CTP (ACTP) problem.
-
-% \begin{definition}[Asyclic CTP problem]
-%     Given an acyclic HMM $\mc$ with colors $C$, an alarm state $a$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^\star$ such that $\sum_{\pi\in\Pi^\mc_{h}}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
-% \end{definition}
-% \todo[inline]{Explain problem}
-
-% \subsubsection{Reduction}
-% Given an instance of the CTP problem with HMM $\mcctp=\left(\Sts, \ptrans, \init, C, \obsf, r \right)$, good states $G$, horizon $h$, risk function $r$, and threshold $\lambda$, we reduce the CTP problem to an ACTP problem.
-
-% We unroll $\mcctp$ over the horizon $h$, creating the unrolled HMM \todo{get better name for tussenstap hmm} $\mcactp = (\Sts \times \{1,\ldots,h\}, \ptrans', \iota\times\{1\}, C, \obsf')$. $\ptrans'$ is defined as
-% \[\ptrans'(\langle s, i\rangle, \langle q, i+1\rangle) = \ptrans(s, q)\]
-% for $i \in \{1,\ldots,h-1\}$. $\obsf'$ ignores the horizon. The horizon states get transitions to three new states, the $alarm$, $safe$ and $ignore$ states according to the normalized risk $r$.
-% \begin{align*}
-%     \ptrans'(\langle s, h\rangle, alarm)  & = \begin{cases}
-%                                                   r'(s) & \text{if } s \in G \\
-%                                                   0     & \text{otherwise}
-%                                               \end{cases}     \\
-%     \ptrans'(\langle s, h\rangle, safe)   & = \begin{cases}
-%                                                   1 - r'(s) & \text{if } s \in G \\
-%                                                   0         & \text{otherwise}
-%                                               \end{cases} \\
-%     \ptrans'(\langle s, h\rangle, ignore) & = \begin{cases}
-%                                                   1 & \text{if } s \notin G \\
-%                                                   0 & \text{otherwise}
-%                                               \end{cases}
-% \end{align*}
-% The $alarm$, $safe$ and $ignore$ states become sink states. The $alarm$ and $safe$ sates get the $end$ observation, while the $ignore$ state gets the $\ig$ observation.
-
-% This reduction applied to the example $\mcctp$ can be seen in \cref{fig:actp}
-
-% \subsection{Reduction to Consistent Policy Synthesis}
-% We will reduce the ACTP problem into a consistent policy synthesis problem on MDPs. We will transform the model such that conditioning on a trace in the HMM is equivalent to calculating the probability for a consistent policy in an MDP. Then, finding a trace with a probability above a threshold comes down to finding a consistent policy with a probability above a threshold.
-
-% Restricting the policies to a consistent subset will be essential in making this equivalence work.
-
-% \begin{definition}
-%     A consistent policy $\sigma$ is a policy which has the following property with $\iota$ the observation of the initial state and $e$ is the \en observation
-%     \[\exists_{\tau\in C^\star}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^<)^+\iota\tau e^\star\]
-%     Thus, the trace of a path obtained using $\sigma$ is a finite sequence of initial observations and prefixes of $\tau$ finished by observing the initial state, fully $\tau$ and an infinite amount of end observations.
-% \end{definition}\todo{Technically there are no observations in the MDP, we could rewrite in terms of the actions taken by the MDP, but might be less intuitive}
-% However, we are not able to enforce this form of consistency in our policies. Instead, we look at semi-consistent schedulers.
-% \todo{Mention fairness somewhere?}
-% \begin{definition}
-%     A semi-consistent policy $\sigma$ is a policy which has the following property \[\exists_{\tau\in C^\star}\ \forall_{\pi\in Paths(\sigma)}\ obs(\pi) = (\iota\tau^<)^+(\iota\tau e^\star \mid (\iota\tau^<)^\star)\]
-%     Thus, a semi-consistent scheduler is a consistent scheduler where the induced trace never has to observe an end state.
-% \end{definition}\todo{This is quite a lot of non-intuitive notation, how could I do it differently}
-% We claim that the maximal semi-consistent policy for reachability of the $goal$ or $stop$ states will always be a consistent policy if an \en transition can be taken. \todo{Give proof?}
-
-% \todo[inline]{Write something about how it does not matter what we do with ignore states. As they are never reached by a maximal consistent scheduler, which can reach $a$}
-
-% The resulting problem statement given this claim:
-% \begin{definition}[Consistent policy synthesis problem]
-%     For an MDP $\mdp$, a threshold $\lambda_s$, and an alarm state $a$. Find a policy $\sigma \in \Sigma^{semi-cons}$ such that:
-%     \[\Prob^{\sigma,\mdp}(\lozenge a) > \lambda_s \]
-% \end{definition}
-
-% \subsubsection{Reduction}
-% We will reduce the ACTP problem with a HMM $\mcactp = (\Sts \times \NN^{+\leq h} \cup \{alarm, safe, ignore\}, \ptrans'', \iota', \obsf'', C\cup \{\ig, \en\})$ and a threshold $\lambda$ into an MDP such that a consistent policy coincides with a trace in $\mcactp$.
-
-% Intuitively, we will let the MDP choose its next observation. Any probability not going towards this observation will be redirected to the initial state, thus resetting the path.
-
-% We construct the policy synthesis MDP $\mdp = (\Sts\times\NN^{< h},\allowbreak C \cup \{\ig, \en\},\allowbreak \ptrans''',\allowbreak \iota'',\allowbreak \{\alarm, \safe\},\allowbreak L'')$
-% where $\ptrans'''$ is definded as
-% \begin{align*}
-%     \ptrans'''(\langle s, i\rangle , c, \langle q, i+1 \rangle) :=
-%     \begin{cases}
-%         \ptrans''(\langle s, i\rangle, \langle q, i+1 \rangle) & \text{if } \obsf(q) = c \\
-%         1 - \sum_{q'\in S\ |\ \obsf(q') = c} P^\mc(s,q')       & \text{if } q = \iota    \\
-%         0                                                      & \text{otherwise}
-%     \end{cases}
-% \end{align*}
-
-% \begin{figure}[t]
-%     \centering
-%     \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
-%         \node[state,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
-
-%         \node[state, dry] (qd2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
-
-%         \node[state, icy] (qi2) [below of= qd2] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
-%         \node[state, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
-
-%         \node[state, icy] (qi3) [right = 1.5cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
-%         \node[state, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
-%         \node[state, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
-
-%         \node[state] (safe) [right = 1.5cm of qi3] {$safe$};
-%         \node[state] (alarm) [below of=safe] {$alarm$};
-%         \node[state, opacity=0.5] (ignore) [above of=safe] {$ignore$};
-
-%         \node[action] (qd1o) at ($(qd1)!0.5!(qi2)$)  {};
-%         \node[action] (qd1b) at ($(qd1)!0.5!(qd2)$) {};
-%         \node[action] (qd2b) at ($(qd2)!0.5!(qd3)$) {};
-%         \node[action] (qd2o) at ($(qd2)!0.5!(qi3)$)  {};
-%         \node[action] (qi2b) at ($(qi2)!0.5!(qi3)$) {};
-%         \node[action] (qi2o) at ($(qi2)!0.5!(qc3)$)  {};
-%         \node[action] (qc2o)  at ($(qc2)!0.5!(qc3)$) {};
-
-%         \node[action] (qi3e) at ($(qi3)!0.6!(safe)$) {};
-%         \node[action] (qd3e) at ($(qd3)!0.6!(ignore)$) {};
-%         \node[action] (qc3e) at ($(qc3)!0.6!(alarm)$) {};
-
-%         \draw (qi3) edge node[below] {$\en$} (qi3e);
-%         \draw[->] (qi3e) edge node[above] {$1$} (safe);
-
-%         \draw (qd3) edge node[above] {$\ig$} (qd3e);
-%         \draw[->] (qd3e) edge node[above] {$1$} (ignore);
-
-%         \draw (qc3) edge node[below] {$\en$} (qc3e);
-%         \draw[->] (qc3e) edge node[above] {$1$} (alarm);
-
-%         \draw (qd1) edge node[above] {$\dry$} (qd1b);
-%         \draw[->] (qd1b) edge node[above] {$\frac{1}{2}$} (qd2);
-%         \draw[return, ->] (qd1b) edge[bend right=60] node[above] {$?$} (qd1);
-%         \draw (qd1) edge node[above] {$\icy$} (qd1o);
-%         \draw[->] (qd1o) edge node[above] {$\frac{4}{10}$} (qi2);
-%         \draw[->] (qd1o) edge node[below left] {$\frac{1}{10}$} (qc2);
-%         \draw[return, ->] (qd1o) edge[bend left] node[below] {$?$} (qd1);
-
-%         \draw (qd2) edge node[above] {$\dry$} (qd2b);
-%         \draw[->] (qd2b) edge node[above] {$\frac{1}{2}$} (qd3);
-%         \draw[return, ->] (qd2b) edge[bend right=60] node[above] {$?$} (qd1);
-%         \draw (qd2) edge node[above] {$\icy$} (qd2o);
-%         \draw[->] (qd2o) edge node[above] {$\frac{1}{4}$} (qi3);
-%         \draw[->] (qd2o) edge node[above right] {$\frac{1}{4}$} (qc3);
-
-%         \draw (qi2) edge node[above] {$\dry$} (qi2b);
-%         \draw[->] (qi2b) edge node[above] {$\frac{1}{2}$} (qd3);
-%         \draw (qi2) edge node[below] {$\icy$} (qi2o);
-%         \draw[->] (qi2o) edge node[above] {$\frac{1}{4}$} (qi3);
-%         \draw[->] (qi2o) edge node[above right] {$\frac{1}{4}$} (qc3);
-
-%         \draw (qc2) edge node[below] {$\icy$} (qc2o);
-%         \draw[->] (qc2o) edge node[below] {$1$} (qc3);
-
-%         \draw (safe) edge[loop right] node {$\en$} (safe);
-%         \draw (alarm) edge[loop right] node {$\en$} (alarm);
-%         \draw (ignore) edge[loop right] node {$\ig$} (ignore);
-%     \end{tikzpicture}
-%     \caption{The central example transformed into an mdp to be used as the model in the MDP policy synthesis problem. Every state has an action which contains only transitions to states which had the observation related to that action.\todo[inline]{bad explanation}}
-%     \label{fig:mdpex}
-% \end{figure}
-
-% \subsection{Policy Synthesis using Memoryless Policies}\label{ssec:paynt}
-% Using colored MDPS
-% \begin{itemize}
-%     \item Our consistence coincides with colored MDPs from \cite{}.
-%     \item Use step value as color.
-%     \item Solve maximal reachability of colored MDPs using PAYNT.
-% \end{itemize}
-
-% \noindent Using POMDPs
-% \begin{itemize}
-%     \item Our consistence coincides with memoryless policies for POMDPs.
-%     \item Use step value as observation.
-%     \item Solve maximal reachability using PAYNT.
-% \end{itemize}
 
 \end{document}
