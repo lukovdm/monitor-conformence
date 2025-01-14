@@ -53,7 +53,7 @@ class Experiment(ABC):
         proc_title = proc_title.split("<")[0]
         setproctitle(f"{proc_title} <{self.name} {self.variant}>")
         # Setup logging
-        log_file = f"{base_dir}/logs/{timestamp}-{self.name}-{self.variant}.log"
+        log_file = f"{base_dir}/logs/{timestamp}_{self.name}_{self.variant}.log"
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
         clear_logging()
         setup_logging(path=log_file)

@@ -2,9 +2,12 @@ from fractions import Fraction
 import json
 from math import ceil
 import os
+from random import seed, shuffle
 import traceback
 from typing import Any
+import re
 import matplotlib.pyplot as plt
+from numpy import save
 
 
 def clean_dict(d):
@@ -30,9 +33,6 @@ def add_symbol_color(data):
         "o",
         "s",
         "D",
-        "^",
-        "v",
-        "<",
         ">",
         "p",
         "*",
@@ -42,10 +42,9 @@ def add_symbol_color(data):
         "x",
         "d",
         "|",
-        "_",
-        ".",
-        "1",
     ]
+    seed(42)
+    shuffle(symbols)
     colors = plt.get_cmap("tab20")
 
     experiment_names = set(data["experiment"]["name"] for data in data)
@@ -68,6 +67,12 @@ def load_experiment_data(path):
         with open(os.path.join(path + "/json/", json_file), "r") as f:
             try:
                 data: dict = json.load(f)
+                data["json_path"] = os.path.join(path + "/json/", json_file)
+                log_file = list(json_file)
+                log_file[19] = "-"
+                log_file["".join(log_file).find("(", 19) - 1] = "-"
+                log_file = "".join(log_file).replace(".json", ".log")
+                data["log_path"] = os.path.join(path + "/logs/", log_file)
             except json.JSONDecodeError:
                 print(f"Error in {json_file}: JSONDecodeError")
                 traceback.print_exc()
@@ -94,6 +99,9 @@ def compare_runtimes(
     ylabel: str | None = None,
     log_scale: bool = True,
     name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
+    experiments_in_legends=True,
+    save_figures=False,
+    save_path="./",
 ):
     max_key1 = 0
     max_key2 = 0
@@ -115,7 +123,7 @@ def compare_runtimes(
             time2,
             data["symbol"],
             color=data["color"],
-            label=name_func(data),
+            label=name_func(data) if experiments_in_legends else None,
         )
 
     plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
@@ -179,6 +187,111 @@ def compare_runtimes(
     plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
     fig = plt.gcf()
     fig.set_size_inches(*figsize)
+    if save_figures:
+        plt.savefig(f"{save_path}/runtime-{key1}-{key2}.pgf", bbox_inches="tight")
+    plt.show()
+
+
+def compare_monitor_sizes(
+    exp_data: list[dict[str, Any]],
+    key1: str,
+    key2: str,
+    title: str | None = None,
+    figsize: tuple = (10, 6),
+    xlabel: str | None = None,
+    ylabel: str | None = None,
+    log_scale: bool = True,
+    name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
+    experiments_in_legends=True,
+    save_figures=False,
+    save_path="./",
+):
+    max_key1 = 0
+    max_key2 = 0
+    min_key1 = float("inf")
+    min_key2 = float("inf")
+    for data in exp_data:
+        if key1 not in data or key2 not in data:
+            continue
+        monitor_states1 = data[key1]["monitor_states"]
+        monitor_states2 = data[key2]["monitor_states"]
+        if monitor_states1 is None or monitor_states2 is None:
+            continue
+        max_key1 = max(max_key1, monitor_states1)
+        max_key2 = max(max_key2, monitor_states2)
+        min_key1 = min(min_key1, monitor_states1)
+        min_key2 = min(min_key2, monitor_states2)
+        plt.plot(
+            monitor_states1,
+            monitor_states2,
+            data["symbol"],
+            color=data["color"],
+            label=name_func(data) if experiments_in_legends else None,
+        )
+
+    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} nr of monitor states (log)")
+    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} nr of monitor states (log)")
+    plt.title(
+        title
+        if title
+        else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
+    )
+    plt.plot(
+        [0, max(max_key1, max_key2) * 1.5],
+        [0, max(max_key1, max_key2) * 1.5],
+        "k-",
+        label="diagonal",
+    )
+    plt.plot(
+        [0, max(max_key1, max_key2) * 1.5 * 5],
+        [0, max(max_key1, max_key2) * 1.5],
+        "k--",
+        label="5x larger",
+    )
+    plt.plot(
+        [0, max(max_key1, max_key2) * 1.5],
+        [0, max(max_key1, max_key2) * 1.5 * 5],
+        "k--",
+    )
+    plt.plot(
+        [0, max(max_key1, max_key2) * 1.5 * 50],
+        [0, max(max_key1, max_key2) * 1.5],
+        "k:",
+        label="50x larger",
+    )
+    plt.plot(
+        [0, max(max_key1, max_key2) * 1.5],
+        [0, max(max_key1, max_key2) * 1.5 * 50],
+        "k:",
+    )
+    plt.fill_between(
+        [0, max(max_key1, max_key2) * 1.5],
+        [0, max(max_key1, max_key2) * 1.5],
+        max(max_key1, max_key2) * 1.5,
+        color="lightgreen",
+        alpha=0.3,
+        label=f"{key1.capitalize()} is larger",
+    )
+    plt.fill_between(
+        [0, max(max_key1, max_key2) * 1.5],
+        0,
+        [0, max(max_key1, max_key2) * 1.5],
+        color="lightcoral",
+        alpha=0.3,
+        label=f"{key2.capitalize()} is larger",
+    )
+    plt.xlim(min_key1 * 0.5, max_key1 * 1.5)
+    plt.ylim(min_key2 * 0.5, max_key2 * 1.5)
+    plt.grid()
+    if log_scale:
+        plt.xscale("log")
+        plt.yscale("log")
+
+    plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
+    fig = plt.gcf()
+    fig.set_size_inches(*figsize)
+    if save_figures:
+        plt.savefig(f"{save_path}/monitor-{key1}-{key2}.pgf", bbox_inches="tight")
     plt.show()
 
 
@@ -273,6 +386,9 @@ def compare_thresholds_bar(
     title: str | None = None,
     xlabel: str | None = None,
     ylabel: str | None = None,
+    experiments_in_legends=True,
+    save_figures=False,
+    save_path="./",
 ):
 
     plt.fill_betweenx(
@@ -345,13 +461,16 @@ def compare_thresholds_bar(
         walks_per_state,
         rotation=90,
     )
-    plt.legend(bbox_to_anchor=(1, 0.5), loc="upper left")
+    if experiments_in_legends:
+        plt.legend(bbox_to_anchor=(1, 0.5), loc="upper left")
     plt.grid(axis="y")
     plt.xlim(-0.5, len(exp_data))
 
     fig = plt.gcf()
     fig.set_size_inches(*fig_size)
     plt.title(title if title else "Comparison of Thresholds")
+    if save_figures:
+        plt.savefig(f"{save_path}/runtime-{'-'.join(keys)}.pgf", bbox_inches="tight")
     plt.show()
 
 
@@ -365,6 +484,7 @@ def runtime_by_params(
     ylabel: str | None = None,
     log_scale: bool = True,
     name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
+    experiments_in_legends=True,
 ):
     fig, axes = plt.subplots(nrows=ceil(len(params) / 2), ncols=2, figsize=figsize)
     axes = axes.flatten()
@@ -392,6 +512,30 @@ def runtime_by_params(
         ax.grid(True, which="both", ls="--")
 
     handles, labels = ax.get_legend_handles_labels()
-    fig.legend(handles, labels, bbox_to_anchor=(1, 0.9), loc="upper left")
+    if experiments_in_legends:
+        fig.legend(handles, labels, bbox_to_anchor=(1, 0.9), loc="upper left")
     plt.tight_layout()
     plt.show()
+
+
+def runtime_from_logs(logpath: str):
+    entries: dict[str, float] = {}
+    with open(logpath, "r") as f:
+        for line in f:
+            time_pattern = re.compile(r"\((\d+(?:\.\d+))s\)")
+
+            for line in f:
+                if "(s)" in line:
+                    continue
+                match = time_pattern.search(line)
+                if match:
+                    try:
+                        elapsed = float(match.group(1))
+                        message = line.split(" - ", 2)[-1].strip()
+                        if message not in entries:
+                            entries[message] = 0
+
+                        entries[message] += elapsed
+                    except ValueError:
+                        pass
+        return entries

@@ -1,3 +1,4 @@
+from collections import deque
 from hmac import new
 from typing import Any
 from stormpy import (
@@ -89,8 +90,8 @@ def stormpy_simulator_unroll(mon: SparseMdp | SparseExactMdp, horizon):
     action_labels_map: dict[int, set[str]] = {}
     action_labels = set(mon.choice_labeling.get_labels())
 
-    queue = [(i, new_s, s) for (i, new_s), s in states.items()]
-    horizon_queue = []
+    queue = deque([(i, new_s, s) for (i, new_s), s in states.items()])
+    horizon_queue = deque()
 
     if mon.is_exact:
         builder = ExactSparseMatrixBuilder(0, 0, 0, False, True)
@@ -99,7 +100,7 @@ def stormpy_simulator_unroll(mon: SparseMdp | SparseExactMdp, horizon):
 
     current_row = 0
     while queue:
-        i, new_s, s = queue.pop(0)
+        i, new_s, s = queue.popleft()
         builder.new_row_group(current_row)
         old_state = mon.states[s]
         state_labels[new_s].update(old_state.labels.difference(["init"]))

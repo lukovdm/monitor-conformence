@@ -108,8 +108,9 @@ class FilteringSUL(SUL):
 
     def pre(self):
         self.tracker.reset(self.observation_classes.index(self.initial_observation))
+        self.last_risk = self.tracker.obtain_current_risk(max=False)
         if self.do_logging:
-            logger.debug("reset tracker")
+            logger.debug(f"reset tracker, {self.last_risk}")
         self.observation_length = 0
 
     def post(self):
