@@ -28,6 +28,12 @@ def clean_data(data):
         clean_dict(d)
 
 
+def prep_data_for_latex(data):
+    for d in data:
+        d["experiment"]["name"] = d["experiment"]["name"].replace("_", "\\_")
+        d["experiment"]["variant"] = d["experiment"]["variant"].replace("_", "\\_")
+
+
 def add_symbol_color(data):
     symbols = [
         "o",
@@ -431,7 +437,10 @@ def compare_thresholds_bar(
     ]
 
     # Horizon sizes for x-axis labels
-    walks_per_state = [bottom_func(data) for data in exp_data]
+    if experiments_in_legends:
+        walks_per_state = [bottom_func(data) for data in exp_data]
+    else:
+        walks_per_state = [f"{i}" for i in range(len(exp_data))]
 
     bar_width = 1 / (len(keys) * 2) - 0.05
     index = range(len(exp_data))
@@ -461,8 +470,7 @@ def compare_thresholds_bar(
         walks_per_state,
         rotation=90,
     )
-    if experiments_in_legends:
-        plt.legend(bbox_to_anchor=(1, 0.5), loc="upper left")
+    plt.legend(bbox_to_anchor=(1, 0.5), loc="upper left")
     plt.grid(axis="y")
     plt.xlim(-0.5, len(exp_data))
 
