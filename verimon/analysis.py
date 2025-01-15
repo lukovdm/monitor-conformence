@@ -34,6 +34,19 @@ def prep_data_for_latex(data):
         d["experiment"]["variant"] = d["experiment"]["variant"].replace("_", "\\_")
 
 
+def add_short_names(data):
+    # Short names are first letter of name and index of variant
+    variant_indexes: dict[str, int] = {}
+    for d in data:
+        name = d["experiment"]["name"]
+        if name not in variant_indexes:
+            variant_indexes[name] = 0
+        d["experiment"][
+            "short_name"
+        ] = f"{name[0].capitalize()}-{variant_indexes[name]}"
+        variant_indexes[name] += 1
+
+
 def add_symbol_color(data):
     symbols = [
         "o",
@@ -66,7 +79,9 @@ def add_symbol_color(data):
 
 
 def load_experiment_data(path):
-    json_files = [f for f in os.listdir(path + "/json") if f.endswith(".json")]
+    json_files: list[str] = [
+        f for f in os.listdir(path + "/json") if f.endswith(".json")
+    ]
 
     experiment_data: list[dict] = []
     for json_file in json_files:
@@ -74,11 +89,9 @@ def load_experiment_data(path):
             try:
                 data: dict = json.load(f)
                 data["json_path"] = os.path.join(path + "/json/", json_file)
-                log_file = list(json_file)
-                log_file[19] = "-"
-                log_file["".join(log_file).find("(", 19) - 1] = "-"
-                log_file = "".join(log_file).replace(".json", ".log")
-                data["log_path"] = os.path.join(path + "/logs/", log_file)
+                data["log_path"] = os.path.join(
+                    path + "/logs/", json_file.replace(".json", ".log")
+                )
             except json.JSONDecodeError:
                 print(f"Error in {json_file}: JSONDecodeError")
                 traceback.print_exc()
@@ -134,37 +147,36 @@ def compare_runtimes(
 
     plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
     plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} run time (s log)")
-    plt.title(
-        title
-        if title
-        else f"Comparison of {key1.capitalize()} and {key2.capitalize()} Run Times"
-    )
+    # plt.title(
+    #     title
+    #     if title
+    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} Run Times"
+    # )
     plt.plot(
         [0, max(max_key1, max_key2) * 1.5],
         [0, max(max_key1, max_key2) * 1.5],
         "k-",
-        label="diagonal",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 5],
+        [0, max(max_key1, max_key2) * 1.5 * 10],
         [0, max(max_key1, max_key2) * 1.5],
         "k--",
-        label="5x faster",
+        label="10x faster",
     )
     plt.plot(
         [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 5],
+        [0, max(max_key1, max_key2) * 1.5 * 10],
         "k--",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 50],
+        [0, max(max_key1, max_key2) * 1.5 * 100],
         [0, max(max_key1, max_key2) * 1.5],
         "k:",
-        label="50x faster",
+        label="100x faster",
     )
     plt.plot(
         [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 50],
+        [0, max(max_key1, max_key2) * 1.5 * 100],
         "k:",
     )
     plt.fill_between(
@@ -183,14 +195,14 @@ def compare_runtimes(
         alpha=0.3,
         label=f"{key2.capitalize()} is faster",
     )
-    plt.xlim(min_key1 * 0.5, max_key1 * 1.5)
-    plt.ylim(min_key2 * 0.5, max_key2 * 1.5)
+    plt.xlim(min(min_key1, min_key2) * 0.5, max(max_key1, max_key2) * 1.5)
+    plt.ylim(min(min_key1, min_key2) * 0.5, max(max_key1, max_key2) * 1.5)
     plt.grid()
     if log_scale:
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
+    plt.legend(loc="upper left")
     fig = plt.gcf()
     fig.set_size_inches(*figsize)
     if save_figures:
@@ -237,37 +249,36 @@ def compare_monitor_sizes(
 
     plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} nr of monitor states (log)")
     plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} nr of monitor states (log)")
-    plt.title(
-        title
-        if title
-        else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
-    )
+    # plt.title(
+    #     title
+    #     if title
+    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
+    # )
     plt.plot(
         [0, max(max_key1, max_key2) * 1.5],
         [0, max(max_key1, max_key2) * 1.5],
         "k-",
-        label="diagonal",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 5],
+        [0, max(max_key1, max_key2) * 1.5 * 10],
         [0, max(max_key1, max_key2) * 1.5],
         "k--",
-        label="5x larger",
+        label="10x smaller",
     )
     plt.plot(
         [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 5],
+        [0, max(max_key1, max_key2) * 1.5 * 10],
         "k--",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 50],
+        [0, max(max_key1, max_key2) * 1.5 * 100],
         [0, max(max_key1, max_key2) * 1.5],
         "k:",
-        label="50x larger",
+        label="100x smaller",
     )
     plt.plot(
         [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 50],
+        [0, max(max_key1, max_key2) * 1.5 * 100],
         "k:",
     )
     plt.fill_between(
@@ -276,7 +287,7 @@ def compare_monitor_sizes(
         max(max_key1, max_key2) * 1.5,
         color="lightgreen",
         alpha=0.3,
-        label=f"{key1.capitalize()} is larger",
+        label=f"{key1.capitalize()} is smaller",
     )
     plt.fill_between(
         [0, max(max_key1, max_key2) * 1.5],
@@ -284,7 +295,7 @@ def compare_monitor_sizes(
         [0, max(max_key1, max_key2) * 1.5],
         color="lightcoral",
         alpha=0.3,
-        label=f"{key2.capitalize()} is larger",
+        label=f"{key2.capitalize()} is smaller",
     )
     plt.xlim(min_key1 * 0.5, max_key1 * 1.5)
     plt.ylim(min_key2 * 0.5, max_key2 * 1.5)
@@ -366,11 +377,11 @@ def compare_thresholds(
         else "False Negatives threshold\n(maximal risk for trace not in monitor)"
     )
     plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
-    plt.title(
-        title
-        if title
-        else f"Comparison of False Positives and False Negatives thresholds in {key1.capitalize()} and {key2.capitalize()}"
-    )
+    # plt.title(
+    #     title
+    #     if title
+    #     else f"Comparison of False Positives and False Negatives thresholds in {key1.capitalize()} and {key2.capitalize()}"
+    # )
     plt.xlim(max(0, xmin * 0.95), min(1, xmax * 1.05))
     plt.ylim(max(0, ymin * 0.95), min(1, ymax * 1.05))
     plt.grid()
@@ -438,9 +449,9 @@ def compare_thresholds_bar(
 
     # Horizon sizes for x-axis labels
     if experiments_in_legends:
-        walks_per_state = [bottom_func(data) for data in exp_data]
+        exp_names = [bottom_func(data) for data in exp_data]
     else:
-        walks_per_state = [f"{i}" for i in range(len(exp_data))]
+        exp_names = [data["experiment"]["short_name"] for data in exp_data]
 
     bar_width = 1 / (len(keys) * 2) - 0.05
     index = range(len(exp_data))
@@ -467,16 +478,16 @@ def compare_thresholds_bar(
     plt.ylabel(ylabel if ylabel else "threshold")
     plt.xticks(
         [i + bar_width * (len(keys) - 0.5) for i in index],
-        walks_per_state,
+        exp_names,
         rotation=90,
     )
-    plt.legend(bbox_to_anchor=(1, 0.5), loc="upper left")
+    plt.legend(loc="upper left")
     plt.grid(axis="y")
     plt.xlim(-0.5, len(exp_data))
 
     fig = plt.gcf()
     fig.set_size_inches(*fig_size)
-    plt.title(title if title else "Comparison of Thresholds")
+    # plt.title(title if title else "Comparison of Thresholds")
     if save_figures:
         plt.savefig(f"{save_path}/runtime-{'-'.join(keys)}.pgf", bbox_inches="tight")
     plt.show()

@@ -4,6 +4,7 @@ from operator import is_
 import os
 from time import time
 import traceback
+from typing import Any
 
 from paynt.family.family import Family
 
@@ -162,11 +163,12 @@ def _verify_helper(
     if options is None:
         options = {}
 
-    stats = {"product_time": 0.0, "paynt_time": 0.0}
+    stats: dict[str, Any] = {"product_time": 0.0, "paynt_time": 0.0}
 
     if "model_path" in options:
         os.makedirs(options["model_path"], exist_ok=True)
         path = f"{options['model_path']}/mon-{datetime.now()}-{paynt_spec.replace('/', ' div ')}.drn"
+        stats["monitor_path"] = path
         export_to_drn(
             mon_cycl,
             path,

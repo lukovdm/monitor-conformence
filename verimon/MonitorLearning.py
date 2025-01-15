@@ -256,7 +256,9 @@ class VerimonEqOracle(Oracle):
             "eq_used": 0,
             "fp_found": 0,
             "fn_found": 0,
+            "fp_monitors": [],
             "fp_bounds": [],
+            "fn_monitors": [],
             "fn_bounds": [],
             "paynt_time": 0.0,
             "product_time": 0.0,
@@ -337,6 +339,8 @@ class VerimonEqOracle(Oracle):
 
         self.stats["paynt_time"] += stats["paynt_time"]
         self.stats["product_time"] += stats["product_time"]
+        if self.base_dir is not None:
+            self.stats["fn_monitors"].append(stats["monitor_path"])
 
         if result is not None:
             in_hyp = self._check_hyp_on_trace(hypothesis, trace)
@@ -353,6 +357,7 @@ class VerimonEqOracle(Oracle):
                 raise Exception("false negative found is not a false negative")
 
             self.stats["fn_found"] += 1
+            self.stats["fp_monitors"].append(None)
             self.stats["fn_bounds"].append(result)
             self.stats["fp_bounds"].append(None)
             return trace
@@ -381,6 +386,8 @@ class VerimonEqOracle(Oracle):
 
         self.stats["paynt_time"] += stats["paynt_time"]
         self.stats["product_time"] += stats["product_time"]
+        if self.base_dir is not None:
+            self.stats["fp_monitors"].append(stats["monitor path"])
 
         if result is not None:
             in_hyp = self._check_hyp_on_trace(hypothesis, trace)

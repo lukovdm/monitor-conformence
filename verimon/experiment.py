@@ -27,7 +27,7 @@ from verimon.verify import false_positive, false_negative, true_negative, true_p
 from verimon.loaders import aalpy_dfa_to_stormpy, aalpy_dfa_to_stormvogel
 
 from stormvogel.mapping import stormvogel_to_stormpy
-from stormpy import export_to_drn, Rational
+from stormpy import export_to_drn
 from stormpy.utility import sharpen
 
 from paynt.family.family import Family
