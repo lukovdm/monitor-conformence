@@ -6,6 +6,7 @@ from operator import le
 import os
 import argparse
 from datetime import datetime
+import resource
 from time import time
 import traceback
 from typing import Any, Literal
@@ -49,6 +50,10 @@ class Experiment(ABC):
 
     @abstractmethod
     def run(self, timestamp: str, base_dir: str):
+        resource.setrlimit(
+            resource.RLIMIT_AS,
+            (1024 * 1024 * 1024 * 15, resource.RLIM_INFINITY),  # 15GiB limit
+        )
         proc_title = getproctitle()
         proc_title = proc_title.split("<")[0]
         setproctitle(f"{proc_title} <{self.name} {self.variant}>")

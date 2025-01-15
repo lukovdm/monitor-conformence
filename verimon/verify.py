@@ -164,8 +164,17 @@ def _verify_helper(
 
     stats = {"product_time": 0.0, "paynt_time": 0.0}
 
-    logger.debug("Building model")
+    if "model_path" in options:
+        os.makedirs(options["model_path"], exist_ok=True)
+        path = f"{options['model_path']}/mon-{datetime.now()}-{paynt_spec.replace('/', ' div ')}.drn"
+        export_to_drn(
+            mon_cycl,
+            path,
+        )
 
+    logger.info("Building model")
+
+    product_start = time()
     mon = stormpy_simulator_unroll(mon_cycl, horizon)
     logger.debug("Unrolling done")
 
@@ -180,7 +189,6 @@ def _verify_helper(
         model.apply_spec(options["good_spec"])
         logger.debug("Apply spec done")
 
-    product_start = time()
     model.create_product()
     stats["product_time"] = time() - product_start
     logger.debug("creating product done")
