@@ -12,6 +12,9 @@
   loader: pomdp
   learning_algs: 
     - [sampling, verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
   use_exact: true
 
 - type: LearningExperiment
@@ -27,6 +30,9 @@
     - 9
   learning_algs: 
     - [sampling, verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
   use_exact: true
 
 - type: LearningExperiment
@@ -39,6 +45,9 @@
   loader: pomdp
   learning_algs: 
     - [sampling, verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
   use_exact: true
 
 - type: LearningExperiment
@@ -57,4 +66,7 @@
   loader: pomdp
   learning_algs: 
     - [sampling, verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
   use_exact: true

@@ -6,6 +6,7 @@ from operator import le
 import os
 import argparse
 from datetime import datetime
+from random import shuffle
 import resource
 from time import time
 import traceback
@@ -78,8 +79,7 @@ class LearningExperiment(Experiment):
         parameters: dict[str, Any] | None = None,
         horizon: int = 10,
         threshold: float = 0.3,
-        fp_slack: float = 0.2,
-        fn_slack: float = 0.05,
+        slack: tuple[float, float] = (0.2, 0.05),
         relative_error: float = 0.01,
         use_risk: bool = True,
         use_random_eq: bool = True,
@@ -111,8 +111,8 @@ class LearningExperiment(Experiment):
         self.good_label = good_label
         self.horizon = horizon
         self.threshold = threshold
-        self.fp_slack = fp_slack
-        self.fn_slack = fn_slack
+        self.fp_slack = slack[0]
+        self.fn_slack = slack[1]
         self.relative_error = relative_error
         self.use_risk = use_risk
         self.use_random_eq = use_random_eq
@@ -209,6 +209,7 @@ class LearningExperiment(Experiment):
                 "fn_found": stats["fn_found"],
                 "fp_bounds": stats["fp_bounds"],
                 "fn_bounds": stats["fn_bounds"],
+                "monitors": stats["monitors"],
                 "product_time": stats["product_time"],
                 "paynt_time": stats["paynt_time"],
                 "eq_time": stats["eq_time"],
@@ -223,7 +224,6 @@ class LearningExperiment(Experiment):
 
     def _run_trad(self, alg, base_dir, mc, alphabet, initial_observation, expr_manager):
         logger.info(f"Running {alg} learning")
-        trad_start_time = time()
         if alg == "wrandom":
             trad_learned_monitor, trad_info = run_trad_learning(
                 mc,
@@ -253,7 +253,6 @@ class LearningExperiment(Experiment):
         else:
             raise ValueError(f"Unknown learning algorithm: {alg}")
 
-        trad_time = time() - trad_start_time
         logger.info(
             f"-----------------------------------\n"
             f"Learning Finished.\n"
@@ -741,15 +740,15 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(base_dir), exist_ok=True)
 
     if args.concurrent:
-        import concurrent.futures
         from multiprocessing import Pool
+
+        shuffle(experiments)
 
         with Pool() as pool:
             for group in experiments:
                 for exp in group.get_objects():
                     pool.apply_async(exp.run, (timestamp, base_dir))
 
-            # On keyboard interrupt, terminate all processes
             try:
                 pool.close()
                 pool.join()
@@ -757,15 +756,6 @@ if __name__ == "__main__":
                 pool.terminate()
                 print("Terminating all processes")
                 pool.join()
-
-        # with concurrent.futures.ProcessPoolExecutor() as executor:
-        #     futures = [
-        #         executor.submit(group.prod_class.run, exp, timestamp, base_dir)
-        #         for group in experiments
-        #         for exp in group.get_objects()
-        #     ]
-        #     for future in concurrent.futures.as_completed(futures):
-        #         future.result()
     else:
         for group in experiments:
             for exp in group.get_objects():

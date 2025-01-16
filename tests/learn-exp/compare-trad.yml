@@ -20,6 +20,4 @@
     - 0.1
     - 0.2
     - 0.4
-  fp_slack: 0.2
-  fn_slack: 0.05
   use_exact: true

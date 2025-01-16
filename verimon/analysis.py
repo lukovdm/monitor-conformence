@@ -1,6 +1,7 @@
 from fractions import Fraction
 import json
 from math import ceil
+import math
 import os
 from random import seed, shuffle
 import traceback
@@ -121,6 +122,7 @@ def compare_runtimes(
     experiments_in_legends=True,
     save_figures=False,
     save_path="./",
+    file_name="runtime",
 ):
     max_key1 = 0
     max_key2 = 0
@@ -152,61 +154,82 @@ def compare_runtimes(
     #     if title
     #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} Run Times"
     # )
+    max_lim = max(max_key1, max_key2) * 1.5
+    offset = 1.3
+    plt.text(
+        max_lim * (1 / offset),
+        offset,
+        "Sampling is faster",
+        color="gray",
+        ha="right",
+        va="bottom",
+        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    )
+    plt.text(
+        offset,
+        max_lim * (1 / offset),
+        "ToVer is faster",
+        color="gray",
+        ha="left",
+        va="top",
+        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    )
+
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim],
+        [0, max_lim],
         "k-",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 10],
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim * 10],
+        [0, max_lim],
         "k--",
         label="10x faster",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 10],
+        [0, max_lim],
+        [0, max_lim * 10],
         "k--",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 100],
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim * 100],
+        [0, max_lim],
         "k:",
         label="100x faster",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 100],
+        [0, max_lim],
+        [0, max_lim * 100],
         "k:",
     )
     plt.fill_between(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5],
-        max(max_key1, max_key2) * 1.5,
+        [0, max_lim],
+        [0, max_lim],
+        max_lim,
         color="lightgreen",
         alpha=0.3,
         label=f"{key1.capitalize()} is faster",
     )
     plt.fill_between(
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim],
         0,
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim],
         color="lightcoral",
         alpha=0.3,
         label=f"{key2.capitalize()} is faster",
     )
-    plt.xlim(min(min_key1, min_key2) * 0.5, max(max_key1, max_key2) * 1.5)
-    plt.ylim(min(min_key1, min_key2) * 0.5, max(max_key1, max_key2) * 1.5)
+    plt.xlim(1, max_lim)
+    plt.ylim(1, max_lim)
     plt.grid()
     if log_scale:
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.legend(loc="upper left")
+    # plt.legend(loc="upper left")
     fig = plt.gcf()
     fig.set_size_inches(*figsize)
     if save_figures:
-        plt.savefig(f"{save_path}/runtime-{key1}-{key2}.pgf", bbox_inches="tight")
+        plt.savefig(f"{save_path}/{file_name}.pgf", bbox_inches="tight")
     plt.show()
 
 
@@ -223,6 +246,7 @@ def compare_monitor_sizes(
     experiments_in_legends=True,
     save_figures=False,
     save_path="./",
+    file_name="monitor_sizes",
 ):
     max_key1 = 0
     max_key2 = 0
@@ -254,61 +278,83 @@ def compare_monitor_sizes(
     #     if title
     #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
     # )
+    max_lim = max(max_key1, max_key2) * 1.5
+    offset = 1.5
+    plt.text(
+        max_lim * (1 / offset),
+        offset,
+        "Sampling is smaller",
+        color="gray",
+        ha="right",
+        va="bottom",
+        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    )
+    plt.text(
+        offset,
+        max_lim * (1 / offset),
+        "ToVer is smaller",
+        color="gray",
+        ha="left",
+        va="top",
+        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    )
+
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim],
+        [0, max_lim],
         "k-",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 10],
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim * 10],
+        [0, max_lim],
         "k--",
         label="10x smaller",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 10],
+        [0, max_lim],
+        [0, max_lim * 10],
         "k--",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5 * 100],
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim * 100],
+        [0, max_lim],
         "k:",
         label="100x smaller",
     )
     plt.plot(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5 * 100],
+        [0, max_lim],
+        [0, max_lim * 100],
         "k:",
     )
     plt.fill_between(
-        [0, max(max_key1, max_key2) * 1.5],
-        [0, max(max_key1, max_key2) * 1.5],
-        max(max_key1, max_key2) * 1.5,
+        [0, max_lim],
+        [0, max_lim],
+        max_lim,
         color="lightgreen",
         alpha=0.3,
         label=f"{key1.capitalize()} is smaller",
     )
     plt.fill_between(
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim],
         0,
-        [0, max(max_key1, max_key2) * 1.5],
+        [0, max_lim],
         color="lightcoral",
         alpha=0.3,
         label=f"{key2.capitalize()} is smaller",
     )
-    plt.xlim(min_key1 * 0.5, max_key1 * 1.5)
-    plt.ylim(min_key2 * 0.5, max_key2 * 1.5)
+    plt.xlim(1, max_lim)
+    plt.ylim(1, max_lim)
     plt.grid()
     if log_scale:
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
+    # plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
+
     fig = plt.gcf()
     fig.set_size_inches(*figsize)
     if save_figures:
-        plt.savefig(f"{save_path}/monitor-{key1}-{key2}.pgf", bbox_inches="tight")
+        plt.savefig(f"{save_path}/{file_name}.pgf", bbox_inches="tight")
     plt.show()
 
 
@@ -406,6 +452,7 @@ def compare_thresholds_bar(
     experiments_in_legends=True,
     save_figures=False,
     save_path="./",
+    file_name="thresholds",
 ):
 
     plt.fill_betweenx(
@@ -451,7 +498,10 @@ def compare_thresholds_bar(
     if experiments_in_legends:
         exp_names = [bottom_func(data) for data in exp_data]
     else:
-        exp_names = [data["experiment"]["short_name"] for data in exp_data]
+        exp_names = [
+            f"{data['experiment']['old_walks_per_state']} ({data['experiment']['short_name']})"
+            for data in exp_data
+        ]
 
     bar_width = 1 / (len(keys) * 2) - 0.05
     index = range(len(exp_data))
@@ -463,19 +513,19 @@ def compare_thresholds_bar(
             [-(1 - t) for t in key_fp_thresholds],
             bar_width,
             bottom=1,
-            label=f"{key.capitalize()} (in monitor risks)",
+            label=f"in monitor traces",
             color=colors(i + 6 % colors.N),
         )
         plt.bar(
             [j + (i * 2 + 1) * bar_width for j in index],
             key_fn_thresholds,
             bar_width,
-            label=f"{key.capitalize()} (out of monitor risks)",
+            label=f"out of monitor traces",
             color=colors(i + 4 % colors.N),
         )
 
     plt.xlabel(xlabel if xlabel else bottom_name.capitalize())
-    plt.ylabel(ylabel if ylabel else "threshold")
+    plt.ylabel(ylabel if ylabel else "risk threshold")
     plt.xticks(
         [i + bar_width * (len(keys) - 0.5) for i in index],
         exp_names,
@@ -489,7 +539,7 @@ def compare_thresholds_bar(
     fig.set_size_inches(*fig_size)
     # plt.title(title if title else "Comparison of Thresholds")
     if save_figures:
-        plt.savefig(f"{save_path}/runtime-{'-'.join(keys)}.pgf", bbox_inches="tight")
+        plt.savefig(f"{save_path}/{file_name}.pgf", bbox_inches="tight")
     plt.show()
 
 

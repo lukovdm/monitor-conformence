@@ -1,4 +1,6 @@
+from datetime import datetime
 import logging
+import os
 from time import time
 from typing import Any
 
@@ -10,6 +12,7 @@ from stormpy import (
     SparseExactDtmc,
     SparseExactPomdp,
     SparseExactModelComponents,
+    export_to_drn,
     parse_properties,
     model_checking,
     ExpressionManager,
@@ -256,9 +259,8 @@ class VerimonEqOracle(Oracle):
             "eq_used": 0,
             "fp_found": 0,
             "fn_found": 0,
-            "fp_monitors": [],
+            "monitors": [],
             "fp_bounds": [],
-            "fn_monitors": [],
             "fn_bounds": [],
             "paynt_time": 0.0,
             "product_time": 0.0,
@@ -312,11 +314,22 @@ class VerimonEqOracle(Oracle):
                 self.stats["eq_used"] += 1
                 self.stats["fn_bounds"].append(None)
                 self.stats["fp_bounds"].append(None)
+                self.stats["monitors"].append(None)
                 logger.debug("Found counterexample using eq oracle")
                 return cex
 
         logger.debug("Finding false negative probability")
         mon_cycl = aalpy_dfa_to_stormpy(hypothesis, self.mc.is_exact)
+
+        if self.base_dir is not None:
+            os.makedirs(self.base_dir + "/inter-mons", exist_ok=True)
+            path = f"{self.base_dir}/inter-mons/mon-{datetime.now()}-{len(hypothesis.states)}.drn"
+            self.stats["monitors"].append(path)
+            export_to_drn(
+                mon_cycl,
+                path,
+            )
+
         result, trace, _, _, stats = false_negative(
             self.mc,
             mon_cycl,
@@ -339,8 +352,6 @@ class VerimonEqOracle(Oracle):
 
         self.stats["paynt_time"] += stats["paynt_time"]
         self.stats["product_time"] += stats["product_time"]
-        if self.base_dir is not None:
-            self.stats["fn_monitors"].append(stats["monitor_path"])
 
         if result is not None:
             in_hyp = self._check_hyp_on_trace(hypothesis, trace)
@@ -357,7 +368,6 @@ class VerimonEqOracle(Oracle):
                 raise Exception("false negative found is not a false negative")
 
             self.stats["fn_found"] += 1
-            self.stats["fp_monitors"].append(None)
             self.stats["fn_bounds"].append(result)
             self.stats["fp_bounds"].append(None)
             return trace
@@ -386,8 +396,6 @@ class VerimonEqOracle(Oracle):
 
         self.stats["paynt_time"] += stats["paynt_time"]
         self.stats["product_time"] += stats["product_time"]
-        if self.base_dir is not None:
-            self.stats["fp_monitors"].append(stats["monitor path"])
 
         if result is not None:
             in_hyp = self._check_hyp_on_trace(hypothesis, trace)
