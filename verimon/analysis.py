@@ -8,7 +8,7 @@ import traceback
 from typing import Any
 import re
 import matplotlib.pyplot as plt
-from numpy import save
+from tabulate import SEPARATING_LINE, tabulate
 
 
 def clean_dict(d):
@@ -54,14 +54,12 @@ def add_symbol_color(data):
         "s",
         "D",
         ">",
+        "^",
         "p",
         "*",
         "h",
         "H",
-        "+",
-        "x",
         "d",
-        "|",
     ]
     seed(42)
     shuffle(symbols)
@@ -109,6 +107,55 @@ def load_experiment_data(path):
     return experiment_data
 
 
+def generate_experiment_table(
+    data, save_figures=False, save_path="./", file_name="runtime"
+):
+    tab_data = [
+        [
+            d["experiment"]["name"],
+            d["experiment"]["short_name"],
+            d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
+            d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
+            d["mc"]["mc_states"],
+            d["mc"]["mc_transitions"],
+            d["mc"]["mc_observations"],
+            d["verimon"]["time"],
+            d["verimon"]["monitor_states"],
+            d["sampling"]["time"],
+            d["sampling"]["monitor_states"],
+        ]
+        for d in data
+    ]
+    tab_with_lines: list[Any] = [tab_data[0]]
+    for l in tab_data[1:]:
+        # if l[0] != tab_with_lines[-1][0]:
+        #     tab_with_lines.append(SEPARATING_LINE)
+        tab_with_lines.append(l)
+
+    table = tabulate(
+        tab_with_lines,
+        headers=[
+            "Name",
+            "Short Name",
+            "$\\lambda_u$",
+            "$\\lambda_s$",
+            "|\\Sts|",
+            "|\\ptrans|",
+            "|Z|",
+            "\\Alg time",
+            "\\Alg monitor states",
+            "Sampling time",
+            "Sampling monitor states",
+        ],
+        tablefmt="latex_raw" if save_figures else "github",
+    )
+    if save_figures:
+        with open(f"{save_path}/{file_name}.tex", "w") as f:
+            f.write(table)
+
+    print(table)
+
+
 def compare_runtimes(
     exp_data: list[dict[str, Any]],
     key1: str,
@@ -124,37 +171,15 @@ def compare_runtimes(
     save_path="./",
     file_name="runtime",
 ):
-    max_key1 = 0
-    max_key2 = 0
-    min_key1 = float("inf")
-    min_key2 = float("inf")
-    for data in exp_data:
-        if key1 not in data or key2 not in data:
-            continue
-        time1 = data[key1]["time"]
-        time2 = data[key2]["time"]
-        if time1 is None or time2 is None:
-            continue
-        max_key1 = max(max_key1, time1)
-        max_key2 = max(max_key2, time2)
-        min_key1 = min(min_key1, time1)
-        min_key2 = min(min_key2, time2)
-        plt.plot(
-            time1,
-            time2,
-            data["symbol"],
-            color=data["color"],
-            label=name_func(data) if experiments_in_legends else None,
+    max_runtime = max(
+        max(
+            data[key1]["time"] if key1 in data else 0,
+            data[key2]["time"] if key2 in data else 0,
         )
+        for data in exp_data
+    )
 
-    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
-    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} run time (s log)")
-    # plt.title(
-    #     title
-    #     if title
-    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} Run Times"
-    # )
-    max_lim = max(max_key1, max_key2) * 1.5
+    max_lim = max_runtime * 1.5
     offset = 1.3
     plt.text(
         max_lim * (1 / offset),
@@ -218,6 +243,29 @@ def compare_runtimes(
         alpha=0.3,
         label=f"{key2.capitalize()} is faster",
     )
+
+    for data in exp_data:
+        if key1 not in data or key2 not in data:
+            continue
+        time1 = data[key1]["time"]
+        time2 = data[key2]["time"]
+        if time1 is None or time2 is None:
+            continue
+        plt.plot(
+            time1,
+            time2,
+            data["symbol"],
+            color=data["color"],
+            label=name_func(data) if experiments_in_legends else None,
+        )
+
+    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
+    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} run time (s log)")
+    # plt.title(
+    #     title
+    #     if title
+    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} Run Times"
+    # )
     plt.xlim(1, max_lim)
     plt.ylim(1, max_lim)
     plt.grid()
@@ -248,37 +296,14 @@ def compare_monitor_sizes(
     save_path="./",
     file_name="monitor_sizes",
 ):
-    max_key1 = 0
-    max_key2 = 0
-    min_key1 = float("inf")
-    min_key2 = float("inf")
-    for data in exp_data:
-        if key1 not in data or key2 not in data:
-            continue
-        monitor_states1 = data[key1]["monitor_states"]
-        monitor_states2 = data[key2]["monitor_states"]
-        if monitor_states1 is None or monitor_states2 is None:
-            continue
-        max_key1 = max(max_key1, monitor_states1)
-        max_key2 = max(max_key2, monitor_states2)
-        min_key1 = min(min_key1, monitor_states1)
-        min_key2 = min(min_key2, monitor_states2)
-        plt.plot(
-            monitor_states1,
-            monitor_states2,
-            data["symbol"],
-            color=data["color"],
-            label=name_func(data) if experiments_in_legends else None,
+    max_mon_states = max(
+        max(
+            data[key1]["monitor_states"] if key1 in data else 0,
+            data[key2]["monitor_states"] if key2 in data else 0,
         )
-
-    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} nr of monitor states (log)")
-    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} nr of monitor states (log)")
-    # plt.title(
-    #     title
-    #     if title
-    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
-    # )
-    max_lim = max(max_key1, max_key2) * 1.5
+        for data in exp_data
+    )
+    max_lim = max_mon_states * 1.5
     offset = 1.5
     plt.text(
         max_lim * (1 / offset),
@@ -303,6 +328,7 @@ def compare_monitor_sizes(
         [0, max_lim],
         [0, max_lim],
         "k-",
+        linewidth=1,
     )
     plt.plot(
         [0, max_lim * 10],
@@ -342,6 +368,29 @@ def compare_monitor_sizes(
         alpha=0.3,
         label=f"{key2.capitalize()} is smaller",
     )
+
+    for data in exp_data:
+        if key1 not in data or key2 not in data:
+            continue
+        monitor_states1 = data[key1]["monitor_states"]
+        monitor_states2 = data[key2]["monitor_states"]
+        if monitor_states1 is None or monitor_states2 is None:
+            continue
+        plt.plot(
+            monitor_states1,
+            monitor_states2,
+            data["symbol"],
+            color=data["color"],
+            label=name_func(data) if experiments_in_legends else None,
+        )
+
+    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} nr of monitor states (log)")
+    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} nr of monitor states (log)")
+    # plt.title(
+    #     title
+    #     if title
+    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
+    # )
     plt.xlim(1, max_lim)
     plt.ylim(1, max_lim)
     plt.grid()
