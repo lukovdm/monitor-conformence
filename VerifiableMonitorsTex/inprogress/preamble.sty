@@ -56,13 +56,10 @@
 \newcommand{\inter}{\operatorname{in}}
 
 % Observations
-\newcommand{\st}{{\color{blue} straight}\xspace}
-\newcommand{\cor}{{\color{orange} corner}\xspace}
-\newcommand{\icy}{{\color{cyan} icy}\xspace}
-\newcommand{\dry}{{\color{brown} dry}\xspace}
-\newcommand{\ig}{{\color{gray} ignore}\xspace}
-\newcommand{\en}{{\color{black} end}\xspace}
-\newcommand{\alarm}{{alarm}}
-\newcommand{\safe}{{safe}}
+
+\usepackage{pgf}
+\def\mathdefault#1{#1}
+\everymath=\expandafter{\the\everymath\displaystyle}
+\makeatletter\@ifpackageloaded{underscore}{}{\usepackage[strings]{underscore}}\makeatother
 
 \endinput
