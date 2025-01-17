@@ -544,13 +544,7 @@ def compare_thresholds_bar(
     ]
 
     # Horizon sizes for x-axis labels
-    if experiments_in_legends:
-        exp_names = [bottom_func(data) for data in exp_data]
-    else:
-        exp_names = [
-            f"{data['experiment']['old_walks_per_state']} ({data['experiment']['short_name']})"
-            for data in exp_data
-        ]
+    exp_names = [bottom_func(data) for data in exp_data]
 
     bar_width = 1 / (len(keys) * 2) - 0.05
     index = range(len(exp_data))
