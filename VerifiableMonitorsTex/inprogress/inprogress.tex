@@ -14,6 +14,7 @@
 \usepackage{xcolor}
 \usepackage{nccmath}
 \usepackage{longtable}
+\usepackage{xfrac}
 
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\sj}[2][]{\todo[color=red!50!white,author=SJ,#1]{\footnotesize{#2}}}
@@ -62,7 +63,8 @@
     icy/.style={draw=cyan},
     dry/.style={draw=brown},
     return/.style={color=lightgray, line width=1mm},
-    other/.style={rounded rectangle}
+    other/.style={rounded rectangle},
+    problem/.style={rectangle, draw, minimum height=1cm, minimum width=1.5cm, align=center}
 }
 \usetikzlibrary{patterns, intersections, positioning, shapes.geometric, shapes.misc, calc,
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
@@ -138,7 +140,7 @@ Indeed, a \emph{correct} monitor obtains a trace and raises an alarm iff a trace
 
 \paragraph{Illustrative toy example.}
 \sebastian{TODO make more concrete, add Fig.}
-As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{}. A car can be in three states: It can be on a dry road, on an icy patch, or it can drifted off the road. The HMM in \Cref{fig:centralexample} describes the situation, where a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. We can define the trace risk as the probability to be off-road, conditioned on a a trace, such as $dry \cdot  ice \cdot  ice$. In \cref{?}, we depict a finite automaton that describes the set of traces that end with two consecutive icy patches.
+As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{}. A car can be in three states: It can be on a dry road, on an icy patch, or it can drifted off the road. The HMM in \Cref{fig:centralexample} describes the situation, where a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. We can define the trace risk as the probability to be off-road, conditioned on a a trace, such as $\dry \cdot \icy \cdot \icy$. In \cref{fig:centralmon}, monitor $\dfa$, we depict a finite automaton that describes the set of traces that end with two consecutive icy patches.
 The key verification question in this paper is now: Is this a correct monitor for threshold $0.9$? Put differently, does it raise an alarm iff the trace risk is above $0.9$.
 
 %A correct monitor behaves as follows: First, it does raise an alarm on each unsafe trace (no false negatives) and second, it does \emph{not} raise an alarm on each safe trace (no false positives). %In terms of a formal languages, these are two inclusion checks.
@@ -294,7 +296,7 @@ The key verification question in this paper is now: Is this a correct monitor fo
         \label{fig:centralmon}
     \end{subfigure}
     \caption{An HMM and a correct monitor that raises an alarm if the probability of being off-road is above $0.8$.}
-    \label{}
+    \label{fig:centralexample}
 \end{figure}
 
 %  road, it can be o
@@ -352,14 +354,27 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 (3)~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning.
 (4)~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks. Our prototype can handle HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
 
-
-
-
-
 \begin{figure}[t]
-    TODO add our framework
-    \caption{}
-    \label{}
+    \centerline{
+        \begin{tikzpicture}[node distance=1.3cm,every node/.style={font=\scriptsize}]
+            \node (startMA) {};
+            \node (startFA) [below=of startMA] {};
+            \node[problem] (MA) [right=1cm of startMA] {No missed alarms\\ \emph{\cref{ssec:maintheorem}}};
+            \node[problem] (FA) [right=1cm of startFA] {No false alarms\\\emph{\cref{ssec:nfa}}};
+            \node[problem] (CTP) [below right = -.25 cm and 1.3 cm of MA] {CTP\\\emph{\cref{ssec:ctp}}};
+            \node[problem] (ACTP) [right=of CTP] {ACTP\\\emph{\cref{ssec:ctp}}};
+            \node[problem] (PolSyn) [right=of ACTP] {Colored MDP\\Policy Synthesis\\\emph{\cref{ssec:polsyn}}};
+
+            \draw[->] (startMA) -- node[below,align=left] {$\mc, \dfa,$\\$h, r, \lambda_u$} (MA);
+            \draw[->] (startFA) -- node[below,align=left] {$\mc, \dfa,$\\$h, r, \lambda_s$} (FA);
+            \draw[->] (MA) -- ($(MA|-CTP)$) --node[below, align=left, near end] {$\mc_{\times\dfa},$\\$F, h, r,$\\$\lambda$} (CTP);
+            \draw ($(MA|-FA.north)$) -- ($(MA|-CTP)$);
+            \draw[->] (CTP) -- node[below,align=left] {$\mc_{\blacktriangleright h},$\\$\lambda$} (ACTP);
+            \draw[->] (ACTP) -- node[below,align=left] {$\mc_{\gtrdot h},$\\$\lambda$} (PolSyn);
+        \end{tikzpicture}
+    }
+    \caption{Overview of proof of \cref{thm:maintheorem}. Containing the different intermediate problem, together with the inputs for each problem.}
+    \label{fig:maintheorem}
 \end{figure}
 
 \section{Problem Statement}
@@ -517,14 +532,9 @@ We discuss our solution to the no missed alarms problem in \cref{sec:monver}, we
 \paragraph{Central example}
 We now introduce the central example used in this paper. And explain how the monitor verification problem and verified monitor learning problem apply to it.
 \begin{example}
-    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\frac{19}{40}, \frac{4}{40}$ respectively. If $\lambda$ is $\frac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor. And its risk is below $\lambda$. Thus, the monitor does not have any missed alarms.
+    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{19}{40}, \sfrac{4}{40}$ respectively. If $\lambda$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor. And its risk is below $\lambda$. Thus, the monitor does not have any missed alarms.
 \end{example}\lm{Include verified monitor learning problem.}
 
-\begin{figure}[t]
-
-    \caption{Central example to the paper}
-    \label{fig:centralexample}
-\end{figure}
 
 \section{Monitor Verification}
 \label{sec:monver}
@@ -532,7 +542,7 @@ In this section we present our approach to the monitor correctness problem, whic
 In our presentation, we focus on the no missed alarms problem with traces of exactly the length of the horizon. At the end of the section, we  generalize our construction to both the no false alarms problem and traces of length at most the horizon.
 
 
-\subsection{Relating Missed Alarms with Color-Consistent Policies}
+\subsection{Relating Missed Alarms with Color-Consistent Policies}\label{ssec:maintheorem}
 Colored (Labelled) MDPs are a mild extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplified the notion of colored MDPs from \cite{} suffices for our needs:
 \begin{definition}[Colored MDP]
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$ maps states to colors.
@@ -562,28 +572,28 @@ We describe our transformation in several steps. In \Cref{ssec:ctp} we encode th
 \subsection{The (Acyclic) Conditional Trace Probability Problem}\label{ssec:ctp}
 \begin{figure}[t]
     \centering
-    \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
+    \begin{tikzpicture}[node distance=.7cm and 1.1cm,every node/.style={font=\scriptsize}]
         \node[state,initial, dry] (qd1) {$\langle d,1\rangle$};
-        \node[state, icy] (qi2) [right of=qd1] {$\langle i,2\rangle$};
-        \node[state, icy] (qc2) [below of=qi2] {$\langle c,2\rangle$};
-        \node[state, icy, accepting] (qi3) [right of=qi2] {$\langle i,3\rangle$};
-        \node[state, icy, accepting] (qc3) [below of=qi3] {$\langle c,3\rangle$};
-        \node[state, dry, accepting] (qd3) [right of=qi3] {$\langle d,3\rangle$};
+        \node[state, icy] (qi2) [right=of qd1] {$\langle i,2\rangle$};
+        \node[state, icy] (qc2) [below=of qi2] {$\langle c,2\rangle$};
+        \node[state, icy, accepting] (qi3) [right=of qi2] {$\langle i,3\rangle$};
+        \node[state, icy, accepting] (qc3) [below=of qi3] {$\langle c,3\rangle$};
+        \node[state, dry, accepting] (qd3) [right=of qi3] {$\langle d,3\rangle$};
 
         \draw[->] (qd1) edge[bend left] node[above] {$\frac{9}{10}$} (qi2);
-        \draw[->] (qd1) edge node[below left] {$\frac{1}{10}$} (qc2);
+        \draw[->] (qd1) edge node[below] {$\frac{1}{10}$} (qc2);
 
         \draw[->] (qi2) edge[bend left] node[above] {$\frac{1}{2}$} (qd1);
         \draw[->] (qi2) edge node[above] {$\frac{1}{4}$} (qi3);
-        \draw[->] (qi2) edge node[above right] {$\frac{1}{4}$} (qc3);
-        \draw[->] (qc2) edge node[below] {$1$} (qc3);
+        \draw[->] (qi2) edge node[above, near end] {$\frac{1}{4}$} (qc3);
+        \draw[->] (qc2) edge node[above] {$1$} (qc3);
 
         \draw[->] (qc3) edge[loop right] node {$1$} ();
         \draw[->] (qi3) edge[loop above] node {$\frac{1}{4}$} ();
         \draw[->] (qi3) edge node[right] {$\frac{1}{4}$} (qc3);
-        \draw[->] (qi3) edge[bend right] node[below] {$\frac{1}{2}$} (qd3);
+        \draw[->] (qi3) edge[bend right] node[above] {$\frac{1}{2}$} (qd3);
         \draw[->] (qd3) edge[bend right] node[above] {$\frac{9}{10}$} (qi3);
-        \draw[->] (qd3) edge node[below right] {$\frac{1}{10}$} (qc3);
+        \draw[->] (qd3) edge node[below, near start] {$\frac{1}{10}$} (qc3);
     \end{tikzpicture}
     \caption{The central example HMM and faulty monitor $\dfaB$ transformed into the CTP problem. States are named with their HMM state, $\{d,i,c\}$ and their monitor state, $\{1,2,3\}$. States in the alarm states set $A$ have been marked accepting.}
     \label{fig:ctphmm}
@@ -598,15 +608,15 @@ We will further simplify the problem by incorporating both the horizon and risk 
 
 
 Before we combine the HMM and the monitor, we have to modify the monitor. Since we are looking for missed alarms, we are interested in all traces that are not in the monitor. We thus take the complement of the monitor.
-Next, we take (a mild variation of) a standard product construction~\cite[Section~10.3]{baierPrinciplesModelChecking2008} between HMM and DFA.  We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $A$ of the product HMM.
+Next, we take (a mild variation of) a standard product construction~\cite[Section~10.3]{baierPrinciplesModelChecking2008} between HMM and DFA.  We also keep track of all resulting states for which the complement monitor accepts in a set of alarms states $F$ of the product HMM.
 \begin{example}
-    \Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. In particular, when starting in the initial states $d$ and $1$, respectively, the HMM can transition to the $i$ state with probability $\frac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to the $2$ state. This results in the new product state of $i$ and $2$, with a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\frac{9}{10}$.
+    \Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. In particular, when starting in the initial states $d$ and $1$, respectively, the HMM can transition to the $i$ state with probability $\sfrac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to the $2$ state. This results in the new product state of $i$ and $2$, with a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\sfrac{9}{10}$.
 
     The set of Alarm states are all the states in monitor $\dfaB$ which do not accept. Thus they are the initial $\langle d, 1\rangle$ state and any product states where the monitor is in state $3$.
 \end{example}
 \begin{definition}[HMM product]
     \label{def:product}
-    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and a monitor for $\mc$, $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F)$. The product HMM $\mc_{\times \dfa}$ is the HMM:
+    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and a monitor for $\mc$, $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$. The product HMM $\mc_{\times \dfa}$ is the HMM:
     \begin{align*}
         \mc_{\times \dfa}                                    & = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r') \\
         \ptrans'(\langle s, q\rangle)(\langle s', q'\rangle) & = \begin{cases}
@@ -618,21 +628,21 @@ Next, we take (a mild variation of) a standard product construction~\cite[Sectio
     \end{align*}
     The alarm states become:
     \begin{align*}
-        A = S\times F
+        F = S\times F'
     \end{align*}
 \end{definition}
 In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
 We state the decision problem that needs to be solved on the product HMM as it is key to our computational complexity analysis in \Cref{sec:compl}.
 \begin{definition}[CTP Decision Problem]
     \label{def:CTPdecprob}
-    Given a HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$, and a threshold $\lambda_s \in (0,1]$,  \[\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]\textsl{}
+    Given a HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $F\subseteq\Sts$, a risk function $r$, and a threshold $\lambda_s \in (0,1]$,  \[\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]\textsl{}
 \end{definition}
-We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, A, \lambda_s)$.
+We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, F, \lambda_s)$.
 The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement \sj{Nevertheless, we should have a (slightly) more formal proof}.
 \begin{lemma}
     \label{lem:toctp}
     Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
-    \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
+    \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{lemma}
 
 %
@@ -647,24 +657,24 @@ The following lemma states the correctness of the transformation and follows dir
 \subsubsection{ACTP problem}
 \begin{figure}[t]
     \centering
-    \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
+    \begin{tikzpicture}[node distance=.4cm and 1cm,every node/.style={font=\tiny}]
         \node[state, other, initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, other, icy] (qi2) [right = .8cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
+        \node[state, other, icy] (qi2) [right = of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
 
         % \node[state, other,  dry] (qd2) [above of = qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, other, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
+        \node[state, other, icy] (qc2) [below= of qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
-        \node[state, other, icy] (qi3) [right = 2cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
+        \node[state, other, icy] (qi3) [right = of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
 
-        \node[state, other, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other, dry] (qd3) [above= of qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
 
-        \node[state, other, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
+        \node[state, other, icy] (qc3) [below= of qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
 
-        \node[state, other]  (safe) [right = .8cm of qi3] {$\safeas[4]$};
-        \node[state, other]  (alarm) [below of=safe] {$\alarmas[4]$};
-        \node[state, other, draw=gray] (ignore) [above of=safe] {$\igas[4]$};
+        \node[state, other]  (safe) [right =  of qi3] {$\safeas[4]$};
+        \node[state, other]  (alarm) [below= of safe] {$\alarmas[4]$};
+        \node[state, other, draw=gray] (ignore) [above= of safe] {$\igas[4]$};
 
         \draw[->] (qi3) edge node[above] {$1$} (safe);
 
@@ -672,17 +682,12 @@ The following lemma states the correctness of the transformation and follows dir
 
         \draw[->] (qc3) edge node[above] {$1$} (alarm);
 
-        % \draw[->] (qd1) edge node[above] {$\frac{1}{2}$} (qd2);
         \draw[->] (qd1) edge node[above] {$\frac{4}{10}$} (qi2);
         \draw[->] (qd1) edge node[below left] {$\frac{1}{10}$} (qc2);
 
-        % \draw[->] (qd2) edge node[above, near start] {$\frac{1}{2}$} (qd3);
-        % \draw[->] (qd2) edge node[above, near start] {$\frac{1}{4}$} (qi3);
-        % \draw[->] (qd2) edge node[above, near start] {$\frac{1}{4}$} (qc3);
-
-        \draw[->] (qi2) edge node[above] {$\frac{1}{2}$} (qd3);
-        \draw[->] (qi2) edge node[above] {$\frac{1}{4}$} (qi3);
-        \draw[->] (qi2) edge node[above right] {$\frac{1}{4}$} (qc3);
+        \draw[->] (qi2) edge node[above, near start] {$\frac{1}{2}$} (qd3);
+        \draw[->] (qi2) edge node[above, near end] {$\frac{1}{4}$} (qi3);
+        \draw[->] (qi2) edge node[below, near start] {$\frac{1}{4}$} (qc3);
 
         \draw[->] (qc2) edge node[below] {$1$} (qc3);
 
@@ -701,16 +706,16 @@ We further simplify the problem by combining the horizon, risk and the newly cre
 
 \begin{definition}[Unrolling]
     \label{def:acyclichmm}
-    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$, risk $r$ and alarm states $A \subseteq \Sts$ is
+    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$, risk $r$ and alarm states $F \subseteq \Sts$ is
     \begin{align*}
         \mc_{\blacktriangleright h}                                                                        & = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \},     \\
                                                                                                            & \phantom{= (}\ (1,\init), \ptrans', \Obs \cup \{\en, \ig\}, \obsf') \\
         r' (s)                                                                                             & = \frac{r(s)}{\max_{s\in\Sts} r(s)}                                 \\
         \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle)(\langle i+1, q\rangle)           & = \ptrans(s)(q)                                                     \\
         \ptrans'(\langle h, s\rangle)\left(\left\langle h+1, t\right\rangle\right)                         & = \begin{cases}
-                                                                                                                   r'(s)     & \text{if } s \in A \land t = \talrm  \\
-                                                                                                                   1 - r'(s) & \text{if } s \in A \land t = \tsafe  \\
-                                                                                                                   1         & \text{if } s \notin A \land t = \tig \\
+                                                                                                                   r'(s)     & \text{if } s \in F \land t = \talrm  \\
+                                                                                                                   1 - r'(s) & \text{if } s \in F \land t = \tsafe  \\
+                                                                                                                   1         & \text{if } s \notin F \land t = \tig \\
                                                                                                                    0         & \text{otherwise}
                                                                                                                \end{cases}                  \\
         \ptrans'\left(\left\langle h+1, t\right\rangle\right)\left(\left\langle h+1, t\right\rangle\right) & = 1                                                                 \\
@@ -720,19 +725,19 @@ We further simplify the problem by combining the horizon, risk and the newly cre
                                                                                                                    \ig & \text{if } t = \tig
                                                                                                                \end{cases}
     \end{align*}
-\end{definition}\lm{Change $a$ to $t$, also maybe $A$ to $F$}
+\end{definition}
 The unrolled transition relation $\ptrans'$ is defined as expected. At the horizon we transition to the three new states $\talrm$, $\tsafe$ and $\tig$\footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no false alarms problem.} according to the risk.
 
 \begin{lemma}
     \label{lem:toactp}
-    Given an HMM $\mc$, horizon $h$, alarm states $A$ and threshold $\lambda$:
-    \[ \exists \tau \in \mathsf{CTP}(\mc, h, A, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
+    Given an HMM $\mc$, horizon $h$, alarm states $F$ and threshold $\lambda$:
+    \[ \exists \tau \in \mathsf{CTP}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
     where $z_\mathsf{end}$ is the final observation and $s_a$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
 
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 
 \end{lemma}
-The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\lm{I am not sure about either $s_a$ or $alarm$, the first is shorter, but the second is a lot more descriptive}\sj{Put a slightly longer proof in the appendix}
+The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\lm{I am not sure about either $s_a$ or $alarm$, the first is shorter, but the second is a lot more descriptive}\sj{Put a slightly longer proof in the appendix}
 %
 %
 %Using the above transformed HMM we can define the ACTP problem.
@@ -746,19 +751,19 @@ The proof of the lemma essentially starts by using that the lhs of the lemma is 
 \subsection{Reduction to Consistent Policy Synthesis}\label{ssec:polsyn}
 \begin{figure}[t]
     \centering
-    \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\tiny}]
+    \begin{tikzpicture}[node distance=.4cm and 1cm,every node/.style={font=\tiny}]
         \node[state, other,initial, dry] (qd1) {$\left\langle 1, \atop \langle d,1\rangle \right\rangle$};
 
         \node[state, other, icy] (qi2) [right = 1.5cm of qd1] {$\left\langle 2, \atop \langle i,2\rangle \right\rangle$};
         % \node[state, other, dry] (qd2) [above of=qi2] {$\left\langle 2, \atop \langle d,1\rangle \right\rangle$};
-        \node[state, other, icy] (qc2) [below of=qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
+        \node[state, other, icy] (qc2) [below= of qi2] {$\left\langle 2, \atop \langle c,2\rangle \right\rangle$};
 
         \node[state, other, icy] (qi3) [right = 1.5cm of qi2] {$\left\langle 3, \atop \langle i,3\rangle \right\rangle$};
-        \node[state, other, dry] (qd3) [above of=qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
-        \node[state, other, icy] (qc3) [below of=qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
+        \node[state, other, dry] (qd3) [above= of qi3] {$\left\langle 3, \atop \langle d,1\rangle \right\rangle$};
+        \node[state, other, icy] (qc3) [below= of qi3] {$\left\langle 3, \atop \langle c,3\rangle \right\rangle$};
 
         \node[state, other] (safe) [right = 1.5cm of qi3] {$\safeas[3]$};
-        \node[state, other] (alarm) [below of=safe] {$\alarmas[3]$};
+        \node[state, other] (alarm) [below= of safe] {$\alarmas[3]$};
 
         \node[action] (qd1i) at ($(qd1)!0.5!(qi2)$)  {};
         % \node[action] (qd1d) at ($(qd1)!0.5!(qd2)$) {};
@@ -928,18 +933,21 @@ We modify the transformation from \cref{thm:maintheorem} such that it solves the
 \end{proof}
 
 \section{Learning Monitors}\label{sec:learning}
-\begin{itemize}
-    \item Use MAT
-    \item Filtering as MQ \cite{jungesRuntimeMonitorsMarkov2021}
-    \item Monitor correctness as EQ
-    \item If not correct returns counter example trace
-\end{itemize}
+In this section we show how the \alg verification algorithm can be used to learn monitors. We define a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} using \alg verification as the equivalence query (EQ), and filtering from \cite{jungesRuntimeMonitorsMarkov2021} as the membership query (MQ). Lastly, we discuss ways to improve this basic approach.
 
-\noindent Design choices
-\begin{itemize}
-    \item Limit filtering to horizon
-    \item Use Sampled traces with MQ as pre-EQ
-\end{itemize}
+A minimally adequate teacher is a teacher which can only answer two questions. A membership query, \emph{should a trace be part of the monitor}? And an equivalence query, \emph{is this monitor correct, if not give a counter example?}.\lm{Should this be perfect, is the monitor perfect? or informal, is it good enough} Using just a MAT several active automata learning algorithms can find a correct monitor for an HMM.
+
+In order to use the MAT framework for learning a correct monitor we define the two queries. The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function, and a trace it finds the risk after the trace. This risk is then compared to a learning threshold $\lambda_l$. Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe. If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.\lm{Introduce the input and output of learning earlier?}
+
+We define the EQ using \alg verification. In order to check a monitor is correct we have to check both $\missedalarms{\leq h}{\lambda_s} = \emptyset$ and $\falsealarms{\leq h}{\lambda_u} = \emptyset$. Both of these are checked using the algorithm described in \cref{sec:monver}. If a trace is found in either $\missedalarms{\leq h}{\lambda_s}$ or $\falsealarms{\leq h}{\lambda_u}$, it is given as a counter example.
+
+\begin{lemma}
+    A monitor learned using from MAT as described above is correct.
+\end{lemma}\lm{We need a bit more background on MAT and Lstar to maybe proof this?}
+
+Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors, without significant loss in ?\lm{Maybe just not include this last bit?}. We show this in \cref{sec:experiments}.
+
+\lm {I don't know how to introduce the pre-EQ filtering step. It feels like such a practical solution to a practical problem. But we are nowhere near giving the practical problem. Thus, it feels like it comes out of nowhere.}
 
 \section{Computational Complexity}\label{sec:compl}
 \begin{theorem}
@@ -1091,7 +1099,7 @@ We show this by means of an L-reduction from MAX-3SAT, which is an inapproximabl
 
 
 
-\section{Experiments}
+\section{Experiments}\label{sec:experiments}
 \paragraph{Implementation}
 We build prototype implementations of both the \alg transformation in \cref{sec:monver}, as well as the learning as described in \cref{sec:learning}. The ToVer transformation is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022}. PAYNT \cite{andriushchenkoPAYNTToolInductive2021} is used to verify the generated colored MDP. The learner uses the AAlpy Python automata learning framework \cite{muskardinAALpyActiveAutomata2022}, together with filtering as implemented in \cite{jungesRuntimeMonitorsMarkov2021}. All experiments are run using exact arithmetic from \textsc{Storm}. They are run in parallel, single threaded, on a Ryzen Threadripper Pro with 503 GiB RAM\lm{mention large memory usage maybe?}.
 
