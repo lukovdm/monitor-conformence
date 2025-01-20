@@ -81,7 +81,8 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is safe or unsafe. That is,  the probability of being in a dangerous state conditioned on these observations exceeds some acceptable threshold.
+    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe. 
+    A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations exceeds some acceptable threshold.
     The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite state machines.
     First, we establish the coNP-hardness of checking whether a finite state machine  is indeed a correct monitor, i.e., a monitor without misclassifications.
     Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem.
@@ -1148,13 +1149,13 @@ Approximating the verification of monitors is also hard, in the sense that it is
 
 The maximal risk problem is an optimization problem
 \begin{definition}[CTP Optimization Problem]
-
-\end{definition}
+ Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$: \[\max_{\tau \in \lang{\mc}}~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow)\]\sj{check notation for paths of length $h$}
+\end{definition}\sj{Sync with CTP definition}
 \begin{lemma}
     \label{lem:ctpapxhard}
     The CTP Optimization Problem is APX-hard.
 \end{lemma}
-We show this by means of an L-reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{}. The construction follows along the reduction for the NP-hardness.
+This follows from a strict reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{DBLP:journals/jacm/Hastad01}. The construction coincides with the reduction in \Cref{lem:ctpdecnphard} by observing that the conditional probability to reach a $t$ state is given by $\nicefrac{1}{m}$ times the number of satisfied clauses, i.e., we can compute the maximal number of satisfied clauses in $\varphi$ on the HMM $\mc_\varphi$.
 
 
 
