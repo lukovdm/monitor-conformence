@@ -121,8 +121,12 @@ def generate_experiment_table(
             d["mc"]["mc_observations"],
             d["verimon"]["time"],
             d["verimon"]["monitor_states"],
+            d["verimon"]["false_positive"],
+            d["verimon"]["false_negative"],
             d["sampling"]["time"],
             d["sampling"]["monitor_states"],
+            d["sampling"]["false_positive"],
+            d["sampling"]["false_negative"],
         ]
         for d in data
     ]
@@ -144,8 +148,12 @@ def generate_experiment_table(
             "$|Z|$",
             "\\alg time",
             "\\alg monitor states",
+            "\\alg minimum in monitor",
+            "\\alg maximum out of monitor",
             "Sampling time",
             "Sampling monitor states",
+            "Sampling minimum in monitor",
+            "Sampling maximum out of monitor",
         ],
         tablefmt="latex_raw" if save_figures else "github",
     )
@@ -494,6 +502,7 @@ def compare_thresholds_bar(
     threshold=0.3,
     fn_slack=0.0,
     fp_slack=0.0,
+    bundle=1,
     fig_size=(10, 5),
     title: str | None = None,
     xlabel: str | None = None,
@@ -505,19 +514,23 @@ def compare_thresholds_bar(
 ):
 
     plt.fill_betweenx(
-        [0, threshold - fp_slack], -1, len(exp_data) + 1, color="lightgreen", alpha=0.3
+        [0, threshold - fp_slack],
+        -1,
+        len(exp_data) / bundle + 1,
+        color="lightgreen",
+        alpha=0.3,
     )
     plt.fill_betweenx(
         [threshold + fn_slack, 1],
         -1,
-        len(exp_data) + 1,
+        len(exp_data) / bundle + 1,
         color="lightcoral",
         alpha=0.5,
     )
     plt.fill_betweenx(
         [threshold - fp_slack, threshold + fn_slack],
         -1,
-        len(exp_data) + 1,
+        len(exp_data) / bundle + 1,
         color="lightgrey",
         alpha=0.5,
     )
@@ -537,20 +550,38 @@ def compare_thresholds_bar(
     # Replace None with -0.1 for plotting
     found_thresholds = [
         (
-            [0 if fp is None else fp for fp in fp_thresholds],
-            [1 if fn is None else fn for fn in fn_thresholds],
+            [1 if fp is None else fp for fp in fp_thresholds],
+            [0 if fn is None else fn for fn in fn_thresholds],
         )
         for fp_thresholds, fn_thresholds in found_thresholds
     ]
 
-    # Horizon sizes for x-axis labels
-    exp_names = [bottom_func(data) for data in exp_data]
+    found_bundled_thresholds = []
+    if bundle == 1:
+        found_bundled_thresholds = found_thresholds
+        exp_names = [bottom_func(data) for data in exp_data]
+    else:
+        exp_names = []
+        for thresh in found_thresholds:
+            found_bundled_thresholds.append(([], []))
+            for j in range(0, len(thresh[1]), bundle):
+                max_idx = thresh[1][j : j + bundle].index(
+                    max(thresh[1][j : j + bundle])
+                )
+                exp_names.append(bottom_func(exp_data[j : j + bundle][max_idx]))
+                found_bundled_thresholds[-1][0].append(
+                    thresh[0][j : j + bundle][max_idx]
+                )
+                found_bundled_thresholds[-1][1].append(
+                    thresh[1][j : j + bundle][max_idx]
+                )
 
     bar_width = 1 / (len(keys) * 2) - 0.05
-    index = range(len(exp_data))
+    index = range(math.ceil(len(exp_data) / bundle))
 
-    for i, (found_thresholds, key) in enumerate(zip(found_thresholds, keys)):
-        key_fp_thresholds, key_fn_thresholds = found_thresholds
+    for i, (key_fp_thresholds, key_fn_thresholds) in enumerate(
+        found_bundled_thresholds
+    ):
         plt.bar(
             [j + i * 2 * bar_width for j in index],
             [-(1 - t) for t in key_fp_thresholds],
@@ -576,7 +607,7 @@ def compare_thresholds_bar(
     )
     plt.legend(loc="upper left")
     plt.grid(axis="y")
-    plt.xlim(-0.5, len(exp_data))
+    plt.xlim(-0.5, len(exp_data) / bundle)
 
     fig = plt.gcf()
     fig.set_size_inches(*fig_size)
