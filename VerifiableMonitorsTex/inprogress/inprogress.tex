@@ -17,8 +17,8 @@
 \usepackage{xfrac}
 
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
-\newcommand{\sj}[2][]{\todo[color=red!50!white,author=SJ,#1]{\footnotesize{#2}}}
-\newcommand{\lm}[2][]{\todo[color=cyan!50!white,author=Luko,#1]{\footnotesize{#2}}}
+\newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
+\newcommand{\lm}[2][]{\todo[color=cyan!50!white,#1]{\footnotesize{Luko: #2}}}
 \newcommand{\indicator}[1]{[#1]}
 
 \newcommand{\Distr}{\Delta}
@@ -66,7 +66,7 @@
     other/.style={rounded rectangle},
     problem/.style={rectangle, draw, minimum height=1cm, minimum width=1.5cm, align=center}
 }
-\usetikzlibrary{patterns, intersections, positioning, shapes.geometric, shapes.misc, calc,
+\usetikzlibrary{patterns, intersections, positioning, shapes.geometric, shapes.misc, shapes.symbols, calc,
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
 
 \addbibresource{literature.bib}
@@ -889,12 +889,6 @@ Now finding a trace with the conditional trace probability above $\lambda_s$ coi
 \end{itemize}
 
 \subsubsection{Traces of Length up to the Horizon}
-\begin{figure}[t]
-    \missingfigure[]{Illustration containing result of transformation in proof of Theorem 2}
-    \caption{}
-    \label{fig:leqhorizon}
-\end{figure}
-
 The aproach for \cref{thm:maintheorem} works only for traces of exactly the length of the horizon. \lm[inline]{Something about it being hard for ACTP but easy for Pol Syn} We transform \cref{def:polsyntrans} such that the following theorem holds:
 \begin{theorem}\label{thm:leqhorizon}
     \lm[inline,noinlinepar,inlinewidth=8cm]{Something relating the modified transformation to missing alarms on $\leq h$}
@@ -919,6 +913,61 @@ The aproach for \cref{thm:maintheorem} works only for traces of exactly the leng
 \begin{example}
     The transformation in \cref{thm:leqhorizon} can be seen in \cref{fig:leqhorizon}
 \end{example}
+\begin{figure}[t]
+    \begin{subfigure}{.45\linewidth}
+        \begin{tikzpicture}[node distance=.4cm and 1cm,every node/.style={font=\tiny}]
+            \node[state, initial] (init) {$\iota$};
+
+            \node[state, cloud, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (Mdots) [right = 1cm of init] {$\mdp_{\gtrdot l}$};
+            % \node[state, cloud, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (M1) [above =of Mdots] {$\mdp_{\gtrdot 1}$};
+            \node[state, cloud, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (Mh) [below = .7cm of Mdots] {$\mdp_{\gtrdot h}$};
+
+            \node (tvdots) [above=.1cm of Mdots] {\vdots};
+            \node at ($(Mdots.south)!0.5!(Mh.north)$) {\vdots};
+
+            % \node[action] (M1a) at ($(init)!0.4!(M1)$) {};
+            \node[action] (Mdotsa) at ($(init)!0.4!(Mdots)$) {};
+            \node[action] (Mha) at ($(init)!0.4!(Mh)$) {};
+
+            % \draw (init) edge node[above] {$1$} (M1a);
+            % \draw[->] (M1a) edge node[above left] {} (M1);
+            \draw (init) edge node[above] {$l$} (Mdotsa);
+            \draw[->] (Mdotsa) edge node[above left] {} (Mdots);
+            \draw (init) edge node[above] {$h$} (Mha);
+            \draw[->] (Mha) edge node[above left] {} (Mh);
+        \end{tikzpicture}
+        \caption{}
+    \end{subfigure}\hfill
+    \begin{subfigure}{.45\linewidth}
+        \begin{tikzpicture}[node distance=.4cm and 1.2cm,every node/.style={font=\tiny}]
+            \node[state, initial] (init) {$\iota$};
+
+            \node[state, cloud, minimum width = 3.5cm, minimum height = 1cm, cloud puffs = 18, cloud puff arc=120] (Mh) [below right =of init] {$\mdp_{\gtrdot h}$};
+
+            \node[state,xshift=-.4cm] (il) [above=of Mh] {$\langle \iota, l\rangle$};
+            \node[state] (i1) [left= .5cm of il] {$\langle \iota, 1\rangle$};
+            \node[state] (ih) [right= .5cm of il] {$\langle \iota, h\rangle$};
+
+            \draw[->] (i1) -- (Mh.puff 3);
+            \draw[->] (Mh.puff 2) -- (il);
+            \draw[->] (il) -- (Mh.puff 1);
+            \draw[->] (Mh.puff 18) -- (ih);
+            \draw[->] (ih) -- (Mh.puff 16);
+
+            % \node[action] (Mha) at ($(init)!0.4!(Mh)$) {};
+
+            % \draw (init) edge node[above] {$1$} (M1a);
+            % \draw[->] (M1a) edge node[above left] {} (M1);
+            % \draw (init) edge node[above] {$l$} (Mdotsa);
+            % \draw[->] (Mdotsa) edge node[above left] {} (Mdots);
+            % \draw (init) edge node[above] {$h$} (Mha);
+            % \draw[->] (Mha) edge node[above left] {} (Mh);
+        \end{tikzpicture}
+        \caption{}
+    \end{subfigure}
+    \caption{}
+    \label{fig:leqhorizon}
+\end{figure}
 
 \subsubsection{No False Alarms Problem}
 We modify the transformation from \cref{thm:maintheorem} such that it solves the no false alarms problem. The no false alarms problem differs in two ways from the no missed alarms problem. Fristly, instead of finding a trace not in the monitor, we have to find a trace in the monitor. Secondly, this trace should have a conditional probability below the threshold. We solve these one at a time after stating \cref{thm:maintheorem} for no false alarms.
@@ -933,21 +982,31 @@ We modify the transformation from \cref{thm:maintheorem} such that it solves the
 \end{proof}
 
 \section{Learning Monitors}\label{sec:learning}
-In this section we show how the \alg verification algorithm can be used to learn monitors. We define a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} using \alg verification as the equivalence query (EQ), and filtering from \cite{jungesRuntimeMonitorsMarkov2021} as the membership query (MQ). Lastly, we discuss ways to improve this basic approach.
+In this section we show how the \alg verification algorithm can be used to learn monitors. We first informally define a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87}. We then show how a MAT using \alg verification as the equivalence query (EQ), and filtering from \cite{jungesRuntimeMonitorsMarkov2021} as the membership query (MQ) produces correct monitors. Lastly, we discuss ways to improve upon this approach.
 
-A minimally adequate teacher is a teacher which can only answer two questions. A membership query, \emph{should a trace be part of the monitor}? And an equivalence query, \emph{is this monitor correct, if not give a counter example?}.\lm{Should this be perfect, is the monitor perfect? or informal, is it good enough} Using just a MAT several active automata learning algorithms can find a correct monitor for an HMM.
+\subsubsection{MAT framework}
+A minimally adequate teacher is a teacher which can only answer two questions. A membership query, \emph{should a trace be part of the monitor}? And an equivalence query, \emph{is this monitor correct, if not give a counter example?}\lm{Should this be perfect, is the monitor perfect? or informal, is it good enough}. Several learning algorithms exist which can make use of a MAT to learn a DFA, we make use of the L$\star$ algorithm \cite{DBLP:journals/iandc/Angluin87}.
 
-In order to use the MAT framework for learning a correct monitor we define the two queries. The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function, and a trace it finds the risk after the trace. This risk is then compared to a learning threshold $\lambda_l$. Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe. If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.\lm{Introduce the input and output of learning earlier?}
+\begin{lemma}
+    Given a MAT with an EQ $\varphi$, a monitor learned using L$\star$ with this MAT will always produce a monitor which satisfies $\varphi$.
+\end{lemma}\lm{Somehow state this holds}
+
+\subsubsection{\alg as a MAT} \lm{Maybe give an input output of the learner here somewhere}
+In order to use the MAT framework for learning a correct monitor we define the two queries. The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function $r$, and a trace $\tau$ it finds the risk after the trace and compares it to the learning threshold $\lambda_l$. \[\sum_\pi\in\Pi^{=|\tau|}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\] Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe. If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.
 
 We define the EQ using \alg verification. In order to check a monitor is correct we have to check both $\missedalarms{\leq h}{\lambda_s} = \emptyset$ and $\falsealarms{\leq h}{\lambda_u} = \emptyset$. Both of these are checked using the algorithm described in \cref{sec:monver}. If a trace is found in either $\missedalarms{\leq h}{\lambda_s}$ or $\falsealarms{\leq h}{\lambda_u}$, it is given as a counter example.
 
 \begin{lemma}
-    A monitor learned using from MAT as described above is correct.
+    A monitor learned using \alg as a MAT in L$\star$ is correct.
 \end{lemma}\lm{We need a bit more background on MAT and Lstar to maybe proof this?}
 
-Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors, without significant loss in ?\lm{Maybe just not include this last bit?}. We show this in \cref{sec:experiments}.
+\subsubsection{Improvements}
+We are able to make several practical improvements to the approach described above using already described concepts.
 
-\lm {I don't know how to introduce the pre-EQ filtering step. It feels like such a practical solution to a practical problem. But we are nowhere near giving the practical problem. Thus, it feels like it comes out of nowhere.}
+Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area\lm{I don't like this term} given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors\lm{Maybe just not include this last bit?}. We verify this experimentally in \cref{sec:experiments}.
+
+Early monitors produced by L$\star$ contain many missed alarm and false alarms. \alg verification can find them, however, it has a constant upfront cost. Instead, we do a limited amount of sampling to check, with filtering, if there are any easily found bad traces. We call this the pre-EQ step.
+
 
 \section{Computational Complexity}\label{sec:compl}
 \begin{theorem}
@@ -1104,7 +1163,7 @@ We show this by means of an L-reduction from MAX-3SAT, which is an inapproximabl
 We build prototype implementations of both the \alg transformation in \cref{sec:monver}, as well as the learning as described in \cref{sec:learning}. The ToVer transformation is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022}. PAYNT \cite{andriushchenkoPAYNTToolInductive2021} is used to verify the generated colored MDP. The learner uses the AAlpy Python automata learning framework \cite{muskardinAALpyActiveAutomata2022}, together with filtering as implemented in \cite{jungesRuntimeMonitorsMarkov2021}. All experiments are run using exact arithmetic from \textsc{Storm}. They are run in parallel, single threaded, on a Ryzen Threadripper Pro with 503 GiB RAM\lm{mention large memory usage maybe?}.
 
 \paragraph{Benchmarks}
-We base our experiments for both the verification and learning algorithms on a combination of benchmarks from previous work, and novel benchmarks. We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. Additionally, we add two benchmark families. \textsc{Icy-Driving}, based on the central example with more states describing how close the car is to crashing on ice. \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player. These two benchmarks both contain a very limited amount of observations instead, in contrast to the many observations of the benchmarks from \cite{jungesRuntimeMonitorsMarkov2021}. Detailed descriptions of sizes of the benchmarks can be found in \cref{fig:legend} in the appendix.
+We base our experiments for both the verification and learning algorithms on a combination of benchmarks from previous work, and novel benchmarks. We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. Additionally, we add two benchmark families. \textsc{Icy-Driving}, based on the central example with more states describing how close the car is to crashing on ice. \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player. These two benchmarks both contain a very limited amount of observations instead, in contrast to the many observations of the benchmarks from \cite{jungesRuntimeMonitorsMarkov2021}. Detailed descriptions of sizes of the benchmarks can be found in \cref{fig:legend}\lm{This table is not that neat} in the appendix.
 
 \paragraph{Questions}
 We evaluate both the \alg verifier and the learning algorithm. We evaluate the \alg verifier with the following questions:
@@ -1131,7 +1190,7 @@ To evaluate \alg learning we compare to a baseline learning algorithm, called sa
     \item Discuss results
 \end{itemize}
 
-\subsubsection{\alg Learning}\label{sssec:toverlearningexp}\lm{I assume we mention L* somwhere in section 4 already.}
+\subsubsection{\alg Learning}\label{sssec:toverlearningexp}
 As a baseline learning algorithm we only make use of the pre-EQ step from \cref{sec:learning}. Thus, we only test the monitor for traces sampled from the HMM. The sampling EQ decides a monitor is correct after 100000 traces\footnote{This value was obtained by running the sampling learner for different sample amounts as can be seen in \cref{fig:samplingn}.}. We make also use of the pre-EQ step in the \alg learner with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$.
 
 We set a learning threshold of $0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. Also, $0.3$ was evaluated with sampling as can be seen in \cref{fig:samplingn} in the appendix.
@@ -1139,7 +1198,6 @@ We set a learning threshold of $0.3$, and we run the \alg learner both with $\la
 For each benchmark we run the both \alg learning and sampling learning for various sizes of the benchmark and horizon. These values, along with a mapping to short names used in the figures can be found in \cref{fig:legend}.
 
 \paragraph{Results}\lm{I don't like the word gray area for describing \alg with slack, but don't know a better name}
-\lm{I might like a table with things like how often does pre-sampling find a counterexample already, model size and other things}
 We show the results of learning monitors using \alg learning and sampling learning using the following figures. \Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively\lm{Don't like minimum false alarm risk and maximum missed alarm risk, introduce them earlier or give better names}. The safe threshold is the top of the gray area, and the unsafe threshold is the bottom of the gray area. The dashed line indicates the EQ threshold. Any green lines that cross into the red area, or red lines that cross into the green area indicate incorrect monitors. Such incorrect monitors can ben found in \cref{fig:learnThrSampling} for several of the \textsc{Airport}, \textsc{Hiden-Incentive}, and \textsc{Refuel} models.
 
 \Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and sampling learning. \cref{fig:monsizes} contains a comparison of monitors learned when allowing \alg learning a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using sampling learning. When not learning with a gray area the difference is smaller. One monitor is slightly smaller when using sampling learning.
