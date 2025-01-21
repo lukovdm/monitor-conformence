@@ -3,7 +3,6 @@ from random import randrange
 from typing import Any
 
 from aalpy import Dfa
-from numpy import matrix
 from stormpy import (
     PrismProgram,
     PrismConstant,
@@ -27,7 +26,7 @@ from stormpy import (
     SparseExactModelComponents,
     SparseModelComponents,
 )
-import stormvogel
+from stormpy.core import _build_sparse_exact_model_from_drn
 from stormvogel.mapping import stormpy_to_stormvogel, stormvogel_to_stormpy
 from stormvogel.model import Model, EmptyAction, Branch, ModelType, new_mdp, State
 
@@ -99,14 +98,14 @@ def load_dfa(path: str) -> Model:
     return _load_prism(dfa_prism)
 
 
-def load_dfa_drn(path: str) -> Model:
+def load_dfa_drn(path: str, use_exact: bool) -> SparseMdp:
     opts = DirectEncodingParserOptions()
     opts.build_choice_labels = True
-    dfa_storm = build_model_from_drn(path, opts)
-    dfa = stormpy_to_stormvogel(dfa_storm)
-    if dfa is None:
-        raise Exception("Could not build model")
-    return dfa
+    if use_exact:
+        dfa_storm = _build_sparse_exact_model_from_drn(path, opts)
+    else:
+        dfa_storm = build_model_from_drn(path, opts)
+    return dfa_storm
 
 
 def load_dfa_stormpy(path: str) -> SparseMdp:

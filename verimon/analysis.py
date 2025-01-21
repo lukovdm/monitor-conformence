@@ -9,6 +9,7 @@ from typing import Any
 import re
 import matplotlib.pyplot as plt
 from tabulate import SEPARATING_LINE, tabulate
+import numpy as np
 
 
 def clean_dict(d):
@@ -35,11 +36,15 @@ def prep_data_for_latex(data):
         d["experiment"]["variant"] = d["experiment"]["variant"].replace("_", "\\_")
 
 
-def add_short_names(data):
+def add_short_names(data, verify=False):
     # Short names are first letter of name and index of variant
     variant_indexes: dict[str, int] = {}
     for d in data:
-        name = d["experiment"]["name"]
+        if "learn_experiment" in d["experiment"]:
+            name = d["experiment"]["learn_experiment"]["name"]
+        else:
+            name = d["experiment"]["name"]
+
         if name not in variant_indexes:
             variant_indexes[name] = 0
         d["experiment"][
@@ -48,7 +53,7 @@ def add_short_names(data):
         variant_indexes[name] += 1
 
 
-def add_symbol_color(data):
+def add_symbol_color(data, verify=False):
     symbols = [
         "o",
         "s",
@@ -65,14 +70,28 @@ def add_symbol_color(data):
     shuffle(symbols)
     colors = plt.get_cmap("tab20")
 
-    experiment_names = set(data["experiment"]["name"] for data in data)
-    experiment_symbols = {
-        name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
-    }
+    if verify:
+        experiment_names = set(
+            data["experiment"]["learn_experiment"]["name"] for data in data
+        )
+        experiment_symbols = {
+            name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
+        }
 
-    for i, exp in enumerate(data):
-        exp["symbol"] = experiment_symbols[exp["experiment"]["name"]]
-        exp["color"] = colors(i % colors.N)
+        for i, exp in enumerate(data):
+            exp["symbol"] = experiment_symbols[
+                exp["experiment"]["learn_experiment"]["name"]
+            ]
+            exp["color"] = colors(i % colors.N)
+    else:
+        experiment_names = set(data["experiment"]["name"] for data in data)
+        experiment_symbols = {
+            name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
+        }
+
+        for i, exp in enumerate(data):
+            exp["symbol"] = experiment_symbols[exp["experiment"]["name"]]
+            exp["color"] = colors(i % colors.N)
 
     return symbols, colors
 
@@ -87,10 +106,6 @@ def load_experiment_data(path):
         with open(os.path.join(path + "/json/", json_file), "r") as f:
             try:
                 data: dict = json.load(f)
-                data["json_path"] = os.path.join(path + "/json/", json_file)
-                data["log_path"] = os.path.join(
-                    path + "/logs/", json_file.replace(".json", ".log")
-                )
             except json.JSONDecodeError:
                 print(f"Error in {json_file}: JSONDecodeError")
                 traceback.print_exc()
@@ -98,6 +113,35 @@ def load_experiment_data(path):
             if "verimon" in data and "error" in data["verimon"]:
                 print(f"Error in {json_file}: {data['verimon']['error']}")
                 continue
+
+            data["json_path"] = os.path.join(path + "/json/", json_file)
+            data["log_path"] = os.path.join(
+                path + "/logs/", json_file.replace(".json", ".log")
+            )
+
+            if data["finished"] == False:
+                if "time" not in data:
+                    data["time"] = {"total": 0}
+                if (
+                    "verimon" in data["experiment"]["learning_algs"]
+                    and "verimon" not in data
+                ):
+                    data["verimon"] = {
+                        "time": 10**5,
+                        "monitor_states": 0,
+                        "false_positive": 1,
+                        "false_negative": 0,
+                    }
+                if (
+                    "sampling" in data["experiment"]["learning_algs"]
+                    and "sampling" not in data
+                ):
+                    data["sampling"] = {
+                        "time": 10**5,
+                        "monitor_states": 0,
+                        "false_positive": 1,
+                        "false_negative": 0,
+                    }
             experiment_data.append(data)
 
     print(f"Loaded {len(experiment_data)} JSON files from {path}")
@@ -178,6 +222,7 @@ def compare_runtimes(
     save_figures=False,
     save_path="./",
     file_name="runtime",
+    show_y_axis: bool = True,
 ):
     max_runtime = max(
         max(
@@ -191,7 +236,7 @@ def compare_runtimes(
     offset = 1.3
     plt.text(
         max_lim * (1 / offset),
-        offset,
+        offset * 0.1,
         "Sampling is faster",
         color="gray",
         ha="right",
@@ -199,7 +244,7 @@ def compare_runtimes(
         rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
     )
     plt.text(
-        offset,
+        offset * 0.1,
         max_lim * (1 / offset),
         "ToVer is faster",
         color="gray",
@@ -208,32 +253,32 @@ def compare_runtimes(
         rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
     )
 
-    plt.plot(
-        [0, max_lim],
-        [0, max_lim],
-        "k-",
-    )
+    plt.plot([0, max_lim], [0, max_lim], "-", color="0.5")
     plt.plot(
         [0, max_lim * 10],
         [0, max_lim],
-        "k--",
+        "--",
+        color="0.5",
         label="10x faster",
     )
     plt.plot(
         [0, max_lim],
         [0, max_lim * 10],
-        "k--",
+        "--",
+        color="0.5",
     )
     plt.plot(
         [0, max_lim * 100],
         [0, max_lim],
-        "k:",
+        ":",
+        color="0.5",
         label="100x faster",
     )
     plt.plot(
         [0, max_lim],
         [0, max_lim * 100],
-        "k:",
+        ":",
+        color="0.5",
     )
     plt.fill_between(
         [0, max_lim],
@@ -251,6 +296,20 @@ def compare_runtimes(
         alpha=0.3,
         label=f"{key2.capitalize()} is faster",
     )
+    plt.axline(
+        (0, 10**5),
+        (10**5, 10**5),
+        color="k",
+        linestyle="-",
+        label="ToVer timeout",
+    )
+    plt.axline(
+        (10**5, 0),
+        (10**5, 10**5),
+        color="k",
+        linestyle="-",
+        label="Sampling timeout",
+    )
 
     for data in exp_data:
         if key1 not in data or key2 not in data:
@@ -267,19 +326,27 @@ def compare_runtimes(
             label=name_func(data) if experiments_in_legends else None,
         )
 
-    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
-    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} run time (s log)")
-    # plt.title(
-    #     title
-    #     if title
-    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} Run Times"
-    # )
-    plt.xlim(1, max_lim)
-    plt.ylim(1, max_lim)
+    plt.xlim(0.1, max_lim)
+    plt.ylim(0.1, max_lim)
     plt.grid()
     if log_scale:
         plt.xscale("log")
         plt.yscale("log")
+
+    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
+    if not show_y_axis:
+        plt.ylabel("")
+    else:
+        plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} run time (s log)")
+
+    plt.yticks(
+        [10**i for i in range(-1, 6)],
+        [f"$10^{{{i}}}$" for i in range(-1, 5)] + ["$\\infty$"],
+    )
+    plt.xticks(
+        [10**i for i in range(-1, 6)],
+        [f"$10^{{{i}}}$" for i in range(-1, 5)] + ["$\\infty$"],
+    )
 
     # plt.legend(loc="upper left")
     fig = plt.gcf()
@@ -303,6 +370,7 @@ def compare_monitor_sizes(
     save_figures=False,
     save_path="./",
     file_name="monitor_sizes",
+    show_y_axis: bool = True,
 ):
     max_mon_states = max(
         max(
@@ -392,19 +460,22 @@ def compare_monitor_sizes(
             label=name_func(data) if experiments_in_legends else None,
         )
 
-    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} nr of monitor states (log)")
-    plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} nr of monitor states (log)")
-    # plt.title(
-    #     title
-    #     if title
-    #     else f"Comparison of {key1.capitalize()} and {key2.capitalize()} in Monitor Sizes"
-    # )
     plt.xlim(1, max_lim)
     plt.ylim(1, max_lim)
     plt.grid()
     if log_scale:
         plt.xscale("log")
         plt.yscale("log")
+
+    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} monitor states (log)")
+    if not show_y_axis:
+        plt.ylabel("")
+        # plt.yticks([])
+    else:
+        plt.ylabel(
+            ylabel if ylabel else f"{key2.capitalize()} monitor states (log)",
+            loc="center",
+        )
 
     # plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
 
@@ -428,6 +499,7 @@ def compare_thresholds(
     xlabel: str | None = None,
     ylabel: str | None = None,
     name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
+    show_y_axis: bool = True,
 ):
     plt.axhline(y=threshold, color="gray", linestyle="--")
     plt.axhline(y=threshold + fn_slack, color="r", linestyle="--")
@@ -474,11 +546,15 @@ def compare_thresholds(
         if xlabel
         else "False Positives threshold\n(minimal risk for trace in monitor)"
     )
-    plt.ylabel(
-        ylabel
-        if ylabel
-        else "False Negatives threshold\n(maximal risk for trace not in monitor)"
-    )
+    if not show_y_axis:
+        plt.ylabel("")
+        plt.yticks([])
+    else:
+        plt.ylabel(
+            ylabel
+            if ylabel
+            else "False Negatives threshold\n(maximal risk for trace not in monitor)"
+        )
     plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
     # plt.title(
     #     title
@@ -511,23 +587,26 @@ def compare_thresholds_bar(
     save_figures=False,
     save_path="./",
     file_name="thresholds",
+    show_y_axis: bool = True,
 ):
 
-    plt.fill_betweenx(
+    fig, ax = plt.subplots()
+
+    ax.fill_betweenx(
         [0, threshold - fp_slack],
         -1,
         len(exp_data) / bundle + 1,
         color="lightgreen",
         alpha=0.3,
     )
-    plt.fill_betweenx(
+    ax.fill_betweenx(
         [threshold + fn_slack, 1],
         -1,
         len(exp_data) / bundle + 1,
         color="lightcoral",
         alpha=0.5,
     )
-    plt.fill_betweenx(
+    ax.fill_betweenx(
         [threshold - fp_slack, threshold + fn_slack],
         -1,
         len(exp_data) / bundle + 1,
@@ -535,9 +614,9 @@ def compare_thresholds_bar(
         alpha=0.5,
     )
 
-    plt.axhline(y=threshold, color="grey", linestyle="--")
-    plt.axhline(y=threshold + fn_slack, color="grey", linestyle="-", linewidth=1)
-    plt.axhline(y=threshold - fp_slack, color="grey", linestyle="-", linewidth=1)
+    ax.axhline(y=threshold, color="grey", linestyle="--")
+    ax.axhline(y=threshold + fn_slack, color="grey", linestyle="-", linewidth=1)
+    ax.axhline(y=threshold - fp_slack, color="grey", linestyle="-", linewidth=1)
 
     found_thresholds = [
         (
@@ -582,7 +661,7 @@ def compare_thresholds_bar(
     for i, (key_fp_thresholds, key_fn_thresholds) in enumerate(
         found_bundled_thresholds
     ):
-        plt.bar(
+        ax.bar(
             [j + i * 2 * bar_width for j in index],
             [-(1 - t) for t in key_fp_thresholds],
             bar_width,
@@ -590,7 +669,7 @@ def compare_thresholds_bar(
             label=f"in monitor traces",
             color=colors(i + 6 % colors.N),
         )
-        plt.bar(
+        ax.bar(
             [j + (i * 2 + 1) * bar_width for j in index],
             key_fn_thresholds,
             bar_width,
@@ -599,19 +678,22 @@ def compare_thresholds_bar(
         )
 
     plt.xlabel(xlabel if xlabel else bottom_name.capitalize())
-    plt.ylabel(ylabel if ylabel else "risk threshold")
+    if not show_y_axis:
+        plt.ylabel("")
+        ax.set_yticklabels(["" for _ in ax.get_yticks()])
+    else:
+        plt.ylabel(ylabel if ylabel else "risk threshold")
     plt.xticks(
         [i + bar_width * (len(keys) - 0.5) for i in index],
         exp_names,
         rotation=90,
     )
-    plt.legend(loc="upper left")
-    plt.grid(axis="y")
+    ax.legend(loc="upper left")
+    ax.grid(axis="y")
     plt.xlim(-0.5, len(exp_data) / bundle)
 
-    fig = plt.gcf()
     fig.set_size_inches(*fig_size)
-    # plt.title(title if title else "Comparison of Thresholds")
+
     if save_figures:
         plt.savefig(f"{save_path}/{file_name}.pgf", bbox_inches="tight")
     plt.show()
@@ -620,38 +702,74 @@ def compare_thresholds_bar(
 def runtime_by_params(
     exp_data,
     key: str,
-    params: list[tuple[str, str]],
+    params: list[tuple[str, str, str]],
     title: str | None = None,
     figsize: tuple = (10, 10),
     xlabel: str | None = None,
     ylabel: str | None = None,
-    log_scale: bool = True,
+    fit_line: bool = False,
     name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
     experiments_in_legends=True,
+    show_y_axis: bool = True,
 ):
     fig, axes = plt.subplots(nrows=ceil(len(params) / 2), ncols=2, figsize=figsize)
     axes = axes.flatten()
 
     for i, param in enumerate(params):
         ax = axes[i]
-        for data in exp_data:
-            val = data[param[0]][param[1]]
-            ax.scatter(
-                val,
-                data[key]["time"],
-                marker=data["symbol"],
-                color=data["color"],
-                label=name_func(data),
-            )
+
+        if fit_line:
+            valid_points = [
+                (xv, yv)
+                for xv, yv in zip(
+                    [d[param[0]][param[1]] for d in exp_data],
+                    [d[key]["time"] for d in exp_data],
+                )
+                if yv is not None and xv is not None
+            ]
+            if valid_points:
+                xs, ys = zip(*valid_points)
+                fit = np.polyfit(xs, ys, 1)
+                x_line = np.linspace(min(xs), max(xs), 100)
+                ax.plot(x_line, np.polyval(fit, x_line), "k-", label="Fitted line")
+
+        if param[2] == "box":
+            groups = {}
+            for d in exp_data:
+                val = d[param[0]][param[1]]
+                val = "None" if val is None else val
+                if val not in groups:
+                    groups[val] = []
+                t = d[key]["time"]
+                if t is not None:
+                    groups[val].append(t)
+
+            labels, data_list = zip(*groups.items())
+            ax.boxplot(data_list, labels=labels, showmeans=True, showfliers=False)
+        else:
+            for data in exp_data:
+                val = data[param[0]][param[1]]
+                ax.scatter(
+                    val,
+                    data[key]["time"],
+                    marker=data["symbol"],
+                    color=data["color"],
+                    label=name_func(data),
+                )
+            if param[2] == "log":
+                ax.set_yscale("log")
+
         ax.set_xlabel(xlabel if xlabel else param[1].replace("_", " ").capitalize())
-        ax.set_ylabel(ylabel if ylabel else f"{key.capitalize()} Run Time (s log)")
+        if not show_y_axis:
+            ax.set_ylabel("")
+            ax.set_yticks([])
+        else:
+            ax.set_ylabel(ylabel if ylabel else f"{key.capitalize()} Run Time (s log)")
         ax.set_title(
             title
             if title
             else f"{param[1].replace('_', ' ').capitalize()} to {key.capitalize()} Run Time"
         )
-        if log_scale:
-            ax.set_yscale("log")
         ax.grid(True, which="both", ls="--")
 
     handles, labels = ax.get_legend_handles_labels()

@@ -7,6 +7,7 @@ import os
 import argparse
 from datetime import datetime
 from random import shuffle
+import re
 import resource
 from time import time
 import traceback
@@ -45,6 +46,7 @@ class Experiment(ABC):
 
         self.name = name
         self.variant = variant
+        self.result_json_file = ""
 
     def __str__(self):
         return f"(Experiment {self.name} ({self.variant}))"
@@ -66,6 +68,47 @@ class Experiment(ABC):
 
         # Make sure models directory exists
         os.makedirs(f"{base_dir}/models/", exist_ok=True)
+
+        self.result_json_file = (
+            f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
+        )
+        self.write_results(finished=False)
+
+    def write_results(
+        self,
+        finished: bool,
+        total_time=None,
+        results=None,
+        mc=None,
+        alphabet=None,
+        monitor=None,
+    ):
+        result_json = {
+            "experiment": self.__dict__,
+            "finished": finished,
+        }
+        if total_time is not None:
+            result_json["time"] = {"total": total_time}
+
+        if mc is not None and alphabet is not None:
+            result_json["mc"] = {
+                "mc_states": len(mc.states),
+                "mc_transitions": mc.nr_transitions,
+                "mc_observations": len(alphabet),
+            }
+
+        if monitor is not None:
+            result_json["monitor"] = {
+                "monitor_states": len(monitor.states),
+                "monitor_transitions": monitor.nr_transitions,
+            }
+
+        if results is not None:
+            result_json |= results
+
+        os.makedirs(name=os.path.dirname(self.result_json_file), exist_ok=True)
+        with open(self.result_json_file, "w") as f:
+            json.dump(result_json, f, indent=4, default=str)
 
 
 class LearningExperiment(Experiment):
@@ -365,8 +408,6 @@ class LearningExperiment(Experiment):
 
     # Function to run a single experiment
     def run(self, timestamp: str, base_dir: str):
-        super().run(timestamp, base_dir)
-
         self.threshold = (
             sharpen(3, self.threshold) if self.use_exact else self.threshold
         )
@@ -375,6 +416,8 @@ class LearningExperiment(Experiment):
         self.relative_error = (
             sharpen(5, self.relative_error) if self.use_exact else self.relative_error
         )
+
+        super().run(timestamp, base_dir)
 
         start_time = time()
 
@@ -410,6 +453,7 @@ class LearningExperiment(Experiment):
                 initial_observation = "init"
             else:
                 raise ValueError("Unknown loader or missing parameters")
+            self.write_results(finished=False, mc=mc, alphabet=alphabet)
 
             results = {}
             for alg in self.learning_algs:
@@ -421,32 +465,26 @@ class LearningExperiment(Experiment):
                         initial_observation,
                         expr_manager,
                     )
+
                 elif alg in ["sampling", "wrandom"]:
                     results[alg] = self._run_trad(
                         alg, base_dir, mc, alphabet, initial_observation, expr_manager
                     )
+                self.write_results(
+                    finished=False, results=results, mc=mc, alphabet=alphabet
+                )
 
             total_time = time() - start_time
 
             # Write results as json
-
-            result_json = {
-                "experiment": self.__dict__,
-                "time": {
-                    "total": total_time,
-                },
-                "mc": {
-                    "mc_states": len(mc.states),
-                    "mc_transitions": mc.nr_transitions,
-                    "mc_observations": len(alphabet),
-                },
-            } | results
-            result_json_file = (
-                f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
+            self.write_results(
+                finished=True,
+                total_time=total_time,
+                results=results,
+                mc=mc,
+                alphabet=alphabet,
             )
-            os.makedirs(os.path.dirname(result_json_file), exist_ok=True)
-            with open(result_json_file, "w") as f:
-                json.dump(result_json, f, indent=4, default=str)
+            logger.info(f"Finished learning experiment {self.name} ({self.variant})")
 
 
 class VerifyExperiment(Experiment):
@@ -455,6 +493,7 @@ class VerifyExperiment(Experiment):
         name: str | None = None,
         variant: str | None = None,
         results_file: str | None = None,
+        intermediate_monitor: float | None = None,
         monitor_from: str | None = None,
         monitor: str | None = None,
         mc: str | None = None,
@@ -470,13 +509,29 @@ class VerifyExperiment(Experiment):
         relative_error: float = 0.01,
         use_risk: bool = True,
         threshold: float | None = None,
+        use_exact: bool = False,
     ):
         super().__init__(name, variant)
 
-        if results_file and monitor_from:
+        if results_file:
             exp = json.load(open(results_file, "r"))
             self.results_file = results_file
-            self.monitor = exp[monitor_from]["drn_file"]
+
+            if intermediate_monitor is not None:
+                mon_idx = int(
+                    (len(exp["verimon"]["monitors"]) - 1) * intermediate_monitor
+                )
+                for i, mon in enumerate(exp["verimon"]["monitors"][mon_idx:]):
+                    if mon is not None:
+                        self.mon_percent = (i + mon_idx) / len(
+                            exp["verimon"]["monitors"]
+                        )
+                        self.monitor = mon
+                        break
+            else:
+                self.monitor = exp[monitor_from]["drn_file"]
+                self.mon_percent = 1.0
+
             self.mc = exp["experiment"]["file"]
             self.spec = exp["experiment"]["spec"]
             self.good_label = exp["experiment"]["good_label"]
@@ -486,6 +541,8 @@ class VerifyExperiment(Experiment):
             self.threshold = exp["experiment"]["threshold"]
             self.loader = exp["experiment"]["loader"]
             self.parameters = exp["experiment"]["parameters"]
+            self.use_exact = exp["experiment"]["use_exact"]
+            self.learn_experiment = exp["experiment"]
         else:
             if (
                 mc is None
@@ -508,6 +565,7 @@ class VerifyExperiment(Experiment):
             self.loader = loader
             self.parameters = parameters
             self.results_file = None
+            self.use_exact = use_exact
 
         self.threshold = threshold
         self.search = search
@@ -516,6 +574,11 @@ class VerifyExperiment(Experiment):
     def run(self, timestamp: str, base_dir: str):
         super().run(timestamp, base_dir)
 
+        if self.threshold is not None:
+            self.threshold = (
+                sharpen(3, self.threshold) if self.use_exact else self.threshold
+            )
+
         start_time = time()
 
         logger.info(
@@ -523,15 +586,16 @@ class VerifyExperiment(Experiment):
         )
 
         with OutputLogger():
-            # Load mc
             if self.loader == "pomdp" and self.parameters:
                 (
-                    _,
-                    alphabet,
+                    initial_observation,
+                    observations,
                     mc,
                     expr_manager,
-                ) = loaders.pomdp_to_mc(self.mc, self.parameters["constants"])
-                alphabet = list(alphabet)
+                ) = loaders.pomdp_to_stormpy_mc(
+                    self.mc, self.parameters["constants"], self.use_exact
+                )
+                alphabet = list(observations)
             elif self.loader == "snakes_ladders" and self.parameters:
                 mc_sl_u_nxn = "tests/snake_ladder/mc_u_nxn.pm"
                 mc, expr_manager = loaders.load_snl_stormpy(
@@ -539,19 +603,33 @@ class VerifyExperiment(Experiment):
                     self.parameters["n"],
                     self.parameters["ladders"],
                     self.parameters["snakes"],
+                    self.use_exact,
                 )
+                alphabet = ["init", "normal", "snake", "ladder"]
+                initial_observation = "init"
             else:
                 raise ValueError("Unknown loader or missing parameters")
 
+            self.write_results(finished=False, mc=mc, alphabet=alphabet)
+
             # Load monitor
             if self.monitor is None:
-                monitor = loaders.gen_monitor(alphabet, self.horizon)
+                if self.use_exact:
+                    raise Exception("Generating exact monitors not supported")
+                # monitor = loaders.gen_monitor(alphabet, self.horizon)
             elif self.monitor.endswith(".nm") or self.monitor.endswith(".pm"):
-                monitor = loaders.load_dfa(self.monitor)
+                if self.use_exact:
+                    monitor = loaders.load_dfa_stormpy_exact(self.monitor)
+                else:
+                    monitor = loaders.load_dfa_stormpy(self.monitor)
             elif self.monitor.endswith(".drn"):
-                monitor = loaders.load_dfa_drn(self.monitor)
+                monitor = loaders.load_dfa_drn(self.monitor, self.use_exact)
             else:
                 raise ValueError("Unknown monitor format")
+
+            self.write_results(
+                finished=False, monitor=monitor, mc=mc, alphabet=alphabet
+            )
 
             # Set verification function
             if self.search == "fp":
@@ -566,6 +644,17 @@ class VerifyExperiment(Experiment):
                 raise ValueError(f"Unknown search type: {self.search}")
 
             try:
+                if self.threshold is not None:
+                    sul = FilteringSUL(
+                        mc,
+                        initial_observation,
+                        alphabet,
+                        self.spec,
+                        self.threshold,
+                        self.horizon,
+                        self.use_risk,
+                    )
+
                 verify_start = time()
                 result_goal, trace, assignment, model, stats = verify_func(
                     mc,
@@ -573,14 +662,17 @@ class VerifyExperiment(Experiment):
                     self.horizon,
                     expr_manager,
                     threshold=self.threshold,
-                    options={
-                        "good_spec": self.spec,
-                        "good_label": self.good_label,
-                        "relative_error": self.relative_error,
-                        "use_risk": self.use_risk,
-                        "paynt_strategy": self.paynt_strategy,
-                        "model_path": base_dir + "/debug-models/",
-                    },
+                    options=(
+                        {
+                            "good_spec": self.spec,
+                            "good_label": self.good_label,
+                            "relative_error": self.relative_error,
+                            "use_risk": self.use_risk,
+                            "paynt_strategy": self.paynt_strategy,
+                            "model_path": base_dir + "/debug-models/",
+                        }
+                        | ({"filtering": sul} if self.threshold is not None else {})
+                    ),
                 )
                 verify_time = time() - verify_start
 
@@ -588,53 +680,50 @@ class VerifyExperiment(Experiment):
                     if assignment:
                         logger.info(f"Assignment: {assignment}")
                         logger.info(f"PAYNT result: {assignment.analysis_result}")
+
+                    path = f"{base_dir}/models/monitor_{self.name}_{self.variant}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
                     verify_json = {
                         "goal_threshold": result_goal,
                         "trace": trace,
                         "time": verify_time,
+                        "product_time": stats["product_time"],
+                        "paynt_time": stats["paynt_time"],
+                        "double_check_time": (stats["double_check_time"]),
+                        "pomdp_states": len(model.pomdp.states),
                     }
                     if model:
                         with open(
-                            f"{base_dir}/models/pomdp_{self.name}_{self.variant}.dot",
+                            f"{path}.dot",
                             "w",
                         ) as f:
                             f.write(model.pomdp.to_dot())  # type: ignore
+
                         export_to_drn(
                             model.pomdp,
-                            f"{base_dir}/models/pomdp_{self.name}_{self.variant}.drn",
+                            f"{path}.drn",
                         )
                 else:
                     verify_json = {
                         "error": "No result",
-                        "product_time": stats["product_time"] if stats else None,
-                        "paynt_time": stats["paynt_time"] if stats else None,
+                        "time": verify_time,
+                        "product_time": stats["product_time"],
+                        "paynt_time": stats["paynt_time"],
+                        "double_check_time": None,
+                        "pomdp_states": None,
                     }
             except Exception as e:
                 logger.error(f"Error in verification: {traceback.format_exc()}")
                 verify_json = {"error": str(e)}
 
             total_time = time() - start_time
-            result_json = {
-                "experiment": self.__dict__,
-                "time": {
-                    "total": total_time,
-                },
-                "mc": {
-                    "mc_states": len(mc.states),
-                    "mc_transitions": mc.nr_transitions,
-                },
-                "monitor": {
-                    "monitor_states": len(monitor.states),
-                },
-                "result": verify_json,
-            }
-            result_json_file = (
-                f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
+            self.write_results(
+                finished=True,
+                results={"result": verify_json},
+                mc=mc,
+                alphabet=alphabet,
+                monitor=monitor,
+                total_time=total_time,
             )
-            os.makedirs(os.path.dirname(result_json_file), exist_ok=True)
-            with open(result_json_file, "w") as f:
-                json.dump(result_json, f, indent=4)
-
             logger.info(
                 f"Finished verification experiment: {self.name} ({self.variant})"
             )
@@ -680,6 +769,11 @@ if __name__ == "__main__":
         "--concurrent",
         action="store_true",
         help="Run experiments concurrently",
+    )
+    parser.add_argument(
+        "--cores",
+        type=int,
+        default=0,
     )
     parser.add_argument("--debug", action="store_true", help="Enable debug pausing")
     args = parser.parse_args()
@@ -744,7 +838,12 @@ if __name__ == "__main__":
 
         shuffle(experiments)
 
-        with Pool() as pool:
+        if args.cores > 0:
+            cores = args.cores
+        else:
+            cores = os.cpu_count() - args.cores
+
+        with Pool(cores) as pool:
             for group in experiments:
                 for exp in group.get_objects():
                     pool.apply_async(exp.run, (timestamp, base_dir))

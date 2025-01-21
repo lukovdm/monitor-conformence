@@ -219,6 +219,7 @@ def _verify_helper(
     trace = model.trace_of_assignment(assignment)
     logger.info(f"Found trace: {trace}")
 
+    double_check_time = time()
     induced_mc = model.created_induced_mc(assignment)
 
     env = stormpy.Environment()
@@ -286,5 +287,6 @@ def _verify_helper(
                         induced_mc,
                         f"{options['model_path']}/induced-filter-{datetime.now()}.drn",
                     )
+    stats["double_check_time"] = time() - double_check_time
 
     return result_goal, trace, assignment, model, stats
