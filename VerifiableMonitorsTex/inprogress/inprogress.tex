@@ -983,30 +983,59 @@ We modify the transformation from \cref{thm:maintheorem} such that it solves the
 \end{proof}
 
 \section{Learning Monitors}\label{sec:learning}
-In this section we show how the \alg verification algorithm can be used to learn monitors. We first informally define a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87}. We then show how a MAT using \alg verification as the equivalence query (EQ), and filtering from \cite{jungesRuntimeMonitorsMarkov2021} as the membership query (MQ) produces correct monitors. Lastly, we discuss ways to improve upon this approach.
+In this section we aim to learn correct monitors. We use the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87}. To ensure that the monitors are correct, we use the verification algorithm outlined above. We furthermore discuss some improvements that bridge the gap between common assumptions in MAT automata learning and our monitor setup. 
 
 \subsubsection{MAT framework}
-A minimally adequate teacher is a teacher which can only answer two questions. A membership query, \emph{should a trace be part of the monitor}? And an equivalence query, \emph{is this monitor correct, if not give a counter example?}\lm{Should this be perfect, is the monitor perfect? or informal, is it good enough}. Several learning algorithms exist which can make use of a MAT to learn a DFA, we make use of the L$\star$ algorithm \cite{DBLP:journals/iandc/Angluin87}.
+We briefly recap the MAT framework, for details see~\cite{DBLP:journals/cacm/Vaandrager17}.
+A minimally adequate teacher is a teacher answer two types of questions:
+A membership query, which in our setup means \emph{should a trace be part of the monitor?} and an equivalence query, \emph{is this monitor correct?} 
+Furthermore, if the answer to an equivalence query is negative, we must provide a counterexample that witnesses why the monitor is not correct. 
+Various algorithms implementing the MAT framework for DFA learning exist. For the purpose of this paper, we use the L$^{\star}$ algorithm \cite{DBLP:journals/iandc/Angluin87}. Roughly, the learner will ask the teacher membership queries to construct a hypothesis, i.e., some monitor that is consistent with the answers from the teacher. Once such a hypothesis is constructed, the monitor is verified using an equivalence query. 
 
-\begin{lemma}
-    Given a MAT with an EQ $\varphi$, a monitor learned using L$\star$ with this MAT will always produce a monitor which satisfies $\varphi$.
-\end{lemma}\lm{Somehow state this holds}
 
-\subsubsection{\alg as a MAT} \lm{Maybe give an input output of the learner here somewhere}
-In order to use the MAT framework for learning a correct monitor we define the two queries. The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function $r$, and a trace $\tau$ it finds the risk after the trace and compares it to the learning threshold $\lambda_l$. \[\sum_\pi\in\Pi^{=|\tau|}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\] Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe. If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.
+\subsubsection{\alg as a MAT} \lm{Maybe give an input output of the learner here somewhere}\sj{Yes, that would be good}
+
+In order to use the MAT framework for learning a correct monitor we define both query types.
+\sj{Split the definition from how you compute it. (The latter can just be one sentence after the definition.}
+\begin{definition}
+Given any trace $\Obs^*$, an MQ$_{\lambda_l}$ is a function such that:	
+\end{definition}
+\sj{I think you have two cases: either it is in L(M) and of the correct lenght, then act like def..., otherwise, return safe. Then in the text, say that returning safe is arbitrary.}
+
+ The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function $r$, and a trace $\tau$ it finds the risk after the trace and compares it to the learning threshold $\lambda_l$. \[\sum_\pi\in\Pi^{=|\tau|}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\] 
+Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe.\sj{Isnt this repeating definitions from above?}
+\sj{This next thing is important, it basically says that our definition assumes only traces that exist in the HMM, but that the MAT framework does not account for that. Make that explicit.}
+ If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.
+\begin{definition}
+Given a monitor $ $ an EQ$_{\lambda_s, \lambda_u}$ is a function such that:
+\sj{I think you have to }
+\end{definition}
+
+
+
 
 We define the EQ using \alg verification. In order to check a monitor is correct we have to check both $\missedalarms{\leq h}{\lambda_s} = \emptyset$ and $\falsealarms{\leq h}{\lambda_u} = \emptyset$. Both of these are checked using the algorithm described in \cref{sec:monver}. If a trace is found in either $\missedalarms{\leq h}{\lambda_s}$ or $\falsealarms{\leq h}{\lambda_u}$, it is given as a counter example.
 
-\begin{lemma}
-    A monitor learned using \alg as a MAT in L$\star$ is correct.
-\end{lemma}\lm{We need a bit more background on MAT and Lstar to maybe proof this?}
+\sj{Keep only one lemma.}
+%\begin{lemma}
+%    A monitor learned using \alg as a MAT in L$\star$ is correct.
+%\end{lemma}
+\lm{We need a bit more background on MAT and Lstar to maybe proof this?}
+\sj{You could create a fact environment if you want to emphasise that you do not formally proof this. But I think you can also state this as a theorem and say that the MQ and EQ satisfy the assumptions from L$^{*}$ thus this holds. (Which mostly is that the MQs should be consistent with the EQs?)}
+\lm{Should this be perfect, is the monitor perfect? or informal, is it good enough}.\begin{lemma}
+    Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned using L$\star$ is correct (in the sense of Def.X\sj{fix}).
+\end{lemma}\lm{Somehow state this holds}
+
+\sj{I would integrate this to the correctness argument. }
+Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area\lm{I don't like this term} given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors\lm{Maybe just not include this last bit?}. We verify this experimentally in \cref{sec:experiments}.
 
 \subsubsection{Improvements}
 We are able to make several practical improvements to the approach described above using already described concepts.
+\sj{This now mostly is about conformance checking and mixing both. I think it may be good to say that you can also do conformance checking rather than equivalence checking and say that we use a hybrid for the given reason}
 
-Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area\lm{I don't like this term} given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors\lm{Maybe just not include this last bit?}. We verify this experimentally in \cref{sec:experiments}.
 
 Early monitors produced by L$\star$ contain many missed alarm and false alarms. \alg verification can find them, however, it has a constant upfront cost. Instead, we do a limited amount of sampling to check, with filtering, if there are any easily found bad traces. We call this the pre-EQ step.
+
 
 
 \section{Computational Complexity}\label{sec:compl}
