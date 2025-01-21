@@ -15,6 +15,7 @@
 \usepackage{nccmath}
 \usepackage{longtable}
 \usepackage{xfrac}
+\usepackage{adjustbox}
 
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
@@ -1222,16 +1223,16 @@ We evaluate the learning algorithm by looking at the following questions:
 The \alg tool is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022} for most data structures and for the filtering (Membership queries in \cref{sec:learning})~\cite{jungesRuntimeMonitorsMarkov2021}.
 We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify the generated colored MDP (\cref{def}).
 The learner uses the AAlpy automata learning framework~\cite{muskardinAALpyActiveAutomata2022}.
-All experiments are run using exact arithmetic on a single thread of an AMD  Ryzen Threadripper Pro\sj{which? You can also use shorthand, ask Linus} and with a memory limit of 15 GiB.
+All experiments are run using exact arithmetic on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
 %We ran multiple benchmarks in parallel.
 
 \paragraph{Benchmarks}
 We combine benchmarks from the literature with some novel benchmarks.
 We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. We also use \textsc{Icy-Driving}, based on the central example but with more states describing how close the car is to crashing and \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player.
 While the existing benchmarks contain many observations, the new benchmarks only have a few different observations.
-Every benchmark is analysed with respect to different horizons and in different sizes.
+Every benchmark is analyzed with respect to different horizons and in different sizes.
 The benchmarks have up to hundreds of states and thousands of transitions.
-Details are given in \cref{fig:legend}\lm{This table is not that neat} in the appendix.\sj{I would not refer to a figure in the appendix, but just to an Appendix A/B/C/D, which then contains a reference to the figure, along with a description of what the column names mean.}
+Details are given in \cref{sec:benchmarksdescr}.\lm{TODO: Make this table}
 
 
 \subsubsection{Q1 and Q2: Efficiency and Scalability of Monitor Verification}
@@ -1249,29 +1250,92 @@ Details are given in \cref{fig:legend}\lm{This table is not that neat} in the ap
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning} and configure the queries as follows.
 We set a learning threshold $\lambda_l = 0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. The role of $lambda_s \neq \lambda_u$ is evaluated in Q4 below.
-\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \cref{fig:samplingn} in the appendix.}\sj{which appendix.}
+\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \cref{sec:ressampling}}
 %\footnote{This value was obtained by running the sampling learner for different sample amounts as can be seen in \cref{fig:samplingn}.}. 
-Before executing an EQ, we run conformance checking with  with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$ (see Section~\ref{}).
-As a baseline, we do not use an EQ oracle but rather only use a conformance oracle as described in Sec. X.\sj{fix}. This conformance oracles decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in Appendix Z}\sj{fix appendix ref}.
+Before executing an EQ, we run conformance checking with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$ (see \cref{sec:learning}).
+As a baseline, we do not use an EQ oracle but rather only use a conformance oracle as described in Sec. X.\sj{fix}. This conformance oracles decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \cref{sec:ressampling}}.
 
 %\paragraph{Results}\lm{I don't like the word gray area for describing \alg with slack, but don't know a better name}
 
 
 \paragraph{Are the monitors correct?}
-First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute\sj{is this simple to do?} the trace in the monitor that has the lowest risk (actual alarm threshold) and the trace not in the monitor that has the highest risk (actual no-alarm threshold). In a correct monitor, \sj{give inequalities wrt to $\lambda_s, \lambda_u$}{ \color{red}\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively\lm{Don't like minimum false alarm risk and maximum missed alarm risk, introduce them earlier or give better names}.
+First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute \sj{is this simple to do?}\lm{Yes, stopping the maximalization of the policy when we reach the threshold, we just continue and report the found value afterwards, intstead of just returing true/false.} the trace in the monitor that has the lowest risk (actual alarm threshold, $\lambda_u^{\min}$) and the trace not in the monitor that has the highest risk (actual no-alarm threshold, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
+
+\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and sampling learning respectively.
+
+
+\sj{give inequalities wrt to $\lambda_s, \lambda_u$}{ \color{red}\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively
     The safe threshold is the top of the gray area, and the unsafe threshold is the bottom of the gray area. The dashed line indicates the EQ threshold.
     Any green lines that cross into the red area, or red lines that cross into the green area indicate incorrect monitors. Such incorrect monitors can ben found in \cref{fig:learnThrSampling} for several of the \textsc{Airport}, \textsc{Hiden-Incentive}, and \textsc{Refuel} models.}
 
+\begin{figure}[t]
+    \begin{subfigure}{.34\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .3cm}
+            \input{images/plots/thresholds_tover_no_slack.pgf}
+        \end{adjustbox}
+        \caption{\alg without a gray area}
+        \label{fig:learnThrToverNS}
+    \end{subfigure}\hfill
+    \begin{subfigure}{.31\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
+            \input{images/plots/thresholds_tover_slack.pgf}
+        \end{adjustbox}
+        \caption{\alg with a gray area}
+        \label{fig:learnThrToverS}
+    \end{subfigure}\hfill
+    \begin{subfigure}{.31\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
+            \input{images/plots/theresholds_sampling.pgf}
+        \end{adjustbox}
+        \caption{Sampling}
+        \label{fig:learnThrSampling}
+    \end{subfigure}
+    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and sampling learning.}
+\end{figure}
+
 \paragraph{How big are the monitors?}
+
+\begin{figure}[t]
+    \begin{subfigure}{.48\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .3cm}
+            \input{images/plots/monitor_sizes_with_slack.pgf}
+        \end{adjustbox}
+        \caption{\alg with a gray area}
+        \label{fig:monsizes}
+    \end{subfigure}\hfill
+    \begin{subfigure}{.48\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
+            \input{images/plots/monitor_sizes_no_slack.pgf}
+        \end{adjustbox}
+        \caption{\alg without a gray area}
+        \label{fig:monsizens}
+    \end{subfigure}
+    \caption{Comparison of the amount of states in monitors learned using \alg learning compared to sampling learning.}
+\end{figure}
 
 \paragraph{How fast do we learn the monitors?}
 We describe the runtime of the ater running \alg learning and sampling learning in the \cref{fig:runtime-comp,fig:runtimediv}. \Cref{fig:runtime-comp} shows how the runtime of \alg learning and sampling learning compare. Sampling takes at least about 100\lm{check number} seconds, while \alg learning can take only 2\lm{check} second to find a monitor both algorithms take at most around 9 hours\lm{also check}.
 
+\begin{figure}[t]
+    \begin{subfigure}{\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/verimon_times.pgf}}
+        \caption{Runtime division}
+        \label{fig:runtimediv}
+    \end{subfigure}
 
+    \begin{subfigure}{.5\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/runtime.pgf}}
+        \caption{Runtime comparison}
+        \label{fig:runtime-comp}
+    \end{subfigure}
+    \caption{Learning experiment results}
+\end{figure}
 
 \subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
 
-\Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and sampling learning. \cref{fig:monsizes} contains a comparison of monitors learned when allowing \alg learning a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using sampling learning. When not learning with a gray area the difference is smaller. One monitor is slightly smaller when using sampling learning.
+\Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and sampling learning. \cref{fig:monsizes} contains a comparison of monitors learned when allowing \alg learning a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using sampling learning. When not learning with a gray area the difference is smaller. One monitor is slightly smaller when using sampling learning.\lm{I think we should also discuss the learned thresholds here?}
 
 
 %
@@ -1288,53 +1352,6 @@ At the same time, the monitors produced by \alg learning are smaller than those 
 
 The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besides this, the runtime of both \alg learning and sampling learning heavily depends on the exact details of the model. For some benchmarks \alg learning is faster, while for others, sampling learning is faster.
 \color{black}
-
-\begin{figure}
-    \begin{subfigure}{\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/verimon_times.pgf}}
-        \caption{Runtime division}
-        \label{fig:runtimediv}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/thresholds_tover_slack.pgf}}
-        \caption{Learning thresholds \alg with a gray area}
-        \label{fig:learnThrToverS}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/thresholds_tover_no_slack.pgf}}
-        \caption{Learning thresholds \alg without a gray area}
-        \label{fig:learnThrToverNS}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/theresholds_sampling.pgf}}
-        \caption{Learning thresholds sampling}
-        \label{fig:learnThrSampling}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/runtime.pgf}}
-        \caption{Runtime comparison}
-        \label{fig:runtime-comp}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/monitor_sizes_with_slack.pgf}}
-        \caption{Monitor size comparison, with gray area}
-        \label{fig:monsizes}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/monitor_sizes_no_slack.pgf}}
-        \caption{Monitor size comparison, without gray area}
-        \label{fig:monsizens}
-    \end{subfigure}
-
-    \caption{Learning experiment results}
-\end{figure}
 
 \section{Related}
 \begin{itemize}
@@ -1358,7 +1375,27 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
 
 \appendix
 
+\section{Description of benchmarks}\label{sec:benchmarksdescr}
+
+\section{Results from \alg Verification Experiments} \label{sec:resverify}
+
+\section{Results from \alg Learning Experiments}\label{sec:reslearn}
+\lm[inline]{TODO: write about plots}
+
 \begin{figure}
+    \centerline{
+        \resizebox{1.2\linewidth}{!}{
+            \input{images/plots/legend.pgf}}
+    }
+    \caption{Legend of symbols used in plots}
+    \label{fig:legend}
+\end{figure}
+
+\input{images/plots/experiments.tex}
+
+\section{Results from Sampling Count Experiment}\label{sec:ressampling}
+
+\begin{figure}[h]
     \begin{subfigure}{.5\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/sampling_thresholds_low.pgf}
@@ -1380,16 +1417,5 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
     \caption{Found risk thresholds when using sampling leaning with a different amount of samples in each EQ step. This experiment is done for three different risk thresholds.}
     \label{fig:samplingn}
 \end{figure}
-
-\begin{figure}
-    \centerline{
-        \resizebox{1.2\linewidth}{!}{
-            \input{images/plots/legend.pgf}}
-    }
-    \caption{Legend of symbols used in plots}
-    \label{fig:legend}
-\end{figure}
-
-\input{images/plots/experiments.tex}
 
 \end{document}
