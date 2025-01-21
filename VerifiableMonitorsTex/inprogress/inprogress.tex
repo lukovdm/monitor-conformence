@@ -1216,11 +1216,12 @@ We evaluate the verifier with the following questions:
 We combine benchmarks from the literature with some novel benchmarks. 
 We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. We also use \textsc{Icy-Driving}, based on the central example but with more states describing how close the car is to crashing and \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player. 
 While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. 
+Every benchmark is analysed with respect to different horizons and in different sizes.
 The benchmarks have up to hundreds of states and thousands of transitions. 
 Details are given in \cref{fig:legend}\lm{This table is not that neat} in the appendix.\sj{I would not refer to a figure in the appendix, but just to an Appendix A/B/C/D, which then contains a reference to the figure, along with a description of what the column names mean.}
 
 
-\subsubsection{\alg Verification}
+\subsubsection{Q1 and Q2: Efficiency and Scalability of Monitor Verification}
 \begin{itemize}
     \item Both in threshold mode and in max mode
     \item Monitors come from learning, use both intermediate models and final models.
@@ -1231,26 +1232,49 @@ Details are given in \cref{fig:legend}\lm{This table is not that neat} in the ap
     \item Discuss results
 \end{itemize}
 
-\subsubsection{\alg Learning}\label{sssec:toverlearningexp}
-As a baseline learning algorithm we only make use of the pre-EQ step from \cref{sec:learning}. Thus, we only test the monitor for traces sampled from the HMM. The sampling EQ decides a monitor is correct after 100000 traces\footnote{This value was obtained by running the sampling learner for different sample amounts as can be seen in \cref{fig:samplingn}.}. We make also use of the pre-EQ step in the \alg learner with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$.
+\subsubsection{Q3: Efficiency of Monitor Learning}
+\paragraph{Setup.}
+We use the MAT framework from \cref{sec:learning} and configure the queries as follows.
+We set a learning threshold $\lambda_l = 0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. The role of $lambda_s \neq \lambda_u$ is evaluated in Q4 below.
+\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \cref{fig:samplingn} in the appendix.}\sj{which appendix.}
+%\footnote{This value was obtained by running the sampling learner for different sample amounts as can be seen in \cref{fig:samplingn}.}. 
+Before executing an EQ, we run conformance checking with  with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$ (see Section~\ref{}).
+As a baseline, we do not use an EQ oracle but rather only use a conformance oracle as described in Sec. X.\sj{fix}. This conformance oracles decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in Appendix Z}\sj{fix appendix ref}.
 
-We set a learning threshold of $0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. Also, $0.3$ was evaluated with sampling as can be seen in \cref{fig:samplingn} in the appendix.
+%\paragraph{Results}\lm{I don't like the word gray area for describing \alg with slack, but don't know a better name}
 
-For each benchmark we run the both \alg learning and sampling learning for various sizes of the benchmark and horizon. These values, along with a mapping to short names used in the figures can be found in \cref{fig:legend}.
 
-\paragraph{Results}\lm{I don't like the word gray area for describing \alg with slack, but don't know a better name}
-We show the results of learning monitors using \alg learning and sampling learning using the following figures. \Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively\lm{Don't like minimum false alarm risk and maximum missed alarm risk, introduce them earlier or give better names}. The safe threshold is the top of the gray area, and the unsafe threshold is the bottom of the gray area. The dashed line indicates the EQ threshold. Any green lines that cross into the red area, or red lines that cross into the green area indicate incorrect monitors. Such incorrect monitors can ben found in \cref{fig:learnThrSampling} for several of the \textsc{Airport}, \textsc{Hiden-Incentive}, and \textsc{Refuel} models.
+\paragraph{Are the monitors correct?}
+First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute\sj{is this simple to do?} the trace in the monitor that has the lowest risk (actual alarm threshold) and the trace not in the monitor that has the highest risk (actual no-alarm threshold). In a correct monitor, \sj{give inequalities wrt to $\lambda_s, \lambda_u$}{ \color{red}\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively\lm{Don't like minimum false alarm risk and maximum missed alarm risk, introduce them earlier or give better names}. 
+The safe threshold is the top of the gray area, and the unsafe threshold is the bottom of the gray area. The dashed line indicates the EQ threshold.
+ Any green lines that cross into the red area, or red lines that cross into the green area indicate incorrect monitors. Such incorrect monitors can ben found in \cref{fig:learnThrSampling} for several of the \textsc{Airport}, \textsc{Hiden-Incentive}, and \textsc{Refuel} models.}
+ 
+ \paragraph{How big are the monitors?}
+
+\paragraph{How fast do we learn the monitors?}
+We describe the runtime of the ater running \alg learning and sampling learning in the \cref{fig:runtime-comp,fig:runtimediv}. \Cref{fig:runtime-comp} shows how the runtime of \alg learning and sampling learning compare. Sampling takes at least about 100\lm{check number} seconds, while \alg learning can take only 2\lm{check} second to find a monitor both algorithms take at most around 9 hours\lm{also check}.
+
+
+
+\subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
 
 \Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and sampling learning. \cref{fig:monsizes} contains a comparison of monitors learned when allowing \alg learning a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using sampling learning. When not learning with a gray area the difference is smaller. One monitor is slightly smaller when using sampling learning.
 
-We describe the runtime of the ater running \alg learning and sampling learning in the \cref{fig:runtime-comp,fig:runtimediv}. \Cref{fig:runtime-comp} shows how the runtime of \alg learning and sampling learning compare. Sampling takes at least about 100\lm{check number} seconds, while \alg learning can take only 2\lm{check} second to find a monitor both algorithms take at most around 9 hours\lm{also check}.
 
+%
+%
+%For each benchmark we run the both \alg learning and sampling learning for various sizes of the benchmark and horizon. These values, along with a mapping to short names used in the figures can be found in \cref{fig:legend}.
+
+\sj{I will think a bit how to include the discussion/what is missing next}
+\color{black!50}
 \paragraph{Discussion}\lm{I don't discuss the sizes of the models used in not the appendix, is that bad?}
+
 Our results show that using verification learning can allow for finding better monitors without incurring heavy runtime costs. The theoretical guarantee of correct monitors also gives meaningful benefits in an experimental setting. The sampling learner misses some alarms while \alg catches them.
 
 At the same time, the monitors produced by \alg learning are smaller than those learned by sampling in almost all cases. This seems to be partly due to allowing a gray area when using \alg, but even when no gray area is used, we still get a small reduction in size.
 
 The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besides this, the runtime of both \alg learning and sampling learning heavily depends on the exact details of the model. For some benchmarks \alg learning is faster, while for others, sampling learning is faster.
+\color{black}
 
 \begin{figure}
     \begin{subfigure}{\linewidth}
