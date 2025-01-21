@@ -1159,26 +1159,37 @@ This follows from a strict reduction from MAX-3SAT, which is an inapproximable a
 
 
 
-\section{Experiments}\label{sec:experiments}
-\paragraph{Implementation}
-We build prototype implementations of both the \alg transformation in \cref{sec:monver}, as well as the learning as described in \cref{sec:learning}. The ToVer transformation is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022}. PAYNT \cite{andriushchenkoPAYNTToolInductive2021} is used to verify the generated colored MDP. The learner uses the AAlpy Python automata learning framework \cite{muskardinAALpyActiveAutomata2022}, together with filtering as implemented in \cite{jungesRuntimeMonitorsMarkov2021}. All experiments are run using exact arithmetic from \textsc{Storm}. They are run in parallel, single threaded, on a Ryzen Threadripper Pro with 503 GiB RAM\lm{mention large memory usage maybe?}.
-
-\paragraph{Benchmarks}
-We base our experiments for both the verification and learning algorithms on a combination of benchmarks from previous work, and novel benchmarks. We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. Additionally, we add two benchmark families. \textsc{Icy-Driving}, based on the central example with more states describing how close the car is to crashing on ice. \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player. These two benchmarks both contain a very limited amount of observations instead, in contrast to the many observations of the benchmarks from \cite{jungesRuntimeMonitorsMarkov2021}. Detailed descriptions of sizes of the benchmarks can be found in \cref{fig:legend}\lm{This table is not that neat} in the appendix.
-
-\paragraph{Questions}
-We evaluate both the \alg verifier and the learning algorithm. We evaluate the \alg verifier with the following questions:
+\section{Experiments}\label{sec:experiments}\sj{I would not start using \alg before this section but rather use it as a name of our tool}
+\noindent In this section, we empirically evaluate the monitor verification (\cref{sec:monver}) and monitor learning (\cref{sec:learning}) using our  prototype implementation called \alg.
+ We aim to answer the following questions:
+We evaluate the verifier with the following questions:
 \begin{description}
     \item[$\textbf{Q}_{TV}^1$] How does the runtime of \alg verifier depend on the model size?
     \item[$\textbf{Q}_{TV}^2$] How much does the runtime of \alg verification depend on PAYNT?
 \end{description}
-To evaluate \alg learning we compare to a baseline learning algorithm, called sampling learning. We descirbe the baseline later. We evaluate the learning algorithm by looking at the following questions:
+ We evaluate the learning algorithm by looking at the following questions:
 \begin{description}
     \item[$\textbf{Q}_{L}^1$] Does \alg learning guarantee a better bound than baseline learning using a sampling EQ?
     \item[$\textbf{Q}_{L}^2$] How do the \alg learned monitors and baseline sampling learned monitors compare in size?
     \item[$\textbf{Q}_{L}^3$] Does the difference between the safe threshold, $\lambda_s$, and the unsafe threshold, $\lambda_u$, result in smaller monitors?
     \item[$\textbf{Q}_{L}^4$] How does the runtime of the \alg learning algorithm compare to the baseline sampling learning algorithm?
 \end{description}
+
+
+\paragraph{Setup}
+ The \alg tool is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022} for most data structures and for the filtering (Membership queries in \cref{sec:learning})~\cite{jungesRuntimeMonitorsMarkov2021}. 
+ We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify the generated colored MDP (\cref{def}).
+ The learner uses the AAlpy automata learning framework~\cite{muskardinAALpyActiveAutomata2022}.
+ All experiments are run using exact arithmetic on a single thread of an AMD  Ryzen Threadripper Pro\sj{which? You can also use shorthand, ask Linus} and with a memory limit of 15 GiB. 
+ %We ran multiple benchmarks in parallel.
+ 
+\paragraph{Benchmarks}
+We combine benchmarks from the literature with some novel benchmarks. 
+We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. We also use \textsc{Icy-Driving}, based on the central example but with more states describing how close the car is to crashing and \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player. 
+While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. 
+The benchmarks have up to hundreds of states and thousands of transitions. 
+Details are given in \cref{fig:legend}\lm{This table is not that neat} in the appendix.\sj{I would not refer to a figure in the appendix, but just to an Appendix A/B/C/D, which then contains a reference to the figure, along with a description of what the column names mean.}
+
 
 \subsubsection{\alg Verification}
 \begin{itemize}
@@ -1271,6 +1282,7 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
 
 \section{Conclusion and Future Work}
 
+\sj{Something about the size of monitor and model together}
 \begin{itemize}
     \item Long traces (complexity and practical implementation).
     \item Unbounded traces (It woudl be great if we can add why this is hard)
