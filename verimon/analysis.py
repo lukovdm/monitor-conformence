@@ -213,7 +213,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 \toprule
  & & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                                       \\
 \cmidrule(lr){3-10}\cmidrule(lr){11-14}
- & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Time \alg (s) & Time PAYNT (s) & $\lambda^{found}$  \\
+ & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & \alg (s) & PAYNT (s) & $\lambda^{found}$  \\
 \midrule
 \endhead"""
 

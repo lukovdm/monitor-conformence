@@ -9866,10 +9866,10 @@
 \pgfsetstrokeopacity{0.800000}%
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{0.705292in}{0.767223in}}%
-\pgfpathlineto{\pgfqpoint{2.425100in}{0.767223in}}%
-\pgfpathquadraticcurveto{\pgfqpoint{2.452878in}{0.767223in}}{\pgfqpoint{2.452878in}{0.795001in}}%
-\pgfpathlineto{\pgfqpoint{2.452878in}{1.800398in}}%
-\pgfpathquadraticcurveto{\pgfqpoint{2.452878in}{1.828176in}}{\pgfqpoint{2.425100in}{1.828176in}}%
+\pgfpathlineto{\pgfqpoint{2.078827in}{0.767223in}}%
+\pgfpathquadraticcurveto{\pgfqpoint{2.106605in}{0.767223in}}{\pgfqpoint{2.106605in}{0.795001in}}%
+\pgfpathlineto{\pgfqpoint{2.106605in}{1.800398in}}%
+\pgfpathquadraticcurveto{\pgfqpoint{2.106605in}{1.828176in}}{\pgfqpoint{2.078827in}{1.828176in}}%
 \pgfpathlineto{\pgfqpoint{0.705292in}{1.828176in}}%
 \pgfpathquadraticcurveto{\pgfqpoint{0.677514in}{1.828176in}}{\pgfqpoint{0.677514in}{1.800398in}}%
 \pgfpathlineto{\pgfqpoint{0.677514in}{0.795001in}}%
@@ -9900,7 +9900,7 @@
 \definecolor{textcolor}{rgb}{0.000000,0.000000,0.000000}%
 \pgfsetstrokecolor{textcolor}%
 \pgfsetfillcolor{textcolor}%
-\pgftext[x=1.121959in,y=1.667097in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}Paynt Time}}%
+\pgftext[x=1.121959in,y=1.667097in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}PAYNT}}%
 \end{pgfscope}%
 \begin{pgfscope}%
 \pgfsetbuttcap%
@@ -9924,7 +9924,7 @@
 \definecolor{textcolor}{rgb}{0.000000,0.000000,0.000000}%
 \pgfsetstrokecolor{textcolor}%
 \pgfsetfillcolor{textcolor}%
-\pgftext[x=1.121959in,y=1.463240in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}L* Time}}%
+\pgftext[x=1.121959in,y=1.463240in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}L*}}%
 \end{pgfscope}%
 \begin{pgfscope}%
 \pgfsetbuttcap%
@@ -9948,7 +9948,7 @@
 \definecolor{textcolor}{rgb}{0.000000,0.000000,0.000000}%
 \pgfsetstrokecolor{textcolor}%
 \pgfsetfillcolor{textcolor}%
-\pgftext[x=1.121959in,y=1.259382in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}Product Time}}%
+\pgftext[x=1.121959in,y=1.259382in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}ToVer}}%
 \end{pgfscope}%
 \begin{pgfscope}%
 \pgfsetbuttcap%
@@ -9972,7 +9972,7 @@
 \definecolor{textcolor}{rgb}{0.000000,0.000000,0.000000}%
 \pgfsetstrokecolor{textcolor}%
 \pgfsetfillcolor{textcolor}%
-\pgftext[x=1.121959in,y=1.055525in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}Sampling EQ Time}}%
+\pgftext[x=1.121959in,y=1.055525in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}Conformence}}%
 \end{pgfscope}%
 \begin{pgfscope}%
 \pgfsetbuttcap%
@@ -9996,7 +9996,7 @@
 \definecolor{textcolor}{rgb}{0.000000,0.000000,0.000000}%
 \pgfsetstrokecolor{textcolor}%
 \pgfsetfillcolor{textcolor}%
-\pgftext[x=1.121959in,y=0.851668in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}Other Time}}%
+\pgftext[x=1.121959in,y=0.851668in,left,base]{\color{textcolor}{\sffamily\fontsize{10.000000}{12.000000}\selectfont\catcode`\^=\active\def^{\ifmmode\sp\else\^{}\fi}\catcode`\%=\active\def%{\%}Other}}%
 \end{pgfscope}%
 \end{pgfpicture}%
 \makeatother%
