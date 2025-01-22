@@ -47,9 +47,9 @@ def add_short_names(data, verify=False):
 
         if name not in variant_indexes:
             variant_indexes[name] = 0
-        d["experiment"][
-            "short_name"
-        ] = f"{name[0].capitalize()}-{variant_indexes[name]}"
+        d["experiment"]["short_name"] = (
+            f"{name[0].capitalize()}-{variant_indexes[name]}"
+        )
         variant_indexes[name] += 1
 
 
@@ -127,6 +127,7 @@ def load_experiment_data(path):
                     and "verimon" not in data
                 ):
                     data["verimon"] = {
+                        "fake": True,
                         "time": 10**5,
                         "monitor_states": 0,
                         "false_positive": 1,
@@ -137,6 +138,7 @@ def load_experiment_data(path):
                     and "sampling" not in data
                 ):
                     data["sampling"] = {
+                        "fake": True,
                         "time": 10**5,
                         "monitor_states": 0,
                         "false_positive": 1,
@@ -154,6 +156,17 @@ def load_experiment_data(path):
 def generate_experiment_table(
     data, save_figures=False, save_path="./", file_name="runtime"
 ):
+    preamble = r"""
+\begin{longtable}[c]{@{}llrrrrrrrrrrrrr@{}}
+\caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
+\label{tab:experiments}
+\toprule
+\multicolumn{7}{c|}{Benchmark}                                                                      & \multicolumn{4}{c|}{\alg}                                                                & \multicolumn{4}{c}{Sampling}                                        \\
+Name & Short Name & $\lambda_u$ & $\lambda_s$ & $|\Sts|$ & $|\ptrans|$ & \multicolumn{1}{l|}{$|Z|$} & Time (s) & Monitor states & $\lambda_u^{\min}$ & \multicolumn{1}{l|}{$\lambda_s^{\max}$} & Time (s) & Monitor states & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\ 
+\midrule
+\endhead
+                """
+
     tab_data = [
         [
             d["experiment"]["name"],
@@ -163,49 +176,51 @@ def generate_experiment_table(
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
-            d["verimon"]["time"],
-            d["verimon"]["monitor_states"],
-            d["verimon"]["false_positive"],
-            d["verimon"]["false_negative"],
-            d["sampling"]["time"],
-            d["sampling"]["monitor_states"],
-            d["sampling"]["false_positive"],
-            d["sampling"]["false_negative"],
+            d["verimon"]["time"] if "fake" not in d["verimon"] else "-",
+            d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else "-",
+            d["verimon"]["false_positive"] if "fake" not in d["verimon"] else "-",
+            d["verimon"]["false_negative"] if "fake" not in d["verimon"] else "-",
+            d["sampling"]["time"] if "fake" not in d["sampling"] else "-",
+            d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else "-",
+            d["sampling"]["false_positive"] if "fake" not in d["sampling"] else "-",
+            d["sampling"]["false_negative"] if "fake" not in d["sampling"] else "-",
         ]
         for d in data
     ]
     tab_with_lines: list[Any] = [tab_data[0]]
-    for l in tab_data[1:]:
-        # if l[0] != tab_with_lines[-1][0]:
-        #     tab_with_lines.append(SEPARATING_LINE)
-        tab_with_lines.append(l)
+    for line in tab_data[1:]:
+        if line[0] != tab_with_lines[-1][0]:
+            tab_with_lines.append(SEPARATING_LINE)
+        tab_with_lines.append(line)
 
-    table = tabulate(
-        tab_with_lines,
-        headers=[
-            "Name",
-            "Short Name",
-            "$\\lambda_u$",
-            "$\\lambda_s$",
-            "$|\\Sts|$",
-            "$|\\ptrans|$",
-            "$|Z|$",
-            "\\alg time",
-            "\\alg monitor states",
-            "\\alg minimum in monitor",
-            "\\alg maximum out of monitor",
-            "Sampling time",
-            "Sampling monitor states",
-            "Sampling minimum in monitor",
-            "Sampling maximum out of monitor",
-        ],
-        tablefmt="latex_raw" if save_figures else "github",
-    )
-    if save_figures:
-        with open(f"{save_path}/{file_name}.tex", "w") as f:
-            f.write(table)
+    generate_table(preamble, tab_with_lines, save_path, file_name)
 
-    print(table)
+
+def generate_table(preamble, data, save_path="./", file_name="runtime"):
+    with open(f"{save_path}/{file_name}.tex", "w") as f:
+        f.write(preamble)
+        for line in data:
+            if line == SEPARATING_LINE:
+                f.write(r"\midrule" + "\n")
+            else:
+                str_line = []
+                for e in line:
+                    if isinstance(e, float):
+                        str_line.append(f"{e:.2f}")
+                    elif isinstance(e, Fraction):
+                        frac = e.limit_denominator(100)
+                        str_line.append(
+                            f"\\sfrac{{{frac.numerator}}}{{{frac.denominator}}}"
+                        )
+                    else:
+                        str_line.append(str(e))
+                f.write(" & ".join(e for e in str_line) + r"\\" + "\n")
+        f.write(
+            r"""
+\bottomrule
+\end{longtable}
+            """
+        )
 
 
 def compare_runtimes(
@@ -589,7 +604,6 @@ def compare_thresholds_bar(
     file_name="thresholds",
     show_y_axis: bool = True,
 ):
-
     fig, ax = plt.subplots()
 
     ax.fill_betweenx(
