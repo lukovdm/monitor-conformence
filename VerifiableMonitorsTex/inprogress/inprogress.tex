@@ -13,6 +13,7 @@
 \usepackage{subcaption}
 \usepackage{xcolor}
 \usepackage{nccmath}
+\usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{xfrac}
 \usepackage{adjustbox}
@@ -1004,17 +1005,19 @@ Furthermore, if the answer to an equivalence query is negative, we must provide 
 Various algorithms implementing the MAT framework for DFA learning exist. For the purpose of this paper, we use the L$^{\star}$ algorithm \cite{DBLP:journals/iandc/Angluin87}. Roughly, the learner will ask the teacher membership queries to construct a hypothesis, i.e., some monitor that is consistent with the answers from the teacher. Once such a hypothesis is constructed, the monitor is verified using an equivalence query.
 
 
-\subsubsection{\alg as a MAT} \lm{Maybe give an input output of the learner here somewhere}\sj{Yes, that would be good}
+\subsubsection{Verification as a MAT}
+When learning monitors with a MAT we will provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. After learning we obtain the monitor $\dfa$.
 
-In order to use the MAT framework for learning a correct monitor we define both query types.
-\sj{Split the definition from how you compute it. (The latter can just be one sentence after the definition).}
+We now define the MAT framework for learning monitors by defining the MQ and the EQ.
 \begin{definition}
-    Given any trace $\Obs^*$, a MQ$_{\lambda_l}$ is a function $f$ such that:
-    \begin{align*}
-        f
-    \end{align*}
+    Given any trace $\tau \in \lang{\mc}$, a MQ$_{\lambda_l}$ is a function $f$, where $f(\tau)$ is unsafe only if,
+    \[\sum_{\pi\in\Pi^{=|\tau|}}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\]
 \end{definition}
+Such a function can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}. MQ$_{\lambda_l}$ is only defined for traces in the HMM, thus traces where there is a path $\pi \in \Paths{\tau}$. However, the MAT can be asked any trace $\tau\in\Obs^\star$. If a $\tau$ is not in the HMM, we deem it safe\footnote{Defining a trace out of the HMM safe is an arbitrary decision, as they do not matter for correctness. However, in the MAT framework a trace always has to be either safe or unsafe}
+
+The MQ for the MAT acts like $f$ if it receives a trace $\tau$ in $\lang{\mc}$ and $|\tau|<h$\footnote{This is condition is not essential, since $f$ does not contain a horizon. However, experimentally leaving out this condition only led to larger monitors.}. Otherwise, it returns the trace is safe.
 \sj{I think you have two cases: either it is in L(M) and of the correct lenght, then act like def..., otherwise, return safe. Then in the text, say that returning safe is arbitrary.}
+\lm{What do you mean returing safe is arbitrary?}
 
 The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function $r$, and a trace $\tau$ it finds the risk after the trace and compares it to the learning threshold $\lambda_l$. \[\sum_\pi\in\Pi^{=|\tau|}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\]
 Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe.\sj{Isnt this repeating definitions from above?}
@@ -1028,7 +1031,7 @@ If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is 
 
 
 
-We define the EQ using \alg verification. In order to check a monitor is correct we have to check both $\missedalarms{\leq h}{\lambda_s} = \emptyset$ and $\falsealarms{\leq h}{\lambda_u} = \emptyset$. Both of these are checked using the algorithm described in \cref{sec:monver}. If a trace is found in either $\missedalarms{\leq h}{\lambda_s}$ or $\falsealarms{\leq h}{\lambda_u}$, it is given as a counter example.
+We define the EQ using verification. In order to check a monitor is correct we have to check both $\missedalarms{\leq h}{\lambda_s} = \emptyset$ and $\falsealarms{\leq h}{\lambda_u} = \emptyset$. Both of these are checked using the algorithm described in \cref{sec:monver}. If a trace is found in either $\missedalarms{\leq h}{\lambda_s}$ or $\falsealarms{\leq h}{\lambda_u}$, it is given as a counter example.
 
 \sj{Keep only one lemma.}
 %\begin{lemma}
@@ -1048,7 +1051,7 @@ We are able to make several practical improvements to the approach described abo
 \sj{This now mostly is about conformance checking and mixing both. I think it may be good to say that you can also do conformance checking rather than equivalence checking and say that we use a hybrid for the given reason}
 
 
-Early monitors produced by L$\star$ contain many missed alarm and false alarms. \alg verification can find them, however, it has a constant upfront cost. Instead, we do a limited amount of sampling to check, with filtering, if there are any easily found bad traces. We call this the pre-EQ step.
+Early monitors produced by L$\star$ contain many missed alarm and false alarms. Verification can find them, however, it has a constant upfront cost. Instead, we do a limited amount of sampling to check, with filtering, if there are any easily found bad traces. We call this the pre-EQ step.
 
 
 
@@ -1261,7 +1264,7 @@ As a baseline, we do not use an EQ oracle but rather only use a conformance orac
 \paragraph{Are the monitors correct?}
 First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute \sj{is this simple to do?}\lm{Yes, stopping the maximalization of the policy when we reach the threshold, we just continue and report the found value afterwards, intstead of just returing true/false.} the trace in the monitor that has the lowest risk (actual alarm threshold, $\lambda_u^{\min}$) and the trace not in the monitor that has the highest risk (actual no-alarm threshold, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
 
-\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and sampling learning respectively.
+\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and sampling learning respectively. A monitor is correct if its red bar stays in the red or gray area, and the green bar stays in the green or gray area. Several incorrect monitors exist in \cref{fig:learnThrSampling}, 6 monitors learned using sampling still had a missed alarm. No monitors had false alarms.
 
 
 \sj{give inequalities wrt to $\lambda_s, \lambda_u$}{ \color{red}\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively
@@ -1290,20 +1293,20 @@ First, we investigate the \emph{actual} performance of the learned monitors. Tha
         \caption{Sampling}
         \label{fig:learnThrSampling}
     \end{subfigure}
-    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and sampling learning.}
+    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and sampling learning. The line between the green and gray area is $\lambda_u$, the line between the red and gray area is $\lambda_s$. The dotted line is $\lambda_l$. Any benchmarks which did not finish are left empty.}
 \end{figure}
 
 \paragraph{How big are the monitors?}
 
 \begin{figure}[t]
-    \begin{subfigure}{.48\linewidth}
+    \begin{subfigure}{.51\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .3cm}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
         \caption{\alg with a gray area}
         \label{fig:monsizes}
     \end{subfigure}\hfill
-    \begin{subfigure}{.48\linewidth}
+    \begin{subfigure}{.47\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
@@ -1392,6 +1395,10 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
 \end{figure}
 
 \input{images/plots/experiments.tex}
+
+\section{Results from Verification Experiment}
+
+\input{images/plots/verify.tex}
 
 \section{Results from Sampling Count Experiment}\label{sec:ressampling}
 
