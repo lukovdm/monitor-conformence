@@ -21,6 +21,7 @@
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
 \newcommand{\lm}[2][]{\todo[color=cyan!50!white,#1]{\footnotesize{Luko: #2}}}
+\newcommand{\li}[2][]{\todo[color=yellow,#1]{\footnotesize{Linus: #2}}}
 \newcommand{\indicator}[1]{[#1]}
 
 \newcommand{\Distr}{\Delta}
@@ -1008,6 +1009,7 @@ Various algorithms implementing the MAT framework for DFA learning exist. For th
 \subsubsection{Verification as a MAT}
 When learning monitors with a MAT we will provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. After learning we obtain the monitor $\dfa$.
 
+% We adapt def 5 to the case of \tau in Z*
 We now define the MAT framework for learning monitors by defining the MQ and the EQ.
 \begin{definition}
     Given any trace $\tau \in \lang{\mc}$, a MQ$_{\lambda_l}$ is a function $f$, where $f(\tau)$ is unsafe only if,
@@ -1023,7 +1025,7 @@ The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitors
 Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe.\sj{Isnt this repeating definitions from above?}
 \sj{This next thing is important, it basically says that our definition assumes only traces that exist in the HMM, but that the MAT framework does not account for that. Make that explicit.}
 If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.
-\begin{definition}
+\begin{definition}\label{def:toverEQ}
     Given a monitor $ $ an EQ$_{\lambda_s, \lambda_u}$ is a function such that:
     \sj{I think you have to }
 \end{definition}
@@ -1042,18 +1044,14 @@ We define the EQ using verification. In order to check a monitor is correct we h
 \lm{Should this be perfect, is the monitor perfect? or informal, is it good enough}.\begin{lemma}
     Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned using L$\star$ is correct (in the sense of Def.X\sj{fix}).
 \end{lemma}\lm{Somehow state this holds}
+% Het kan nooit zo zijn dat een EQ het oneens is met een MQ dat is zo als $\lamba_s < lambda l < lambda u$
+% Door de correctheid van L* is dit correct
 
 \sj{I would integrate this to the correctness argument. }
-Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area\lm{I don't like this term} given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors\lm{Maybe just not include this last bit?}. We verify this experimentally in \cref{sec:experiments}.
+Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area\lm{I don't like this term} given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors\lm{Maybe just not include this last bit?}. We verify this experimentally in \cref{sec:experiments}. % We investigate the result of gray area in sec 6 Q4
 
 \subsubsection{Improvements}
-We are able to make several practical improvements to the approach described above using already described concepts.
-\sj{This now mostly is about conformance checking and mixing both. I think it may be good to say that you can also do conformance checking rather than equivalence checking and say that we use a hybrid for the given reason}
-
-
-Early monitors produced by L$\star$ contain many missed alarm and false alarms. Verification can find them, however, it has a constant upfront cost. Instead, we do a limited amount of sampling to check, with filtering, if there are any easily found bad traces. We call this the pre-EQ step.
-
-
+An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{}, where we test a monitor using a large amount of sampling. In our approach we use a hybrid of the twe queries. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, it has a constant upfront cost. Conformance queries can often find a counter example faster if one has a high probabilty of occuring.
 
 \section{Computational Complexity}\label{sec:compl}
 \begin{theorem}
@@ -1206,6 +1204,7 @@ This follows from a strict reduction from MAX-3SAT, which is an inapproximable a
 
 
 \section{Experiments}\label{sec:experiments}\sj{I would not start using \alg before this section but rather use it as a name of our tool}
+\lm[inline]{TODO: rewrite using new questions}
 \noindent In this section, we empirically evaluate the monitor verification (\cref{sec:monver}) and monitor learning (\cref{sec:learning}) using our  prototype implementation called \alg.
 We aim to answer the following questions:
 We evaluate the verifier with the following questions:
@@ -1235,7 +1234,7 @@ We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden
 While the existing benchmarks contain many observations, the new benchmarks only have a few different observations.
 Every benchmark is analyzed with respect to different horizons and in different sizes.
 The benchmarks have up to hundreds of states and thousands of transitions.
-Details are given in \cref{sec:benchmarksdescr}.\lm{TODO: Make this table}
+Details are given in \cref{sec:benchmarksdescr}.
 
 
 \subsubsection{Q1 and Q2: Efficiency and Scalability of Monitor Verification}
@@ -1249,14 +1248,30 @@ Details are given in \cref{sec:benchmarksdescr}.\lm{TODO: Make this table}
     \item Discuss results
 \end{itemize}
 
+% lambda found afronden
+% A-12 - A-15
+% Een airport model laten zien in tabel en daar dingen uit halen
+% Klein is makkelijker dan groot
+% hoe beter de monitor hoe lastiger het is
+
+% Alleen A-0, klein en slecht, dan gaat het heel snel
+% We show Airpor to show trends
+% We show refuel/evade to scale to large number of states
+% We show icy-driving to show for low number of obs
+% we observe the following behavior:
+
+% Tijd verdeling:
+% Tover tijd correspondeerd met model en monitor grote
+% PAYNT tijd lost NP probleem op en dus is lastig iets over te zeggen
+
 \subsubsection{Q3: Efficiency of Monitor Learning}
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning} and configure the queries as follows.
-We set a learning threshold $\lambda_l = 0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. The role of $lambda_s \neq \lambda_u$ is evaluated in Q4 below.
+We set a learning threshold $\lambda_l = 0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. The role of $\lambda_s \neq \lambda_u$ is evaluated in Q4 below.
 \footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \cref{sec:ressampling}}
 %\footnote{This value was obtained by running the sampling learner for different sample amounts as can be seen in \cref{fig:samplingn}.}. 
 Before executing an EQ, we run conformance checking with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$ (see \cref{sec:learning}).
-As a baseline, we do not use an EQ oracle but rather only use a conformance oracle as described in Sec. X.\sj{fix}. This conformance oracles decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \cref{sec:ressampling}}.
+As a baseline, we do not use an EQ oracle but rather only use a conformance query as described in \cref{sec:learning}. This conformance query decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \cref{sec:ressampling}}.
 
 %\paragraph{Results}\lm{I don't like the word gray area for describing \alg with slack, but don't know a better name}
 
@@ -1264,97 +1279,92 @@ As a baseline, we do not use an EQ oracle but rather only use a conformance orac
 \paragraph{Are the monitors correct?}
 First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute \sj{is this simple to do?}\lm{Yes, stopping the maximalization of the policy when we reach the threshold, we just continue and report the found value afterwards, intstead of just returing true/false.} the trace in the monitor that has the lowest risk (actual alarm threshold, $\lambda_u^{\min}$) and the trace not in the monitor that has the highest risk (actual no-alarm threshold, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
 
-\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and sampling learning respectively. A monitor is correct if its red bar stays in the red or gray area, and the green bar stays in the green or gray area. Several incorrect monitors exist in \cref{fig:learnThrSampling}, 6 monitors learned using sampling still had a missed alarm. No monitors had false alarms.
-
-
-\sj{give inequalities wrt to $\lambda_s, \lambda_u$}{ \color{red}\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show the minimum false alarm risk and the maximum missed alarm risk for \alg learning and sampling learning respectively
-    The safe threshold is the top of the gray area, and the unsafe threshold is the bottom of the gray area. The dashed line indicates the EQ threshold.
-    Any green lines that cross into the red area, or red lines that cross into the green area indicate incorrect monitors. Such incorrect monitors can ben found in \cref{fig:learnThrSampling} for several of the \textsc{Airport}, \textsc{Hiden-Incentive}, and \textsc{Refuel} models.}
+\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and baseline learning respectively. A monitor is correct if its red bar never touches the green area, and the green bar never touches the red area. Several incorrect monitors exist in \cref{fig:learnThrSampling}, 6 monitors learned with the baseline learner still had a missed alarm. No monitors had false alarms.
 
 \begin{figure}[t]
     \begin{subfigure}{.34\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .3cm}
             \input{images/plots/thresholds_tover_no_slack.pgf}
         \end{adjustbox}
-        \caption{\alg without a gray area}
+        \caption{\alg, $\lambda_u=\lambda_l=\lambda_s$}
         \label{fig:learnThrToverNS}
     \end{subfigure}\hfill
     \begin{subfigure}{.31\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
             \input{images/plots/thresholds_tover_slack.pgf}
         \end{adjustbox}
-        \caption{\alg with a gray area}
+        \caption{\alg, $\lambda_u < \lambda_l < \lambda_s$}
         \label{fig:learnThrToverS}
     \end{subfigure}\hfill
     \begin{subfigure}{.31\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
             \input{images/plots/theresholds_sampling.pgf}
         \end{adjustbox}
-        \caption{Sampling}
+        \caption{Baseline}
         \label{fig:learnThrSampling}
     \end{subfigure}
-    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and sampling learning. The line between the green and gray area is $\lambda_u$, the line between the red and gray area is $\lambda_s$. The dotted line is $\lambda_l$. Any benchmarks which did not finish are left empty.}
+    \caption{\textbf{Q$_3$} All monitor correct: Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and baseline learning. The line between the green and gray area is $\lambda_u$, the line between the red and gray area is $\lambda_s$. The dotted line is $\lambda_l$. Any benchmarks which did not finish are left empty.}
 \end{figure}
 
 \paragraph{How big are the monitors?}
+%Die monitors zijn best groot. Dit zijn voor learning mensen ook grote benchmarks
+% For the literature on AAL these are large monitors
+
+% de monitors zijn groot, hundreds of state
+
+% instead of gray area lambda_s = lambda_u
 
 \begin{figure}[t]
-    \begin{subfigure}{.51\linewidth}
+    \begin{subfigure}{.53\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .3cm}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
-        \caption{\alg with a gray area}
+        \caption{\alg with $\lambda_u < \lambda_l < \lambda_s$}
         \label{fig:monsizes}
     \end{subfigure}\hfill
-    \begin{subfigure}{.47\linewidth}
+    \begin{subfigure}{.46\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
-        \caption{\alg without a gray area}
+        \caption{\alg with $\lambda_u=\lambda_l=\lambda_s$}
         \label{fig:monsizens}
     \end{subfigure}
-    \caption{Comparison of the amount of states in monitors learned using \alg learning compared to sampling learning.}
+    \caption{Comparison of the amount of states in monitors learned using \alg learning compared to baseline learning.}
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
-We describe the runtime of the ater running \alg learning and sampling learning in the \cref{fig:runtime-comp,fig:runtimediv}. \Cref{fig:runtime-comp} shows how the runtime of \alg learning and sampling learning compare. Sampling takes at least about 100\lm{check number} seconds, while \alg learning can take only 2\lm{check} second to find a monitor both algorithms take at most around 9 hours\lm{also check}.
+We describe the runtime of the \alg learning and baseline learning in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp,fig:runtimediv}. \Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} show how the runtime of \alg learning and baseline learning compare. Baseline takes at least about 100\lm{check number} seconds, while \alg learning can take only 2\lm{check} second to find a monitor both algorithms take at most around 9 hours\lm{also check}. Several benchmarks never finished after more then 24 hours and where stopped\lm{I stopped them manually after around a day, so no real timeout. Is this enough in that case?}. Neither of the two learning algorithms is clearly faster than the other.
+
+\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. Most benchmarks are heavily dependant on PAYNT for the runtime. However, several \textsc{Evade} benchmarks spent most of there time in L$\star$. We conjecture this happens because finding counter examples is very fast for this model.
 
 \begin{figure}[t]
+    \begin{subfigure}{.48\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/runtimes_with_slack.pgf}}
+        \caption{Runtime comparison, $\lambda_u < \lambda_l < \lambda_s$}
+        \label{fig:runtime-ws-comp}
+    \end{subfigure}\hfill
+    \begin{subfigure}{.48\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/runtimes_no_slack.pgf}}
+        \caption{Runtime comparison, $\lambda_u=\lambda_l=\lambda_s$}
+        \label{fig:runtime-ns-comp}
+    \end{subfigure}
     \begin{subfigure}{\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/verimon_times.pgf}}
         \caption{Runtime division}
         \label{fig:runtimediv}
     \end{subfigure}
-
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/runtime.pgf}}
-        \caption{Runtime comparison}
-        \label{fig:runtime-comp}
-    \end{subfigure}
-    \caption{Learning experiment results}
+    \caption{Learning experiment runtime results}
 \end{figure}
 
 \subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
+We make use of the same setup as Q3, and compare between $\lambda_u=\lambda_l=\lambda_s$, without a gray area, and $\lambda_u < \lambda_l < \lambda_s$, with a gray area. This does not have an effect on the baseline learner as it only takes $\lambda_l$ into account.
 
-\Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and sampling learning. \cref{fig:monsizes} contains a comparison of monitors learned when allowing \alg learning a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using sampling learning. When not learning with a gray area the difference is smaller. One monitor is slightly smaller when using sampling learning.\lm{I think we should also discuss the learned thresholds here?}
+\Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and baseline learning. \cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using baseline learning. When not learning with a gray area the difference is smaller. Two monitors are smaller when using baseline learning, one monitor was reduced from 4 to 3 states, the other from 7 to 1 state.
 
-
-%
-%
-%For each benchmark we run the both \alg learning and sampling learning for various sizes of the benchmark and horizon. These values, along with a mapping to short names used in the figures can be found in \cref{fig:legend}.
-
-\sj{I will think a bit how to include the discussion/what is missing next}
-\color{black!50}
-\paragraph{Discussion}\lm{I don't discuss the sizes of the models used in not the appendix, is that bad?}
-
-Our results show that using verification learning can allow for finding better monitors without incurring heavy runtime costs. The theoretical guarantee of correct monitors also gives meaningful benefits in an experimental setting. The sampling learner misses some alarms while \alg catches them.
-
-At the same time, the monitors produced by \alg learning are smaller than those learned by sampling in almost all cases. This seems to be partly due to allowing a gray area when using \alg, but even when no gray area is used, we still get a small reduction in size.
-
-The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besides this, the runtime of both \alg learning and sampling learning heavily depends on the exact details of the model. For some benchmarks \alg learning is faster, while for others, sampling learning is faster.
-\color{black}
+\lm[inline]{TODO: monitor learn time with and without gray area.}
 
 \section{Related}
 \begin{itemize}
@@ -1362,8 +1372,8 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
     \item Predictors or so by Ziemek et al.
     \item MDPs as Distribution transformers
     \item Computing conditional probabilities (About reachability conditionals, not ending conditionals)
-    \item Fairness related to semi-consistence and consistence.
 \end{itemize}
+% Wie heeft premise geciteerd
 
 
 \section{Conclusion and Future Work}
@@ -1400,7 +1410,7 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
 
 \input{images/plots/verify.tex}
 
-\section{Results from Sampling Count Experiment}\label{sec:ressampling}
+\section{Results from Baseline Sampling Count Experiment}\label{sec:ressampling}
 
 \begin{figure}[h]
     \begin{subfigure}{.5\linewidth}
@@ -1421,7 +1431,7 @@ The sampling learner needs at least 100\lm{check} seconds to run\lm{why?}. Besid
         }
         \caption{Risk threshold of 0.4}
     \end{subfigure}
-    \caption{Found risk thresholds when using sampling leaning with a different amount of samples in each EQ step. This experiment is done for three different risk thresholds.}
+    \caption{Found risk thresholds when using baseline leaning with a different amount of samples in each EQ step. This experiment is done for three different risk thresholds.}
     \label{fig:samplingn}
 \end{figure}
 
