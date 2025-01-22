@@ -1,93 +1,93 @@
-
-\begin{longtable}[c]{@{}llrrrrrrrrrrrrr@{}}
-\caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
-\label{tab:experiments}
+% Auto generated table
+\begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
+% \caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
+% \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
-\multicolumn{7}{c|}{Benchmark}                                                                      & \multicolumn{4}{c|}{\alg}                                                                & \multicolumn{4}{c}{Sampling}                                        \\
-Name & Short Name & $\lambda_u$ & $\lambda_s$ & $|\Sts|$ & $|\ptrans|$ & \multicolumn{1}{l|}{$|Z|$} & Time (s) & Monitor states & $\lambda_u^{\min}$ & \multicolumn{1}{l|}{$\lambda_s^{\max}$} & Time (s) & Monitor states & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\ 
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Sampling}                                                                                                                                                       \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+ & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
-\endhead
-                airport & A-0 & \sfrac{3}{10} & \sfrac{3}{10} & 45 & 113 & 18 & 3983.53 & 128 & \sfrac{28}{93} & \sfrac{23}{77} & 172.76 & 183 & \sfrac{28}{93} & \sfrac{23}{77}\\
-airport & A-1 & \sfrac{1}{10} & \sfrac{7}{20} & 45 & 113 & 18 & 3112.38 & 74 & \sfrac{3}{26} & \sfrac{23}{77} & 304.18 & 175 & \sfrac{28}{93} & \sfrac{23}{77}\\
-airport & A-2 & \sfrac{3}{10} & \sfrac{3}{10} & 88 & 244 & 32 & 13530.51 & 222 & \sfrac{3}{10} & \sfrac{3}{10} & 311.28 & 238 & \sfrac{3}{10} & \sfrac{1}{1}\\
-airport & A-3 & \sfrac{1}{10} & \sfrac{7}{20} & 88 & 244 & 32 & 9255.42 & 91 & \sfrac{2}{13} & \sfrac{29}{89} & 513.02 & 273 & \sfrac{3}{10} & \sfrac{1}{1}\\
-airport & A-4 & \sfrac{3}{10} & \sfrac{3}{10} & 145 & 423 & 50 & 5222.89 & 250 & \sfrac{3}{10} & \sfrac{29}{97} & 1029.72 & 326 & \sfrac{3}{10} & \sfrac{1}{1}\\
-airport & A-5 & \sfrac{1}{10} & \sfrac{7}{20} & 145 & 423 & 50 & 3612.68 & 143 & \sfrac{12}{97} & \sfrac{20}{59} & 889.61 & 317 & \sfrac{3}{10} & \sfrac{1}{1}\\
-airport & A-6 & \sfrac{3}{10} & \sfrac{3}{10} & 54 & 150 & 18 & 10992.00 & 154 & \sfrac{3}{10} & \sfrac{29}{97} & 309.27 & 228 & \sfrac{3}{10} & \sfrac{29}{97}\\
-airport & A-7 & \sfrac{1}{10} & \sfrac{7}{20} & 54 & 150 & 18 & 2820.88 & 103 & \sfrac{17}{95} & \sfrac{31}{92} & 421.39 & 233 & \sfrac{3}{10} & \sfrac{29}{97}\\
-airport & A-8 & \sfrac{3}{10} & \sfrac{3}{10} & 128 & 440 & 32 & 12964.04 & 381 & \sfrac{3}{10} & \sfrac{3}{10} & 2167.82 & 626 & \sfrac{3}{10} & \sfrac{3}{10}\\
-airport & A-9 & \sfrac{1}{10} & \sfrac{7}{20} & 128 & 440 & 32 & 4275.92 & 128 & \sfrac{9}{61} & \sfrac{1}{3} & 1767.34 & 621 & \sfrac{3}{10} & \sfrac{3}{10}\\
-airport & A-10 & \sfrac{3}{10} & \sfrac{3}{10} & 235 & 917 & 50 & - & - & - & - & - & - & - & -\\
-airport & A-11 & \sfrac{1}{10} & \sfrac{7}{20} & 235 & 917 & 50 & - & - & - & - & - & - & - & -\\
-airport & A-12 & \sfrac{3}{10} & \sfrac{3}{10} & 90 & 334 & 18 & 7838.16 & 129 & \sfrac{10}{33} & \sfrac{13}{44} & 293.90 & 168 & \sfrac{10}{33} & \sfrac{13}{44}\\
-airport & A-13 & \sfrac{1}{10} & \sfrac{7}{20} & 90 & 334 & 18 & 4297.92 & 93 & \sfrac{7}{66} & \sfrac{19}{55} & 261.75 & 175 & \sfrac{10}{33} & \sfrac{13}{44}\\
-airport & A-14 & \sfrac{3}{10} & \sfrac{3}{10} & 176 & 724 & 32 & 28299.34 & 217 & \sfrac{3}{10} & \sfrac{3}{10} & 1020.09 & 286 & \sfrac{3}{10} & \sfrac{1}{1}\\
-airport & A-15 & \sfrac{1}{10} & \sfrac{7}{20} & 176 & 724 & 32 & 10621.05 & 106 & \sfrac{6}{53} & \sfrac{25}{78} & 703.50 & 255 & \sfrac{3}{10} & \sfrac{1}{1}\\
-airport & A-16 & \sfrac{3}{10} & \sfrac{3}{10} & 290 & 1258 & 50 & 8544.17 & 242 & \sfrac{28}{93} & \sfrac{3}{10} & 1257.80 & 308 & \sfrac{28}{93} & \sfrac{1}{1}\\
-airport & A-17 & \sfrac{1}{10} & \sfrac{7}{20} & 290 & 1258 & 50 & 4358.92 & 117 & \sfrac{1}{9} & \sfrac{31}{89} & 1348.91 & 313 & \sfrac{28}{93} & \sfrac{1}{1}\\
-airport & A-18 & \sfrac{3}{10} & \sfrac{3}{10} & 108 & 432 & 18 & 19611.01 & 173 & \sfrac{3}{10} & \sfrac{17}{57} & 762.61 & 244 & \sfrac{3}{10} & \sfrac{17}{57}\\
-airport & A-19 & \sfrac{1}{10} & \sfrac{7}{20} & 108 & 432 & 18 & 2602.35 & 98 & \sfrac{16}{97} & \sfrac{1}{3} & 852.17 & 243 & \sfrac{3}{10} & \sfrac{17}{57}\\
-airport & A-20 & \sfrac{3}{10} & \sfrac{3}{10} & 256 & 1240 & 32 & 10403.48 & 416 & \sfrac{3}{10} & \sfrac{3}{10} & 3402.42 & 659 & \sfrac{3}{10} & \sfrac{3}{10}\\
-airport & A-21 & \sfrac{1}{10} & \sfrac{7}{20} & 256 & 1240 & 32 & 11853.95 & 169 & \sfrac{10}{97} & \sfrac{12}{35} & 4108.96 & 673 & \sfrac{3}{10} & \sfrac{3}{10}\\
-airport & A-22 & \sfrac{3}{10} & \sfrac{3}{10} & 470 & 2550 & 50 & - & - & - & - & - & - & - & -\\
-airport & A-23 & \sfrac{1}{10} & \sfrac{7}{20} & 470 & 2550 & 50 & - & - & - & - & - & - & - & -\\
+\endhead\textsc{Airport} & A-0 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 45 & 113 & 18 & 3983.53 & 128 & \sfrac{28}{93} & \sfrac{23}{77} & 172.76 & 183 & \sfrac{28}{93} & \sfrac{23}{77}\\
+\textsc{Airport} & A-1 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 45 & 113 & 18 & 3112.38 & 74 & \sfrac{3}{26} & \sfrac{23}{77} & 304.18 & 175 & \sfrac{28}{93} & \sfrac{23}{77}\\
+\textsc{Airport} & A-2 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 88 & 244 & 32 & 13530.51 & 222 & \sfrac{3}{10} & \sfrac{3}{10} & 311.28 & 238 & \sfrac{3}{10} & \sfrac{1}{1}\\
+\textsc{Airport} & A-3 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 88 & 244 & 32 & 9255.42 & 91 & \sfrac{2}{13} & \sfrac{29}{89} & 513.02 & 273 & \sfrac{3}{10} & \sfrac{1}{1}\\
+\textsc{Airport} & A-4 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 145 & 423 & 50 & 5222.89 & 250 & \sfrac{3}{10} & \sfrac{29}{97} & 1029.72 & 326 & \sfrac{3}{10} & \sfrac{1}{1}\\
+\textsc{Airport} & A-5 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 145 & 423 & 50 & 3612.68 & 143 & \sfrac{12}{97} & \sfrac{20}{59} & 889.61 & 317 & \sfrac{3}{10} & \sfrac{1}{1}\\
+\textsc{Airport} & A-6 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 54 & 150 & 18 & 10992.00 & 154 & \sfrac{3}{10} & \sfrac{29}{97} & 309.27 & 228 & \sfrac{3}{10} & \sfrac{29}{97}\\
+\textsc{Airport} & A-7 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 54 & 150 & 18 & 2820.88 & 103 & \sfrac{17}{95} & \sfrac{31}{92} & 421.39 & 233 & \sfrac{3}{10} & \sfrac{29}{97}\\
+\textsc{Airport} & A-8 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 128 & 440 & 32 & 12964.04 & 381 & \sfrac{3}{10} & \sfrac{3}{10} & 2167.82 & 626 & \sfrac{3}{10} & \sfrac{3}{10}\\
+\textsc{Airport} & A-9 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 128 & 440 & 32 & 4275.92 & 128 & \sfrac{9}{61} & \sfrac{1}{3} & 1767.34 & 621 & \sfrac{3}{10} & \sfrac{3}{10}\\
+\textsc{Airport} & A-10 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 235 & 917 & 50 & - & - & - & - & - & - & - & -\\
+\textsc{Airport} & A-11 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 235 & 917 & 50 & - & - & - & - & - & - & - & -\\
+\textsc{Airport} & A-12 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 90 & 334 & 18 & 7838.16 & 129 & \sfrac{10}{33} & \sfrac{13}{44} & 293.90 & 168 & \sfrac{10}{33} & \sfrac{13}{44}\\
+\textsc{Airport} & A-13 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 90 & 334 & 18 & 4297.92 & 93 & \sfrac{7}{66} & \sfrac{19}{55} & 261.75 & 175 & \sfrac{10}{33} & \sfrac{13}{44}\\
+\textsc{Airport} & A-14 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 176 & 724 & 32 & 28299.34 & 217 & \sfrac{3}{10} & \sfrac{3}{10} & 1020.09 & 286 & \sfrac{3}{10} & \sfrac{1}{1}\\
+\textsc{Airport} & A-15 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 176 & 724 & 32 & 10621.05 & 106 & \sfrac{6}{53} & \sfrac{25}{78} & 703.50 & 255 & \sfrac{3}{10} & \sfrac{1}{1}\\
+\textsc{Airport} & A-16 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 290 & 1258 & 50 & 8544.17 & 242 & \sfrac{28}{93} & \sfrac{3}{10} & 1257.80 & 308 & \sfrac{28}{93} & \sfrac{1}{1}\\
+\textsc{Airport} & A-17 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 290 & 1258 & 50 & 4358.92 & 117 & \sfrac{1}{9} & \sfrac{31}{89} & 1348.91 & 313 & \sfrac{28}{93} & \sfrac{1}{1}\\
+\textsc{Airport} & A-18 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 108 & 432 & 18 & 19611.01 & 173 & \sfrac{3}{10} & \sfrac{17}{57} & 762.61 & 244 & \sfrac{3}{10} & \sfrac{17}{57}\\
+\textsc{Airport} & A-19 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 108 & 432 & 18 & 2602.35 & 98 & \sfrac{16}{97} & \sfrac{1}{3} & 852.17 & 243 & \sfrac{3}{10} & \sfrac{17}{57}\\
+\textsc{Airport} & A-20 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 256 & 1240 & 32 & 10403.48 & 416 & \sfrac{3}{10} & \sfrac{3}{10} & 3402.42 & 659 & \sfrac{3}{10} & \sfrac{3}{10}\\
+\textsc{Airport} & A-21 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 256 & 1240 & 32 & 11853.95 & 169 & \sfrac{10}{97} & \sfrac{12}{35} & 4108.96 & 673 & \sfrac{3}{10} & \sfrac{3}{10}\\
+\textsc{Airport} & A-22 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 470 & 2550 & 50 & - & - & - & - & - & - & - & -\\
+\textsc{Airport} & A-23 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 470 & 2550 & 50 & - & - & - & - & - & - & - & -\\
 \midrule
-evade & E-0 & \sfrac{3}{10} & \sfrac{3}{10} & 385 & 1473 & 325 & 2214.51 & 218 & \sfrac{3}{10} & \sfrac{6}{25} & 2732.00 & 264 & \sfrac{3}{10} & \sfrac{6}{25}\\
-evade & E-1 & \sfrac{1}{10} & \sfrac{7}{20} & 385 & 1473 & 325 & 944.43 & 144 & \sfrac{3}{10} & \sfrac{5}{16} & 2665.76 & 261 & \sfrac{3}{10} & \sfrac{6}{25}\\
-evade & E-2 & \sfrac{3}{10} & \sfrac{3}{10} & 385 & 1473 & 325 & 4134.45 & 328 & \sfrac{3}{10} & \sfrac{27}{100} & 5320.22 & 369 & \sfrac{3}{10} & \sfrac{27}{100}\\
-evade & E-3 & \sfrac{1}{10} & \sfrac{7}{20} & 385 & 1473 & 325 & 2534.33 & 181 & \sfrac{3}{10} & \sfrac{7}{20} & 5360.52 & 383 & \sfrac{3}{10} & \sfrac{27}{100}\\
+\textsc{Evade} & E-0 & \sfrac{3}{10} & \sfrac{3}{10} & 8 & 385 & 1473 & 325 & 2214.51 & 218 & \sfrac{3}{10} & \sfrac{6}{25} & 2732.00 & 264 & \sfrac{3}{10} & \sfrac{6}{25}\\
+\textsc{Evade} & E-1 & \sfrac{1}{10} & \sfrac{7}{20} & 8 & 385 & 1473 & 325 & 944.43 & 144 & \sfrac{3}{10} & \sfrac{5}{16} & 2665.76 & 261 & \sfrac{3}{10} & \sfrac{6}{25}\\
+\textsc{Evade} & E-2 & \sfrac{3}{10} & \sfrac{3}{10} & 9 & 385 & 1473 & 325 & 4134.45 & 328 & \sfrac{3}{10} & \sfrac{27}{100} & 5320.22 & 369 & \sfrac{3}{10} & \sfrac{27}{100}\\
+\textsc{Evade} & E-3 & \sfrac{1}{10} & \sfrac{7}{20} & 9 & 385 & 1473 & 325 & 2534.33 & 181 & \sfrac{3}{10} & \sfrac{7}{20} & 5360.52 & 383 & \sfrac{3}{10} & \sfrac{27}{100}\\
 \midrule
-hidden_incentive & H-0 & \sfrac{3}{10} & \sfrac{3}{10} & 397 & 1649 & 100 & 9190.18 & 283 & \sfrac{3}{10} & \sfrac{27}{95} & 1448.18 & 348 & \sfrac{3}{10} & \sfrac{43}{99}\\
-hidden_incentive & H-1 & \sfrac{1}{10} & \sfrac{7}{20} & 397 & 1649 & 100 & 3740.06 & 243 & \sfrac{1}{6} & \sfrac{14}{41} & 1360.26 & 338 & \sfrac{3}{10} & \sfrac{43}{99}\\
+\textsc{Hidden-Incentive} & H-0 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 397 & 1649 & 100 & 9190.18 & 283 & \sfrac{3}{10} & \sfrac{27}{95} & 1448.18 & 348 & \sfrac{3}{10} & \sfrac{43}{99}\\
+\textsc{Hidden-Incentive} & H-1 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 397 & 1649 & 100 & 3740.06 & 243 & \sfrac{1}{6} & \sfrac{14}{41} & 1360.26 & 338 & \sfrac{3}{10} & \sfrac{43}{99}\\
 \midrule
-icy-driving & I-0 & \sfrac{3}{10} & \sfrac{3}{10} & 3 & 6 & 2 & 0.70 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 71.39 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
-icy-driving & I-1 & \sfrac{1}{10} & \sfrac{7}{20} & 3 & 6 & 2 & 0.06 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 76.19 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
-icy-driving & I-2 & \sfrac{3}{10} & \sfrac{3}{10} & 3 & 6 & 2 & 1750.09 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 175.51 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
-icy-driving & I-3 & \sfrac{1}{10} & \sfrac{7}{20} & 3 & 6 & 2 & 0.07 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 172.98 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
-icy-driving & I-4 & \sfrac{3}{10} & \sfrac{3}{10} & 3 & 6 & 2 & 0.14 & 8 & \sfrac{13}{40} & \sfrac{1}{10} & 27.81 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
-icy-driving & I-5 & \sfrac{1}{10} & \sfrac{7}{20} & 3 & 6 & 2 & 0.03 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 28.28 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
-icy-driving & I-6 & \sfrac{3}{10} & \sfrac{3}{10} & 27 & 125 & 2 & 102.05 & 5 & \sfrac{5}{12} & \sfrac{11}{37} & 92.19 & 5 & \sfrac{5}{12} & \sfrac{11}{37}\\
-icy-driving & I-7 & \sfrac{1}{10} & \sfrac{7}{20} & 27 & 125 & 2 & 61.50 & 5 & \sfrac{5}{12} & \sfrac{11}{37} & 91.48 & 5 & \sfrac{5}{12} & \sfrac{11}{37}\\
-icy-driving & I-8 & \sfrac{3}{10} & \sfrac{3}{10} & 27 & 125 & 2 & - & - & - & - & - & - & - & -\\
-icy-driving & I-9 & \sfrac{1}{10} & \sfrac{7}{20} & 27 & 125 & 2 & - & - & - & - & - & - & - & -\\
-icy-driving & I-10 & \sfrac{3}{10} & \sfrac{3}{10} & 27 & 125 & 2 & 0.20 & 6 & 1 & \sfrac{13}{67} & 28.60 & 5 & 1 & \sfrac{13}{67}\\
-icy-driving & I-11 & \sfrac{1}{10} & \sfrac{7}{20} & 27 & 125 & 2 & 0.04 & 5 & 1 & \sfrac{13}{67} & 30.03 & 5 & 1 & \sfrac{13}{67}\\
-icy-driving & I-12 & \sfrac{3}{10} & \sfrac{3}{10} & 52 & 250 & 2 & 102.18 & 5 & \sfrac{27}{70} & \sfrac{7}{25} & 90.23 & 5 & \sfrac{27}{70} & \sfrac{7}{25}\\
-icy-driving & I-13 & \sfrac{1}{10} & \sfrac{7}{20} & 52 & 250 & 2 & 95.72 & 5 & \sfrac{27}{70} & \sfrac{7}{25} & 93.22 & 5 & \sfrac{27}{70} & \sfrac{7}{25}\\
-icy-driving & I-14 & \sfrac{3}{10} & \sfrac{3}{10} & 52 & 250 & 2 & - & - & - & - & - & - & - & -\\
-icy-driving & I-15 & \sfrac{1}{10} & \sfrac{7}{20} & 52 & 250 & 2 & - & - & - & - & - & - & - & -\\
-icy-driving & I-16 & \sfrac{3}{10} & \sfrac{3}{10} & 52 & 250 & 2 & 0.14 & 6 & 1 & \sfrac{16}{85} & 30.86 & 5 & 1 & \sfrac{16}{85}\\
-icy-driving & I-17 & \sfrac{1}{10} & \sfrac{7}{20} & 52 & 250 & 2 & 0.04 & 5 & 1 & \sfrac{16}{85} & 31.43 & 5 & 1 & \sfrac{16}{85}\\
+\textsc{Icy-Driving} & I-0 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 3 & 6 & 2 & 0.70 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 71.39 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
+\textsc{Icy-Driving} & I-1 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 3 & 6 & 2 & 0.06 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 76.19 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
+\textsc{Icy-Driving} & I-2 & \sfrac{3}{10} & \sfrac{3}{10} & 25 & 3 & 6 & 2 & 1750.09 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 175.51 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
+\textsc{Icy-Driving} & I-3 & \sfrac{1}{10} & \sfrac{7}{20} & 25 & 3 & 6 & 2 & 0.07 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 172.98 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
+\textsc{Icy-Driving} & I-4 & \sfrac{3}{10} & \sfrac{3}{10} & 3 & 3 & 6 & 2 & 0.14 & 8 & \sfrac{13}{40} & \sfrac{1}{10} & 27.81 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
+\textsc{Icy-Driving} & I-5 & \sfrac{1}{10} & \sfrac{7}{20} & 3 & 3 & 6 & 2 & 0.03 & 2 & \sfrac{13}{40} & \sfrac{1}{10} & 28.28 & 2 & \sfrac{13}{40} & \sfrac{1}{10}\\
+\textsc{Icy-Driving} & I-6 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 27 & 125 & 2 & 102.05 & 5 & \sfrac{5}{12} & \sfrac{11}{37} & 92.19 & 5 & \sfrac{5}{12} & \sfrac{11}{37}\\
+\textsc{Icy-Driving} & I-7 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 27 & 125 & 2 & 61.50 & 5 & \sfrac{5}{12} & \sfrac{11}{37} & 91.48 & 5 & \sfrac{5}{12} & \sfrac{11}{37}\\
+\textsc{Icy-Driving} & I-8 & \sfrac{3}{10} & \sfrac{3}{10} & 25 & 27 & 125 & 2 & - & - & - & - & - & - & - & -\\
+\textsc{Icy-Driving} & I-9 & \sfrac{1}{10} & \sfrac{7}{20} & 25 & 27 & 125 & 2 & - & - & - & - & - & - & - & -\\
+\textsc{Icy-Driving} & I-10 & \sfrac{3}{10} & \sfrac{3}{10} & 3 & 27 & 125 & 2 & 0.20 & 6 & 1 & \sfrac{13}{67} & 28.60 & 5 & 1 & \sfrac{13}{67}\\
+\textsc{Icy-Driving} & I-11 & \sfrac{1}{10} & \sfrac{7}{20} & 3 & 27 & 125 & 2 & 0.04 & 5 & 1 & \sfrac{13}{67} & 30.03 & 5 & 1 & \sfrac{13}{67}\\
+\textsc{Icy-Driving} & I-12 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 52 & 250 & 2 & 102.18 & 5 & \sfrac{27}{70} & \sfrac{7}{25} & 90.23 & 5 & \sfrac{27}{70} & \sfrac{7}{25}\\
+\textsc{Icy-Driving} & I-13 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 52 & 250 & 2 & 95.72 & 5 & \sfrac{27}{70} & \sfrac{7}{25} & 93.22 & 5 & \sfrac{27}{70} & \sfrac{7}{25}\\
+\textsc{Icy-Driving} & I-14 & \sfrac{3}{10} & \sfrac{3}{10} & 25 & 52 & 250 & 2 & - & - & - & - & - & - & - & -\\
+\textsc{Icy-Driving} & I-15 & \sfrac{1}{10} & \sfrac{7}{20} & 25 & 52 & 250 & 2 & - & - & - & - & - & - & - & -\\
+\textsc{Icy-Driving} & I-16 & \sfrac{3}{10} & \sfrac{3}{10} & 3 & 52 & 250 & 2 & 0.14 & 6 & 1 & \sfrac{16}{85} & 30.86 & 5 & 1 & \sfrac{16}{85}\\
+\textsc{Icy-Driving} & I-17 & \sfrac{1}{10} & \sfrac{7}{20} & 3 & 52 & 250 & 2 & 0.04 & 5 & 1 & \sfrac{16}{85} & 31.43 & 5 & 1 & \sfrac{16}{85}\\
 \midrule
-refuel & R-0 & \sfrac{3}{10} & \sfrac{3}{10} & 87 & 871 & 63 & 14.32 & 25 & \sfrac{33}{61} & \sfrac{19}{100} & 109.19 & 27 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-1 & \sfrac{1}{10} & \sfrac{7}{20} & 87 & 871 & 63 & 15.68 & 27 & \sfrac{33}{61} & \sfrac{19}{100} & 110.84 & 27 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-2 & \sfrac{3}{10} & \sfrac{3}{10} & 132 & 1798 & 72 & 30.38 & 32 & \sfrac{25}{77} & \sfrac{14}{97} & 121.21 & 30 & \sfrac{25}{77} & \sfrac{14}{97}\\
-refuel & R-3 & \sfrac{1}{10} & \sfrac{7}{20} & 132 & 1798 & 72 & 201.44 & 31 & \sfrac{25}{77} & \sfrac{14}{97} & 120.02 & 31 & \sfrac{25}{77} & \sfrac{14}{97}\\
-refuel & R-4 & \sfrac{3}{10} & \sfrac{3}{10} & 139 & 1628 & 107 & 52.75 & 40 & \sfrac{33}{61} & \sfrac{19}{100} & 139.53 & 41 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-5 & \sfrac{1}{10} & \sfrac{7}{20} & 139 & 1628 & 107 & 52.02 & 42 & \sfrac{33}{61} & \sfrac{19}{100} & 140.19 & 42 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-6 & \sfrac{3}{10} & \sfrac{3}{10} & 173 & 3429 & 63 & 24.68 & 27 & \sfrac{33}{61} & \sfrac{19}{100} & 121.45 & 25 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-7 & \sfrac{1}{10} & \sfrac{7}{20} & 173 & 3429 & 63 & 26.42 & 27 & \sfrac{33}{61} & \sfrac{19}{100} & 123.68 & 26 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-8 & \sfrac{3}{10} & \sfrac{3}{10} & 263 & 7127 & 72 & 54.80 & 29 & \sfrac{25}{77} & \sfrac{14}{97} & 139.59 & 30 & \sfrac{25}{77} & \sfrac{14}{97}\\
-refuel & R-9 & \sfrac{1}{10} & \sfrac{7}{20} & 263 & 7127 & 72 & 368.99 & 31 & \sfrac{25}{77} & \sfrac{14}{97} & 143.13 & 30 & \sfrac{25}{77} & \sfrac{14}{97}\\
-refuel & R-10 & \sfrac{3}{10} & \sfrac{3}{10} & 277 & 6415 & 107 & 97.30 & 43 & \sfrac{33}{61} & \sfrac{19}{100} & 162.26 & 40 & \sfrac{33}{61} & \sfrac{19}{100}\\
-refuel & R-11 & \sfrac{1}{10} & \sfrac{7}{20} & 277 & 6415 & 107 & 120.52 & 42 & \sfrac{33}{61} & \sfrac{19}{100} & 188.77 & 43 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-0 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 87 & 871 & 63 & 14.32 & 25 & \sfrac{33}{61} & \sfrac{19}{100} & 109.19 & 27 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-1 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 87 & 871 & 63 & 15.68 & 27 & \sfrac{33}{61} & \sfrac{19}{100} & 110.84 & 27 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-2 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 132 & 1798 & 72 & 30.38 & 32 & \sfrac{25}{77} & \sfrac{14}{97} & 121.21 & 30 & \sfrac{25}{77} & \sfrac{14}{97}\\
+\textsc{Refuel} & R-3 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 132 & 1798 & 72 & 201.44 & 31 & \sfrac{25}{77} & \sfrac{14}{97} & 120.02 & 31 & \sfrac{25}{77} & \sfrac{14}{97}\\
+\textsc{Refuel} & R-4 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 139 & 1628 & 107 & 52.75 & 40 & \sfrac{33}{61} & \sfrac{19}{100} & 139.53 & 41 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-5 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 139 & 1628 & 107 & 52.02 & 42 & \sfrac{33}{61} & \sfrac{19}{100} & 140.19 & 42 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-6 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 173 & 3429 & 63 & 24.68 & 27 & \sfrac{33}{61} & \sfrac{19}{100} & 121.45 & 25 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-7 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 173 & 3429 & 63 & 26.42 & 27 & \sfrac{33}{61} & \sfrac{19}{100} & 123.68 & 26 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-8 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 263 & 7127 & 72 & 54.80 & 29 & \sfrac{25}{77} & \sfrac{14}{97} & 139.59 & 30 & \sfrac{25}{77} & \sfrac{14}{97}\\
+\textsc{Refuel} & R-9 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 263 & 7127 & 72 & 368.99 & 31 & \sfrac{25}{77} & \sfrac{14}{97} & 143.13 & 30 & \sfrac{25}{77} & \sfrac{14}{97}\\
+\textsc{Refuel} & R-10 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 277 & 6415 & 107 & 97.30 & 43 & \sfrac{33}{61} & \sfrac{19}{100} & 162.26 & 40 & \sfrac{33}{61} & \sfrac{19}{100}\\
+\textsc{Refuel} & R-11 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 277 & 6415 & 107 & 120.52 & 42 & \sfrac{33}{61} & \sfrac{19}{100} & 188.77 & 43 & \sfrac{33}{61} & \sfrac{19}{100}\\
 \midrule
-snakes_ladders & S-0 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 2.44 & 24 & \sfrac{17}{20} & \sfrac{5}{24} & 304.14 & 33 & \sfrac{17}{20} & \sfrac{5}{24}\\
-snakes_ladders & S-1 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 1.92 & 23 & \sfrac{17}{20} & \sfrac{5}{24} & 317.51 & 31 & \sfrac{17}{20} & \sfrac{5}{24}\\
-snakes_ladders & S-2 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 6.43 & 42 & \sfrac{2}{5} & \sfrac{5}{24} & 404.83 & 64 & \sfrac{2}{5} & \sfrac{5}{24}\\
-snakes_ladders & S-3 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 11.39 & 42 & \sfrac{2}{5} & \sfrac{5}{24} & 390.89 & 62 & \sfrac{2}{5} & \sfrac{5}{24}\\
-snakes_ladders & S-4 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 97.99 & 78 & \sfrac{11}{28} & \sfrac{5}{17} & 1075.97 & 111 & \sfrac{11}{28} & \sfrac{5}{17}\\
-snakes_ladders & S-5 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 68.09 & 64 & \sfrac{25}{86} & \sfrac{5}{17} & 812.45 & 114 & \sfrac{11}{28} & \sfrac{5}{17}\\
-snakes_ladders & S-6 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 291.77 & 129 & \sfrac{23}{74} & \sfrac{23}{78} & 448.13 & 178 & \sfrac{23}{74} & \sfrac{23}{78}\\
-snakes_ladders & S-7 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 155.05 & 150 & \sfrac{23}{74} & \sfrac{23}{78} & 1334.71 & 193 & \sfrac{23}{74} & \sfrac{23}{78}\\
-snakes_ladders & S-8 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 962.41 & 214 & \sfrac{23}{74} & \sfrac{23}{78} & 1259.73 & 295 & \sfrac{23}{74} & \sfrac{23}{78}\\
-snakes_ladders & S-9 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 1358.30 & 215 & \sfrac{21}{67} & \sfrac{29}{92} & 656.67 & 298 & \sfrac{23}{74} & \sfrac{23}{78}\\
-snakes_ladders & S-10 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 4995.18 & 343 & \sfrac{11}{36} & \sfrac{23}{78} & 1047.12 & 448 & \sfrac{11}{36} & \sfrac{23}{78}\\
-snakes_ladders & S-11 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 4797.06 & 310 & \sfrac{11}{36} & \sfrac{7}{22} & 1240.98 & 459 & \sfrac{11}{36} & \sfrac{23}{78}\\
-snakes_ladders & S-12 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & 14325.03 & 501 & \sfrac{22}{73} & \sfrac{23}{78} & 860.93 & 638 & \sfrac{22}{73} & \sfrac{1}{1}\\
-snakes_ladders & S-13 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & 15589.67 & 523 & \sfrac{22}{73} & \sfrac{29}{95} & 898.79 & 677 & \sfrac{22}{73} & \sfrac{23}{78}\\
-snakes_ladders & S-14 & \sfrac{3}{10} & \sfrac{3}{10} & 101 & 502 & 4 & - & - & - & - & - & - & - & -\\
-snakes_ladders & S-15 & \sfrac{1}{10} & \sfrac{7}{20} & 101 & 502 & 4 & - & - & - & - & - & - & - & -\\
+\textsc{SnL} & S-0 & \sfrac{3}{10} & \sfrac{3}{10} & 10 & 101 & 502 & 4 & 2.44 & 24 & \sfrac{17}{20} & \sfrac{5}{24} & 304.14 & 33 & \sfrac{17}{20} & \sfrac{5}{24}\\
+\textsc{SnL} & S-1 & \sfrac{1}{10} & \sfrac{7}{20} & 10 & 101 & 502 & 4 & 1.92 & 23 & \sfrac{17}{20} & \sfrac{5}{24} & 317.51 & 31 & \sfrac{17}{20} & \sfrac{5}{24}\\
+\textsc{SnL} & S-2 & \sfrac{3}{10} & \sfrac{3}{10} & 11 & 101 & 502 & 4 & 6.43 & 42 & \sfrac{2}{5} & \sfrac{5}{24} & 404.83 & 64 & \sfrac{2}{5} & \sfrac{5}{24}\\
+\textsc{SnL} & S-3 & \sfrac{1}{10} & \sfrac{7}{20} & 11 & 101 & 502 & 4 & 11.39 & 42 & \sfrac{2}{5} & \sfrac{5}{24} & 390.89 & 62 & \sfrac{2}{5} & \sfrac{5}{24}\\
+\textsc{SnL} & S-4 & \sfrac{3}{10} & \sfrac{3}{10} & 12 & 101 & 502 & 4 & 97.99 & 78 & \sfrac{11}{28} & \sfrac{5}{17} & 1075.97 & 111 & \sfrac{11}{28} & \sfrac{5}{17}\\
+\textsc{SnL} & S-5 & \sfrac{1}{10} & \sfrac{7}{20} & 12 & 101 & 502 & 4 & 68.09 & 64 & \sfrac{25}{86} & \sfrac{5}{17} & 812.45 & 114 & \sfrac{11}{28} & \sfrac{5}{17}\\
+\textsc{SnL} & S-6 & \sfrac{3}{10} & \sfrac{3}{10} & 13 & 101 & 502 & 4 & 291.77 & 129 & \sfrac{23}{74} & \sfrac{23}{78} & 448.13 & 178 & \sfrac{23}{74} & \sfrac{23}{78}\\
+\textsc{SnL} & S-7 & \sfrac{1}{10} & \sfrac{7}{20} & 13 & 101 & 502 & 4 & 155.05 & 150 & \sfrac{23}{74} & \sfrac{23}{78} & 1334.71 & 193 & \sfrac{23}{74} & \sfrac{23}{78}\\
+\textsc{SnL} & S-8 & \sfrac{3}{10} & \sfrac{3}{10} & 14 & 101 & 502 & 4 & 962.41 & 214 & \sfrac{23}{74} & \sfrac{23}{78} & 1259.73 & 295 & \sfrac{23}{74} & \sfrac{23}{78}\\
+\textsc{SnL} & S-9 & \sfrac{1}{10} & \sfrac{7}{20} & 14 & 101 & 502 & 4 & 1358.30 & 215 & \sfrac{21}{67} & \sfrac{29}{92} & 656.67 & 298 & \sfrac{23}{74} & \sfrac{23}{78}\\
+\textsc{SnL} & S-10 & \sfrac{3}{10} & \sfrac{3}{10} & 15 & 101 & 502 & 4 & 4995.18 & 343 & \sfrac{11}{36} & \sfrac{23}{78} & 1047.12 & 448 & \sfrac{11}{36} & \sfrac{23}{78}\\
+\textsc{SnL} & S-11 & \sfrac{1}{10} & \sfrac{7}{20} & 15 & 101 & 502 & 4 & 4797.06 & 310 & \sfrac{11}{36} & \sfrac{7}{22} & 1240.98 & 459 & \sfrac{11}{36} & \sfrac{23}{78}\\
+\textsc{SnL} & S-12 & \sfrac{3}{10} & \sfrac{3}{10} & 16 & 101 & 502 & 4 & 14325.03 & 501 & \sfrac{22}{73} & \sfrac{23}{78} & 860.93 & 638 & \sfrac{22}{73} & \sfrac{1}{1}\\
+\textsc{SnL} & S-13 & \sfrac{1}{10} & \sfrac{7}{20} & 16 & 101 & 502 & 4 & 15589.67 & 523 & \sfrac{22}{73} & \sfrac{29}{95} & 898.79 & 677 & \sfrac{22}{73} & \sfrac{23}{78}\\
+\textsc{SnL} & S-14 & \sfrac{3}{10} & \sfrac{3}{10} & 17 & 101 & 502 & 4 & - & - & - & - & - & - & - & -\\
+\textsc{SnL} & S-15 & \sfrac{1}{10} & \sfrac{7}{20} & 17 & 101 & 502 & 4 & - & - & - & - & - & - & - & -\\
 
 \bottomrule
 \end{longtable}

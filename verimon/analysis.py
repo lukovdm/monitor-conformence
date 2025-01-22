@@ -156,23 +156,32 @@ def load_experiment_data(path):
 def generate_experiment_table(
     data, save_figures=False, save_path="./", file_name="runtime"
 ):
-    preamble = r"""
-\begin{longtable}[c]{@{}llrrrrrrrrrrrrr@{}}
-\caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
-\label{tab:experiments}
+    preamble = r"""% Auto generated table
+\begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
+% \caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
+% \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
-\multicolumn{7}{c|}{Benchmark}                                                                      & \multicolumn{4}{c|}{\alg}                                                                & \multicolumn{4}{c}{Sampling}                                        \\
-Name & Short Name & $\lambda_u$ & $\lambda_s$ & $|\Sts|$ & $|\ptrans|$ & \multicolumn{1}{l|}{$|Z|$} & Time (s) & Monitor states & $\lambda_u^{\min}$ & \multicolumn{1}{l|}{$\lambda_s^{\max}$} & Time (s) & Monitor states & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\ 
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Sampling}                                                                                                                                                       \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+ & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
-\endhead
-                """
+\endhead"""
 
+    name_map = {
+        "airport": r"\textsc{Airport}",
+        "evade": r"\textsc{Evade}",
+        "refuel": r"\textsc{Refuel}",
+        "icy-driving": r"\textsc{Icy-Driving}",
+        "hidden_incentive": r"\textsc{Hidden-Incentive}",
+        "snakes_ladders": r"\textsc{SnL}",
+    }
     tab_data = [
         [
-            d["experiment"]["name"],
+            name_map[d["experiment"]["name"]],
             d["experiment"]["short_name"],
             d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
             d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
+            d["experiment"]["horizon"],
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
