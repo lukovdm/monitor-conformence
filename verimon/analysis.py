@@ -211,8 +211,8 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 % \caption{Table of all experiments with runtime and monitor states for baseline and \alg learning}
 % \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
- & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
-\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+ & & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                                       \\
+\cmidrule(lr){3-10}\cmidrule(lr){11-14}
  & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Time \alg (s) & Time PAYNT (s) & $\lambda^{found}$  \\
 \midrule
 \endhead"""
@@ -225,10 +225,20 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
         "hidden_incentive": r"\textsc{Hidden-Incentive}",
         "snakes_ladders": r"\textsc{SnL}",
     }
+    file_map = {
+        "tests/premise/airportA-3.nm": r"\textsc{AirportA-3}",
+        "tests/premise/airportA-7.nm": r"\textsc{AirportA-7}",
+        "tests/premise/airportB-3.nm": r"\textsc{AirportB-3}",
+        "tests/premise/airportB-7.nm": r"\textsc{AirportB-7}",
+        "tests/premise/refuel.nm": r"\textsc{Refuel}",
+        "tests/premise/refuelB.nm": r"\textsc{RefuelB}",
+    }
 
     tab_data = [
         [
-            name_map[d["experiment"]["learn_experiment"]["name"]],
+            file_map[d["experiment"]["mc"]]
+            if d["experiment"]["mc"] in file_map
+            else name_map[d["experiment"]["learn_experiment"]["name"]],
             d["experiment"]["short_name"],
             d["experiment"]["threshold"]
             if d["experiment"]["threshold"] is not None
