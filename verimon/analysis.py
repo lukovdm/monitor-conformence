@@ -1,3 +1,4 @@
+from collections import Counter
 from fractions import Fraction
 import json
 from math import ceil
@@ -53,7 +54,7 @@ def add_short_names(data, verify=False):
         variant_indexes[name] += 1
 
 
-def add_symbol_color(data, verify=False):
+def add_symbol_color(data, verify=False, color_map="hsv"):
     symbols = [
         "o",
         "s",
@@ -68,11 +69,14 @@ def add_symbol_color(data, verify=False):
     ]
     seed(42)
     shuffle(symbols)
-    colors = plt.get_cmap("tab20")
+    colors = plt.get_cmap(color_map)
 
     if verify:
         experiment_names = set(
             data["experiment"]["learn_experiment"]["name"] for data in data
+        )
+        experiment_name_counter = Counter(
+            [data["experiment"]["learn_experiment"]["name"] for data in data]
         )
         experiment_symbols = {
             name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
@@ -82,16 +86,36 @@ def add_symbol_color(data, verify=False):
             exp["symbol"] = experiment_symbols[
                 exp["experiment"]["learn_experiment"]["name"]
             ]
-            exp["color"] = colors(i % colors.N)
+            exp["color"] = colors(
+                (
+                    i
+                    % (
+                        experiment_name_counter[
+                            exp["experiment"]["learn_experiment"]["name"]
+                        ]
+                        - 1
+                    )
+                )
+                / (
+                    experiment_name_counter[
+                        exp["experiment"]["learn_experiment"]["name"]
+                    ]
+                    - 1
+                )
+            )
     else:
         experiment_names = set(data["experiment"]["name"] for data in data)
+        experiment_name_counter = Counter([data["experiment"]["name"] for data in data])
         experiment_symbols = {
             name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
         }
 
         for i, exp in enumerate(data):
             exp["symbol"] = experiment_symbols[exp["experiment"]["name"]]
-            exp["color"] = colors(i % colors.N)
+            exp["color"] = colors(
+                (i % (experiment_name_counter[exp["experiment"]["name"]] - 1))
+                / (experiment_name_counter[exp["experiment"]["name"]] - 1)
+            )
 
     return symbols, colors
 
@@ -160,15 +184,18 @@ def load_experiment_data(path):
                         }
 
             if "result" in data and "error" in data["result"]:
-                data["result"] = {
-                    "fake": True,
-                    "goal_threshold": -1,
-                    "pomdp_states": 0,
-                    "time": 10**4,
-                    "product_time": 0,
-                    "paynt_time": 0,
-                    "double_check_time": 0,
-                }
+                if data["result"]["error"] == "No result":
+                    data["result"]["goal_threshold"] = None
+                else:
+                    data["result"] = {
+                        "fake": True,
+                        "goal_threshold": -1,
+                        "pomdp_states": 0,
+                        "time": 10**4,
+                        "product_time": 0,
+                        "paynt_time": 0,
+                        "double_check_time": 0,
+                    }
             experiment_data.append(data)
 
     print(f"Loaded {len(experiment_data)} JSON files from {path}")
@@ -181,10 +208,10 @@ def load_experiment_data(path):
 def generate_verify_table(data, save_figures=False, save_path="./", file_name="verify"):
     preamble = r"""% Auto generated table
 \begin{longtable}[c]{@{}llrrrrrrrrrrrr@{}}
-% \caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
+% \caption{Table of all experiments with runtime and monitor states for baseline and \alg learning}
 % \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
- & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Sampling}                                                                                                                                                       \\
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
 \cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
  & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Time \alg (s) & Time PAYNT (s) & $\lambda^{found}$  \\
 \midrule
@@ -216,7 +243,9 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["result"]["time"] if "fake" not in d["result"] else "-",
             d["result"]["product_time"] if "fake" not in d["result"] else "-",
             d["result"]["paynt_time"] if "fake" not in d["result"] else "-",
-            d["result"]["goal_threshold"] if "fake" not in d["result"] else "-",
+            d["result"]["goal_threshold"]
+            if "fake" not in d["result"] and d["result"]["goal_threshold"] is not None
+            else "-",
         ]
         for d in data
     ]
@@ -232,10 +261,10 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 def generate_learn_table(data, save_figures=False, save_path="./", file_name="runtime"):
     preamble = r"""% Auto generated table
 \begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
-% \caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
+% \caption{Table of all experiments with runtime and monitor states for baseline and \alg learning}
 % \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
- & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Sampling}                                                                                                                                                       \\
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
 \cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
  & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
@@ -335,7 +364,7 @@ def compare_runtimes(
     plt.text(
         max_lim * (1 / offset),
         offset * 0.1,
-        "Sampling is faster",
+        "Baseline is faster",
         color="gray",
         ha="right",
         va="bottom",
@@ -406,7 +435,7 @@ def compare_runtimes(
         (10**5, 10**5),
         color="k",
         linestyle="-",
-        label="Sampling timeout",
+        label="Baseline timeout",
     )
 
     for data in exp_data:
@@ -431,11 +460,11 @@ def compare_runtimes(
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} run time (s log)")
+    plt.xlabel(xlabel if xlabel else "ToVer run time (s log)")
     if not show_y_axis:
         plt.ylabel("")
     else:
-        plt.ylabel(ylabel if ylabel else f"{key2.capitalize()} run time (s log)")
+        plt.ylabel(ylabel if ylabel else "Baseline run time (s log)")
 
     plt.yticks(
         [10**i for i in range(-1, 6)],
@@ -482,7 +511,7 @@ def compare_monitor_sizes(
     plt.text(
         max_lim * (1 / offset),
         offset,
-        "Sampling is smaller",
+        "Baseline is smaller",
         color="gray",
         ha="right",
         va="bottom",
@@ -565,14 +594,15 @@ def compare_monitor_sizes(
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.xlabel(xlabel if xlabel else f"{key1.capitalize()} monitor states (log)")
+    plt.xlabel(xlabel if xlabel else "ToVer monitor states (log)")
     if not show_y_axis:
         plt.ylabel("")
-        # plt.yticks([])
+        plt.yticks([10**i for i in range(0, 4)], ["" for i in range(0, 4)])
     else:
         plt.ylabel(
-            ylabel if ylabel else f"{key2.capitalize()} monitor states (log)",
-            loc="center",
+            ylabel if ylabel else "Baseline monitor states (log)",
+            ha="center",
+            y=0.43,
         )
 
     # plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
@@ -672,7 +702,6 @@ def compare_thresholds_bar(
     keys: list[str],
     bottom_name: str,
     bottom_func,
-    colors,
     threshold=0.3,
     fn_slack=0.0,
     fp_slack=0.0,
@@ -687,6 +716,7 @@ def compare_thresholds_bar(
     file_name="thresholds",
     show_y_axis: bool = True,
 ):
+    colors = plt.get_cmap("tab20")
     fig, ax = plt.subplots()
 
     ax.fill_betweenx(
@@ -774,7 +804,6 @@ def compare_thresholds_bar(
             color=colors(i + 4 % colors.N),
         )
 
-    plt.xlabel(xlabel if xlabel else bottom_name.capitalize())
     if not show_y_axis:
         plt.ylabel("")
         ax.set_yticklabels(["" for _ in ax.get_yticks()])
@@ -800,6 +829,7 @@ def runtime_by_params(
     exp_data,
     key: str,
     params: list[tuple[str, str, str]],
+    time_key: str = "time",
     title: str | None = None,
     figsize: tuple = (10, 10),
     xlabel: str | None = None,
@@ -820,7 +850,7 @@ def runtime_by_params(
                 (xv, yv)
                 for xv, yv in zip(
                     [d[param[0]][param[1]] for d in exp_data],
-                    [d[key]["time"] for d in exp_data],
+                    [d[key][time_key] for d in exp_data],
                 )
                 if yv is not None and xv is not None
             ]
@@ -839,7 +869,7 @@ def runtime_by_params(
                 val = "None" if val is None else val
                 if val not in groups:
                     groups[val] = []
-                t = d[key]["time"]
+                t = d[key][time_key]
                 if t is not None:
                     groups[val].append(t)
 
@@ -850,7 +880,7 @@ def runtime_by_params(
                 val = data[param[0]][param[1]]
                 ax.scatter(
                     val,
-                    data[key]["time"],
+                    data[key][time_key],
                     marker=data["symbol"],
                     color=data["color"],
                     label=name_func(data),
@@ -867,7 +897,7 @@ def runtime_by_params(
         ax.set_title(
             title
             if title
-            else f"{param[1].replace('_', ' ').capitalize()} to {key.capitalize()} Run Time"
+            else f"{param[1].replace('_', ' ').capitalize()} to {key.capitalize()} Run {time_key.capitalize()}"
         )
         ax.grid(True, which="both", ls="--")
 
