@@ -196,21 +196,21 @@ class LearningExperiment(Experiment):
             logger.info(
                 f"-----------------------------------\n"
                 f"Learning Finished.\n"
-                f'Learning Rounds:  {verimon_info["learning_rounds"]}\n'
-                f'Number of states: {verimon_info["automaton_size"]}\n'
+                f"Learning Rounds:  {verimon_info['learning_rounds']}\n"
+                f"Number of states: {verimon_info['automaton_size']}\n"
                 f"Time (in seconds)\n"
-                f'  Total                  : {verimon_info["total_time"]}\n'
-                f'  Learning algorithm     : {verimon_info["learning_time"]}\n'
-                f'  Conformance checking   : {verimon_info["eq_oracle_time"]}\n'
+                f"  Total                  : {verimon_info['total_time']}\n"
+                f"  Learning algorithm     : {verimon_info['learning_time']}\n"
+                f"  Conformance checking   : {verimon_info['eq_oracle_time']}\n"
                 f"Learning Algorithm\n"
-                f' # Membership Queries    : {verimon_info["queries_learning"]}\n'
-                f' # Steps                 : {verimon_info["steps_learning"]}\n'
+                f" # Membership Queries    : {verimon_info['queries_learning']}\n"
+                f" # Steps                 : {verimon_info['steps_learning']}\n"
                 f"Equivalence Query\n"
-                f' # Membership Queries    : {verimon_info["queries_eq_oracle"]}\n'
-                f' # Steps                 : {verimon_info["steps_eq_oracle"]}\n'
-                f' # EQ oracle used        : {stats["eq_used"]}\n'
-                f' # False positives found : {stats["fp_found"]}\n'
-                f' # False negatives found : {stats["fn_found"]}\n'
+                f" # Membership Queries    : {verimon_info['queries_eq_oracle']}\n"
+                f" # Steps                 : {verimon_info['steps_eq_oracle']}\n"
+                f" # EQ oracle used        : {stats['eq_used']}\n"
+                f" # False positives found : {stats['fp_found']}\n"
+                f" # False negatives found : {stats['fn_found']}\n"
                 f"-----------------------------------"
             )
             verimon_learned_monitor.visualize(
@@ -299,18 +299,18 @@ class LearningExperiment(Experiment):
         logger.info(
             f"-----------------------------------\n"
             f"Learning Finished.\n"
-            f'Learning Rounds:  {trad_info["learning_rounds"]}\n'
-            f'Number of states: {trad_info["automaton_size"]}\n'
+            f"Learning Rounds:  {trad_info['learning_rounds']}\n"
+            f"Number of states: {trad_info['automaton_size']}\n"
             f"Time (in seconds)\n"
-            f'  Total                : {trad_info["total_time"]}\n'
-            f'  Learning algorithm   : {trad_info["learning_time"]}\n'
-            f'  Conformance checking : {trad_info["eq_oracle_time"]}\n'
+            f"  Total                : {trad_info['total_time']}\n"
+            f"  Learning algorithm   : {trad_info['learning_time']}\n"
+            f"  Conformance checking : {trad_info['eq_oracle_time']}\n"
             f"Learning Algorithm\n"
-            f' # Membership Queries  : {trad_info["queries_learning"]}\n'
-            f' # Steps               : {trad_info["steps_learning"]}\n'
+            f" # Membership Queries  : {trad_info['queries_learning']}\n"
+            f" # Steps               : {trad_info['steps_learning']}\n"
             f"Equivalence Query\n"
-            f' # Membership Queries  : {trad_info["queries_eq_oracle"]}\n'
-            f' # Steps               : {trad_info["steps_eq_oracle"]}\n'
+            f" # Membership Queries  : {trad_info['queries_eq_oracle']}\n"
+            f" # Steps               : {trad_info['steps_eq_oracle']}\n"
             f"-----------------------------------"
         )
         trad_learned_monitor.visualize(
@@ -516,6 +516,8 @@ class VerifyExperiment(Experiment):
         if results_file:
             exp = json.load(open(results_file, "r"))
             self.results_file = results_file
+            if not exp["finished"]:
+                raise ValueError(f"Experiment not finished: {results_file}")
 
             if intermediate_monitor is not None:
                 mon_idx = int(

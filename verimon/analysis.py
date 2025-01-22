@@ -119,31 +119,56 @@ def load_experiment_data(path):
                 path + "/logs/", json_file.replace(".json", ".log")
             )
 
-            if data["finished"] == False:
+            if not data["finished"]:
                 if "time" not in data:
                     data["time"] = {"total": 0}
                 if (
-                    "verimon" in data["experiment"]["learning_algs"]
-                    and "verimon" not in data
-                ):
-                    data["verimon"] = {
-                        "fake": True,
-                        "time": 10**5,
-                        "monitor_states": 0,
-                        "false_positive": 1,
-                        "false_negative": 0,
-                    }
-                if (
-                    "sampling" in data["experiment"]["learning_algs"]
-                    and "sampling" not in data
-                ):
-                    data["sampling"] = {
-                        "fake": True,
-                        "time": 10**5,
-                        "monitor_states": 0,
-                        "false_positive": 1,
-                        "false_negative": 0,
-                    }
+                    "learning_algs" in data["experiment"]
+                ):  # Fill in gaps of Learning experiment
+                    if (
+                        "verimon" in data["experiment"]["learning_algs"]
+                        and "verimon" not in data
+                    ):
+                        data["verimon"] = {
+                            "fake": True,
+                            "time": 10**5,
+                            "monitor_states": 0,
+                            "false_positive": 1,
+                            "false_negative": 0,
+                        }
+                    if (
+                        "sampling" in data["experiment"]["learning_algs"]
+                        and "sampling" not in data
+                    ):
+                        data["sampling"] = {
+                            "fake": True,
+                            "time": 10**5,
+                            "monitor_states": 0,
+                            "false_positive": 1,
+                            "false_negative": 0,
+                        }
+                elif "learn_experiment" in data["experiment"]:
+                    if "result" not in data:
+                        data["result"] = {
+                            "fake": True,
+                            "goal_threshold": -1,
+                            "pomdp_states": 0,
+                            "time": 10**4,
+                            "product_time": 0,
+                            "paynt_time": 0,
+                            "double_check_time": 0,
+                        }
+
+            if "result" in data and "error" in data["result"]:
+                data["result"] = {
+                    "fake": True,
+                    "goal_threshold": -1,
+                    "pomdp_states": 0,
+                    "time": 10**4,
+                    "product_time": 0,
+                    "paynt_time": 0,
+                    "double_check_time": 0,
+                }
             experiment_data.append(data)
 
     print(f"Loaded {len(experiment_data)} JSON files from {path}")
@@ -153,9 +178,58 @@ def load_experiment_data(path):
     return experiment_data
 
 
-def generate_experiment_table(
-    data, save_figures=False, save_path="./", file_name="runtime"
-):
+def generate_verify_table(data, save_figures=False, save_path="./", file_name="verify"):
+    preamble = r"""% Auto generated table
+\begin{longtable}[c]{@{}llrrrrrrrrrrrr@{}}
+% \caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
+% \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
+\toprule
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Sampling}                                                                                                                                                       \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+ & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Time \alg (s) & Time PAYNT (s) & $\lambda^{found}$  \\
+\midrule
+\endhead"""
+
+    name_map = {
+        "airport": r"\textsc{Airport}",
+        "evade": r"\textsc{Evade}",
+        "refuel": r"\textsc{Refuel}",
+        "icy-driving": r"\textsc{Icy-Driving}",
+        "hidden_incentive": r"\textsc{Hidden-Incentive}",
+        "snakes_ladders": r"\textsc{SnL}",
+    }
+
+    tab_data = [
+        [
+            name_map[d["experiment"]["learn_experiment"]["name"]],
+            d["experiment"]["short_name"],
+            d["experiment"]["threshold"]
+            if d["experiment"]["threshold"] is not None
+            else "-",
+            d["experiment"]["horizon"],
+            "MA" if d["experiment"]["search"] == "fn" else "FA",
+            d["mc"]["mc_states"],
+            d["mc"]["mc_transitions"],
+            d["mc"]["mc_observations"],
+            d["monitor"]["monitor_states"],
+            d["monitor"]["monitor_transitions"],
+            d["result"]["time"] if "fake" not in d["result"] else "-",
+            d["result"]["product_time"] if "fake" not in d["result"] else "-",
+            d["result"]["paynt_time"] if "fake" not in d["result"] else "-",
+            d["result"]["goal_threshold"] if "fake" not in d["result"] else "-",
+        ]
+        for d in data
+    ]
+    tab_with_lines: list[Any] = [tab_data[0]]
+    for line in tab_data[1:]:
+        if line[0] != tab_with_lines[-1][0]:
+            tab_with_lines.append(SEPARATING_LINE)
+        tab_with_lines.append(line)
+
+    generate_table(preamble, tab_with_lines, save_path, file_name)
+
+
+def generate_learn_table(data, save_figures=False, save_path="./", file_name="runtime"):
     preamble = r"""% Auto generated table
 \begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
 % \caption{Table of all experiments with runtime and monitor states for sampling and \alg learning}
@@ -759,6 +833,8 @@ def runtime_by_params(
         if param[2] == "box":
             groups = {}
             for d in exp_data:
+                if "fake" in d[key]:
+                    continue
                 val = d[param[0]][param[1]]
                 val = "None" if val is None else val
                 if val not in groups:
