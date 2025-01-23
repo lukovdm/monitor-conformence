@@ -209,7 +209,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 \toprule
  & & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                                       \\
 \cmidrule(lr){3-10}\cmidrule(lr){11-14}
- & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & \alg (s) & PAYNT (s) & $\lambda^{found}$  \\
+ & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Trans (s) & PAYNT (s) & $\lambda^{found}$  \\
 \midrule
 \endhead"""
 
@@ -249,7 +249,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["result"]["time"] if "fake" not in d["result"] else "-",
             d["result"]["product_time"] if "fake" not in d["result"] else "-",
             d["result"]["paynt_time"] if "fake" not in d["result"] else "-",
-            d["result"]["goal_threshold"]
+            float(d["result"]["goal_threshold"])
             if "fake" not in d["result"] and d["result"]["goal_threshold"] is not None
             else "-",
         ]
@@ -296,12 +296,20 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_observations"],
             d["verimon"]["time"] if "fake" not in d["verimon"] else "-",
             d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else "-",
-            d["verimon"]["false_positive"] if "fake" not in d["verimon"] else "-",
-            d["verimon"]["false_negative"] if "fake" not in d["verimon"] else "-",
+            float(d["verimon"]["false_positive"])
+            if "fake" not in d["verimon"]
+            else "-",
+            float(d["verimon"]["false_negative"])
+            if "fake" not in d["verimon"]
+            else "-",
             d["sampling"]["time"] if "fake" not in d["sampling"] else "-",
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else "-",
-            d["sampling"]["false_positive"] if "fake" not in d["sampling"] else "-",
-            d["sampling"]["false_negative"] if "fake" not in d["sampling"] else "-",
+            float(d["sampling"]["false_positive"])
+            if "fake" not in d["sampling"]
+            else "-",
+            float(d["sampling"]["false_negative"])
+            if "fake" not in d["sampling"]
+            else "-",
         ]
         for d in data
     ]
@@ -326,10 +334,7 @@ def generate_table(preamble, data, save_path="./", file_name="runtime"):
                     if isinstance(e, float):
                         str_line.append(f"{e:.2f}")
                     elif isinstance(e, Fraction):
-                        frac = e.limit_denominator(100)
-                        str_line.append(
-                            f"\\sfrac{{{frac.numerator}}}{{{frac.denominator}}}"
-                        )
+                        str_line.append(f"\\sfrac{{{e.numerator}}}{{{e.denominator}}}")
                     else:
                         str_line.append(str(e))
                 f.write(" & ".join(e for e in str_line) + r"\\" + "\n")
