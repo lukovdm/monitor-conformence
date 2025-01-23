@@ -68,7 +68,6 @@ def add_symbol_color(data, verify=False, color_map="hsv"):
         "d",
     ]
     seed(42)
-    shuffle(symbols)
     colors = plt.get_cmap(color_map)
 
     if verify:
@@ -79,7 +78,8 @@ def add_symbol_color(data, verify=False, color_map="hsv"):
             [data["experiment"]["learn_experiment"]["name"] for data in data]
         )
         experiment_symbols = {
-            name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
+            name: symbols[i % len(symbols)]
+            for i, name in enumerate(sorted(experiment_names))
         }
 
         for i, exp in enumerate(data):
@@ -93,28 +93,24 @@ def add_symbol_color(data, verify=False, color_map="hsv"):
                         experiment_name_counter[
                             exp["experiment"]["learn_experiment"]["name"]
                         ]
-                        - 1
                     )
                 )
-                / (
-                    experiment_name_counter[
-                        exp["experiment"]["learn_experiment"]["name"]
-                    ]
-                    - 1
-                )
+                % 20
             )
     else:
-        experiment_names = set(data["experiment"]["name"] for data in data)
+        experiment_names = set(data["experiment"]["name"] for data in data).difference(
+            ["compare-trad"]
+        )
         experiment_name_counter = Counter([data["experiment"]["name"] for data in data])
         experiment_symbols = {
-            name: symbols[i % len(symbols)] for i, name in enumerate(experiment_names)
+            name: symbols[i % len(symbols)]
+            for i, name in enumerate(sorted(experiment_names))
         }
 
         for i, exp in enumerate(data):
-            exp["symbol"] = experiment_symbols[exp["experiment"]["name"]]
+            exp["symbol"] = experiment_symbols.get(exp["experiment"]["name"], "+")
             exp["color"] = colors(
-                (i % (experiment_name_counter[exp["experiment"]["name"]] - 1))
-                / (experiment_name_counter[exp["experiment"]["name"]] - 1)
+                (i % (experiment_name_counter[exp["experiment"]["name"]])) % 20
             )
 
     return symbols, colors
@@ -275,7 +271,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
 % \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
  & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
-\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+\cmidrule(lr){3-8}\cmidrule(lr){9-12}\cmidrule(lr){13-16}
  & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
 \endhead"""
