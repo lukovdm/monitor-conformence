@@ -478,7 +478,7 @@ The no-missed-alarms problem entails ensuring that all traces from the HMM, whic
     Given a HMM $\mc$, the risk of trace $\tau \in \lang{\mc}$ is: \[ R_r(\tau) \defeq \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
 \end{definition}
 The risk of a trace can be used to partition the set of all traces.
-\begin{definition}[Safe traces/Unsafe traces]
+\begin{definition}[Safe traces/Unsafe traces]\label{def:safeunsafe}
     Given a HMM $\mc$, a \emph{safe threshold} $\lambda_s \in \mathbb{R}$ and an \emph{unsafe threshold} $\lambda_u \in \mathbb{R}$ with $\lambda_s \leq \lambda_u$.
     A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is an \emph{unsafe trace} (for $\mc$ and $\lambda_u$). Conversely, trace $\tau$ is a \emph{safe trace}, if $R(\tau) < \lambda_s$ (for $\mc$ and $\lambda_u$).
 \end{definition}
@@ -497,7 +497,7 @@ We are now ready to define correct monitors.
     % a safe trace $\tau \in \Obs^{\leq h}$ with $R(\tau) > \lambda_s$ and $\tau \not\in \lang{\dfa}$ is a \emph{missed alarm}. Conversely, trace $\tau$ is a \emph{false alarm}, if $R(\tau) < \lambda_u$ and $\tau \in \lang{\dfa}$. 
 \end{definition}
 We often drop the sub/superscripts. In terms of a classification problem, missed alarms are false negatives, while false alarms are false positives.
-\begin{definition}[Correct monitor]
+\begin{definition}[Correct monitor]\label{def:cormon}
     Given thresholds $\lambda_s,\lambda_u$ and horizon $h$, a monitor $\dfa$ for $\mc$ is \emph{correct} if $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) = \emptyset = \falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)$.
 \end{definition}
 A correct monitor raises an alarm for all unsafe traces and for no safe trace:
@@ -560,7 +560,7 @@ In our presentation, we focus on the no-missed-alarms problem with traces of exa
 
 \subsection{Relating Missed Alarms with Color-Consistent Policies}\label{ssec:maintheorem}
 Colored\lm{There used to be (Labeled) here, but are colored MDPs ever called Labeled MDPs. Are that not just normal MDPs?} MDPs are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplifies the notion of colored MDPs from \cite{}, and suffices for our needs:
-\begin{definition}[Colored MDP]
+\begin{definition}[Colored MDP]\label{def:colMDP}
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$ maps states to colors.
 \end{definition}
 \begin{definition}[Color-consistent scheduler]
@@ -1009,48 +1009,28 @@ Various algorithms implementing the MAT framework for DFA learning exist. For th
 \subsubsection{Verification as a MAT}
 When learning monitors with a MAT we will provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. After learning we obtain the monitor $\dfa$.
 
-% We adapt def 5 to the case of \tau in Z*
-We now define the MAT framework for learning monitors by defining the MQ and the EQ.
-\begin{definition}
-    Given any trace $\tau \in \lang{\mc}$, a MQ$_{\lambda_l}$ is a function $f$, where $f(\tau)$ is unsafe only if,
-    \[\sum_{\pi\in\Pi^{=|\tau|}}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\]
+We now define the MAT framework for learning monitors by defining the MQ and the EQ. We define the EQ by adapting \cref{def:safeunsafe} for $\tau \in \Obs^\star$.
+\begin{definition}\label{def:toverMQ}
+    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, a MQ$_{\lambda_l}$, is a function $f$, where $f(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace out of the HMM safe is an arbitrary decision, as they do not matter for correctness. However, in the MAT framework a trace always has to be either safe or unsafe} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}. MQ$_{\lambda_l}$ is only defined for traces in the HMM, thus traces where there is a path $\pi \in \Paths{\tau}$. However, the MAT can be asked any trace $\tau\in\Obs^\star$. If a $\tau$ is not in the HMM, we deem it safe\footnote{Defining a trace out of the HMM safe is an arbitrary decision, as they do not matter for correctness. However, in the MAT framework a trace always has to be either safe or unsafe}
+Such a function can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.
 
-The MQ for the MAT acts like $f$ if it receives a trace $\tau$ in $\lang{\mc}$ and $|\tau|<h$\footnote{This is condition is not essential, since $f$ does not contain a horizon. However, experimentally leaving out this condition only led to larger monitors.}. Otherwise, it returns the trace is safe.
-\sj{I think you have two cases: either it is in L(M) and of the correct lenght, then act like def..., otherwise, return safe. Then in the text, say that returning safe is arbitrary.}
-\lm{What do you mean returing safe is arbitrary?}
-
-The MQ is defined using the filtering algorithm from \cite{jungesRuntimeMonitorsMarkov2021}. Given a HMM, a risk function $r$, and a trace $\tau$ it finds the risk after the trace and compares it to the learning threshold $\lambda_l$. \[\sum_\pi\in\Pi^{=|\tau|}\Prob(\pi\mid\tau)\cdot r(\pi_{\downarrow}) > \lambda_l\]
-Any trace below the learning threshold is deemed safe, otherwise a trace is unsafe.\sj{Isnt this repeating definitions from above?}
-\sj{This next thing is important, it basically says that our definition assumes only traces that exist in the HMM, but that the MAT framework does not account for that. Make that explicit.}
-If no path exists for the given trace, $\Paths(\tau) = \emptyset$, the trace is also deemed safe. Lastly, if the trace is longer then the horizon for which we are learning a monitor, the trace is also safe.
+We adapt the verification described in \cref{sec:monver} to define the EQ.
 \begin{definition}\label{def:toverEQ}
-    Given a monitor $ $ an EQ$_{\lambda_s, \lambda_u}$ is a function such that:
-    \sj{I think you have to }
+    Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$ such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counter example trace if $\dfa$ is not correct.
 \end{definition}
+The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found it is returned as a counter example.
 
+\begin{lemma}
+    Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned with L$\star$ is correct as long as $\lambda_u \leq \lambda_l \leq \lambda_s$.
+\end{lemma}
+\begin{proof}
+    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed safe by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_u \leq \lambda_l \leq \lambda_s$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on unsafe traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to hold for EQ$_{\lambda_s, \lambda_u}$, and thus be correct.
+\end{proof}
 
+Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. This allows the EQ to have a gray area given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor, while it is still correct. We investigate the results of this gray area in \cref{sec:experiments} \textbf{Q4}.
 
-
-We define the EQ using verification. In order to check a monitor is correct we have to check both $\missedalarms{\leq h}{\lambda_s} = \emptyset$ and $\falsealarms{\leq h}{\lambda_u} = \emptyset$. Both of these are checked using the algorithm described in \cref{sec:monver}. If a trace is found in either $\missedalarms{\leq h}{\lambda_s}$ or $\falsealarms{\leq h}{\lambda_u}$, it is given as a counter example.
-
-\sj{Keep only one lemma.}
-%\begin{lemma}
-%    A monitor learned using \alg as a MAT in L$\star$ is correct.
-%\end{lemma}
-\lm{We need a bit more background on MAT and Lstar to maybe proof this?}
-\sj{You could create a fact environment if you want to emphasise that you do not formally proof this. But I think you can also state this as a theorem and say that the MQ and EQ satisfy the assumptions from L$^{*}$ thus this holds. (Which mostly is that the MQs should be consistent with the EQs?)}
-\lm{Should this be perfect, is the monitor perfect? or informal, is it good enough}.\begin{lemma}
-    Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned using L$\star$ is correct (in the sense of Def.X\sj{fix}).
-\end{lemma}\lm{Somehow state this holds}
-% Het kan nooit zo zijn dat een EQ het oneens is met een MQ dat is zo als $\lamba_s < lambda l < lambda u$
-% Door de correctheid van L* is dit correct
-
-\sj{I would integrate this to the correctness argument. }
-Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. The only requirement is that $\lambda_s \leq \lambda_l$ and $\lambda_u \geq \lambda_l$. This allows the EQ to have a gray area\lm{I don't like this term} given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor. We claim that leaving this gray area can lead to smaller monitors\lm{Maybe just not include this last bit?}. We verify this experimentally in \cref{sec:experiments}. % We investigate the result of gray area in sec 6 Q4
-
-\subsubsection{Improvements}
+\paragraph{Improvements.}
 An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{}, where we test a monitor using a large amount of sampling. In our approach we use a hybrid of the twe queries. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, it has a constant upfront cost. Conformance queries can often find a counter example faster if one has a high probabilty of occuring.
 
 \section{Computational Complexity}\label{sec:compl}
@@ -1203,51 +1183,45 @@ This follows from a strict reduction from MAX-3SAT, which is an inapproximable a
 
 
 
-\section{Experiments}\label{sec:experiments}\sj{I would not start using \alg before this section but rather use it as a name of our tool}
-\lm[inline]{TODO: rewrite using new questions}
+\section{Experiments}\label{sec:experiments}
 \noindent In this section, we empirically evaluate the monitor verification (\cref{sec:monver}) and monitor learning (\cref{sec:learning}) using our  prototype implementation called \alg.
 We aim to answer the following questions:
 We evaluate the verifier with the following questions:
 \begin{description}
-    \item[$\textbf{Q}_{TV}^1$] How does the runtime of \alg verifier depend on the model size?
-    \item[$\textbf{Q}_{TV}^2$] How much does the runtime of \alg verification depend on PAYNT?
+    \item[Q1] What is the scalability of the monitor verification approach?
+    \item[Q2] Which steps in the monitor verification are most expensive?
 \end{description}
-We evaluate the learning algorithm by looking at the following questions:
+We evaluate the learning algorithm using the following questions:
 \begin{description}
-    \item[$\textbf{Q}_{L}^1$] Does \alg learning guarantee a better bound than baseline learning using a sampling EQ?
-    \item[$\textbf{Q}_{L}^2$] How do the \alg learned monitors and baseline sampling learned monitors compare in size?
-    \item[$\textbf{Q}_{L}^3$] Does the difference between the safe threshold, $\lambda_s$, and the unsafe threshold, $\lambda_u$, result in smaller monitors?
-    \item[$\textbf{Q}_{L}^4$] How does the runtime of the \alg learning algorithm compare to the baseline sampling learning algorithm?
+    \item[Q3] How does a verification-based oracle compare to using conformance checking?
+    \item[Q4] What is the effect of safe and unsafe thresholds?
 \end{description}
 
 
-\paragraph{Setup}
+\paragraph{Setup.}
 The \alg tool is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022} for most data structures and for the filtering (Membership queries in \cref{sec:learning})~\cite{jungesRuntimeMonitorsMarkov2021}.
-We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify the generated colored MDP (\cref{def}).
+We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify the generated colored MDP (\cref{def:colMDP}).
 The learner uses the AAlpy automata learning framework~\cite{muskardinAALpyActiveAutomata2022}.
 All experiments are run using exact arithmetic on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
 %We ran multiple benchmarks in parallel.
 
-\paragraph{Benchmarks}
+\paragraph{Benchmarks.}
 We combine benchmarks from the literature with some novel benchmarks.
-We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. We also use \textsc{Icy-Driving}, based on the central example but with more states describing how close the car is to crashing and \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player.
+We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, based on the central example but with more states describing how close the car is to crashing and \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player.
 While the existing benchmarks contain many observations, the new benchmarks only have a few different observations.
 Every benchmark is analyzed with respect to different horizons and in different sizes.
 The benchmarks have up to hundreds of states and thousands of transitions.
 Details are given in \cref{sec:benchmarksdescr}.
 
 
-\subsubsection{Q1 and Q2: Efficiency and Scalability of Monitor Verification}
-\begin{itemize}
-    \item Both in threshold mode and in max mode
-    \item Monitors come from learning, use both intermediate models and final models.
-\end{itemize}
+\subsubsection{Q1 and Q2: Efficiency and Scalability of Monitor Verification}\hfill\\
 
-\paragraph{Results}
-\begin{itemize}
-    \item Discuss results
-\end{itemize}
+\paragraph{Setup.}
+We run the \alg verifier on the benchmarks as described above. We obtain monitors from the \alg learning experiments with no gray area. Every version of the benchmark is run on the first monitor which got through the conformance checking, a monitor from around the middle of the learning, and the final correct monitor obtained through learning. For each monitor we verify $\lambda_s = \lambda_u = 0.3$, and find the minimum in monitor risk and maximum out of monitor risk. Each run is named according to the benchmark and a sequential counter e.g., A-10 for the tenth \textsc{Airport} run.
 
+\paragraph{How scalable is verification?}
+We are in general able to verify HMMs with hundreds of states and above a thousand transitions, and monitors with hundreds of states and tens of thousands of transitions.
+We now highlight some general trends using \cref{tab:verifysubest}, which is a subset of \cref{sec:resverify}. Worse monitors, A-0 to A-3 from \textsc{Airport}, are easier to find an incorrect trace for than good monitors, A-8 to A-11. However, verifying an extreme bound can still be hard, as seen with A-2 compared to A-3. Also, missed alarms seem harder to find than false alarms. Increasing the horizon can lead to very high runtime even for very simple models, as seen in I-14/15 compared to I-34/35, form \textsc{Icy-Driving}. Lastly, we are able to verify HMMs and Monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
 % lambda found afronden
 % A-12 - A-15
 % Een airport model laten zien in tabel en daar dingen uit halen
@@ -1264,17 +1238,71 @@ Details are given in \cref{sec:benchmarksdescr}.
 % Tover tijd correspondeerd met model en monitor grote
 % PAYNT tijd lost NP probleem op en dus is lastig iets over te zeggen
 
-\subsubsection{Q3: Efficiency of Monitor Learning}
+\begin{table}[t]
+    \begin{adjustbox}{max width=\linewidth}
+        \begin{scriptsize}
+            \begin{tabular}{{@{}llrrrrrrrrrrrr@{}}}
+                \toprule
+                                     &      & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                            \\
+                \cmidrule(lr){3-10}\cmidrule(lr){11-14}
+                                     &      & $\lambda_l$                   & $h$                      & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Trans (s) & PAYNT (s) & $\lambda^{found}$ \\
+                \midrule
+                \textsc{AirportA-3}  & A-0  & \sfrac{3}{10}                 & 10                       & MA    & 45           & 113             & 18    & 25            & 450              & 0.92     & 0.31      & 0.41      & 0.94              \\
+                \textsc{AirportA-3}  & A-1  & -                             & 10                       & MA    & 45           & 113             & 18    & 25            & 450              & 6.24     & 0.31      & 5.73      & 1.00              \\
+                \textsc{AirportA-3}  & A-2  & \sfrac{3}{10}                 & 10                       & FA    & 45           & 113             & 18    & 25            & 450              & 0.95     & 0.31      & 0.43      & 0.08              \\
+                \textsc{AirportA-3}  & A-3  & -                             & 10                       & FA    & 45           & 113             & 18    & 25            & 450              & 1014.53  & 0.31      & 1014.02   & 0.01              \\
+                \textsc{AirportA-3}  & A-8  & \sfrac{3}{10}                 & 10                       & MA    & 45           & 113             & 18    & 128           & 2304             & 833.83   & 0.56      & 832.93    & -                 \\
+                \textsc{AirportA-3}  & A-9  & -                             & 10                       & MA    & 45           & 113             & 18    & 128           & 2304             & 788.22   & 0.56      & 787.31    & 0.30              \\
+                \textsc{AirportA-3}  & A-10 & \sfrac{3}{10}                 & 10                       & FA    & 45           & 113             & 18    & 128           & 2304             & 1143.18  & 0.53      & 1142.35   & -                 \\
+                \textsc{AirportA-3}  & A-11 & -                             & 10                       & FA    & 45           & 113             & 18    & 128           & 2304             & 1106.29  & 0.55      & 1105.43   & 0.30              \\
+                \midrule
+                \textsc{Evade}       & E-20 & \sfrac{3}{10}                 & 9                        & MA    & 385          & 1473            & 325   & 328           & 106600           & 49.11    & 33.35     & 8.23      & -                 \\
+                \textsc{Evade}       & E-21 & -                             & 9                        & MA    & 385          & 1473            & 325   & 328           & 106600           & 50.67    & 33.39     & 8.20      & 0.27              \\
+                \textsc{Evade}       & E-22 & \sfrac{3}{10}                 & 9                        & FA    & 385          & 1473            & 325   & 328           & 106600           & 49.75    & 34.26     & 8.14      & -                 \\
+                \textsc{Evade}       & E-23 & -                             & 9                        & FA    & 385          & 1473            & 325   & 328           & 106600           & 50.18    & 33.36     & 7.88      & 0.30              \\
+                \midrule
+                \textsc{Icy-Driving} & I-34 & \sfrac{3}{10}                 & 3                        & FA    & 3            & 6               & 2     & 8             & 16               & 0.02     & 0.00      & 0.01      & -                 \\
+                \textsc{Icy-Driving} & I-35 & -                             & 3                        & FA    & 3            & 6               & 2     & 8             & 16               & 0.02     & 0.00      & 0.01      & 0.33              \\
+
+                \textsc{Icy-Driving} & I-14 & \sfrac{3}{10}                 & 25                       & FA    & 3            & 6               & 2     & 2             & 4                & 1225.78  & 0.01      & 1225.76   & -                 \\
+                \textsc{Icy-Driving} & I-15 & -                             & 25                       & FA    & 3            & 6               & 2     & 2             & 4                & 1173.95  & 0.01      & 1173.94   & 0.33              \\
+            \end{tabular}
+        \end{scriptsize}
+    \end{adjustbox}
+    \vspace{.2cm}
+    \caption{Subset of verification experiment results found in \Cref{sec:resverify}. Dashes in the $\lambda_l$ column indicate finding the extreme instead of verifying a bound. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
+    \label{tab:verifysubest}
+\end{table}
+
+\paragraph{What steps are most expensive?}
+The time spent to verify a monitor can mostly be split up in time to apply the transformation from \cref{sec:monver}, and time spent to verify the created colored MDP using PAYNT. Verifying a colored MDP is an NP-complete problem, and its runtime is heavily dependent on the internal structures and thresholds used. From \cref{tab:verifysubest}, the evade benchmarks are very large but take only around eight seconds to verify by PAYNT, where A-10 and A-11 are much smaller, but take around a thousand seconds to verify. The transformation step does seem to increase if the size of the HMM or the monitor increases as can be seen in \cref{fig:sizevsprod}. But this again does differ between benchmarks.
+
+\begin{figure}[t]
+    \begin{subfigure}{0.48\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
+            \input{images/plots/hmm_states_vs_product_runtime.pgf}
+        \end{adjustbox}
+        \caption{Transformation time steps against HMM states.}
+    \end{subfigure}\hfill
+    \begin{subfigure}{0.48\linewidth}
+        \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
+            \input{images/plots/mon_states_vs_product_runtime.pgf}
+        \end{adjustbox}
+        \caption{Transformation time steps against monitor states.}
+    \end{subfigure}
+    \caption{Time in the transformation step compared to the size of the HMM $\mc$ or the monitor $\dfa$ for \alg verification.}
+    \label{fig:sizevsprod}
+\end{figure}
+
+
+\subsubsection{Q3: Efficiency of Monitor Learning}\hfill \\
+
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning} and configure the queries as follows.
-We set a learning threshold $\lambda_l = 0.3$, and we run the \alg learner both with $\lambda_s = 0.35, \lambda_u = 0.1$ and with them equal to the learning threshold. The role of $\lambda_s \neq \lambda_u$ is evaluated in Q4 below.
-\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \cref{sec:ressampling}}
-%\footnote{This value was obtained by running the sampling learner for different sample amounts as can be seen in \cref{fig:samplingn}.}. 
+We set the learning threshold $\lambda_l = 0.3$, and we run the \alg learner with $\lambda_s = 0.35, \lambda_u = 0.1$ and with $\lambda_u = \lambda_l = \lambda_s = 0.3$. The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
+\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \Cref{sec:ressampling}.}
 Before executing an EQ, we run conformance checking with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$ (see \cref{sec:learning}).
-As a baseline, we do not use an EQ oracle but rather only use a conformance query as described in \cref{sec:learning}. This conformance query decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \cref{sec:ressampling}}.
-
-%\paragraph{Results}\lm{I don't like the word gray area for describing \alg with slack, but don't know a better name}
-
+As a baseline, we do not use an EQ oracle, but rather only use a conformance query as described in \cref{sec:learning}. This conformance query decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \Cref{sec:ressampling}c}. We only discuss the results of learning with $\lambda_u = \lambda_l = \lambda_s$ and with $\lambda_u \leq \lambda_l \leq \lambda_s$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.
 
 \paragraph{Are the monitors correct?}
 First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute \sj{is this simple to do?}\lm{Yes, stopping the maximalization of the policy when we reach the threshold, we just continue and report the found value afterwards, intstead of just returing true/false.} the trace in the monitor that has the lowest risk (actual alarm threshold, $\lambda_u^{\min}$) and the trace not in the monitor that has the highest risk (actual no-alarm threshold, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
@@ -1306,13 +1334,9 @@ First, we investigate the \emph{actual} performance of the learned monitors. Tha
     \caption{\textbf{Q$_3$} All monitor correct: Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and baseline learning. The line between the green and gray area is $\lambda_u$, the line between the red and gray area is $\lambda_s$. The dotted line is $\lambda_l$. Any benchmarks which did not finish are left empty.}
 \end{figure}
 
-\paragraph{How big are the monitors?}
-%Die monitors zijn best groot. Dit zijn voor learning mensen ook grote benchmarks
-% For the literature on AAL these are large monitors
+\paragraph{How big are the monitors?}\lm{Mention we are learning stuff that is hard for AAL people to learn.}
+For our benchmarks we are learning monitors of hundreds of states and tens of thousands transitions, as can be seen in \cref{fig:monsizes,fig:monsizens} and \Cref{sec:reslearn}. For the literature on AAL, these are large automata\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, almost no monitors are smaller when using the baseline. When using \alg learning, monitors can be up to around 5 times smaller, but most are between 1.5 and 2 times smaller.
 
-% de monitors zijn groot, hundreds of state
-
-% instead of gray area lambda_s = lambda_u
 
 \begin{figure}[t]
     \begin{subfigure}{.53\linewidth}
@@ -1333,9 +1357,9 @@ First, we investigate the \emph{actual} performance of the learned monitors. Tha
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
-We describe the runtime of the \alg learning and baseline learning in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp,fig:runtimediv}. \Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} show how the runtime of \alg learning and baseline learning compare. Baseline takes at least about 100\lm{check number} seconds, while \alg learning can take only 2\lm{check} second to find a monitor both algorithms take at most around 9 hours\lm{also check}. Several benchmarks never finished after more then 24 hours and where stopped\lm{I stopped them manually after around a day, so no real timeout. Is this enough in that case?}. Neither of the two learning algorithms is clearly faster than the other.
+We describe the runtime of the \alg learning and baseline learning in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp,fig:runtimediv}. \Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} show how the runtime of \alg learning and baseline learning compare. Baseline takes at least about 100\lm{check number} seconds, while \alg learning can take only 0.02\lm{check} seconds to find a monitor both algorithms take at most around 9 hours\lm{also check}. Several benchmarks never finished after more than 24 hours and were stopped\lm{I stopped them manually after around a day, so no real timeout. Is this enough in that case?}. Neither of the two learning algorithms is clearly faster than the other.
 
-\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. Most benchmarks are heavily dependant on PAYNT for the runtime. However, several \textsc{Evade} benchmarks spent most of there time in L$\star$. We conjecture this happens because finding counter examples is very fast for this model.
+\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. Most benchmarks are heavily dependent on PAYNT for the runtime. However, several \textsc{Evade} benchmarks spent most of their time in L$\star$. We conjecture this happens because finding counter examples is very fast for this model.
 
 \begin{figure}[t]
     \begin{subfigure}{.48\linewidth}
@@ -1353,18 +1377,18 @@ We describe the runtime of the \alg learning and baseline learning in the \cref{
     \begin{subfigure}{\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/verimon_times.pgf}}
-        \caption{Runtime division}
+        \caption{Runtime division over steps in \alg learning. Empty bars are HMMs for which learning did not finish.}
         \label{fig:runtimediv}
     \end{subfigure}
-    \caption{Learning experiment runtime results}
+    \caption{Learning experiment runtime results. In \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} points with the same symbol and similar color are the same benchmark with and without a gray area.}
 \end{figure}
 
 \subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
-We make use of the same setup as Q3, and compare between $\lambda_u=\lambda_l=\lambda_s$, without a gray area, and $\lambda_u < \lambda_l < \lambda_s$, with a gray area. This does not have an effect on the baseline learner as it only takes $\lambda_l$ into account.
+We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\lambda_l=\lambda_s$, without a gray area, and $\lambda_u < \lambda_l < \lambda_s$, with a gray area. This does not have an effect on the baseline learner as it only takes $\lambda_l$ into account.
 
 \Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and baseline learning. \cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using baseline learning. When not learning with a gray area the difference is smaller. Two monitors are smaller when using baseline learning, one monitor was reduced from 4 to 3 states, the other from 7 to 1 state.
 
-\lm[inline]{TODO: monitor learn time with and without gray area.}
+\Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} contain the runtime of \alg learning compared to the baseline, when running with and without a gray area. The \textsc{Icy-Driving} ($\blacktriangleright$), \textsc{Evade} ($\blacksquare$), and \textsc{Airport} ($\bullet$), are generally faster when run with a gray area. In other benchmarks, adding a gray area has little effect on the runtime. A few HMMs were much faster to learn when using a gray area, one of these is the brown \textsc{Icy-Driving} HMM.
 
 \section{Related}
 \begin{itemize}
@@ -1404,11 +1428,15 @@ We make use of the same setup as Q3, and compare between $\lambda_u=\lambda_l=\l
     \label{fig:legend}
 \end{figure}
 
-\input{images/plots/experiments.tex}
+\begin{scriptsize}
+    \input{images/plots/experiments.tex}
+\end{scriptsize}
 
 \section{Results from Verification Experiment}
 
-\input{images/plots/verify.tex}
+\begin{scriptsize}
+    \input{images/plots/verify.tex}
+\end{scriptsize}
 
 \section{Results from Baseline Sampling Count Experiment}\label{sec:ressampling}
 
