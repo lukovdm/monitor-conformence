@@ -374,7 +374,7 @@ def compare_runtimes(
     offset = 1.3
     plt.text(
         max_lim * (1 / offset),
-        offset * 0.1,
+        offset * 0.01,
         "Baseline is faster",
         color="gray",
         ha="right",
@@ -382,7 +382,7 @@ def compare_runtimes(
         rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
     )
     plt.text(
-        offset * 0.1,
+        offset * 0.01,
         max_lim * (1 / offset),
         "ToVer is faster",
         color="gray",
@@ -464,8 +464,8 @@ def compare_runtimes(
             label=name_func(data) if experiments_in_legends else None,
         )
 
-    plt.xlim(0.1, max_lim)
-    plt.ylim(0.1, max_lim)
+    plt.xlim(0.01, max_lim)
+    plt.ylim(0.01, max_lim)
     plt.grid()
     if log_scale:
         plt.xscale("log")
