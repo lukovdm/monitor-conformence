@@ -126,18 +126,18 @@ Various challenges in creating correct runtime monitors for (semi-)autonomous sy
 (2)~the behavior of the system and/or the sensors may be subject to probabilistic uncertainty,
 (3)~the monitor itself is subject to resource constraints (time, memory, etc), and
 (4)~the monitor is itself safety-critical and should therefore be subject to extensive validation.
-Challenges (1,2) can be (partially) addressed  by modelling the system as a hidden Markov model (HMM), Challenges (3,4) can be (partially) addressed by representing a monitor as, e.g., a (small) finite state machine.
+Challenges (1,2) can be (partially) addressed  by modelling the system as a hidden Markov model (HMM), Challenges (3,4) can be (partially)\li{What does partially mean here? Perhaps a footnote that says you discuss this somewhere?} addressed by representing a monitor as, e.g., a (small) finite state machine.
 Concretely, this paper focuses on the following question:
 \emph{Is a given finite state machine a correct monitor for a given HMM?}
 The paper studies the complexity of this problem, provides a practical verification procedure, and embeds this verification procedure into a learning framework.
 
-
+<
 \paragraph{What are HMMs?}
 In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM).
 Markov chains (MCs) describe system behavior subject to probabilistic uncertainty.
 Paths through an MC are sequences of states that describe system executions.
 % MCs can be seen as specifying a distribution over these paths. 
-HMMs extend MCs by labelling their states with colours (aka \emph{observations}).
+HMMs extend MCs by labelling their states with colors (aka \emph{observations}).
 Intuitively, the observations can be used to model the information that the monitor receives.
 In HMMs, every path can be lifted to a sequence of observations, which we call a \emph{trace}.
 The trace associated to a system execution describes the information received by the monitor.
@@ -145,8 +145,8 @@ The trace associated to a system execution describes the information received by
 
 % where every state is labelled with a distribution over observations, see Fig.~\ref{}. Paths are sequences of states and MCs can be seen as specifying a distribution over these paths. An HMM extends MCs by assigning to every state a colour (an \emph{observation}). A trace is a sequence of these observations. 
 
-\paragraph{Risk of a trace.}
-In runtime monitoring, an essential task is to estimate whether the current system is dangerous. In the simplest setting, a specification describes a set of states is dangerous. The risk of a trace is then the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace.
+\paragraph{Risk of a trace.}\li{Maybe move after What are correct monitors. I feel like "what are correct monitors" is a question that immediately comes up, while risk of a trace is not.}
+In runtime monitoring, an essential task\li{How does this relate to the problem statement?} is to estimate whether the current system is dangerous. In the simplest setting, a specification describes whether a set of states is dangerous. The risk of a trace is then the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace.
 For a given trace, we may compute this risk, e.g., either via a reduction to model checking~\cite{} or by a (forward) filtering that tracks a distribution over the current states~\cite{}.
 
 
@@ -331,16 +331,16 @@ Intuitively, APX-hardness means that the existence of an efficient approximation
 
 \paragraph{Our verification approach.}
 While deciding whether a monitor is correct is thus in general not tractable, we suggest to utilise recent advances in the synthesis of probabilistic systems.
-We concentrate on proving the absence of missed alarms, i.e., we concentrate on showing that the monitor correctly identifies every unsafe trace. A similar reduction works for showing the absence of spurious alarm.
+We concentrate on proving the absence of missed alarms, i.e., we concentrate on showing that the monitor correctly identifies every unsafe trace. A similar reduction works for showing the absence of spurious\li{The term spurious alarm only appreas here, maybe describe it instead?} alarm.
 First, for a single trace, computing the risk can be reduced to computing a reachability probability in a MC that is intuitively a kind of product between a DFA that accepts exactly the trace and the HMM~\cite{}.
 Thus, it is natural to reduce our problem to the question: Is there a DFA (accepting exactly one trace, accepted by our monitor)
-such that the probability in the product MC exceeds a threshold.
+such that the probability in the product MC exceeds a threshold\li{emph?}.
 If the answer is no, then the monitor has no-missed-alarms.
 This decision problem can be solved using (exact) probabilistic model synthesis methods~\cite{} as implemented in the tool Paynt~\cite{}\footnote{Alternatively, in Section~\ref{sec:useparametersynthesis}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
 Ultimately, we do not only want to verify the correctness of a monitor, but we want to construct such a monitor.
-Above, we already mentioned that the monitors are formal languages. When considering bounded trace, these monitors are regular, and can thus be captured using DFAs.
+Above, we already mentioned that the monitors are formal languages\li{This was not mentioned yet}. When considering bounded trace, these monitors are regular, and can thus be captured using DFAs.
 Inspired by a recent short paper~\cite{}, we investigate learning these monitors:
 We choose to do this using active automata learning~\cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}, which closely relates to other popular oracle-guided inductive synthesis loops~\cite{}.
 To use active automata learning (AAL),
