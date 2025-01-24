@@ -995,42 +995,44 @@ We modify the transformation from \cref{thm:maintheorem} such that it solves the
     We reuse the transformation from \cref{thm:maintheorem} with the following modifications. We no longer take the complement of the monitor. Instead of doing reachability on the alarm state, we instead do reachability on the safe state.
 \end{proof}
 
-\section{Learning Monitors}\label{sec:learning}
-We now describe how to \emph{learn} correct monitors. We do so by combining the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} and the verification algorithm outlined above. We furthermore discuss some improvements that bridge the gap between common assumptions in MAT automata learning and our monitor setup\sj{is this still true?}.
+\section{Learning Correct Monitors}\label{sec:learning}
+We now describe how to \emph{learn} correct monitors, by combining the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} and the verification approachs above. %This combination needs only minor glue. 
+%We furthermore discuss some improvements that bridge the gap between common assumptions in MAT automata learning and our monitor setup\sj{is this still true? I havent seen anything about unrolling etc}.
 
-\paragraph{MAT framework}
+\paragraph{MAT framework.}
 We briefly recap the MAT framework, for details see~\cite{DBLP:journals/cacm/Vaandrager17}.
 A minimally adequate teacher answers two types of questions:
-A membership query (MQ), which in our setup means \emph{should a trace be part of the monitor?}, and an equivalence query (EQ), \emph{is this monitor correct?}
+A membership query (MQ), which in our setup means \emph{should a trace be accepted by the monitor?}, and an equivalence query (EQ), \emph{is this monitor correct?}
 Furthermore, if the answer to an equivalence query is negative, we must provide a counterexample that witnesses why the monitor is not correct.
-Various algorithms implementing the MAT framework for DFA learning exist. For the purpose of this paper, we use the L$^{\star}$ algorithm \cite{DBLP:journals/iandc/Angluin87} to learn a monitor. The learner asks MQs to the teacher until a hypothesis monitor can be constructed which is consistent with the MQs. Once such a hypothesis is constructed, the monitor is verified using an equivalence query.
+Various algorithms implementing the MAT framework for DFA learning exist. For the purpose of this paper, we use the L$^{\star}$ algorithm \cite{DBLP:journals/iandc/Angluin87} to learn a monitor. The learner asks MQs to the teacher until a hypothesis monitor can be constructed which is consistent with the MQs. Once such a hypothesis is constructed, the monitor is verified using an EQ.
 
 
-\paragraph{Verification as a MAT}
-When learning monitors with a MAT we will provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. After learning we obtain the monitor $\dfa$.
-
-Note learning utilises an additional risk threshold, $\lambda_l$. A learning threshold is needed since the safe and unsafe thresholds alone do not suffice for defining the queries for a MAT. A MQ needs to always classify a trace either safe or unsafe. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe. Thus, we introduce a third threshold $\lambda_l$ with $\lambda_s \leq \lambda_l \leq \lambda_u$. We adapt \cref{def:safeunsafe} for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
+\paragraph{Verification as a MAT.}
+To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. The  additional risk threshold $\lambda_l$ is to define an MQ whenever $\lambda_s \neq \lambda_u$.
+For the MQ, each trace must be unambigiously be defined as safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}. 
+% for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
 \begin{definition}\label{def:toverMQ}
-    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, a MQ$_{\lambda_l}$, is a function $f$, where $f(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace $\tau\notin\lang{\mc}$ safe is an arbitrary decision, as it do not matter for correctness. However, in the MAT framework a trace always has to be either safe or unsafe.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
+    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace $\tau\notin\lang{\mc}$ safe is an arbitrary decision, as it do not matter for correctness.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.
+Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.\sj{Forward filtering in HMMs should have a different citation as well. }\sj{Not urgent: Couldnt this be done with the techniques in section 3 as well (although inefficiently)?}
 
-We adapt the verification described in \cref{sec:monver} to define the EQ.
+We adapt\sj{What is adapted here?} the verification described in \cref{sec:monver} to define the EQ.
 \begin{definition}\label{def:toverEQ}
-    Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$ such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counter example trace if $\dfa$ is not correct.
-\end{definition}\lo{Why not let EQ$_{\lambda_s, \lambda_u}$ be the function instead of $g$?}
-The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found, it is returned as a counter example.
+    Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$\sj{give the return type (true or trace)} such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counter example\sj{counterexample is typically written as a word} trace if $\dfa$ is not correct.\sj{Be more specific, it is either a missed alarm or a false alarm?}
+\end{definition}\lo{Why not let EQ$_{\lambda_s, \lambda_u}$ be the function instead of $g$?}\sj{agree}
+The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. \sj{no need to repeat these steps, so i commented out the next line}
+%We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found, it is returned as a counter example.
 
 \begin{lemma}
     Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
 \end{lemma}
 \begin{proof}
-    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to EQ$_{\lambda_s, \lambda_u}$, and thus be correct for $\lambda_s$ and $\lambda_u$ according to \cref{def:cormon}.
+    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to EQ$_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
 \end{proof}\lm{This is a bit short through the corner. But don't know how detailed to be.}
+When $\lambda_s < \lambda_u$, the EQ has a gray\sj{inconclusive?} area given by the interval $(\lambda_s, \lambda_u)$. 
+This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this gray area \cref{sec:experiments}(\textbf{Q4}).
 
-Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. This allows the EQ to have a gray area given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor, while it is still correct. We investigate the results of this gray area in \textbf{Q4} of \cref{sec:experiments}.
-
-\paragraph{Improvements.}
+\paragraph{Conformance queries.}
 An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counter example. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counter example faster if one has a high probability of occurring.
 
 \section{Computational Complexity}\label{sec:compl}
