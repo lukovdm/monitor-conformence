@@ -119,6 +119,7 @@
 \end{abstract}
 
 \section{Introduction}
+\lm{Mention that the system we are monitoring is not a black box. We have full access to the system during learning and verification. Other Runtime verification papers often assume the system is a black box.}%
 Runtime assurance is an essential ingredient in the deployment of safe autonomous systems.
 Runtime monitors provide assurance by flagging potentially dangerous system behavior by observing a system execution.
 More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envelope. A monitor is correct if it correctly raises such alarms based on a formal specification.
@@ -132,7 +133,6 @@ Concretely, this paper focuses on the following question:
 \emph{Is a given finite state machine a correct monitor for a given HMM?}
 The paper studies the complexity of this problem, provides a practical verification procedure, and embeds this verification procedure into a learning framework.
 
-<
 \paragraph{What are HMMs?}
 In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM).
 Markov chains (MCs) describe system behavior subject to probabilistic uncertainty.
@@ -859,7 +859,7 @@ Thus we transition normally to a state if the action and observation of the targ
 
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
 \begin{definition}[Trace consistent policy]
-\sj{Does it make sense to only define this for MDPs obtained from the def above?}
+    \sj{Does it make sense to only define this for MDPs obtained from the def above?}
     Given two sets $\Sts$ and $Z$ and an MDP $\mdp$ with states in $\NN\times\Sts$, and actions in $Z\cup\{end\}$. Together with a trace $\tau \in Z^\star$. A \emph{trace consistent policy} is of the form
     \begin{align*}
         \sigma_\tau(\langle i, s \rangle) = \begin{cases}
@@ -872,8 +872,8 @@ The above construction allows for conditioning on a trace $\tau$ by constructing
 
 
 \begin{lemma}
-\label{lem:tocoloredmdp}
-\sj{Initial text missing. Also consider other notation for M and Mc}
+    \label{lem:tocoloredmdp}
+    \sj{Initial text missing. Also consider other notation for M and Mc}
     \[  \exists \sigma \in \ccSched.  \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
 \end{lemma}
 
@@ -1009,7 +1009,7 @@ Various algorithms implementing the MAT framework for DFA learning exist. For th
 
 \paragraph{Verification as a MAT.}
 To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. The  additional risk threshold $\lambda_l$ is to define an MQ whenever $\lambda_s \neq \lambda_u$.
-For the MQ, each trace must be unambigiously be defined as safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}. 
+For the MQ, each trace must be unambigiously be defined as safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}.
 % for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
 \begin{definition}\label{def:toverMQ}
     Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace $\tau\notin\lang{\mc}$ safe is an arbitrary decision, as it do not matter for correctness.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
@@ -1029,7 +1029,7 @@ The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Ea
 \begin{proof}
     If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to EQ$_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
 \end{proof}\lm{This is a bit short through the corner. But don't know how detailed to be.}
-When $\lambda_s < \lambda_u$, the EQ has a gray\sj{inconclusive?} area given by the interval $(\lambda_s, \lambda_u)$. 
+When $\lambda_s < \lambda_u$, the EQ has a gray\sj{inconclusive?} area given by the interval $(\lambda_s, \lambda_u)$.
 This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this gray area \cref{sec:experiments}(\textbf{Q4}).
 
 \paragraph{Conformance queries.}
@@ -1203,9 +1203,9 @@ The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.
 All experiments are run (using exact arithmetic) on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
 %We ran multiple benchmarks in parallel.
 
-\paragraph{Benchmarks.}
+\paragraph{Benchmarks.}\lm{Mention we obtain the risk function by model checking some reachability property.}
 We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the central example and \textsc{SnL} based on the game ``Snakes and Ladders''.
-While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. All benchmarks are scalable. 
+While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. All benchmarks are scalable.
 % We use benchmarks up to hundreds of states and thousands of transitions.
 Details are given in \cref{sec:benchmarksdescr}.\sj{*A*ppendix}
 
@@ -1396,25 +1396,45 @@ We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\la
 
 Theorectical results used in transformation or learning
 \begin{itemize}
-    \item \cite{baierComputingConditionalProbabilities2014} Conditional probabilities.
-    \item \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
+    \item \citeauthor{baierComputingConditionalProbabilities2014} \cite{baierComputingConditionalProbabilities2014} Conditional probabilities, \citeauthor{badingsCTMCsImpreciselyTimed2024} \cite{badingsCTMCsImpreciselyTimed2024} also contains conditioning on evidence, same as \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021}. However, they all condition on a specific set of evidence, they don't allow the model checker to choose which evidence to condition on.\lm{This is a novel idea? Letting the model checker choose which evidence to condition on?}
+    \item \citeauthor{andriushchenkoPAYNTToolInductive2021} \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
+\end{itemize}
+
+Monitoring on HMMs\lm{Denk dat dit relevante papers zijn uit de premise paper, maar mijn brein is wat op}
+\begin{itemize}
+    \item \citeauthor{sistlaMonitoringTemporalProperties2008} \cite{sistlaMonitoringTemporalProperties2008}
+    \item \citeauthor{stollerRuntimeVerificationState2012} \cite{stollerRuntimeVerificationState2012}
+    \item \citeauthor{wilcoxRuntimeVerificationStochastic2010} \cite{wilcoxRuntimeVerificationStochastic2010}
+    \item \citeauthor{sistlaRuntimeMonitoringStochastic2012} \cite{sistlaRuntimeMonitoringStochastic2012}
+    \item \citeauthor{cimattiAssumptionBasedRuntimeVerification2019} \cite{cimattiAssumptionBasedRuntimeVerification2019}
+    \item \citeauthor{SelectiveMonitoringScienceDirect} \cite{SelectiveMonitoringScienceDirect}
+    \item \citeauthor{wooRealTimeMonitoringUncertain2007} \cite{wooRealTimeMonitoringUncertain2007}
+\end{itemize}
+
+Learn a monitor using AL
+\begin{itemize}
+    \item \citeauthor{jungesActiveLearningRuntime2025} \cite{jungesActiveLearningRuntime2025} Use AL to learn decision trees. Verify them using conformance testing.
+    \item \citeauthor{cairoliNeuralPredictiveMonitoring2021} \cite{cairoliNeuralPredictiveMonitoring2021} Use AL to learn a neural network monitor.
 \end{itemize}
 
 Learn a HMM, then do simple reachability to find the probability of error
 \begin{itemize}
-    \item \cite{jungesRuntimeMonitorsMarkov2021} Premise paper
-    \item \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.
-    \item \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?
+    \item \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021} Premise paper
+    \item \citeauthor{babaeeEmphPreventPredictiveRunTime2018} \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.
+    \item \citeauthor{babaeeAcceleratedLearningPredictive2019} \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?
+    \item \citeauthor{cleavelandConservativeSafetyMonitors2023} \cite{cleavelandConservativeSafetyMonitors2023} Model a PA and store risk for each state in PA. Use state estimation at runtime to monitor.
 \end{itemize}
 
-Learning in general
+Correctness of monitors
 \begin{itemize}
-    \item
+    \item \citeauthor{acetoProbabilisticMonitorability2022} \cite{acetoProbabilisticMonitorability2022} Defines soundness and completeness for monitors in terms of some property. Thus defines some correctness for monitors. Does not include a gray area. It does include a margin of error.
 \end{itemize}
 
 Questionable relevance
 \begin{itemize}
-    \item \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
+    \item \citeauthor{sanchezSurveyChallengesRuntime2019} \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
+    \item \citeauthor{zolfagharianSMARLASafetyMonitoring2025} \cite{zolfagharianSMARLASafetyMonitoring2025} SMARLA: Machine learned monitor for RL algorithms.
+    \item \citeauthor{henzingerMonitoringAlgorithmicFairness2023} \cite{henzingerMonitoringAlgorithmicFairness2023} Monitor which evaluates fairness not safety.
 \end{itemize}
 % Wie heeft premise geciteerd
 

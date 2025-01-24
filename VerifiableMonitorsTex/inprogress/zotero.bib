@@ -1,3 +1,21 @@
+@incollection{acetoProbabilisticMonitorability2022,
+  title = {On {{Probabilistic Monitorability}}},
+  booktitle = {Principles of {{Systems Design}}: {{Essays Dedicated}} to {{Thomas A}}. {{Henzinger}} on the {{Occasion}} of {{His}} 60th {{Birthday}}},
+  author = {Aceto, Luca and Achilleos, Antonis and Anastasiadi, Elli and Francalanza, Adrian and Ingólfsdóttir, Anna and Lehtinen, Karoliina and Pedersen, Mathias Ruggaard},
+  editor = {Raskin, Jean-François and Chatterjee, Krishnendu and Doyen, Laurent and Majumdar, Rupak},
+  date = {2022},
+  pages = {325--342},
+  publisher = {Springer Nature Switzerland},
+  location = {Cham},
+  doi = {10.1007/978-3-031-22337-2_16},
+  url = {https://doi.org/10.1007/978-3-031-22337-2_16},
+  urldate = {2025-01-24},
+  abstract = {This paper investigates monitorability in the context of probabilistic systems. We specify how monitor verdicts, reached over finite (partial) traces, can be given a probabilistic interpretation. For monitors that are used to verify properties at runtime, we also relate their probabilistic verdicts to the probability that a trace satisfies the property of interest. This leads us to define probabilistic monitor soundness and completeness, which are then used to formulate probabilistic monitorability. Surprisingly, we show that the resulting notions coincide with standard monitorability definitions from the literature. This allows us to transfer prior results from the standard setting to the probabilistic realm.},
+  isbn = {978-3-031-22337-2},
+  langid = {english},
+  file = {/home/luko/Zotero/storage/ZK3TICW4/Aceto et al. - 2022 - On Probabilistic Monitorability.pdf}
+}
+
 @article{aichernigBenchmarkingCombinationsLearning2024,
   title = {Benchmarking {{Combinations}} of {{Learning}} and {{Testing Algorithms}} for {{Automata Learning}}},
   author = {Aichernig, Bernhard K. and Tappler, Martin and Wallner, Felix},
@@ -111,6 +129,23 @@
   url = {https://doi.org/10.1007/978-3-030-03769-7\_11},
   urldate = {2024-09-30},
   file = {/home/luko/Zotero/storage/GSIGLIF3/Babaee et al. - 2018 - Predictive Run-Time Verification of Discrete-Time Reachability Properties in Black-Box Systems Using.pdf}
+}
+
+@inproceedings{babaeePredictiveRunTimeVerification2018a,
+  title = {Predictive {{Run-Time Verification}} of {{Discrete-Time Reachability Properties}} in {{Black-Box Systems Using Trace-Level Abstraction}} and {{Statistical Learning}}},
+  booktitle = {Runtime {{Verification}}},
+  author = {Babaee, Reza and Gurfinkel, Arie and Fischmeister, Sebastian},
+  editor = {Colombo, Christian and Leucker, Martin},
+  date = {2018},
+  pages = {187--204},
+  publisher = {Springer International Publishing},
+  location = {Cham},
+  doi = {10.1007/978-3-030-03769-7_11},
+  abstract = {Run-time Verification (RV) has become a crucial aspect of monitoring black-box systems. Recently, we introduced \$\$\textbackslash mathcal \{P\}\{\} \textbackslash textit\{revent\} \$\$, a predictive RV framework, in which the monitor is able to predict the future extensions of an execution, using a model inferred from the random sample executions of the system. The monitor maintains a table of the states of the prediction model, with the probability of the extensions from each state that satisfy a safety property.},
+  isbn = {978-3-030-03769-7},
+  langid = {english},
+  keywords = {Abstract Trace,Bounded Reachability Analysis,Hidden State,Observation Space,Target Labeling},
+  file = {/home/luko/Zotero/storage/IJS9XJ7D/Babaee et al. - 2018 - Predictive Run-Time Verification of Discrete-Time Reachability Properties in Black-Box Systems Using.pdf}
 }
 
 @inproceedings{badingsCTMCsImpreciselyTimed2024,
@@ -238,11 +273,60 @@
   file = {/home/luko/Zotero/storage/R3AJPRC4/Broadrick et al. - 2024 - Probabilistic Circuits for Cumulative Distribution Functions.pdf;/home/luko/Zotero/storage/LIRDCJY7/2408.html}
 }
 
+@inproceedings{cairoliNeuralPredictiveMonitoring2021,
+  title = {Neural {{Predictive Monitoring Under Partial Observability}}},
+  booktitle = {Runtime {{Verification}}},
+  author = {Cairoli, Francesca and Bortolussi, Luca and Paoletti, Nicola},
+  editor = {Feng, Lu and Fisman, Dana},
+  date = {2021},
+  pages = {121--141},
+  publisher = {Springer International Publishing},
+  location = {Cham},
+  doi = {10.1007/978-3-030-88494-9_7},
+  abstract = {We consider the problem of predictive monitoring (PM), i.e., predicting at runtime future violations of a system from the current state. We work under the most realistic settings where only partial and noisy observations of the state are available at runtime. Such settings directly affect the accuracy and reliability of the reachability predictions, jeopardizing the safety of the system. In this work, we present a learning-based method for PM that produces accurate and reliable reachability predictions despite partial observability (PO). We build on Neural Predictive Monitoring (NPM), a PM method that uses deep neural networks for approximating hybrid systems reachability, and extend it to the PO case. We propose and compare two solutions, an end-to-end approach, which directly operates on the rough observations, and a two-step approach, which introduces an intermediate state estimation step. Both solutions rely on conformal prediction to provide 1) probabilistic guarantees in the form of prediction regions and 2) sound estimates of predictive uncertainty. We use the latter to identify unreliable (and likely erroneous) predictions and to retrain and improve the monitors on these uncertain inputs (i.e., active learning). Our method results in highly accurate reachability predictions and error detection, as well as tight prediction regions with guaranteed coverage.},
+  isbn = {978-3-030-88494-9},
+  langid = {english},
+  file = {/home/luko/Zotero/storage/TDLKZ6Z7/Cairoli et al. - 2021 - Neural Predictive Monitoring Under Partial Observability.pdf}
+}
+
 @article{choiProbabilisticCircuitsUnifying,
   title = {Probabilistic {{Circuits}}: {{A Unifying Framework}} for {{Tractable Probabilistic Models}}},
   author = {Choi, YooJung and Vergari, Antonio},
   langid = {english},
   file = {/home/luko/Zotero/storage/P7P59XIW/Choi and Vergari - Probabilistic Circuits A Unifying Framework for Tractable Probabilistic Models.pdf}
+}
+
+@inproceedings{cimattiAssumptionBasedRuntimeVerification2019,
+  title = {Assumption-{{Based Runtime Verification}} with {{Partial Observability}} and {{Resets}}},
+  booktitle = {Runtime {{Verification}}},
+  author = {Cimatti, Alessandro and Tian, Chun and Tonetta, Stefano},
+  editor = {Finkbeiner, Bernd and Mariani, Leonardo},
+  date = {2019},
+  pages = {165--184},
+  publisher = {Springer International Publishing},
+  location = {Cham},
+  doi = {10.1007/978-3-030-32079-9_10},
+  abstract = {We consider Runtime Verification (RV) based on Propositional Linear Temporal Logic (LTL) with both future and past temporal operators. We generalize the framework to monitor partially observable systems using models of the system under scrutiny (SUS) as assumptions for reasoning on the non-observable or future behaviors of the SUS. The observations are general predicates over the SUS, thus both static and dynamic sets of observables are supported. Furthermore, the monitors are resettable, i.e. able to evaluate any LTL property at arbitrary positions of the input trace (roughly speaking, \$\$[\textbackslash![u,i\textbackslash models \textbackslash varphi ]\textbackslash!]\$\$can be evaluated for any u and i with the underlying assumptions taken into account). We present a symbolic monitoring algorithm that can be efficiently implemented using BDD. It is proven correct and the monitor can be double-checked by model checking. As a by-product, we give the first automata-based monitoring algorithm for Past-Time LTL. Beside feasibility and effectiveness of our approach, we also demonstrate that, under certain assumptions the monitors of some properties are predictive.},
+  isbn = {978-3-030-32079-9},
+  langid = {english},
+  file = {/home/luko/Zotero/storage/XD33YA73/Cimatti et al. - 2019 - Assumption-Based Runtime Verification with Partial Observability and Resets.pdf}
+}
+
+@inproceedings{cleavelandConservativeSafetyMonitors2023,
+  title = {Conservative {{Safety Monitors}} of~{{Stochastic Dynamical Systems}}},
+  booktitle = {{{NASA Formal Methods}}},
+  author = {Cleaveland, Matthew and Sokolsky, Oleg and Lee, Insup and Ruchkin, Ivan},
+  editor = {Rozier, Kristin Yvonne and Chaudhuri, Swarat},
+  date = {2023},
+  pages = {140--156},
+  publisher = {Springer Nature Switzerland},
+  location = {Cham},
+  doi = {10.1007/978-3-031-33170-1_9},
+  abstract = {Generating accurate runtime safety estimates for autonomous systems is vital to ensuring their continued proliferation. However, exhaustive reasoning about future behaviors is generally too complex to do at runtime. To provide scalable and formal safety estimates, we propose a method for leveraging design-time model checking results at runtime. Specifically, we model the system as a probabilistic automaton (PA) and compute bounded-time reachability probabilities over the states of the PA at design time. At runtime, we combine distributions of state estimates with the model checking results to produce a bounded time safety estimate. We argue that our approach produces well-calibrated safety probabilities, assuming the estimated state distributions are well-calibrated. We evaluate our approach on simulated water tanks.},
+  isbn = {978-3-031-33170-1},
+  langid = {english},
+  keywords = {Calibrated Prediction,Probabilistic Model Checking,Runtime Monitoring},
+  file = {/home/luko/Zotero/storage/8TMULP7T/Cleaveland et al. - 2023 - Conservative Safety Monitors of Stochastic Dynamical Systems.pdf}
 }
 
 @article{darwicheKnowledgeCompilationMap2002a,
@@ -306,6 +390,21 @@
   isbn = {978-3-642-24689-0}
 }
 
+@article{grigoreSelectiveMonitoring2021,
+  title = {Selective Monitoring},
+  author = {Grigore, Radu and Kiefer, Stefan},
+  date = {2021-05-01},
+  journaltitle = {Journal of Computer and System Sciences},
+  volume = {117},
+  pages = {99--129},
+  issn = {0022-0000},
+  doi = {10.1016/j.jcss.2020.09.003},
+  url = {https://www.sciencedirect.com/science/article/pii/S0022000020301021},
+  urldate = {2025-01-24},
+  abstract = {We study selective monitors for labelled Markov chains. Monitors observe the outputs that are generated by a Markov chain during its run, with the goal of identifying runs as correct or faulty. A monitor is selective if it skips observations in order to reduce monitoring overhead. We are interested in monitors that minimize the expected number of observations. We establish an undecidability result for selectively monitoring general Markov chains. On the other hand, we show for non-hidden Markov chains (where any output identifies the state the Markov chain is in) that simple optimal monitors exist and can be computed efficiently, based on DFA language equivalence. These monitors do not depend on the precise transition probabilities in the Markov chain. We report on experiments where we compute these monitors for several open-source Java projects.},
+  keywords = {Automata,Language equivalence,Markov chains,Probabilistic systems,Runtime monitoring}
+}
+
 @inproceedings{groceAdaptiveModelChecking2002,
   title = {Adaptive {{Model Checking}}},
   booktitle = {Tools and {{Algorithms}} for the {{Construction}} and {{Analysis}} of {{Systems}}},
@@ -339,6 +438,38 @@
   langid = {english},
   keywords = {Artificial Intelligence,Markov chain,Markov decision process,Model checking,Probilistic systems,Verification},
   file = {/home/luko/Zotero/storage/6MSHXWUY/Hensel et al. - 2022 - The probabilistic model checker Storm.pdf}
+}
+
+@inproceedings{henzingerMonitoringAlgorithmicFairness2023,
+  title = {Monitoring {{Algorithmic Fairness}}},
+  booktitle = {Computer {{Aided Verification}}},
+  author = {Henzinger, Thomas A. and Karimi, Mahyar and Kueffner, Konstantin and Mallik, Kaushik},
+  editor = {Enea, Constantin and Lal, Akash},
+  date = {2023},
+  pages = {358--382},
+  publisher = {Springer Nature Switzerland},
+  location = {Cham},
+  doi = {10.1007/978-3-031-37703-7_17},
+  abstract = {Machine-learned systems are in widespread use for making decisions about humans, and it is important that they are fair, i.e., not biased against individuals based on sensitive attributes. We present runtime verification of algorithmic fairness for systems whose models are unknown, but are assumed to have a Markov chain structure. We introduce a specification language that can model many common algorithmic fairness properties, such as demographic parity, equal opportunity, and social burden. We build monitors that observe a long sequence of events as generated by a given system, and output, after each observation, a quantitative estimate of how fair or biased the system was on that run until that point in time. The estimate is proven to be correct modulo a variable error bound and a given confidence level, where the error bound gets tighter as the observed sequence gets longer. Our monitors are of two types, and use, respectively, frequentist and Bayesian statistical inference techniques. While the frequentist monitors compute estimates that are objectively correct with respect to the ground truth, the Bayesian monitors compute estimates that are correct subject to a given prior belief about the system’s model. Using a prototype implementation, we show how we can monitor if a bank is fair in giving loans to applicants from different social backgrounds, and if a college is fair in admitting students while maintaining a reasonable financial burden on the society. Although they exhibit different theoretical complexities in certain cases, in our experiments, both frequentist and Bayesian monitors took less than a millisecond to update their verdicts after each observation.},
+  isbn = {978-3-031-37703-7},
+  langid = {english},
+  file = {/home/luko/Zotero/storage/5924YYXF/Henzinger et al. - 2023 - Monitoring Algorithmic Fairness.pdf}
+}
+
+@inproceedings{jungesActiveLearningRuntime2025,
+  title = {Active {{Learning}} of~{{Runtime Monitors Under Uncertainty}}},
+  booktitle = {Integrated {{Formal Methods}}},
+  author = {Junges, Sebastian and Seshia, Sanjit A. and Torfah, Hazem},
+  editor = {Kosmatov, Nikolai and Kovács, Laura},
+  date = {2025},
+  pages = {297--306},
+  publisher = {Springer Nature Switzerland},
+  location = {Cham},
+  doi = {10.1007/978-3-031-76554-4_18},
+  abstract = {We investigate the problem of active learning of runtime monitors for cyber-physical systems (CPS) under uncertainty. In CPS, runtime monitors need to make decisions with only partial information about the system state and cannot always rely on having a precise environment model. As a result, the learning process and resulting monitors must be able to handle this type of uncertainty. We present a framework for the active learning of monitors and discuss the challenges in implementing oracles for membership and equivalence queries. We particularly apply the framework to a setting where uncertainty models are defined by Markov decision processes. We present initial results demonstrating the efficacy of our approach in learning accurate monitors using a set of benchmarks from the domain of autonomous systems.},
+  isbn = {978-3-031-76554-4},
+  langid = {english},
+  file = {/home/luko/Zotero/storage/YC6FUXTH/Junges et al. - 2025 - Active Learning of Runtime Monitors Under Uncertainty.pdf}
 }
 
 @inproceedings{jungesRuntimeMonitorsMarkov2021,
@@ -516,6 +647,47 @@
   file = {/home/luko/Zotero/storage/EV6EB7BI/Sánchez et al. - 2019 - A survey of challenges for runtime verification from advanced application domains (beyond software).pdf}
 }
 
+@online{SelectiveMonitoringScienceDirect,
+  title = {Selective Monitoring - {{ScienceDirect}}},
+  url = {https://www.sciencedirect.com/science/article/pii/S0022000020301021},
+  urldate = {2025-01-24},
+  file = {/home/luko/Zotero/storage/EJUVRGW3/S0022000020301021.html}
+}
+
+@inproceedings{sistlaMonitoringTemporalProperties2008,
+  title = {Monitoring {{Temporal Properties}} of {{Stochastic Systems}}},
+  booktitle = {Verification, {{Model Checking}}, and {{Abstract Interpretation}}},
+  author = {Sistla, A. Prasad and Srinivas, Abhigna R.},
+  editor = {Logozzo, Francesco and Peled, Doron A. and Zuck, Lenore D.},
+  date = {2008},
+  pages = {294--308},
+  publisher = {Springer},
+  location = {Berlin, Heidelberg},
+  doi = {10.1007/978-3-540-78163-9_25},
+  abstract = {We present highly accurate deterministic and randomized methods for monitoring temporal properties of stochastic systems. The deterministic algorithms employ timeouts that are set dynamically to achieve desired accuracy. The randomized algorithms employ coin tossing and can give highly accurate monitors when the system behavior is not known.},
+  isbn = {978-3-540-78163-9},
+  langid = {english},
+  keywords = {Atomic Proposition,Deterministic Algorithm,Hybrid Algorithm,Safety Property,Stochastic System},
+  file = {/home/luko/Zotero/storage/225THZCQ/Sistla and Srinivas - 2008 - Monitoring Temporal Properties of Stochastic Systems.pdf}
+}
+
+@inproceedings{sistlaRuntimeMonitoringStochastic2012,
+  title = {Runtime {{Monitoring}} of {{Stochastic Cyber-Physical Systems}} with {{Hybrid State}}},
+  booktitle = {Runtime {{Verification}}},
+  author = {Sistla, A. Prasad and Žefran, Miloš and Feng, Yao},
+  editor = {Khurshid, Sarfraz and Sen, Koushik},
+  date = {2012},
+  pages = {276--293},
+  publisher = {Springer},
+  location = {Berlin, Heidelberg},
+  doi = {10.1007/978-3-642-29860-8_21},
+  abstract = {Correct functioning of cyber-physical systems is of critical importance. This is more so in the case of safety critical systems such as in medical, automotive and many other applications. Since verification of correctness, in general, is infeasible and testing is not exhaustive, it is of critical importance to monitor such system during their operation and detect erroneous behaviors to be acted on. A distinguishing property of cyber-physical systems is that they are described by a mixture of integer-valued and real-valued variables. As a result, approaches that assume countable number of states are not applicable for runtime monitoring of such systems. This paper proposes a formalism, called Extended Hidden Markov systems, for specifying behavior of systems with such hybrid state. Using measure theory, it exactly characterizes when such systems are monitorable with respect to a given property. It also presents monitoring algorithms and experimental results showing their effectiveness.},
+  isbn = {978-3-642-29860-8},
+  langid = {english},
+  keywords = {Discrete State,Hybrid Automaton,Hybrid System,Liveness Property,Safety Property},
+  file = {/home/luko/Zotero/storage/AJ73V9TX/Sistla et al. - 2012 - Runtime Monitoring of Stochastic Cyber-Physical Systems with Hybrid State.pdf}
+}
+
 @inproceedings{smeenkApplyingAutomataLearning2015,
   title = {Applying {{Automata Learning}} to {{Embedded Control Software}}},
   booktitle = {Formal {{Methods}} and {{Software Engineering}}},
@@ -531,6 +703,23 @@
   langid = {english},
   keywords = {Composite State,Input Symbol,Label Transition System,System Under Test,Test Suite},
   file = {/home/luko/Zotero/storage/3J5Z2IEH/Smeenk et al. - 2015 - Applying Automata Learning to Embedded Control Software.pdf}
+}
+
+@inproceedings{stollerRuntimeVerificationState2012,
+  title = {Runtime {{Verification}} with {{State Estimation}}},
+  booktitle = {Runtime {{Verification}}},
+  author = {Stoller, Scott D. and Bartocci, Ezio and Seyster, Justin and Grosu, Radu and Havelund, Klaus and Smolka, Scott A. and Zadok, Erez},
+  editor = {Khurshid, Sarfraz and Sen, Koushik},
+  date = {2012},
+  pages = {193--207},
+  publisher = {Springer},
+  location = {Berlin, Heidelberg},
+  doi = {10.1007/978-3-642-29860-8_15},
+  abstract = {We introduce the concept of Runtime Verification with State Estimation and show how this concept can be applied to estimate the probability that a temporal property is satisfied by a run of a program when monitoring overhead is reduced by sampling. In such situations, there may be gaps in the observed program executions, thus making accurate estimation challenging. To deal with the effects of sampling on runtime verification, we view event sequences as observation sequences of a Hidden Markov Model (HMM), use an HMM model of the monitored program to “fill in” sampling-induced gaps in observation sequences, and extend the classic forward algorithm for HMM state estimation (which determines the probability of a state sequence, given an observation sequence) to compute the probability that the property is satisfied by an execution of the program. To validate our approach, we present a case study based on the mission software for a Mars rover. The results of our case study demonstrate high prediction accuracy for the probabilities computed by our algorithm. They also show that our technique is much more accurate than simply evaluating the temporal property on the given observation sequences, ignoring the gaps.},
+  isbn = {978-3-642-29860-8},
+  langid = {english},
+  keywords = {Hide Markov Model,Observation Sequence,Property Instance,State Estimation,Temporal Property},
+  file = {/home/luko/Zotero/storage/PLWLTNEL/Stoller et al. - 2012 - Runtime Verification with State Estimation.pdf}
 }
 
 @article{sundarapandianraaniModelingAnalysisBoard2021,
@@ -558,6 +747,23 @@
   file = {/home/luko/Zotero/storage/HM5324UI/Ventola et al. - 2023 - Probabilistic circuits that know what they don’t know.pdf;/home/luko/Zotero/storage/QQDKX6Z5/Ventola et al. - 2023 - Probabilistic circuits that know what they don’t know.pdf}
 }
 
+@inproceedings{wilcoxRuntimeVerificationStochastic2010,
+  title = {Runtime {{Verification}} of {{Stochastic}}, {{Faulty Systems}}},
+  booktitle = {Runtime {{Verification}}},
+  author = {Wilcox, Cristina M. and Williams, Brian C.},
+  editor = {Barringer, Howard and Falcone, Ylies and Finkbeiner, Bernd and Havelund, Klaus and Lee, Insup and Pace, Gordon and Roşu, Grigore and Sokolsky, Oleg and Tillmann, Nikolai},
+  date = {2010},
+  pages = {452--459},
+  publisher = {Springer},
+  location = {Berlin, Heidelberg},
+  doi = {10.1007/978-3-642-16612-9_34},
+  abstract = {We desire a capability for the lifelong verification of complex embedded systems that degrade over time, such as a semi-autonomous car. The field of runtime verification has developed many tools for monitoring the safety of software systems in real time. However, these tools do not allow for uncertainty in the system’s state or failure, both of which are essential for monitoring hardware as it degrades. This work augments runtime verification with techniques from model-based estimation in order to provide a capability for monitoring the safety criteria of mixed hardware/software systems that is robust to uncertainty and hardware failure.},
+  isbn = {978-3-642-16612-9},
+  langid = {english},
+  keywords = {belief state update,hidden state,stochastic systems},
+  file = {/home/luko/Zotero/storage/6JRQ8M9Z/Wilcox and Williams - 2010 - Runtime Verification of Stochastic, Faulty Systems.pdf}
+}
+
 @inproceedings{winklerCertificatesProbabilisticPushdown2023,
   title = {Certificates for {{Probabilistic Pushdown Automata}} via {{Optimistic Value Iteration}}},
   booktitle = {Tools and {{Algorithms}} for the {{Construction}} and {{Analysis}} of {{Systems}}},
@@ -575,6 +781,22 @@
   file = {/home/luko/Zotero/storage/CMXYTIAA/Winkler and Katoen - 2023 - Certificates for Probabilistic Pushdown Automata via Optimistic Value Iteration.pdf}
 }
 
+@inproceedings{wooRealTimeMonitoringUncertain2007,
+  title = {Real-{{Time Monitoring}} of {{Uncertain Data Streams Using Probabilistic Similarity}}},
+  booktitle = {28th {{IEEE International Real-Time Systems Symposium}} ({{RTSS}} 2007)},
+  author = {Woo, Honguk and Mok, Aloysius K.},
+  date = {2007-12},
+  pages = {288--300},
+  issn = {1052-8725},
+  doi = {10.1109/RTSS.2007.29},
+  url = {https://ieeexplore.ieee.org/abstract/document/4408313},
+  urldate = {2025-01-24},
+  abstract = {Data uncertainty is a common problem for the real-time monitoring of data streams. In this paper, we address the issue of efficiently monitoring the satisfaction/violation of user-defined constraints over data streams where the data uncertainty can be probabilistically characterized. We propose a monitoring architecture SPMON that can incorporate probabilistic models of uncertainty in constraint monitoring. We adapt the concept of data similarity in real-time databases to the processing of uncertain data streams. In doing so, we generalize the data similarity by a new concept psr (probabilistic similarity region) that allows us to define similarity relations for probabilistic data with respect to the set of constraints being monitored. This enables the construction of lightweight filters for saving bandwidth. We also show how to efficiently update the filter conditions at run-time.},
+  eventtitle = {28th {{IEEE International Real-Time Systems Symposium}} ({{RTSS}} 2007)},
+  keywords = {Bandwidth,Computerized monitoring,Condition monitoring,Databases,Filters,Pressure measurement,Real time systems,Sensor systems,Uncertainty,Wireless sensor networks},
+  file = {/home/luko/Zotero/storage/QCW4495H/Woo and Mok - 2007 - Real-Time Monitoring of Uncertain Data Streams Using Probabilistic Similarity.pdf;/home/luko/Zotero/storage/2EVD4PLX/4408313.html}
+}
+
 @inproceedings{yangImprovingModelInference2019,
   title = {Improving {{Model Inference}} in {{Industry}} by {{Combining Active}} and {{Passive Learning}}},
   booktitle = {2019 {{IEEE}} 26th {{International Conference}} on {{Software Analysis}}, {{Evolution}} and {{Reengineering}} ({{SANER}})},
@@ -589,4 +811,23 @@
   eventtitle = {2019 {{IEEE}} 26th {{International Conference}} on {{Software Analysis}}, {{Evolution}} and {{Reengineering}} ({{SANER}})},
   keywords = {active learning,Analytical models,Conformance testing,equivalence oracle,Industries,Lithography,Merging,model inference,passive learning,reverse engineering,runtime logs,Software systems},
   file = {/home/luko/Zotero/storage/PPCT7A3L/Yang et al. - 2019 - Improving Model Inference in Industry by Combining Active and Passive Learning.pdf;/home/luko/Zotero/storage/E9CAF4AI/8668007.html}
+}
+
+@article{zolfagharianSMARLASafetyMonitoring2025,
+  title = {{{SMARLA}}: {{A Safety Monitoring Approach}} for {{Deep Reinforcement Learning Agents}}},
+  shorttitle = {{{SMARLA}}},
+  author = {Zolfagharian, Amirhossein and Abdellatif, Manel and Briand, Lionel C. and S, Ramesh},
+  date = {2025-01},
+  journaltitle = {IEEE Transactions on Software Engineering},
+  volume = {51},
+  number = {1},
+  pages = {82--105},
+  issn = {1939-3520},
+  doi = {10.1109/TSE.2024.3491496},
+  url = {https://ieeexplore.ieee.org/document/10745554},
+  urldate = {2025-01-24},
+  abstract = {Deep Reinforcement Learning (DRL) has made significant advancements in various fields, such as autonomous driving, healthcare, and robotics, by enabling agents to learn optimal policies through interactions with their environments. However, the application of DRL in safety-critical domains presents challenges, particularly concerning the safety of the learned policies. DRL agents, which are focused on maximizing rewards, may select unsafe actions, leading to safety violations. Runtime safety monitoring is thus essential to ensure the safe operation of these agents, especially in unpredictable and dynamic environments. This paper introduces SMARLA, a black-box safety monitoring approach specifically designed for DRL agents. SMARLA utilizes machine learning to predict safety violations by observing the agent's behavior during execution. The approach is based on Q-values, which reflect the expected reward for taking actions in specific states. SMARLA employs state abstraction to reduce the complexity of the state space, enhancing the predictive capabilities of the monitoring model. Such abstraction enables the early detection of unsafe states, allowing for the implementation of corrective and preventive measures before incidents occur. We quantitatively and qualitatively validated SMARLA on three well-known case studies widely used in DRL research. Empirical results reveal that SMARLA is accurate at predicting safety violations, with a low false positive rate, and can predict violations at an early stage, approximately halfway through the execution of the agent, before violations occur. We also discuss different decision criteria, based on confidence intervals of the predicted violation probabilities, to trigger safety mechanisms aiming at a trade-off between early detection and low false positive rates.},
+  eventtitle = {{{IEEE Transactions}} on {{Software Engineering}}},
+  keywords = {Accuracy,Closed box,Decision making,machine learning,Monitoring,Predictive models,Reinforcement learning,Runtime,Safety,safety monitoring,Standards,state abstraction,Training,Vehicle dynamics},
+  file = {/home/luko/Zotero/storage/26ENHK2J/Zolfagharian et al. - 2025 - SMARLA A Safety Monitoring Approach for Deep Reinforcement Learning Agents.pdf;/home/luko/Zotero/storage/43GLCSG6/10745554.html}
 }
