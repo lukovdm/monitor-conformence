@@ -1186,34 +1186,28 @@ This follows from a strict reduction from MAX-3SAT, which is an inapproximable a
 
 
 \section{Experiments}\label{sec:experiments}
-\noindent In this section, we empirically evaluate the monitor verification (\cref{sec:monver}) and monitor learning (\cref{sec:learning}) using our  prototype implementation called \alg.
-We aim to answer the following questions:
-We evaluate the verifier with the following questions:
+\noindent We empirically evaluate the monitor verification (\cref{sec:monver}) and monitor learning (\cref{sec:learning}) using our  prototype implementation called \alg.
+We aim to answer the following questions w.r.t.\ our verifier (\textbf{Q1}, \textbf{Q2}) and our learner (\textbf{Q3}, \textbf{Q4}):\sj{maybe less topsep spacing?}
 \begin{description}
     \item[Q1] What is the scalability of the monitor verification approach?
     \item[Q2] Which steps in the monitor verification are most expensive?
-\end{description}
-We evaluate the learning algorithm using the following questions:
-\begin{description}
     \item[Q3] How does a verification-based oracle compare to using conformance checking?
     \item[Q4] What is the effect of safe and unsafe thresholds?
 \end{description}
 
 
 \paragraph{Setup.}
-The \alg tool is built in Python and C++ on top of the \textsc{Storm} model checker \cite{henselProbabilisticModelChecker2022} for most data structures and for the filtering (Membership queries in \cref{sec:learning})~\cite{jungesRuntimeMonitorsMarkov2021}.
-We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify the generated colored MDP (\cref{def:colMDP}).
-The learner uses the AAlpy automata learning framework~\cite{muskardinAALpyActiveAutomata2022}.
-All experiments are run using exact arithmetic on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
+The \alg tool is implemented in Python and C++ on top of the model checker \textsc{Storm}~\cite{henselProbabilisticModelChecker2022} for data structures and for the MQs in \cref{sec:learning}~\cite{jungesRuntimeMonitorsMarkov2021}.
+We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify colored MDPs (\cref{def:colMDP}).
+The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.
+All experiments are run (using exact arithmetic) on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
 %We ran multiple benchmarks in parallel.
 
 \paragraph{Benchmarks.}
-We combine benchmarks from the literature with some novel benchmarks.
-We take the \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} benchmark families from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, based on the central example but with more states describing how close the car is to crashing and \textsc{SnL}, a benchmark based on the game ``Snakes and Ladders'', with a 10x10 game board and one player.
-While the existing benchmarks contain many observations, the new benchmarks only have a few different observations.
-Every benchmark is analyzed with respect to different horizons and in different sizes.
-The benchmarks have up to hundreds of states and thousands of transitions.
-Details are given in \cref{sec:benchmarksdescr}.
+We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the central example and \textsc{SnL} based on the game ``Snakes and Ladders''.
+While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. All benchmarks are scalable. 
+% We use benchmarks up to hundreds of states and thousands of transitions.
+Details are given in \cref{sec:benchmarksdescr}.\sj{*A*ppendix}
 
 
 \subsubsection{Q1 and Q2: Efficiency and Scalability of Monitor Verification}\hfill\\
