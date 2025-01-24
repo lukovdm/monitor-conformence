@@ -1388,6 +1388,29 @@ We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\la
     \item MDPs as Distribution transformers
     \item Computing conditional probabilities (About reachability conditionals, not ending conditionals)
 \end{itemize}
+
+Theorectical results used in transformation or learning
+\begin{itemize}
+    \item \cite{baierComputingConditionalProbabilities2014} Conditional probabilities.
+    \item \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
+\end{itemize}
+
+Learn a HMM, then do simple reachability to find the probability of error
+\begin{itemize}
+    \item \cite{jungesRuntimeMonitorsMarkov2021} Premise paper
+    \item \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.
+    \item \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?
+\end{itemize}
+
+Learning in general
+\begin{itemize}
+    \item
+\end{itemize}
+
+Questionable relevance
+\begin{itemize}
+    \item \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
+\end{itemize}
 % Wie heeft premise geciteerd
 
 
