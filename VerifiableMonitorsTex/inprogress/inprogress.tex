@@ -22,6 +22,7 @@
 \newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
 \newcommand{\lm}[2][]{\todo[color=cyan!50!white,#1]{\footnotesize{Luko: #2}}}
 \newcommand{\li}[2][]{\todo[color=yellow,#1]{\footnotesize{Linus: #2}}}
+\newcommand{\lo}[2][]{\todo[color=green!50!white,#1]{\footnotesize{Loes: #2}}}
 \newcommand{\indicator}[1]{[#1]}
 
 \newcommand{\Distr}{\Delta}
@@ -570,7 +571,7 @@ The set of all color-consistent schedulers is denoted $\ccSched$. Policy synthes
 %We now present the theorem we focus on in this section.
 \begin{theorem}[Main theorem]
     \label{thm:maintheorem}
-    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$ s.t.\ 
+    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$ s.t.\
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda_s\quad\text{ iff }\quad \exists \tau\in\lang{\mc}.\ \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{theorem}
 Our proof, outlined in this section, is constructive and we show that we can use the construction to find a $\tau \in \missedalarms{}{}(\dfa)$, whenever such a $\tau$ exists.
@@ -622,7 +623,7 @@ We will further simplify the problem by incorporating both the horizon and risk 
 %The exists missed alarm problem, questions whether there is a trace $\tau$ such that $\tau \in \missedalarms{}{}(\dfa)$. Obviously, when such a trace exists, $\missedalarms{}{}(\dfa) \neq \emptyset$, thus disproving the no-missed-alarms problem for $\dfa$.
 
 \subsubsection{CTP problem}
-We take (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008} between HMM and the DFA.  We define as \emph{alarm states} $F$ those states which correspond to not accepting states in the DFA. This is equivalent to taking a product with the complement of the monitor. 
+We take (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008} between HMM and the DFA.  We define as \emph{alarm states} $F$ those states which correspond to not accepting states in the DFA. This is equivalent to taking a product with the complement of the monitor.
 \begin{example}
     \Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. Starting in the initial states $d$ and $1$, respectively, the HMM can transition to the $i$ state with probability $\sfrac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to the $2$ state. This results in the new product state of $i$ and $2$, with a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\sfrac{9}{10}$. The alarm states are the initial $\langle d, 1\rangle$\sj{inconsistent with Fig} state and any product states $\langle \_ ,3 \rangle$.
 \end{example}
@@ -630,10 +631,10 @@ We take (a mild variation of) a standard product construction~\cite{baierPrincip
     \label{def:product}
     Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM}\sj{Maybe make this a tuple?} $\mc_{\times \dfa}$ is the HMM  $\mc_{\times \dfa}                                    = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r')$ with $\obsf'(\langle s, q\rangle) = \obsf(s)$,  $r'(\langle s, q\rangle)                              = r(s)$
     \begin{align*}
-               \ptrans'(\langle s, q\rangle)(\langle s', q'\rangle) & = \begin{cases}
+        \ptrans'(\langle s, q\rangle)(\langle s', q'\rangle) & = \begin{cases}
                                                                      \ptrans(s, s') & \text{if } \delta(q, \obsf(s')) = q' \\
                                                                      0              & \text{otherwise}
-                                                                 \end{cases}    
+                                                                 \end{cases}
     \end{align*}
     The alarm states for the product are  $F = S\times F'$.
 \end{definition}
@@ -1000,37 +1001,37 @@ We now describe how to \emph{learn} correct monitors. We do so by combining the 
 \paragraph{MAT framework}
 We briefly recap the MAT framework, for details see~\cite{DBLP:journals/cacm/Vaandrager17}.
 A minimally adequate teacher answers two types of questions:
-A membership query, which in our setup means \emph{should a trace be part of the monitor?} and an equivalence query, \emph{is this monitor correct?}
+A membership query (MQ), which in our setup means \emph{should a trace be part of the monitor?}, and an equivalence query (EQ), \emph{is this monitor correct?}
 Furthermore, if the answer to an equivalence query is negative, we must provide a counterexample that witnesses why the monitor is not correct.
-Various algorithms implementing the MAT framework for DFA learning exist. For the purpose of this paper, we use the L$^{\star}$ algorithm \cite{DBLP:journals/iandc/Angluin87}. Roughly, the learner will ask the teacher membership queries to construct a hypothesis, i.e., some monitor that is consistent with the answers from the teacher. Once such a hypothesis is constructed, the monitor is verified using an equivalence query.
+Various algorithms implementing the MAT framework for DFA learning exist. For the purpose of this paper, we use the L$^{\star}$ algorithm \cite{DBLP:journals/iandc/Angluin87} to learn a monitor. The learner asks MQs to the teacher until a hypothesis monitor can be constructed which is consistent with the MQs. Once such a hypothesis is constructed, the monitor is verified using an equivalence query.
 
 
 \paragraph{Verification as a MAT}
 When learning monitors with a MAT we will provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. After learning we obtain the monitor $\dfa$.
 
-We now define the MAT framework for learning monitors by defining the MQ and the EQ. We define the EQ by adapting \cref{def:safeunsafe} for $\tau \in \Obs^\star$.
+Note learning utilises an additional risk threshold, $\lambda_l$. A learning threshold is needed since the safe and unsafe thresholds alone do not suffice for defining the queries for a MAT. A MQ needs to always classify a trace either safe or unsafe. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe. Thus, we introduce a third threshold $\lambda_l$ with $\lambda_s \leq \lambda_l \leq \lambda_u$. We adapt \cref{def:safeunsafe} for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
 \begin{definition}\label{def:toverMQ}
-    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, a MQ$_{\lambda_l}$, is a function $f$, where $f(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace out of the HMM safe is an arbitrary decision, as they do not matter for correctness. However, in the MAT framework a trace always has to be either safe or unsafe} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
+    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, a MQ$_{\lambda_l}$, is a function $f$, where $f(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace $\tau\notin\lang{\mc}$ safe is an arbitrary decision, as it do not matter for correctness. However, in the MAT framework a trace always has to be either safe or unsafe.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.
+Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.
 
 We adapt the verification described in \cref{sec:monver} to define the EQ.
 \begin{definition}\label{def:toverEQ}
     Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$ such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counter example trace if $\dfa$ is not correct.
-\end{definition}
-The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found it is returned as a counter example.
+\end{definition}\lo{Why not let EQ$_{\lambda_s, \lambda_u}$ be the function instead of $g$?}
+The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found, it is returned as a counter example.
 
 \begin{lemma}
-    Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned with L$\star$ is correct as long as $\lambda_u \leq \lambda_l \leq \lambda_s$.
+    Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
 \end{lemma}
 \begin{proof}
-    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed safe by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_u \leq \lambda_l \leq \lambda_s$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on unsafe traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to hold for EQ$_{\lambda_s, \lambda_u}$, and thus be correct.
-\end{proof}
+    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to EQ$_{\lambda_s, \lambda_u}$, and thus be correct for $\lambda_s$ and $\lambda_u$ according to \cref{def:cormon}.
+\end{proof}\lm{This is a bit short through the corner. But don't know how detailed to be.}
 
-Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. This allows the EQ to have a gray area given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor, while it is still correct. We investigate the results of this gray area in \cref{sec:experiments} \textbf{Q4}.
+Note that we do not have to set $\lambda_s$ and $\lambda_u$ to the learning threshold $\lambda_l$. This allows the EQ to have a gray area given by the interval $(\lambda_s, \lambda_u)$. Traces which have a risk in this interval can be in or out of the monitor, while it is still correct. We investigate the results of this gray area in \textbf{Q4} of \cref{sec:experiments}.
 
 \paragraph{Improvements.}
-An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{}, where we test a monitor using a large amount of sampling. In our approach we use a hybrid of the twe queries. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, it has a constant upfront cost. Conformance queries can often find a counter example faster if one has a high probabilty of occuring.
+An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counter example. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counter example faster if one has a high probability of occurring.
 
 \section{Computational Complexity}\label{sec:compl}
 \begin{theorem}
@@ -1298,10 +1299,10 @@ The time spent to verify a monitor can mostly be split up in time to apply the t
 
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning} and configure the queries as follows.
-We set the learning threshold $\lambda_l = 0.3$, and we run the \alg learner with $\lambda_s = 0.35, \lambda_u = 0.1$ and with $\lambda_u = \lambda_l = \lambda_s = 0.3$. The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
+We set the learning threshold $\lambda_l = 0.3$, and we run the \alg learner with $\lambda_s = 0.35, \lambda_u = 0.1$ and with $\lambda_s = \lambda_l = \lambda_u = 0.3$. The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
 \footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \Cref{sec:ressampling}.}
 Before executing an EQ, we run conformance checking with 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$ (see \cref{sec:learning}).
-As a baseline, we do not use an EQ oracle, but rather only use a conformance query as described in \cref{sec:learning}. This conformance query decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \Cref{sec:ressampling}c}. We only discuss the results of learning with $\lambda_u = \lambda_l = \lambda_s$ and with $\lambda_u \leq \lambda_l \leq \lambda_s$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.
+As a baseline, we do not use an EQ oracle, but rather only use a conformance query as described in \cref{sec:learning}. This conformance query decides a monitor is correct after sampling 100000 traces\footnote{We investigate the role of the number of samples in \Cref{sec:ressampling}c}. We only discuss the results of learning with $\lambda_s = \lambda_l = \lambda_u$ and with $\lambda_s \leq \lambda_l \leq \lambda_u$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.
 
 \paragraph{Are the monitors correct?}
 First, we investigate the \emph{actual} performance of the learned monitors. That is, for any monitor we can compute \sj{is this simple to do?}\lm{Yes, stopping the maximalization of the policy when we reach the threshold, we just continue and report the found value afterwards, intstead of just returing true/false.} the trace in the monitor that has the lowest risk (actual alarm threshold, $\lambda_u^{\min}$) and the trace not in the monitor that has the highest risk (actual no-alarm threshold, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
@@ -1313,14 +1314,14 @@ First, we investigate the \emph{actual} performance of the learned monitors. Tha
         \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .3cm}
             \input{images/plots/thresholds_tover_no_slack.pgf}
         \end{adjustbox}
-        \caption{\alg, $\lambda_u=\lambda_l=\lambda_s$}
+        \caption{\alg, $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:learnThrToverNS}
     \end{subfigure}\hfill
     \begin{subfigure}{.31\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
             \input{images/plots/thresholds_tover_slack.pgf}
         \end{adjustbox}
-        \caption{\alg, $\lambda_u < \lambda_l < \lambda_s$}
+        \caption{\alg, $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:learnThrToverS}
     \end{subfigure}\hfill
     \begin{subfigure}{.31\linewidth}
@@ -1342,14 +1343,14 @@ For our benchmarks we are learning monitors of hundreds of states and tens of th
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .3cm}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
-        \caption{\alg with $\lambda_u < \lambda_l < \lambda_s$}
+        \caption{\alg with $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:monsizes}
     \end{subfigure}\hfill
     \begin{subfigure}{.46\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
-        \caption{\alg with $\lambda_u=\lambda_l=\lambda_s$}
+        \caption{\alg with $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:monsizens}
     \end{subfigure}
     \caption{Comparison of the amount of states in monitors learned using \alg learning compared to baseline learning.}
@@ -1358,19 +1359,19 @@ For our benchmarks we are learning monitors of hundreds of states and tens of th
 \paragraph{How fast do we learn the monitors?}
 We describe the runtime of the \alg learning and baseline learning in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp,fig:runtimediv}. \Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} show how the runtime of \alg learning and baseline learning compare. Baseline takes at least about 100\lm{check number} seconds, while \alg learning can take only 0.02\lm{check} seconds to find a monitor both algorithms take at most around 9 hours\lm{also check}. Several benchmarks never finished after more than 24 hours and were stopped\lm{I stopped them manually after around a day, so no real timeout. Is this enough in that case?}. Neither of the two learning algorithms is clearly faster than the other.
 
-\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. Most benchmarks are heavily dependent on PAYNT for the runtime. However, several \textsc{Evade} benchmarks spent most of their time in L$\star$. We conjecture this happens because finding counter examples is very fast for this model.
+\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. Most benchmarks are heavily dependent on PAYNT for the runtime. However, several \textsc{Evade} benchmarks spent most of their time in L$^\star$. We conjecture this happens because finding counter examples is very fast for this model.
 
 \begin{figure}[t]
     \begin{subfigure}{.48\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_with_slack.pgf}}
-        \caption{Runtime comparison, $\lambda_u < \lambda_l < \lambda_s$}
+        \caption{Runtime comparison, $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:runtime-ws-comp}
     \end{subfigure}\hfill
     \begin{subfigure}{.48\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_no_slack.pgf}}
-        \caption{Runtime comparison, $\lambda_u=\lambda_l=\lambda_s$}
+        \caption{Runtime comparison, $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:runtime-ns-comp}
     \end{subfigure}
     \begin{subfigure}{\linewidth}
@@ -1383,7 +1384,7 @@ We describe the runtime of the \alg learning and baseline learning in the \cref{
 \end{figure}
 
 \subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
-We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\lambda_l=\lambda_s$, without a gray area, and $\lambda_u < \lambda_l < \lambda_s$, with a gray area. This does not have an effect on the baseline learner as it only takes $\lambda_l$ into account.
+We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\lambda_l=\lambda_s$, without a gray area, and $\lambda_s < \lambda_l < \lambda_u$, with a gray area. This does not have an effect on the baseline learner as it only takes $\lambda_l$ into account.
 
 \Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and baseline learning. \cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using baseline learning. When not learning with a gray area the difference is smaller. Two monitors are smaller when using baseline learning, one monitor was reduced from 4 to 3 states, the other from 7 to 1 state.
 
@@ -1395,6 +1396,29 @@ We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\la
     \item Predictors or so by Ziemek et al.
     \item MDPs as Distribution transformers
     \item Computing conditional probabilities (About reachability conditionals, not ending conditionals)
+\end{itemize}
+
+Theorectical results used in transformation or learning
+\begin{itemize}
+    \item \cite{baierComputingConditionalProbabilities2014} Conditional probabilities.
+    \item \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
+\end{itemize}
+
+Learn a HMM, then do simple reachability to find the probability of error
+\begin{itemize}
+    \item \cite{jungesRuntimeMonitorsMarkov2021} Premise paper
+    \item \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.
+    \item \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?
+\end{itemize}
+
+Learning in general
+\begin{itemize}
+    \item
+\end{itemize}
+
+Questionable relevance
+\begin{itemize}
+    \item \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
 \end{itemize}
 % Wie heeft premise geciteerd
 
