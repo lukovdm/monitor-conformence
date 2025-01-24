@@ -704,15 +704,16 @@ The following lemma states the correctness of the transformation and follows dir
     \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \atop \langle s,j\rangle \right\rangle$.}
     \label{fig:actp}
 \end{figure}
-We further simplify the problem by combining the horizon, risk and the newly created alarm states set into the HMM. The resulting HMM can be seen as the model for the acyclic CTP problem.
+We further simplify the problem by unrolling the model along the horizon. We also eliminate the risk function.
+% and the newly created alarm states set into the HMM. %The resulting HMM can be seen as the model for the acyclic CTP problem.
 
 \begin{example}
-    The ACTP transformation applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}. We unroll the CTP HMM for a horizon of 3. Thus, the initial state becomes the tuple of step $1$ and the initial state from the CTP HMM, $\langle d, 1\rangle$. Any transition in the model increases the step value by $1$, $\actps{1}{d}{1}$ transitions to $\actps{2}{c}{2}$. In state $\actps{3}{i}{3}$ we are at the horizon, and the CTP part of the state is part of the alarm states. Thus, the monitor wants to raise an alarm here. We now transition with probability 1 to the $\safes[4]$ state and probability 0 to the $\alarms[4]$ state, since the normalized risk of $d$ is 0. The horizon state $\actps{3}{d}{1}$ is not in $A$, thus we transition to the $\igs[4]$ state.
+    Our unrolling applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}. We unroll the product for horizon three. Thus, the initial state becomes the tuple of step $1$ and the initial state from the CTP HMM, $\langle d, 1\rangle$. This state $\actps{1}{d}{1}$ transitions to, e.g., $\actps{2}{c}{2}$. In state $\actps{3}{i}{3}$ we are at the horizon, and the CTP part of the state is part of the alarm states\sj{colloquial and lengthy from here on, try to be more concise. E.g., start with: Consider state...}. Thus, the monitor wants to raise an alarm here. We now transition with probability 1 to the $\safes[4]$ state and probability 0 to the $\alarms[4]$ state, since the normalized risk of $d$ is 0. The horizon state $\actps{3}{d}{1}$ is not in $A$\sj{$F$}, thus we transition to the $\igs[4]$ state.
 \end{example}
 
 \begin{definition}[Unrolling with risk]
     \label{def:acyclichmm}
-    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$, risk $r$ and alarm states $F \subseteq \Sts$ is the HMM $\mc_{\blacktriangleright h} = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \}, (1,\init), \ptrans', \Obs \cup \{\en, \ig\}, \obsf')$, with the normalized risk function $r' (s) = \sfrac{r(s)}{\max_{s\in\Sts} r(s)}$ and new transition and observation function:
+    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $F \subseteq \Sts$ is the HMM $\mc_{\blacktriangleright h} = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \}, (1,\init), \ptrans', \Obs \cup \{\en, \ig\}, \obsf')$, with the normalized risk function $r' (s) = \sfrac{r(s)}{\max_{s\in\Sts} r(s)}$\sj{Why do we need a risk function?} and new transition and observation function:
     \begin{align*}
         % \mc_{\blacktriangleright h}                                                                        & = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \},     \\
         %                                                                                                    & \phantom{= (}\ (1,\init), \ptrans', \Obs \cup \{\en, \ig\}, \obsf') \\
@@ -730,8 +731,10 @@ We further simplify the problem by combining the horizon, risk and the newly cre
                                                                                                                    \ig & \text{if } t = \tig
                                                                                                                \end{cases}
     \end{align*}
+    \sj{in first line, use $s,s'$ rather than $s, q$?}
+    \sj{obs(h,t) or obs(h+1,t)?}
 \end{definition}
-The unrolled transition relation $\ptrans'$ is defined as expected. At the horizon we transition to the three new states $\talrm$, $\tsafe$ and $\tig$\footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no-false-alarms problem.} according to the risk.
+For the first $h$ steps, the unrolling is standard. At the horizon we transition to the three dedicated states $\talrm$, $\tsafe$ and $\tig$\footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no-false-alarms problem.} according to the risk.
 
 \begin{lemma}
     \label{lem:toactp}
@@ -742,7 +745,8 @@ The unrolled transition relation $\ptrans'$ is defined as expected. At the horiz
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 
 \end{lemma}
-The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\lm{I am not sure about either $s_a$ or $alarm$, the first is shorter, but the second is a lot more descriptive}\sj{Put a slightly longer proof in the appendix}
+%The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\lm{I am not sure about either $s_a$ or $alarm$, the first is shorter, but the second is a lot more descriptive}
+\sj{Put a short proof sketch in the appendix}
 %
 %
 %Using the above transformed HMM we can define the ACTP problem.
@@ -830,11 +834,11 @@ The proof of the lemma essentially starts by using that the lhs of the lemma is 
 
 For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachability probability exceeds a threshold. We reformulate this into a policy synthesis problem in MDPs. The transformation combines two ideas: First, in every state, the policy can select the next observation, inspired by~\cite{}. Second, we reformulate conditional reachability probabilities by (standard) regular reachability probabilities, using a construction in \cite{}.
 \begin{example}
-    The consistent policy synthesis transformation applied to the ACTP HMM in \cref{fig:actp} can be seen in \cref{fig:mdpex}. The transformation applied to state $\actps{2}{i}{2}$ in the ACTP HMM results in the following. The three transitions are split into the one transition going to a $\dry$ state, $\actps{3}{d}{1}$, and two transitions going to the two $\icy$ states in step 3. We plate the first transition behind the $\dry$ action. The other two transitions are placed behind the $\icy$ action. Both of the action have a total probability of $\frac{1}{2}$, thus a return transition is added to the initial state of $\frac{1}{2}$ probability to both actions.
+    We transform the HMM from \cref{fig:actp} to \cref{fig:mdpex}. Consider $\actps{2}{i}{2}$ in original HMM.\sj{I would say that the next observation is iether dry or icy, which corresponds to the two new actions. Then, explain what happens if the next observation is icy or dry} The three transitions are split into the one transition going to a $\dry$ state, $\actps{3}{d}{1}$, and two transitions going to the two $\icy$ states in step $3$. We plate\sj{what does that mean?} the first transition behind the $\dry$ action. The other two transitions are placed behind\sj{what does it mean to place a transition behind an action?} the $\icy$ action. Both of the action have a total probability of $\nicefrac{1}{2}$, thus a return transition is added to the initial state of $\nicefrac{1}{2}$ probability to both actions. \sj{I would not do paragraph breaks in the example}
 
     State $\actps{2}{c}{2}$ does not reach any $\dry$ states, we still add a $\dry$ action redirecting to the initial state, since we want all states with the same step value to have the same actions.
 
-    State $\actps{3}{d}{1}$ only has a transition to an $\ig$ state. We fully remove this state and the observation. Since it does not have an $\en$ action, while the other 3 step states do. The state gets an $\en$ action to the initial state.
+    State $\actps{3}{d}{1}$ only has a transition to an $\ig$ state. We fully remove this state\sj{the state is still there?} and the observation. Since it does not have an $\en$ action\sj{does it or does it not have such an action?}, while the other 3 step states do. The state gets an $\en$ action to the initial state.
 \end{example}
 
 \begin{definition}\label{def:polsyntrans}
@@ -848,11 +852,13 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
         \end{cases}
     \end{align*}
     $C = \{1,\ldots,h\}$ and $c$ is given such that $c(\langle i,s \rangle) = i$.
-\end{definition}
+\end{definition}\sj{Do use commas and points in align environments etc.}
+
 Thus we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state.
 
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
 \begin{definition}[Trace consistent policy]
+\sj{Does it make sense to only define this for MDPs obtained from the def above?}
     Given two sets $\Sts$ and $Z$ and an MDP $\mdp$ with states in $\NN\times\Sts$, and actions in $Z\cup\{end\}$. Together with a trace $\tau \in Z^\star$. A \emph{trace consistent policy} is of the form
     \begin{align*}
         \sigma_\tau(\langle i, s \rangle) = \begin{cases}
@@ -866,11 +872,13 @@ The above construction allows for conditioning on a trace $\tau$ by constructing
 
 \begin{lemma}
 \label{lem:tocoloredmdp}
+\sj{Initial text missing. Also consider other notation for M and Mc}
     \[  \exists \sigma \in \ccSched.  \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
 \end{lemma}
 
 
 
+\sj{This seems out of place, being after the transformation and the lemma?}
 In the ACTP HMM we only have the observations and conditional probability on a trace left. To incorporate this into the model we will use one novel idea. Instead of transitioning to a state and observing it, we will allow the model to choose what observation to observe. We thus move away from HMMs and into MDPs. This has two results. Firstly, instead of talking about sequences of observations, instead we will consider sequences of actions taken. Secondly, any trace can be transformed into a policy of the MDP. We will first discuss how to create this MDP. Afterward, we show how to ensure how, traces and policies can be made equivalent by coloring the MDP.
 
 \begin{corollary}
