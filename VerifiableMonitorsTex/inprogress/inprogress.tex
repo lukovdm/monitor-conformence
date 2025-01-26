@@ -14,6 +14,7 @@
 \usepackage{xcolor}
 \usepackage{nccmath}
 \usepackage{booktabs}
+\usepackage{enumitem}
 \usepackage{longtable}
 \usepackage{xfrac}
 \usepackage{adjustbox}
@@ -403,8 +404,8 @@ Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X
 
 
 \paragraph{DFAs.}
-    A \emph{deterministic finite automaton} (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of \emph{states}, $\alphabet$ is an \emph{alphabet}, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) \emph{transition function}, $\init$ is the \emph{initial state}, and $\final \subseteq \StsD$ is a set of \emph{accept} (or: \emph{final})\sj{Shall we just only use final?} states. DFAs recognize regular languages:
-Let $\varepsilon$ denote the empty word. We lift the transition relation to words, which is defined recursively: $\trans^*(q, \varepsilon) = \varepsilon$ if $a \in \alphabet$ and $\trans^*(q, w \cdot a) = \trans(\trans^*(q,w), a)$. The \emph{language} $\lang{\dfa}$ of a DFA $\dfa$ is the set of all words that end in a final state of the $\dfa$, $\lang{\dfa} = \{ w \in \alphabet^* \mid \trans^*(\init, w) \in \final \}$.
+    A \emph{deterministic finite automaton} (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of \emph{states}, $\alphabet$ is an \emph{alphabet}, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) \emph{transition function}, $\init$ is the \emph{initial state}, and $\final \subseteq \StsD$ is a set of \emph{accept} (or: \emph{final})\sj{Shall we just only use final?} states. %DFAs recognize regular languages:
+Let $\varepsilon$ denote the empty word. We lift the transition relation to words, which is defined recursively: $\trans^*(q, \varepsilon) = \varepsilon$ if $a \in \alphabet$ and $\trans^*(q, w \cdot a) = \trans(\trans^*(q,w), a)$. The \emph{language} $\lang{\dfa}$ of a DFA $\dfa$ is the set of all words that end in a final state of the $\dfa$, $\lang{\dfa} = \{ w \in \alphabet^* \mid \trans^*(\init, w) \in \final \}$. We say that $\dfa$ accepts $w \in \lang{\dfa}$.
 
 
 \subsection{Models}
@@ -412,11 +413,11 @@ We introduce MDPs and HMMs: The former are integral part of our approach, and HM
 
 
 \begin{definition}[MDP]
-    A \emph{Markov decision process} (MDP) is a tuple $\mdp = \left(\Sts, \init, \Act, \ptrans \right)$ with a  countable nonempty set  $\Sts$ of \emph{states},  the \emph{initial state} $\init \in \Sts$, the \emph{partial transition function} $\ptrans\colon \Sts \times \Act \rightharpoonup \Distr(\Sts)$.
+    A \emph{Markov decision process} (MDP) is a tuple $\left(\Sts, \init, \Act, \ptrans \right)$ with a  countable nonempty set  $\Sts$ of \emph{states},  the \emph{initial state} $\init \in \Sts$, the \emph{partial transition function} $\ptrans\colon \Sts \times \Act \rightharpoonup \Distr(\Sts)$.
 \end{definition}
 We use $\Act(s) = \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of \emph{enabled actions}. We assume no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
 A path $\pi$ is a sequence $s_0\act_0s_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. %The set of all infinite paths is $\Pi^\mc$. 
-The set of (finite) paths is denoted by $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. We drop $\mdp$ whenever it is clear from the context.
+The set of (finite) paths in MDP $\mdp$ is denoted\sj{where are the infinite paths?} by $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. We drop $\mdp$ whenever it is clear from the context.\sj{Do we?}\sj{Check consistency of subscript/superscript!!}
 
 A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs as tuple $\left(\Sts, \init,  \ptrans \right)$ and write $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$.  Paths in a MC can be simplified to be sequences of (only) states.
 %\begin{definition}
@@ -426,7 +427,7 @@ The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability m
 \sj{What does this comment mean?}
 
 \begin{definition}[HMMs]
-    A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Non-deterministic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{}}, and $r\colon \Sts \to \RR_{\geq 0}$ is the risk function.
+    A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Stochastic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{jungesRuntimeMonitorsMarkov2021}.}, and $r\colon \Sts \to \RR_{\geq 0}$ is the risk function.
 \end{definition}
 
 
@@ -461,7 +462,7 @@ Notions such as paths are lifted from MCs. Furthermore, traces $\tau$ are sequen
 %The set $\Paths(\tau)$ contains all paths that correspond to a trace $\tau$, $\Paths^\mc(\tau) \defeq \{\pi \in \Pi_\mc\mid\obsf(\pi) = \tau\}$
 \sj{Do we need this set $\Paths$? I didnt find usages}. 
 The $i$th observation of a trace is denoted as $\tau^{(i)}$. 
-We define  $\Prob(\tau\mid\pi)= 1 if \obsf(\pi) = \tau$ and zero otherwise. The probability of a trace $\tau$ is $\sum_{\pi\in\Pi_\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
+We define  $\Prob(\tau\mid\pi)= 1$ if $\obsf(\pi) = \tau$ and zero otherwise. The probability of a trace $\tau$ is $\sum_{\pi\in\Pi_\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
 Finally, the conditional probability on a trace $\tau\in\lang{\mc}$ is defined using Bayes' rule
 $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}$.
 
@@ -474,40 +475,44 @@ $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(
 
 
 \subsection{Formal Problem Statement}
-%The monitor verification problem consists of two sub-problems: the no-false-alarms problem, and the no-missed-alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the no-missed-alarms problem in the following sections. In \cref{ssec:nfa} we will adapt to the no-false-alarms problem.
-
-%The no-missed-alarms problem entails ensuring that all traces from the HMM, which are not in the monitor, have at most a risk of $\lambda$.
-Monitors must clasify traces as safe or unsafe. We do so based on the risk of a trace, as in~\cite{jungesRuntimeMonitorsMarkov2021}:
-\begin{definition}[Risk of a trace]
-    Given a HMM $\mc$, the risk of trace $\tau \in \lang{\mc}$ is: \[ R_r(\tau) \defeq \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
-\end{definition}
-The risk of a trace can be used to partition the set of all traces.
-\begin{definition}[Safe traces/Unsafe traces]\label{def:safeunsafe}
-    Given a HMM $\mc$, a \emph{safe threshold} $\lambda_s \in \mathbb{R}$ and an \emph{unsafe threshold} $\lambda_u \in \mathbb{R}$ with $\lambda_s \leq \lambda_u$.
-    A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is an \emph{unsafe trace} (for $\mc$ and $\lambda_u$). Conversely, trace $\tau$ is a \emph{safe trace}, if $R(\tau) < \lambda_s$ (for $\mc$ and $\lambda_u$).
-\end{definition}
-In the definition above, we deliberately do not require $\lambda_s = \lambda_u$. In particular, by picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe. We write $\safetraces{\mc,\lambda_s}{\leq h}$ to denote the set of safe traces of length at most $h$ and $\unsafetraces{\mc,\lambda_u}{\leq h}$ for the set of unsafe traces of length at most $h$. We often omit the sub/superscripts.
-\begin{example}
-\end{example}
 \begin{definition}[Monitor]
     A DFA $\dfa$ is a monitor for HMM $\mc$ if the alphabet for $\dfa$ coincides with the observations in $\mc$.
 \end{definition}
+%The monitor verification problem consists of two sub-problems: the no-false-alarms problem, and the no-missed-alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the no-missed-alarms problem in the following sections. In \cref{ssec:nfa} we will adapt to the no-false-alarms problem.
+
+%The no-missed-alarms problem entails ensuring that all traces from the HMM, which are not in the monitor, have at most a risk of $\lambda$.
+\noindent Monitors should accept unsafe traces, which we define via their risk~\cite{jungesRuntimeMonitorsMarkov2021}:\sj{$\pi_\downarrow$ is not yet defined!}
+\begin{definition}[Trace risk, safe/unsafe traces]\label{def:safeunsafe}
+    Given HMM $\mc$, the \emph{risk} of $\tau \in \lang{\mc}$ is: \[\textstyle R(\tau) \defeq \sum\nolimits_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
+%\end{definition}
+%The risk of a trace can be used to partition the set of all traces.
+%\begin{definition}[Safe traces/Unsafe traces]
+    Let $\lambda_s \leq \lambda_u \in \mathbb{R}$ be the \emph{safe threshold}  and an \emph{unsafe threshold}.
+    A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is \emph{unsafe}, while $\tau$ is \emph{safe} if $R(\tau) < \lambda_s$. 
+    % (for $\mc$ and $\lambda_u$).
+\end{definition}
+We deliberately do not require $\lambda_s = \lambda_u$. 
+By picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe. 
+We write $\safetraces{\mc,\lambda_s}{\leq h}$ (and $\unsafetraces{\mc,\lambda_u}{\leq h}$) for the set of safe (and unsafe) traces of length at most $h$. 
+%We often omit the sub/superscripts.
+\begin{example}\sj{missing (two sentences suffice?)}
+\end{example}
 \begin{definition}[Missed/False alarms]
     Given a monitor $\dfa$ for HMM $\mc$, a horizon $h$, and thresholds $\lambda_s \leq \lambda_u \in \mathbb{R}$, the set of \emph{missed alarms} is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \unsafetraces{\mc,\lambda_u}{\leq h} \setminus \lang{\dfa}$. The set of \emph{false alarms} is $\falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \safetraces{\mc,\lambda_s}{\leq h} \cap \lang{\dfa}$.
     % a safe trace $\tau \in \Obs^{\leq h}$ with $R(\tau) > \lambda_s$ and $\tau \not\in \lang{\dfa}$ is a \emph{missed alarm}. Conversely, trace $\tau$ is a \emph{false alarm}, if $R(\tau) < \lambda_u$ and $\tau \in \lang{\dfa}$. 
 \end{definition}
-We often drop the sub/superscripts. In terms of a classification problem, missed alarms are false negatives, while false alarms are false positives.
+%We often drop the sub/superscripts.
 \begin{definition}[Correct monitor]\label{def:cormon}
     Given thresholds $\lambda_s,\lambda_u$ and horizon $h$, a monitor $\dfa$ for $\mc$ is \emph{correct} if $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) = \emptyset = \falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)$.
 \end{definition}
-A correct monitor raises an alarm for all unsafe traces and for no safe trace:
+A correct monitor raises an alarm for all unsafe traces and for no safe trace, i.e., missed alarms are false negatives, while false alarms are false positives.
 \begin{corollary}%[Correct monitor]
     A monitor $\dfa$ is correct iff $ \unsafetraces{\mc,\lambda_u}{\leq h} \subseteq \lang{\dfa} \subseteq \alphabet^* \setminus \safetraces{\mc, \lambda_s}{\leq h}$.% is a correct monitor.
 \end{corollary}
 
-\begin{mdframed}\textbf{Problem statements.} This paper tackles the following problem statements:
-    Given HMM $\mc$, thresholds $\lambda_s,\lambda_u$ and horizon $h$,
-    \begin{enumerate}
+\begin{mdframed}\textbf{Problem statements.} %This paper tackles the following problem statements:
+    Given HMM $\mc$, thresholds $\lambda_s,\lambda_u$ and horizon $h$:
+    \begin{enumerate}[topsep=2pt]
         \item Given monitor $\dfa$ for $\mc$, are there missed alarms, i.e., is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)\! = \emptyset$?
         \item Given monitor $\dfa$ for $\mc$, are there false alarms, i.e., is $\falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)\! = \emptyset$?
         \item Find a correct monitor $\dfa$ for $\mc$ w.r.t.\ $\lambda_s, \lambda_u$ and $h$.
@@ -546,7 +551,7 @@ Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finit
 
 \begin{example}
     We discuss the example from \cref{fig:centralexample} using the correct monitor.
-    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{19}{40}, \sfrac{4}{40}$ respectively. If $\lambda$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor. And its risk is below $\lambda$. Thus, the monitor does not have any missed alarms.
+    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{19}{40}, \sfrac{4}{40}$ respectively. If $\lambda$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor\sj{I am not too fond of this trace being in the monitor lingo. I would prefer writing accepted by for unsafe traces}. And\sj{Dont start sentences with And} its risk is below $\lambda$. Thus, the monitor does not have any missed alarms.
 \end{example}\lm{Include verified monitor learning problem.}
 
 
@@ -1040,13 +1045,12 @@ An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groc
 \section{Computational Complexity}\label{sec:compl}
 \begin{theorem}
     \label{lem:complexity}
-    Checking whether a monitor is correct given a unary encoded horizon is coNP-complete.
+    \emph{Is a monitor correct?} (w.\ unary coded horizon) is coNP-complete.
 \end{theorem}
-In fact, we study in this section the dual to this problem, i.e., checking the existence of a counterexample. We call this problem \emph{monitor co-verification}. For monitor co-verification, \emph{membership} in NP follows as false alarms or a missed alarm (of length up to horizon) are witnesses.
-Verifying whether a trace is indeed a false alarm can be done in polynomial time by first checking whether the automaton accepts it and then computing the trace risk and comparing it to the thresholds.
-Each of these steps can be done in polynomial time~\cite{}.  \sj{Maybe this result is so crucial that we should explain somewhere how this works in polynomial time. I guess it also follows from the construciton in section 3 if we restrict the monitor to just contain one trace?}
+In fact, we study the dual to this problem, i.e., checking the existence of a counterexample. We call this problem \emph{monitor co-verification}. For monitor co-verification, \emph{membership} in NP follows as  false alarms or a missed alarm (of length up to horizon, i.e., polynomially sized) are witnesses.
+Verifying whether a trace is a false or missed alarm can be done in polynomial time, by checking whether the automaton accepts it and computing the trace risk (see \cref{sec:learning}).
 
-To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}. As a solution to the monitor co-verification problem suffices to solve the CTP problem (using a trivial monitor), this implies NP hardness of the former.
+To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}. As a solution to the monitor co-verification problem solves the CTP problem (using a trivial monitor), this implies NP-hardness of the former problem.
 \begin{lemma}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is NP-hard.
