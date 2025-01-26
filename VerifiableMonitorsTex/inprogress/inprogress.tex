@@ -99,9 +99,9 @@
 \maketitle
 \begin{abstract}
     Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe.
-    A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations exceeds some acceptable threshold.
-    The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite state machines.
-    First, we establish the coNP-hardness of checking whether a finite state machine  is indeed a correct monitor, i.e., a monitor without misclassifications.
+    A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations is below some threshold.
+    The key contribution is the first correct-by-construction synthesis method for such monitors, represented as finite state machines. The contribution combines four ingredients:
+    First, we establish the coNP-hardness of checking whether a finite state machine is a correct monitor, i.e., a monitor without misclassifications.
     Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem.
     Third, we integrate the verification routine into an active automata learning routine to synthesise correct monitors.
     Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
@@ -395,15 +395,14 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
     \label{fig:maintheorem}
 \end{figure}
 
-\section{Problem Statement}
-In this section, we recap standard notions on stochastic models and finite automata and introduce the formal problem statement.
-
-\paragraph{Notation.}
+\section{Formal Problem Statement}
+%We recap standard notions on stochastic models and finite automata and introduce the formal problem statement. We use the following notation:
 Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$.
+\sj{In the preamble, there was a definition that everything should be displaystyle. I removed it for good reasons, but it may break things.}
 
 
 \subsection{Models}
-In this section, we briefly introduce MDPs, which are an integral part of our approach, and HMMs which are crucial to the problem statement. Details can be found in \cite{baierPrinciplesModelChecking2008}.
+In this section, we introduce MDPs and HMMs: The latter  integral part of our approach, and HMMs are crucial to the problem statement. Details can be found in \cite{baierPrinciplesModelChecking2008}.
 
 
 \begin{definition}[MDP]
@@ -1326,12 +1325,12 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
         \caption{Baseline}
         \label{fig:learnThrSampling}
     \end{subfigure}
-    \caption{\textbf{Q$_3$} All monitor correct: Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and baseline learning. The line between the green and gray area is $\lambda_u$, the line between the red and gray area is $\lambda_s$. The dotted line is $\lambda_l$. Any benchmarks which did not finish are left empty.}
+    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg learning and baseline learning. The line between the green and gray area is $\lambda_u$, the line between the red and gray area is $\lambda_s$. The dotted line is $\lambda_l$. Missing bars reflect time-outs.}
 \end{figure}
 
 \paragraph{How big are the monitors?}
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
-\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} and \Cref{sec:reslearn}. For the literature on AAL, these are large automata\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller).
+\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{sec:reslearn}. For the literature on AAL, these are large automata\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller).
 
 
 \begin{figure}[t]
@@ -1365,21 +1364,29 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 \end{figure}
 \sj{I would simplify the visual of this plot and the other (and increase contrast) by only having black circle/cross for benchmarks.}
 
-\sj{SELF: CONTINUE HERE}
 \paragraph{How fast do we learn the monitors?}
-We describe the runtime of the \alg learning and baseline learning in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp,fig:runtimediv}. \Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} show how the runtime of \alg learning and baseline learning compare. Baseline takes at least about 100\lm{check number} seconds, while \alg learning can take only 0.02\lm{check} seconds to find a monitor both algorithms take at most around 9 hours\lm{also check}. Several benchmarks never finished after more than 24 hours and were stopped\lm{I stopped them manually after around a day, so no real timeout. Is this enough in that case?}. Neither of the two learning algorithms is clearly faster than the other.
+\sj{How many EQs do we need to learn a monitor?}
+We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!). 
+We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accellerate the learning process, despite the high complexity. In particular, it tends to find counterexamples in the early stages much faster. This observation is independent from $\lambda_s = \lambda_u$ or $\lambda_s \neq \lambda_u$. In Appendix~\sj{ref missing}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
 
-\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. Most benchmarks are heavily dependent on PAYNT for the runtime. However, several \textsc{Evade} benchmarks spent most of their time in L$^\star$. We conjecture this happens because finding counter examples is very fast for this model.
+
+%
+%,  \Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} show how the runtime of \alg learning and baseline learning compare. Baseline takes at least about 100\lm{check number} seconds, while \alg learning can take only 0.02\lm{check} seconds to find a monitor both algorithms take at most around 9 hours\lm{also check}. Several benchmarks never finished after more than 24 hours and were stopped\lm{I stopped them manually after around a day, so no real timeout. Is this enough in that case?}. Neither of the two learning algorithms is clearly faster than the other.
+
+%\Cref{fig:runtimediv} displays the amount of time spent in each part of the algorithm during learning using \alg. 
 
 
 
 %\subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
-\paragraph{The role of an inconclusive area}
-We make use of the same setup as \textbf{Q3}, and compare between $\lambda_u=\lambda_l=\lambda_s$, without a gray area, and $\lambda_s < \lambda_l < \lambda_u$, with a gray area. This does not have an effect on the baseline learner as it only takes $\lambda_l$ into account.
+\paragraph{The role of an inconclusive area.}
+We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = \lambda_u$, i.e., with and without an inconclusive area. The baseline does not actively support such an inconclusive area. With an inconclusive area, more monitors are correct. The learner indeed finds monitors that are 2-5 times\sj{check numbers} smaller (also compare \Cref{fig:monsizes,fig:monsizens}). For benchmarks \textsc{Icy-Driving}, \textsc{Evade}, and \textsc{Airport}, this also translates to faster runtimes, sometimes by orders of magnitudes.
 
-\Cref{fig:monsizes,fig:monsizens} contain the size of the monitors found using \alg learning and baseline learning. \cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using baseline learning. When not learning with a gray area the difference is smaller. Two monitors are smaller when using baseline learning, one monitor was reduced from 4 to 3 states, the other from 7 to 1 state.
+%contain the size of the monitors found using \alg learning and baseline learning. 
+%\cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. 
+%Most monitors are between the same size and 10 times smaller when using \alg learning with a gray area than when using baseline learning. 
+%When not learning with a gray area the difference is smaller. Two monitors are smaller when using baseline learning, one monitor was reduced from 4 to 3 states, the other from 7 to 1 state.
 
-\Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} contain the runtime of \alg learning compared to the baseline, when running with and without a gray area. The \textsc{Icy-Driving} ($\blacktriangleright$), \textsc{Evade} ($\blacksquare$), and \textsc{Airport} ($\bullet$), are generally faster when run with a gray area. In other benchmarks, adding a gray area has little effect on the runtime. A few HMMs were much faster to learn when using a gray area, one of these is the brown \textsc{Icy-Driving} HMM.
+%\Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} contain the runtime of \alg learning compared to the baseline, when running with and without a gray area. The \textsc{Icy-Driving} ($\blacktriangleright$), \textsc{Evade} ($\blacksquare$), and \textsc{Airport} ($\bullet$), are generally faster when run with a gray area. In other benchmarks, adding a gray area has little effect on the runtime. A few HMMs were much faster to learn when using a gray area, one of these is the brown \textsc{Icy-Driving} HMM.
 
 \section{Related}
 \begin{itemize}
@@ -1442,7 +1449,9 @@ Questionable relevance
     \item Unbounded traces (It woudl be great if we can add why this is hard)
 \end{itemize}
 
+\clearpage
 \printbibliography{}
+\clearpage
 
 \appendix
 
