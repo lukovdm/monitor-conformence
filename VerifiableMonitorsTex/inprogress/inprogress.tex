@@ -397,36 +397,40 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 
 \section{Formal Problem Statement}
 %We recap standard notions on stochastic models and finite automata and introduce the formal problem statement. We use the following notation:
-Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$.
+Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$. 
 \sj{In the preamble, there was a definition that everything should be displaystyle. I removed it for good reasons, but it may break things.}
 
 
+
+\paragraph{DFAs.}
+    A \emph{deterministic finite automaton} (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of \emph{states}, $\alphabet$ is an \emph{alphabet}, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) \emph{transition function}, $\init$ is the \emph{initial state}, and $\final \subseteq \StsD$ is a set of \emph{accept} (or: \emph{final})\sj{Shall we just only use final?} states. DFAs recognize regular languages:
+Let $\varepsilon$ denote the empty word. We lift the transition relation to words, which is defined recursively: $\trans^*(q, \varepsilon) = \varepsilon$ if $a \in \alphabet$ and $\trans^*(q, w \cdot a) = \trans(\trans^*(q,w), a)$. The \emph{language} $\lang{\dfa}$ of a DFA $\dfa$ is the set of all words that end in a final state of the $\dfa$, $\lang{\dfa} = \{ w \in \alphabet^* \mid \trans^*(\init, w) \in \final \}$.
+
+
 \subsection{Models}
-In this section, we introduce MDPs and HMMs: The latter  integral part of our approach, and HMMs are crucial to the problem statement. Details can be found in \cite{baierPrinciplesModelChecking2008}.
+We introduce MDPs and HMMs: The former are integral part of our approach, and HMMs are crucial to the problem statement. Details can be found in \cite{baierPrinciplesModelChecking2008}.
 
 
 \begin{definition}[MDP]
     A \emph{Markov decision process} (MDP) is a tuple $\mdp = \left(\Sts, \init, \Act, \ptrans \right)$ with a  countable nonempty set  $\Sts$ of \emph{states},  the \emph{initial state} $\init \in \Sts$, the \emph{partial transition function} $\ptrans\colon \Sts \times \Act \rightharpoonup \Distr(\Sts)$.
 \end{definition}
-We use $\Act(s) = \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of enabled actions. We assume that there are no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
-A path $\pi$ in an MDP is a sequence $s_0\act_0s_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. %The set of all infinite paths is $\Pi^\mc$. 
-The set of (finite) paths is denoted by $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. If the MDP is clear from the context, the $\mdp$ is dropped.
+We use $\Act(s) = \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of \emph{enabled actions}. We assume no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
+A path $\pi$ is a sequence $s_0\act_0s_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. %The set of all infinite paths is $\Pi^\mc$. 
+The set of (finite) paths is denoted by $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. We drop $\mdp$ whenever it is clear from the context.
 
-A policy for an MDP is a function $\sigma\colon \Pi^\mc \to \Act$, which given a path through the MDP, gives a action. Given a policy, a MDP can be induced into a MC. Policy synthesis for an MDP for a property $\phi$ thus entails finding a policy for an MDP such that the induced MC entails $\phi$.
-
-A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs also as tuple $\left(\Sts, \init,  \ptrans \right)$ and write $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$.  Paths in a MC can be simplified to be sequences of (only) states.
-
-
-
-
+A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs as tuple $\left(\Sts, \init,  \ptrans \right)$ and write $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$.  Paths in a MC can be simplified to be sequences of (only) states.
 %\begin{definition}
-The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $mc$.
+The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $\mc$.
 %\end{definition}
 \lm{Condition probability on traces defined using $\Paths$}
+\sj{What does this comment mean?}
 
 \begin{definition}[HMMs]
-    A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Non-deterministic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{}}, and $r\colon \Sts \to \RR_{\geq 0}$,
+    A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Non-deterministic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{}}, and $r\colon \Sts \to \RR_{\geq 0}$ is the risk function.
 \end{definition}
+
+
+\sj{I moved policies down to 3.3}
 
 
 
@@ -453,27 +457,27 @@ The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability m
 %    From~\cite{baierPrinciplesModelChecking2008}
 %\end{definition}
 %\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
-Notions such as paths are lifted from MCs. Furthermore, traces $\tau$ are sequences of observations, and the set of traces of a HMM, for which there is non-zero probability path, is the language $\lang{\mc}$ of the HMM. The set $\Paths(\tau)$ contains all paths that correspond to a trace $\tau$, $\Paths^\mc(\tau) \defeq \{\pi \in \Pi_\mc\mid\obsf(\pi) = \tau\}$. The $i$th observation of a trace is denoted as $\tau^{(i)}$. The condition probability on a trace $\tau\in\lang{\mc}$ is \lm{Premise paper says characterized not defined, why?}defined using Bayes' rule
-\[\Prob(\pi\mid\tau) \defeq \frac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}\]
-Where, $\Prob(\tau\mid\pi)$ is 1 if $\obsf(\pi) = \tau$ and the probability of a trace $\tau$ is $\sum_{\pi\in\Pi_\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
+Notions such as paths are lifted from MCs. Furthermore, traces $\tau$ are sequences of observations, and the set of traces of a HMM, for which there is non-zero probability path, is the language $\lang{\mc}$ of the HMM. 
+%The set $\Paths(\tau)$ contains all paths that correspond to a trace $\tau$, $\Paths^\mc(\tau) \defeq \{\pi \in \Pi_\mc\mid\obsf(\pi) = \tau\}$
+\sj{Do we need this set $\Paths$? I didnt find usages}. 
+The $i$th observation of a trace is denoted as $\tau^{(i)}$. 
+We define  $\Prob(\tau\mid\pi)= 1 if \obsf(\pi) = \tau$ and zero otherwise. The probability of a trace $\tau$ is $\sum_{\pi\in\Pi_\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
+Finally, the conditional probability on a trace $\tau\in\lang{\mc}$ is defined using Bayes' rule
+$\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}$.
 
 \begin{example}\lm{Fill in example}
 
 \end{example}
 
 
-\begin{definition}
-    A deterministic finite automaton (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of states, $\alphabet$ is an alphabet, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) transition function, $\init$ is the initial state, and $\final \subseteq \StsD$ is a set of accept (or: final) states.
-\end{definition}
-Let $\varepsilon$ denote the empty word. We lift the transition relation to words, which is defined recursively: $\trans^*(q, \varepsilon) = \varepsilon$ if $a \in \alphabet$ and $\trans^*(q, w \cdot a) = \trans(\trans^*(q,w), a)$.
+%\begin{definition}[DFA]
 
-The \emph{language} $\lang{\dfa}$ of a DFA $\dfa$ is the set of all words accepted by the $\dfa$, $\lang{\dfa} = \{ w \in \alphabet^* \mid \trans^*(\init, w) \in \final \}$.
 
 \subsection{Formal Problem Statement}
-The monitor verification problem consists of two sub-problems: the no-false-alarms problem, and the no-missed-alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the no-missed-alarms problem in the following sections. In \cref{ssec:nfa} we will adapt to the no-false-alarms problem.
+%The monitor verification problem consists of two sub-problems: the no-false-alarms problem, and the no-missed-alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the no-missed-alarms problem in the following sections. In \cref{ssec:nfa} we will adapt to the no-false-alarms problem.
 
-The no-missed-alarms problem entails ensuring that all traces from the HMM, which are not in the monitor, have at most a risk of $\lambda$.
-
+%The no-missed-alarms problem entails ensuring that all traces from the HMM, which are not in the monitor, have at most a risk of $\lambda$.
+Monitors must clasify traces as safe or unsafe. We do so based on the risk of a trace, as in~\cite{jungesRuntimeMonitorsMarkov2021}:
 \begin{definition}[Risk of a trace]
     Given a HMM $\mc$, the risk of trace $\tau \in \lang{\mc}$ is: \[ R_r(\tau) \defeq \sum_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
 \end{definition}
@@ -483,12 +487,8 @@ The risk of a trace can be used to partition the set of all traces.
     A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is an \emph{unsafe trace} (for $\mc$ and $\lambda_u$). Conversely, trace $\tau$ is a \emph{safe trace}, if $R(\tau) < \lambda_s$ (for $\mc$ and $\lambda_u$).
 \end{definition}
 In the definition above, we deliberately do not require $\lambda_s = \lambda_u$. In particular, by picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe. We write $\safetraces{\mc,\lambda_s}{\leq h}$ to denote the set of safe traces of length at most $h$ and $\unsafetraces{\mc,\lambda_u}{\leq h}$ for the set of unsafe traces of length at most $h$. We often omit the sub/superscripts.
-
-
 \begin{example}
 \end{example}
-
-We are now ready to define correct monitors.
 \begin{definition}[Monitor]
     A DFA $\dfa$ is a monitor for HMM $\mc$ if the alphabet for $\dfa$ coincides with the observations in $\mc$.
 \end{definition}
@@ -513,10 +513,9 @@ A correct monitor raises an alarm for all unsafe traces and for no safe trace:
         \item Find a correct monitor $\dfa$ for $\mc$ w.r.t.\ $\lambda_s, \lambda_u$ and $h$.
     \end{enumerate}
 \end{mdframed}
-Problem statements 1 and 2 together allow checking whether a monitor is correct.
-\begin{remark}
-    A correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finite and thus regular.
-\end{remark}
+Problems 1 and 2 together allow checking whether a monitor is correct.
+Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finite and thus regular.
+
 
 %
 %\begin{mdframed}
@@ -536,7 +535,6 @@ Problem statements 1 and 2 together allow checking whether a monitor is correct.
 %\end{mdframed}
 %These two problems allow one to check if a monitor is included in the perfect monitor for a threshold and the other way around respectively. Thus, if DFA $\dfa$ passes bothe the no-missed-alarms check and the no-false-alarms check, we know for certain it is a correct monitor.
 %
-We discuss our solution to the no-missed-alarms problem in \cref{sec:monver}, we adapt the solution to the no false alarm problem in \cref{ssec:nfa}.
 %
 %\paragraph{Monitor Learing problem}
 %The previous two inclusion checks for the building blocks for the \emph{verified monitor learning problem}. In the verified monitor learning problem we try to learn a correct monitor for a HMM and a certain threshold.
@@ -554,10 +552,15 @@ We discuss our solution to the no-missed-alarms problem in \cref{sec:monver}, we
 
 \section{Monitor Verification}
 \label{sec:monver}
-We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to policy synthesis on colored MDPs, defined below. The latter problem is well studied. We first formalize the  policy synthesis problem and then discuss the transformation in multiple steps. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon. At the end of the section, we  generalize our construction to finding false alarms and to traces of length \emph{at most} the horizon.
+We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to policy synthesis on colored MDPs, defined below. The latter problem is well studied. We first formalize the  policy synthesis problem and then discuss the transformation in multiple steps. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of Problem~1\sj{use a ref?}). At the end of the section, we  generalize our construction to finding false alarms and to traces of length \emph{at most} the horizon.
 
 
 \subsection{Relating Missed Alarms with Color-Consistent Policies}\label{ssec:maintheorem}
+
+Policy synthesis for an MDP for a property $\phi$ thus entails finding a policy for an MDP such that the induced MC entails $\phi$.
+A policy for MDP $\mc$ is a function $\sigma\colon \Pi_{fin}^\mc \to \Act$, which selects actions for every finite path. An MDP and a policy induce an MC. 
+\sj{Moved these sentences down, need to integrate them?}
+
 Colored\lm{There used to be (Labeled) here, but are colored MDPs ever called Labeled MDPs. Are that not just normal MDPs?}\sj{see mattermost, 24.1.} MDPs are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplifies the notion of colored MDPs from \cite{}, and suffices for our needs:
 \begin{definition}[Colored MDP]\label{def:colMDP}
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$ maps states to colors.
@@ -1011,7 +1014,7 @@ To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a hori
 For the MQ, each trace must be unambigiously be defined as safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}.
 % for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
 \begin{definition}\label{def:toverMQ}
-    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining a trace $\tau\notin\lang{\mc}$ safe is an arbitrary decision, as it do not matter for correctness.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
+    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ safe is an arbitrary decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
 Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.\sj{Forward filtering in HMMs should have a different citation as well. }\sj{Not urgent: Couldnt this be done with the techniques in section 3 as well (although inefficiently)?}
 
