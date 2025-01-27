@@ -1,6 +1,7 @@
 \documentclass[runningheads]{llncs}
 
-\usepackage[style=numeric]{biblatex}
+% \usepackage{natbib}
+\usepackage[style=lncs,backend=biber]{biblatex}
 \usepackage{microtype}
 \usepackage{preamble}
 \usepackage{hyperref}
@@ -81,14 +82,16 @@
 \Crefname{figure}{Figure}{Figures}
 \crefname{section}{Sec.}{Secs.}
 \Crefname{section}{Seciton}{Sections}
-\crefname{subsection}{Ssec.}{Ssecs.}
-\Crefname{subsection}{Subsection}{Subsections}
+\crefname{subsection}{Sec.}{Secs.}
+\Crefname{subsection}{Section}{Sections}
 \crefname{definition}{Def.}{Defs.}
 \Crefname{definition}{Definition}{Definitions}
 \crefname{theorem}{Thm.}{Thms.}
 \Crefname{theorem}{Theorems}{Theorems}
 \crefname{lemma}{Lem.}{Lems.}
 \Crefname{lemma}{Lemma}{Lemmas}
+\crefname{enumi}{Prob.}{Probs.}
+\Crefname{enumi}{Problem}{Problems}
 
 \title{Learning Verified Monitors for Hidden~Markov~Models}
 \author{Luko van der Maas \and Sebastian Junges }
@@ -338,7 +341,7 @@ First, for a single trace, computing the risk can be reduced to computing a reac
 Thus, it is natural to reduce our problem to the question: Is there a DFA (accepting exactly one trace, accepted by our monitor)
 such that the probability in the product MC exceeds a threshold\li{emph?}.
 If the answer is no, then the monitor has no-missed-alarms.
-This decision problem can be solved using (exact) probabilistic model synthesis methods~\cite{} as implemented in the tool Paynt~\cite{}\footnote{Alternatively, in Section~\ref{sec:useparametersynthesis}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. We discuss our verification approach in \Cref{sec:monver}.
+This decision problem can be solved using (exact) probabilistic model synthesis methods~\cite{} as implemented in the tool Paynt~\cite{}\footnote{Alternatively, in \cref{sec:monver}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
 Ultimately, we do not only want to verify the correctness of a monitor, but we want to construct such a monitor.
@@ -398,13 +401,13 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 
 \section{Formal Problem Statement}
 %We recap standard notions on stochastic models and finite automata and introduce the formal problem statement. We use the following notation:
-Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$. 
+Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$.
 \sj{In the preamble, there was a definition that everything should be displaystyle. I removed it for good reasons, but it may break things.}
 
 
 
 \paragraph{DFAs.}
-    A \emph{deterministic finite automaton} (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of \emph{states}, $\alphabet$ is an \emph{alphabet}, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) \emph{transition function}, $\init$ is the \emph{initial state}, and $\final \subseteq \StsD$ is a set of \emph{accept} (or: \emph{final})\sj{Shall we just only use final?} states. %DFAs recognize regular languages:
+A \emph{deterministic finite automaton} (DFA) is a tuple $\dfa=\left(\StsD, \alphabet, \trans, \init, \final\right)$. $\StsD$ is a finite set of \emph{states}, $\alphabet$ is an \emph{alphabet}, $\trans\colon \StsD \times \alphabet \rightharpoonup \StsD$ is a (partial) \emph{transition function}, $\init$ is the \emph{initial state}, and $\final \subseteq \StsD$ is a set of \emph{accept} (or: \emph{final})\sj{Shall we just only use final?} states. %DFAs recognize regular languages:
 Let $\varepsilon$ denote the empty word. We lift the transition relation to words, which is defined recursively: $\trans^*(q, \varepsilon) = \varepsilon$ if $a \in \alphabet$ and $\trans^*(q, w \cdot a) = \trans(\trans^*(q,w), a)$. The \emph{language} $\lang{\dfa}$ of a DFA $\dfa$ is the set of all words that end in a final state of the $\dfa$, $\lang{\dfa} = \{ w \in \alphabet^* \mid \trans^*(\init, w) \in \final \}$. We say that $\dfa$ accepts $w \in \lang{\dfa}$.
 
 
@@ -417,21 +420,15 @@ We introduce MDPs and HMMs: The former are integral part of our approach, and HM
 \end{definition}
 We use $\Act(s) = \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of \emph{enabled actions}. We assume no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
 A path $\pi$ is a sequence $s_0\act_0s_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. %The set of all infinite paths is $\Pi^\mc$. 
-The set of (finite) paths in MDP $\mdp$ is denoted\sj{where are the infinite paths?} by $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. We drop $\mdp$ whenever it is clear from the context.\sj{Do we?}\sj{Check consistency of subscript/superscript!!}
+The set of paths in MDP $\mdp$ is denoted as $\Pi^\mdp$, the set of finite paths are $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. We drop $\mdp$ whenever it is clear from the context.\sj{Do we?}\sj{Check consistency of subscript/superscript!!}
 
 A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs as tuple $\left(\Sts, \init,  \ptrans \right)$ and write $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$.  Paths in a MC can be simplified to be sequences of (only) states.
-%\begin{definition}
 The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $\mc$.
-%\end{definition}
-\lm{Condition probability on traces defined using $\Paths$}
-\sj{What does this comment mean?}
+\lm{Add reachability probability}
 
 \begin{definition}[HMMs]
     A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is a MC, $\Obs$ is a finite set of observations, and $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) observation function\footnote{We use determinstic observation functions for concise definitions. Stochastic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{jungesRuntimeMonitorsMarkov2021}.}, and $r\colon \Sts \to \RR_{\geq 0}$ is the risk function.
 \end{definition}
-
-
-\sj{I moved policies down to 3.3}
 
 
 
@@ -458,20 +455,15 @@ The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability m
 %    From~\cite{baierPrinciplesModelChecking2008}
 %\end{definition}
 %\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
-Notions such as paths are lifted from MCs. Furthermore, traces $\tau$ are sequences of observations, and the set of traces of a HMM, for which there is non-zero probability path, is the language $\lang{\mc}$ of the HMM. 
-%The set $\Paths(\tau)$ contains all paths that correspond to a trace $\tau$, $\Paths^\mc(\tau) \defeq \{\pi \in \Pi_\mc\mid\obsf(\pi) = \tau\}$
-\sj{Do we need this set $\Paths$? I didnt find usages}. 
-The $i$th observation of a trace is denoted as $\tau^{(i)}$. 
+Notions such as paths are lifted from MCs. Furthermore, traces $\tau$ are sequences of observations, and the set of traces of a HMM, for which there is non-zero probability path, is the language $\lang{\mc}$ of the HMM.
+The $i$th observation of a trace is denoted as $\tau^{(i)}$.
 We define  $\Prob(\tau\mid\pi)= 1$ if $\obsf(\pi) = \tau$ and zero otherwise. The probability of a trace $\tau$ is $\sum_{\pi\in\Pi_\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
 Finally, the conditional probability on a trace $\tau\in\lang{\mc}$ is defined using Bayes' rule
 $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}$.
 
-\begin{example}\lm{Fill in example}
-
+\begin{example}
+    We consider the HMM from \cref{fig:centralhmm}. The probability $\Prob(q_c,q_i,q_i\mid\dry, \icy, \icy)$ is $\sfrac{\Prob(\dry, \icy, \icy\mid q_c,q_i,q_i)\cdot \Prob(q_c,q_i,q_i)}{\Prob(\dry, \icy, \icy)}$. $\Prob(\dry, \icy, \icy\mid q_c,q_i,q_i)$ is 1, and $\Prob(q_c,q_i,q_i)$ is $\sfrac{9}{40}$. The sum of all paths which observe $\dry, \icy, \icy$ is $\sfrac{11}{20}$. Thus, the total probability of $q_c,q_i,q_i$ given $\dry, \icy, \icy$ is $\sfrac{9}{22}$.
 \end{example}
-
-
-%\begin{definition}[DFA]
 
 
 \subsection{Formal Problem Statement}
@@ -484,18 +476,19 @@ $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(
 \noindent Monitors should accept unsafe traces, which we define via their risk~\cite{jungesRuntimeMonitorsMarkov2021}:\sj{$\pi_\downarrow$ is not yet defined!}
 \begin{definition}[Trace risk, safe/unsafe traces]\label{def:safeunsafe}
     Given HMM $\mc$, the \emph{risk} of $\tau \in \lang{\mc}$ is: \[\textstyle R(\tau) \defeq \sum\nolimits_{\pi\in\Pi^h_\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
-%\end{definition}
-%The risk of a trace can be used to partition the set of all traces.
-%\begin{definition}[Safe traces/Unsafe traces]
+    %\end{definition}
+    %The risk of a trace can be used to partition the set of all traces.
+    %\begin{definition}[Safe traces/Unsafe traces]
     Let $\lambda_s \leq \lambda_u \in \mathbb{R}$ be the \emph{safe threshold}  and an \emph{unsafe threshold}.
-    A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is \emph{unsafe}, while $\tau$ is \emph{safe} if $R(\tau) < \lambda_s$. 
+    A trace $\tau \in \lang{\mc}$ with $R(\tau) > \lambda_u$ is \emph{unsafe}, while $\tau$ is \emph{safe} if $R(\tau) < \lambda_s$.
     % (for $\mc$ and $\lambda_u$).
 \end{definition}
-We deliberately do not require $\lambda_s = \lambda_u$. 
-By picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe. 
-We write $\safetraces{\mc,\lambda_s}{\leq h}$ (and $\unsafetraces{\mc,\lambda_u}{\leq h}$) for the set of safe (and unsafe) traces of length at most $h$. 
+We deliberately do not require $\lambda_s = \lambda_u$.
+By picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe.
+We write $\safetraces{\mc,\lambda_s}{\leq h}$ (and $\unsafetraces{\mc,\lambda_u}{\leq h}$) for the set of safe (and unsafe) traces of length at most $h$.
 %We often omit the sub/superscripts.
-\begin{example}\sj{missing (two sentences suffice?)}
+\begin{example}
+    We consider the HMM from \cref{fig:centralhmm}, with the risk function assigning $1$ to $q_c$ and $0$ to all other states. Taking the trace $\dry, \icy, \icy$, there are three paths which could generate this trace. Two paths end in $q_c$, one ends in $q_i$. The paths ending in $q_c$ have a conditional probability of $\sfrac{13}{22}$. Since only these paths have a non-zero risk, the risk of the trace is $\sfrac{13}{22} \cdot r(q_c) = \sfrac{13}{22}$.
 \end{example}
 \begin{definition}[Missed/False alarms]
     Given a monitor $\dfa$ for HMM $\mc$, a horizon $h$, and thresholds $\lambda_s \leq \lambda_u \in \mathbb{R}$, the set of \emph{missed alarms} is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \unsafetraces{\mc,\lambda_u}{\leq h} \setminus \lang{\dfa}$. The set of \emph{false alarms} is $\falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \safetraces{\mc,\lambda_s}{\leq h} \cap \lang{\dfa}$.
@@ -513,9 +506,9 @@ A correct monitor raises an alarm for all unsafe traces and for no safe trace, i
 \begin{mdframed}\textbf{Problem statements.} %This paper tackles the following problem statements:
     Given HMM $\mc$, thresholds $\lambda_s,\lambda_u$ and horizon $h$:
     \begin{enumerate}[topsep=2pt]
-        \item Given monitor $\dfa$ for $\mc$, are there missed alarms, i.e., is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)\! = \emptyset$?
-        \item Given monitor $\dfa$ for $\mc$, are there false alarms, i.e., is $\falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)\! = \emptyset$?
-        \item Find a correct monitor $\dfa$ for $\mc$ w.r.t.\ $\lambda_s, \lambda_u$ and $h$.
+        \item\label{prob:MA} Given monitor $\dfa$ for $\mc$, are there missed alarms, i.e., is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa)\! = \emptyset$?
+        \item\label{prob:FA} Given monitor $\dfa$ for $\mc$, are there false alarms, i.e., is $\falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa)\! = \emptyset$?
+        \item\label{prob:Learn} Find a correct monitor $\dfa$ for $\mc$ w.r.t.\ $\lambda_s, \lambda_u$ and $h$.
     \end{enumerate}
 \end{mdframed}
 Problems 1 and 2 together allow checking whether a monitor is correct.
@@ -550,23 +543,22 @@ Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finit
 %\end{mdframed}
 
 \begin{example}
-    We discuss the example from \cref{fig:centralexample} using the correct monitor.
-    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{19}{40}, \sfrac{4}{40}$ respectively. If $\lambda$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not in the monitor\sj{I am not too fond of this trace being in the monitor lingo. I would prefer writing accepted by for unsafe traces}. And\sj{Dont start sentences with And} its risk is below $\lambda$. Thus, the monitor does not have any missed alarms.
-\end{example}\lm{Include verified monitor learning problem.}
+    We discuss the example from \cref{fig:centralexample} using the correct monitor, $\dfa$.
+    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{13}{22}, \sfrac{1}{10}$ respectively. If $\lambda_s$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not accepted by the monitor. Given that its risk is below $\lambda_s$, the monitor does not have any missed alarms. Similarly, monitor $\dfa$ does not have any false alarms for $\lambda_u = \sfrac{1}{4}$. Thus, $\dfa$ is a correct monitor for $\mc$ with $h$, $\lambda_s$, and $\lambda_u$.
+\end{example}
 
 
 \section{Monitor Verification}
 \label{sec:monver}
-We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to policy synthesis on colored MDPs, defined below. The latter problem is well studied. We first formalize the  policy synthesis problem and then discuss the transformation in multiple steps. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of Problem~1\sj{use a ref?}). At the end of the section, we  generalize our construction to finding false alarms and to traces of length \emph{at most} the horizon.
+We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to policy synthesis on colored MDPs, defined below. The latter problem is well studied. We first formalize the  policy synthesis problem and then discuss the transformation in multiple steps. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of \Cref{prob:MA}). At the end of the section, we  generalize our construction to finding false alarms and to traces of length \emph{at most} the horizon.
 
 
 \subsection{Relating Missed Alarms with Color-Consistent Policies}\label{ssec:maintheorem}
-
 Policy synthesis for an MDP for a property $\phi$ thus entails finding a policy for an MDP such that the induced MC entails $\phi$.
-A policy for MDP $\mc$ is a function $\sigma\colon \Pi_{fin}^\mc \to \Act$, which selects actions for every finite path. An MDP and a policy induce an MC. 
+A policy for MDP $\mc$ is a function $\sigma\colon \Pi_{fin}^\mc \to \Act$, which selects actions for every finite path. An MDP and a policy induce an MC.
 \sj{Moved these sentences down, need to integrate them?}
 
-Colored\lm{There used to be (Labeled) here, but are colored MDPs ever called Labeled MDPs. Are that not just normal MDPs?}\sj{see mattermost, 24.1.} MDPs are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplifies the notion of colored MDPs from \cite{}, and suffices for our needs:
+Colored (Labelled) MDPs are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplifies the notion of colored MDPs from \cite{}, and suffices for our needs:
 \begin{definition}[Colored MDP]\label{def:colMDP}
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc = (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$ maps states to colors.
 \end{definition}
@@ -574,7 +566,7 @@ Colored\lm{There used to be (Labeled) here, but are colored MDPs ever called Lab
     A memoryless scheduler $\sigma$ for a colored MDP $\mdpc$ is \emph{color consistent}\footnote{Colored MDPs with color-consistent policies coincide with memoryless policies for partially observable MDPs. However, POMDPs often consider history-dependent (belief-based) policies. We use \emph{colored MDPs} to avoid any confusion.} if for states $s, s'$,
     $c(s) = c(s')$ implies $\sigma(s) = \sigma(s')$.
 \end{definition}
-The set of all color-consistent schedulers is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color-consistent scheduler such that the reachability probability\sj{Is this defined somewhere in 2?} to a set of target states is above a certain threshold. Policy synthesis for colored MDPs is NP-hard.
+The set of all color-consistent schedulers is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color-consistent scheduler such that the reachability probability to a set of target states is above a certain threshold. Policy synthesis for colored MDPs is NP-hard\cite{}.
 %We now present the theorem we focus on in this section.
 \begin{theorem}[Main theorem]
     \label{thm:maintheorem}
@@ -590,7 +582,7 @@ Our proof, outlined in this section, is constructive and we show that we can use
 \paragraph{Outline of the proof.}
 The proof is a direct consequence of \Cref{lem:toctp,lem:toactp,lem:tocoloredmdp} below. Before we discuss these lemmas, we observe that on the left-hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
 Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities.
-We describe our transformation in several steps. In \Cref{ssec:ctp}\sj{I prefer writing Section even if it is a subsection} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning on traces, while replacing observations from the HMM.
+We describe our transformation in several steps. In \Cref{ssec:ctp} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning on traces, while replacing observations from the HMM.
 
 \subsection{The (Acyclic) Conditional Trace Probability Problem}\label{ssec:ctp}
 \begin{figure}[t]
@@ -618,10 +610,9 @@ We describe our transformation in several steps. In \Cref{ssec:ctp}\sj{I prefer 
         \draw[->] (qd3) edge[bend right] node[above] {$\frac{9}{10}$} (qi3);
         \draw[->] (qd3) edge node[below, near start] {$\frac{1}{10}$} (qc3);
     \end{tikzpicture}
-    \caption{The central example HMM and faulty monitor $\dfaB$ transformed into the CTP problem. States are named with their HMM state, $\{d,i,c\}$ and their monitor state, $\{1,2,3\}$. States in the alarm states set $A$ have been marked accepting.}
+    \caption{The central example HMM and faulty monitor $\dfaB$ transformed into the CTP problem. States are named with their HMM state, $\{d,i,c\}$ and their monitor state, $\{1,2,3\}$. States in the alarm states set $F$ have been marked accepting.}
     \label{fig:ctphmm}
 \end{figure}
-\sj{In fig caption, $A$ = $F$. Chekc for other occurences of this as well.}
 
 First, we show how asking for a missed alarm can be rephrased into the conceptually simpler \emph{conditional trace probability} (CTP) problem.
 We will further simplify the problem by incorporating both the horizon and risk such that we are left with a problem purely on acyclic HMMs.
@@ -632,24 +623,24 @@ We will further simplify the problem by incorporating both the horizon and risk 
 \subsubsection{CTP problem}
 We take (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008} between HMM and the DFA.  We define as \emph{alarm states} $F$ those states which correspond to not accepting states in the DFA. This is equivalent to taking a product with the complement of the monitor.
 \begin{example}
-    \Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. Starting in the initial states $d$ and $1$, respectively, the HMM can transition to the $i$ state with probability $\sfrac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to the $2$ state. This results in the new product state of $i$ and $2$, with a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\sfrac{9}{10}$. The alarm states are the initial $\langle d, 1\rangle$\sj{inconsistent with Fig} state and any product states $\langle \_ ,3 \rangle$.
+    \Cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \Cref{fig:centralexample}. Starting in the initial states $d$ and $1$, respectively, the HMM can transition to the $i$ state with probability $\sfrac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to the $2$ state. This results in the new product state of $i$ and $2$, with a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\sfrac{9}{10}$. The alarm states are any product states $\langle \_ ,3 \rangle$.
 \end{example}
 \begin{definition}[HMM product]
     \label{def:product}
-    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM}\sj{Maybe make this a tuple?} $\mc_{\times \dfa}$ is the HMM  $\mc_{\times \dfa}                                    = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r')$ with $\obsf'(\langle s, q\rangle) = \obsf(s)$,  $r'(\langle s, q\rangle)                              = r(s)$
+    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM} $\langle\mc_{\times \dfa}, F\rangle$ is the HMM  $\mc_{\times \dfa}                                    = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r')$ with $\obsf'(\langle s, q\rangle) = \obsf(s)$,  $r'(\langle s, q\rangle)                              = r(s)$
     \begin{align*}
         \ptrans'(\langle s, q\rangle)(\langle s', q'\rangle) & = \begin{cases}
                                                                      \ptrans(s, s') & \text{if } \delta(q, \obsf(s')) = q' \\
                                                                      0              & \text{otherwise}
                                                                  \end{cases}
     \end{align*}
-    The alarm states for the product are  $F = S\times F'$.
+    And the alarm states $F = S\times F'$.
 \end{definition}
 In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
 We state the decision problem that needs to be solved: It is key to our computational complexity analysis in \Cref{sec:compl}.
 \begin{definition}[CTP Decision Problem]
     \label{def:CTPdecprob}
-    Given HMM $\mc$ with states~$S$ and risk~$r$, (unary encoded) horizon $h$, alarm states $F\subseteq\Sts$, and threshold $\lambda_s \in (0,1]$,  \[\exists \tau \in \lang{\mc}.~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda.\]
+    Given HMM $\mc$ with states~$S$ and risk~$r$, (unary encoded) horizon $h$, alarm states $F\subseteq\Sts$, and threshold $\lambda_s \in \RR^+$,  \[\exists \tau \in \lang{\mc}.~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda_s.\]
 \end{definition}
 We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, F, \lambda_s)$.
 The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement\sj{Nevertheless, we should have a (slightly) more formal proof}.
@@ -716,39 +707,36 @@ We further simplify the problem by unrolling the model along the horizon. We als
 % and the newly created alarm states set into the HMM. %The resulting HMM can be seen as the model for the acyclic CTP problem.
 
 \begin{example}
-    Our unrolling applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}. We unroll the product for horizon three. Thus, the initial state becomes the tuple of step $1$ and the initial state from the CTP HMM, $\langle d, 1\rangle$. This state $\actps{1}{d}{1}$ transitions to, e.g., $\actps{2}{c}{2}$. In state $\actps{3}{i}{3}$ we are at the horizon, and the CTP part of the state is part of the alarm states\sj{colloquial and lengthy from here on, try to be more concise. E.g., start with: Consider state...}. Thus, the monitor wants to raise an alarm here. We now transition with probability 1 to the $\safes[4]$ state and probability 0 to the $\alarms[4]$ state, since the normalized risk of $d$ is 0. The horizon state $\actps{3}{d}{1}$ is not in $A$\sj{$F$}, thus we transition to the $\igs[4]$ state.
+    Our unrolling applied to the HMM from \cref{fig:ctphmm} can be seen in \cref{fig:actp}. We unroll the product for horizon three. Thus, the initial state becomes the tuple of step $1$ and the initial state from the CTP HMM, $\langle d, 1\rangle$. This state $\actps{1}{d}{1}$ transitions to, e.g., $\actps{2}{c}{2}$.
+    Consider state $\actps{3}{i}{3}$, it is at the horizon and its corresponding CTP state is in the alarm states $F$, the monitor raises an alarm. The normalized risk for this state is 0, since $r(\langle d, 1\rangle) = 0$. Thus, $\actps{3}{i}{3}$ transitions with probability 1 to the safe state, $\safes[4]$, and probability 0 to the alarm state, $\alarms[4]$. The corresponding CTP state of $\actps{3}{d}{1}$ is not in $F$. It is a horizon state, and thus it transitions to the ignore state, $\igs[4]$.
 \end{example}
 
 \begin{definition}[Unrolling with risk]
     \label{def:acyclichmm}
-    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $F \subseteq \Sts$ is the HMM $\mc_{\blacktriangleright h} = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \}, (1,\init), \ptrans', \Obs \cup \{\en, \ig\}, \obsf')$, with the normalized risk function $r' (s) = \sfrac{r(s)}{\max_{s\in\Sts} r(s)}$\sj{Why do we need a risk function?} and new transition and observation function:
+    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $F \subseteq \Sts$ is the HMM $\mc_{\blacktriangleright h} = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf')$, with the new transition and observation function:
     \begin{align*}
-        % \mc_{\blacktriangleright h}                                                                        & = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \},     \\
-        %                                                                                                    & \phantom{= (}\ (1,\init), \ptrans', \Obs \cup \{\en, \ig\}, \obsf') \\
-        \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle)(\langle i+1, q\rangle)           & = \ptrans(s)(q)                                    \\
+        \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle)(\langle i+1, s'\rangle)          & = \ptrans(s)(s')                                                                       \\
         \ptrans'(\langle h, s\rangle)\left(\left\langle h+1, t\right\rangle\right)                         & = \begin{cases}
-                                                                                                                   r'(s)     & \text{if } s \in F \land t = \talrm  \\
-                                                                                                                   1 - r'(s) & \text{if } s \in F \land t = \tsafe  \\
-                                                                                                                   1         & \text{if } s \notin F \land t = \tig \\
-                                                                                                                   0         & \text{otherwise}
+                                                                                                                   \frac{r(s)}{\max_{s\in\Sts} r(s)}     & \text{if } s \in F \land t = \talrm  \\
+                                                                                                                   1 - \frac{r(s)}{\max_{s\in\Sts} r(s)} & \text{if } s \in F \land t = \tsafe  \\
+                                                                                                                   1                                     & \text{if } s \notin F \land t = \tig \\
+                                                                                                                   0                                     & \text{otherwise}
                                                                                                                \end{cases} \\
-        \ptrans'\left(\left\langle h+1, t\right\rangle\right)\left(\left\langle h+1, t\right\rangle\right) & = 1                                                \\
-        \obsf'(\langle i, s\rangle)                                                                        & = \obsf(s)                                         \\
-        \obsf'(\langle h, t\rangle)                                                                        & = \begin{cases}
+        \ptrans'\left(\left\langle h+1, t\right\rangle\right)\left(\left\langle h+1, t\right\rangle\right) & = 1                                                                                    \\
+        \obsf'(\langle i, s\rangle)                                                                        & = \obsf(s)                                                                             \\
+        \obsf'(\langle h+1, t\rangle)                                                                      & = \begin{cases}
                                                                                                                    \en & \text{if } t \in \{\talrm, \tsafe\} \\
                                                                                                                    \ig & \text{if } t = \tig
                                                                                                                \end{cases}
     \end{align*}
-    \sj{in first line, use $s,s'$ rather than $s, q$?}
-    \sj{obs(h,t) or obs(h+1,t)?}
 \end{definition}
 For the first $h$ steps, the unrolling is standard. At the horizon we transition to the three dedicated states $\talrm$, $\tsafe$ and $\tig$\footnote{We add an $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no-false-alarms problem.} according to the risk.
 
 \begin{lemma}
     \label{lem:toactp}
-    Given an HMM $\mc$, horizon $h$, alarm states $F$ and threshold $\lambda$:
-    \[ \exists \tau \in \mathsf{CTP}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
-    where $z_\mathsf{end}$ is the final observation and $s_a$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
+    Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_s$, $\exists\lambda\in(0,1]$:
+    \[ \exists \tau \in \mathsf{CTP}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
+    where $z_\mathsf{end}$ is the final observation and $\talrm$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
 
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 
@@ -842,11 +830,10 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 
 For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachability probability exceeds a threshold. We reformulate this into a policy synthesis problem in MDPs. The transformation combines two ideas: First, in every state, the policy can select the next observation, inspired by~\cite{}. Second, we reformulate conditional reachability probabilities by (standard) regular reachability probabilities, using a construction in \cite{}.
 \begin{example}
-    We transform the HMM from \cref{fig:actp} to \cref{fig:mdpex}. Consider $\actps{2}{i}{2}$ in original HMM.\sj{I would say that the next observation is iether dry or icy, which corresponds to the two new actions. Then, explain what happens if the next observation is icy or dry} The three transitions are split into the one transition going to a $\dry$ state, $\actps{3}{d}{1}$, and two transitions going to the two $\icy$ states in step $3$. We plate\sj{what does that mean?} the first transition behind the $\dry$ action. The other two transitions are placed behind\sj{what does it mean to place a transition behind an action?} the $\icy$ action. Both of the action have a total probability of $\nicefrac{1}{2}$, thus a return transition is added to the initial state of $\nicefrac{1}{2}$ probability to both actions. \sj{I would not do paragraph breaks in the example}
-
+    We transform the HMM from \cref{fig:actp} to the Colored MDP from \cref{fig:mdpex}. Consider $\actps{2}{i}{2}$ in original the HMM.
+    The next observation is either $\dry$ or $\icy$, which corresponds to two new actions for $\actps{2}{i}{2}$ in the colored MDP. The $\dry$ action transitions to the ensuing states with the $\dry$ observation. The remaining probability, $\sfrac{1}{2}$, for the $\dry$ action is directed to the initial state. This is similarly applied to the $\icy$ action.
     State $\actps{2}{c}{2}$ does not reach any $\dry$ states, we still add a $\dry$ action redirecting to the initial state, since we want all states with the same step value to have the same actions.
-
-    State $\actps{3}{d}{1}$ only has a transition to an $\ig$ state. We fully remove this state\sj{the state is still there?} and the observation. Since it does not have an $\en$ action\sj{does it or does it not have such an action?}, while the other 3 step states do. The state gets an $\en$ action to the initial state.
+    State $\actps{3}{d}{1}$ in the HMM only has a transition to an $\ig$ state. We fully remove the $\ig$ state and the $\ig$ observation in the MDP. Finally, we make sure all states with step 3 have the same actions, and thus add the $\en$ action redirecting to the initial state.
 \end{example}
 
 \begin{definition}\label{def:polsyntrans}
@@ -854,20 +841,21 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
     \begin{align*}
         \ptrans'(\langle i, s\rangle, z)(\langle j, q\rangle) :=
         \begin{cases}
-            \ptrans'(\langle i, s\rangle)(\langle j, q\rangle)                                                                             & \text{if } \obsf(\langle j, q\rangle) = z \\
-            \sum_{(\langle k, q'\rangle)\in S'\ |\ \obsf(\langle k, q'\rangle) \neq z} \ptrans'(\langle i, s\rangle)(\langle k, q'\rangle) & \text{if } (\langle j, q\rangle) = \iota  \\
-            0                                                                                                                              & \text{otherwise}
+            \ptrans'(\langle i, s\rangle)(\langle j, q\rangle)                                                                              & \text{if } \obsf(\langle j, q\rangle) = z \text{,} \\
+            \sum_{(\langle k, q'\rangle)\in S' \mid \obsf(\langle k, q'\rangle) \neq z} \ptrans'(\langle i, s\rangle)(\langle k, q'\rangle) & \text{if } (\langle j, q\rangle) = \iota  \text{,} \\
+            0                                                                                                                               & \text{otherwise}
         \end{cases}
     \end{align*}
     $C = \{1,\ldots,h\}$ and $c$ is given such that $c(\langle i,s \rangle) = i$.
-\end{definition}\sj{Do use commas and points in align environments etc.}
+\end{definition}
+Thus, we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state.
 
-Thus we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state.
-
+\begin{remark}
+    All states gain all actions in $\ptrans''$, we can later prune any actions for all states $S^C$ of a color $C$ when these actions only redirect to the initial state from $S^C$.
+\end{remark}
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
 \begin{definition}[Trace consistent policy]
-    \sj{Does it make sense to only define this for MDPs obtained from the def above?}
-    Given two sets $\Sts$ and $Z$ and an MDP $\mdp$ with states in $\NN\times\Sts$, and actions in $Z\cup\{end\}$. Together with a trace $\tau \in Z^\star$. A \emph{trace consistent policy} is of the form
+    Given an MDP $\mdp_{\gtrdot h}$ as defined in \cref{def:polsyntrans}. Together with a trace $\tau \in Z^\star$. A \emph{trace consistent policy} is of the form
     \begin{align*}
         \sigma_\tau(\langle i, s \rangle) = \begin{cases}
                                                 \tau^{(i)} & \text{if } i \leq |\tau|, \\
@@ -875,34 +863,21 @@ The above construction allows for conditioning on a trace $\tau$ by constructing
                                             \end{cases}
     \end{align*}
 \end{definition}
-
-
+Using the coloring as described in \cref{def:polsyntrans}, the trace consistent policies coincide with the color consistent policies. Finding a missed-alarm traces now reduces to solving the following color consistent policy synthesis problem:
+\[\exists \sigma\in\ccSched. \Prob^{\sigma}(\lozenge \alarms) > \lambda_s \]
+Which is solved using PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
 
 \begin{lemma}
     \label{lem:tocoloredmdp}
-    \sj{Initial text missing. Also consider other notation for M and Mc}
-    \[  \exists \sigma \in \ccSched.  \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi s_a \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
-\end{lemma}
-
-
-
-\sj{This seems out of place, being after the transformation and the lemma?}
-In the ACTP HMM we only have the observations and conditional probability on a trace left. To incorporate this into the model we will use one novel idea. Instead of transitioning to a state and observing it, we will allow the model to choose what observation to observe. We thus move away from HMMs and into MDPs. This has two results. Firstly, instead of talking about sequences of observations, instead we will consider sequences of actions taken. Secondly, any trace can be transformed into a policy of the MDP. We will first discuss how to create this MDP. Afterward, we show how to ensure how, traces and policies can be made equivalent by coloring the MDP.
+    Given an HMM $\mc$, horizon $h$, alarm states $F$ and threshold $\lambda$:
+    \[  \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda, \]
+\end{lemma}\lm{Fix hbox}
 
 \begin{corollary}
-    There exists a map $t(\sigma_\tau) = \tau$ which, given a trace consistent policy $\sigma_\tau$ finds its associated trace $\tau$.
+    There exists a map $t(\sigma_\tau) = \tau$ which, given a trace consistent policy $\sigma_\tau$, finds its associated trace $\tau$.
 \end{corollary}
-However, when finding the maximal trace, we might not find a trace consistent policy. To fix this we color the MDP such that color-consistent policies coincide with trace consistent policies on our MDPs. As colors  Given that all $end$ states sinks, color consistent policies with the trace consistent policies.
 
-\begin{remark}
-    All states gain all actions in $\ptrans''$, we can later prune any actions for all states $S^C$ of a color $C$ when these actions only redirect to the initial state from $S^C$.
-\end{remark}
-
-Now finding a trace with the conditional trace probability above $\lambda_s$ coincides with finding a color consistent policy such that
-\[\Prob^{\sigma}(\lozenge \alarms) > \lambda_s \]
-
-
-\subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}
+\subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}\lm{Reference \cref{prob:FA} somewhere here.}
 \begin{itemize}
     \item Add end transitions to non horizon states.
     \item We want to minimize alarm probability, not possible.
@@ -1002,8 +977,8 @@ We modify the transformation from \cref{thm:maintheorem} such that it solves the
     We reuse the transformation from \cref{thm:maintheorem} with the following modifications. We no longer take the complement of the monitor. Instead of doing reachability on the alarm state, we instead do reachability on the safe state.
 \end{proof}
 
-\section{Learning Correct Monitors}\label{sec:learning}
-We now describe how to \emph{learn} correct monitors, by combining the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} and the verification approachs above. %This combination needs only minor glue. 
+\section{Learning Correct Monitors}\label{sec:learning}\lm{Maybe refrence \cref{prob:Learn} somewhere here.}
+We now describe how to \emph{learn} correct monitors, by combining the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} and the verification approach above. %This combination needs only minor glue. 
 %We furthermore discuss some improvements that bridge the gap between common assumptions in MAT automata learning and our monitor setup\sj{is this still true? I havent seen anything about unrolling etc}.
 
 \paragraph{MAT framework.}
@@ -1021,11 +996,11 @@ For the MQ, each trace must be unambigiously be defined as safe or unsafe: the M
 \begin{definition}\label{def:toverMQ}
     Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ safe is an arbitrary decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.\sj{Forward filtering in HMMs should have a different citation as well. }\sj{Not urgent: Couldnt this be done with the techniques in section 3 as well (although inefficiently)?}
+Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.\sj{Forward filtering in HMMs should have a different citation as well. }\sj{Not urgent: Couldnt this be done with the techniques in section 3 as well (although inefficiently)?}\lm{Yes, you can create a policy from a trace and evaluate the induced MC.}
 
-We adapt\sj{What is adapted here?} the verification described in \cref{sec:monver} to define the EQ.
+We use the verification described in \cref{sec:monver} to define the EQ.
 \begin{definition}\label{def:toverEQ}
-    Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$\sj{give the return type (true or trace)} such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counter example\sj{counterexample is typically written as a word} trace if $\dfa$ is not correct.\sj{Be more specific, it is either a missed alarm or a false alarm?}
+    Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$\sj{give the return type (true or trace)} such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counterexample trace if $\dfa$ is not correct.\sj{Be more specific, it is either a missed alarm or a false alarm?}
 \end{definition}\lo{Why not let EQ$_{\lambda_s, \lambda_u}$ be the function instead of $g$?}\sj{agree}
 The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. \sj{no need to repeat these steps, so i commented out the next line}
 %We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found, it is returned as a counter example.
@@ -1036,8 +1011,8 @@ The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Ea
 \begin{proof}
     If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to EQ$_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
 \end{proof}\lm{This is a bit short through the corner. But don't know how detailed to be.}
-When $\lambda_s < \lambda_u$, the EQ has a gray\sj{inconclusive?} area given by the interval $(\lambda_s, \lambda_u)$.
-This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this gray area \cref{sec:experiments}(\textbf{Q4}).
+When $\lambda_s < \lambda_u$, the EQ has an inconclusive area given by the interval $(\lambda_s, \lambda_u)$.
+This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}(\textbf{Q4})\lm{We no longer have the questions, just refrence the section now?}.
 
 \paragraph{Conformance queries.}
 An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counter example. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counter example faster if one has a high probability of occurring.
@@ -1213,16 +1188,16 @@ All experiments are run (using exact arithmetic) on a single thread of an AMD Ry
 We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the central example and \textsc{SnL} based on the game ``Snakes and Ladders''.
 While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. All benchmarks are scalable.
 % We use benchmarks up to hundreds of states and thousands of transitions.
-Details are given in \cref{sec:benchmarksdescr}.\sj{*A*ppendix} 
-Code, benchmarks and logs will be publicly available via the artifact evaluation.
+Details are given in \Cref{sec:benchmarksdescr}.
+Code, benchmarks, and logs will be publicly available via the artifact evaluation.
 
 \subsubsection{Efficiency of Monitor Verification}
 We investigate scalability along different dimensions and identify the bottlenecks of the method.
 
 \paragraph{Setup.}
 %We run the \alg verifier on the benchmarks as described above. 
-We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained half way the learning process, and the final correct monitor. 
-For each monitor we (1)~verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$ and (2)~find the minimum in monitor risk and maximum out of monitor risk\sj{vague}.\sj{I wonder whether we really want to present case (2) in the main text. It is not solving any of our problem statements, it is typically harder, and it makes the table harder to read. We could still have that in the appendix.} 
+We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained half way the learning process, and the final correct monitor.
+For each monitor we (1)~verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$ and (2)~find the minimum in monitor risk and maximum out of monitor risk\sj{vague}.\sj{I wonder whether we really want to present case (2) in the main text. It is not solving any of our problem statements, it is typically harder, and it makes the table harder to read. We could still have that in the appendix.}
 %We refer to benchmark runs with short IDs that consist of a reference to the benchmark family and a counter, e.g., A-10 for the tenth \textsc{Airport} run.
 
 % lambda found afronden
@@ -1284,11 +1259,11 @@ For each monitor we (1)~verify correctness w.r.t.\ the same $\lambda_s, \lambda_
 \paragraph{Results.}
 \sj{Todo self: say something about search space}
 We present our results in \Cref{tab:verifysubest}, which is a subset of a XX benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we  verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks E-20 to E-23\sj{can we give benchmark IDs another font?}. \sj{can we add the order of magnitude for their product?}\sj{Can we clarify the size of $\lang{\mc}$ (orders of magnitude?)}
-Benchmarks A-0 to A-3 reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find an counterexample, whereas A-8 to A-11 reflect verification of the same HMM with respect to a larger correct monitor. However, verifying an extreme bound can still be hard, as seen with A-2 compared to A-3. For such benchmarks, missed alarms seem harder to find than false alarms. 
+Benchmarks A-0 to A-3 reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find an counterexample, whereas A-8 to A-11 reflect verification of the same HMM with respect to a larger correct monitor. However, verifying an extreme bound can still be hard, as seen with A-2 compared to A-3. For such benchmarks, missed alarms seem harder to find than false alarms.
 Increasing the horizon significantly increases the runtime, even for small models, e.g., I-14/15 compared to I-34/35.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
- In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see Appendix\sj{fix that appendix, or scrap it :-)}, whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck. 
- 
+In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see Appendix\sj{fix that appendix, or scrap it :-)}, whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
+
 %\paragraph{What steps are most expensive?}
 %The time spent to verify a monitor can mostly be split up in time to apply the transformation from \cref{sec:monver}, and time spent to verify the created colored MDP using PAYNT. Verifying a colored MDP is an NP-complete problem, and its runtime is heavily dependent on the internal structures and thresholds used. From \cref{tab:verifysubest}, the \textsc{Evade} benchmarks are comparably large but take only around eight seconds to verify by PAYNT, where A-10 and A-11 are much smaller, but take around a thousand seconds to verify. The transformation step does seem to increase if the size of the HMM or the monitor increases as can be seen in \cref{fig:sizevsprod}. But this again does differ between benchmarks.
 
@@ -1300,15 +1275,15 @@ We consider the necessity of EQs in the learning, the size of the learned, and t
 We use the MAT framework from \cref{sec:learning}.
 %The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
 Before every EQ, conformance checking (max.\ 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$, see \cref{sec:learning})\sj{What does it mean to run a sample for $\lambda_s$?}.
-As hyper-parameters, we investigate (1) $\lambda_l = 0.3, \lambda_s = 0.35, \lambda_u = 0.1$ and (2) $\lambda_s = \lambda_l = \lambda_u = 0.3$ 
-\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \Cref{sec:ressampling}.}. 
+As hyper-parameters, we investigate (1) $\lambda_l = 0.3, \lambda_s = 0.35, \lambda_u = 0.1$ and (2) $\lambda_s = \lambda_l = \lambda_u = 0.3$
+\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \Cref{sec:ressampling}.}.
 \sj{The footnote is vague}
-We compare with a baseline that does not use EQs, i.e., we use the MAT framework with only conformance checking (max.\ 100000 samples, cf.\ \cref{sec:learning}) with 100000 samples. Baselines with different numbers of samples are tested in \Cref{sec:ressampling}. 
+We compare with a baseline that does not use EQs, i.e., we use the MAT framework with only conformance checking (max.\ 100000 samples, cf.\ \cref{sec:learning}) with 100000 samples. Baselines with different numbers of samples are tested in \Cref{sec:ressampling}.
 %We only discuss the results of learning with $\lambda_s = \lambda_l = \lambda_u$ and with $\lambda_s \leq \lambda_l \leq \lambda_u$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.\sj{This makes things a bit complicated}
 
 \paragraph{Are the monitors correct?}
-Using a proper EQ, we always learn correct monitors. We validate this experimentally \emph{and} show that the baseline does not always yield correct monitors. Therefore, for any monitor we determine  the unsafe trace with the lowest risk (\emph{actual alarm threshold}, $\lambda_u^{\min}$) and the safe trace with the highest risk (\emph{actual no-alarm threshold}, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$. 
-\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and baseline learning respectively. A monitor is correct if its red bar never touches the green area, and the green bar never touches the red area. In 6 benchmarks\sj{out of?}, the baseline learns a monitor that misses alarms. No monitors had false alarms.
+Using a proper EQ, we always learn correct monitors. We validate this experimentally \emph{and} show that the baseline does not always yield correct monitors. Therefore, for any monitor we determine  the unsafe trace with the lowest risk (\emph{actual alarm threshold}, $\lambda_u^{\min}$) and the safe trace with the highest risk (\emph{actual no-alarm threshold}, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
+\Cref{fig:learnThrToverS,fig:learnThrToverNS} together and \cref{fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg learning and baseline learning respectively. A monitor is correct if its red bar never touches the green area, and the green bar never touches the red area. In 6 out of 38 benchmarks the baseline learns a monitor that misses alarms. No monitors had false alarms.
 
 \begin{figure}[t]
     \begin{subfigure}{.34\linewidth}
@@ -1372,9 +1347,9 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 \sj{I would simplify the visual of this plot and the other (and increase contrast) by only having black circle/cross for benchmarks.}
 
 \paragraph{How fast do we learn the monitors?}
-\sj{How many EQs do we need to learn a monitor?}
-We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!). 
-We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accellerate the learning process, despite the high complexity. In particular, it tends to find counterexamples in the early stages much faster. This observation is independent from $\lambda_s = \lambda_u$ or $\lambda_s \neq \lambda_u$. In Appendix~\sj{ref missing}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
+\sj{How many EQs do we need to learn a monitor?}\lm{Should I add this to the table?}
+We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
+We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. In particular, it tends to find counterexamples in the early stages much faster. This observation is independent of $\lambda_s = \lambda_u$ or $\lambda_s \neq \lambda_u$. In Appendix~?\lm{Add this infromation to a table}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
 
 
 %
@@ -1458,6 +1433,8 @@ Questionable relevance
 
 \clearpage
 \printbibliography{}
+% \bibliographystyle{plain}
+% \bibliography{literature,zotero}
 \clearpage
 
 \appendix
@@ -1489,11 +1466,11 @@ Questionable relevance
 \lm[inline]{TODO: write about plots}
 
 \begin{figure}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/verimon_times.pgf}}
-        \caption{Runtime division over steps in \alg learning. Empty bars are HMMs for which learning did not finish.}
-        \label{fig:runtimediv}
-   
+    \resizebox{\linewidth}{!}{
+        \input{images/plots/verimon_times.pgf}}
+    \caption{Runtime division over steps in \alg learning. Empty bars are HMMs for which learning did not finish.}
+    \label{fig:runtimediv}
+
 \end{figure}
 
 \begin{figure}
