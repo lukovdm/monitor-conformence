@@ -279,20 +279,20 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["mc"]["mc_observations"],
             d["monitor"]["monitor_states"],
             d["monitor"]["monitor_transitions"],
-            (d["result"]["time"] if d["result"]["time"] >= 1 else r"\leq 1s")
+            (d["result"]["time"] if d["result"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["result"]
             else "-",
             (
                 d["result"]["product_time"]
                 if d["result"]["product_time"] >= 1
-                else r"\leq 1s"
+                else r"$\leq 1s$"
             )
             if "fake" not in d["result"]
             else "-",
             (
                 d["result"]["paynt_time"]
                 if d["result"]["paynt_time"] >= 1
-                else r"\leq 1s"
+                else r"$\leq 1s$"
             )
             if "fake" not in d["result"]
             else "-",
@@ -341,7 +341,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
-            (d["verimon"]["time"] if d["verimon"]["time"] >= 1 else r"\leq 1s")
+            (d["verimon"]["time"] if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["verimon"]
             else "-",
             len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else "-",
@@ -352,7 +352,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             float(d["verimon"]["false_negative"])
             if "fake" not in d["verimon"]
             else "-",
-            (d["sampling"]["time"] if d["sampling"]["time"] >= 1 else r"\leq 1s")
+            (d["sampling"]["time"] if d["sampling"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["sampling"]
             else "-",
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else "-",
