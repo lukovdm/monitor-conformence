@@ -75,7 +75,7 @@ def add_short_names(data, verify=False):
         if name not in variant_indexes:
             variant_indexes[name] = 0
         d["experiment"]["short_name"] = (
-            f"{name[0].capitalize()}-{variant_indexes[name]}"
+            f"\\textsc{{{name[0].capitalize()}-{variant_indexes[name]}}}"
         )
         variant_indexes[name] += 1
 
@@ -318,7 +318,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
 % \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
  & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
-\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-17}
  & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
 \endhead"""
