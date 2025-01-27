@@ -630,14 +630,14 @@ We take (a mild variation of) a standard product construction~\cite{baierPrincip
 \end{example}
 \begin{definition}[HMM product]
     \label{def:product}
-    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM} $\langle\mc_{\times \dfa}, F\rangle$ is the HMM  $\mc_{\times \dfa}                                    = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r')$ with $\obsf'(\langle s, q\rangle) = \obsf(s)$,  $r'(\langle s, q\rangle)                              = r(s)$
+    Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM} $\langle\mc_{\times \dfa}, F\rangle$ is the HMM  $\mc_{\times \dfa}                                    = (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r')$ with $\obsf'(\langle s, q\rangle) = \obsf(s)$,  $r'(\langle s, q\rangle)                              = r(s)$,
     \begin{align*}
         \ptrans'(\langle s, q\rangle)(\langle s', q'\rangle) & = \begin{cases}
-                                                                     \ptrans(s, s') & \text{if } \delta(q, \obsf(s')) = q' \\
-                                                                     0              & \text{otherwise}
+                                                                     \ptrans(s, s') & \text{if } \delta(q, \obsf(s')) = q', \\
+                                                                     0              & \text{otherwise,}
                                                                  \end{cases}
     \end{align*}
-    And the alarm states $F = S\times F'$.
+    and the alarm states $F = S\times F'$.
 \end{definition}
 In the product, we can find a trace whose conditional trace probability exceeds a threshold iff there is a missing alarm.
 We state the decision problem that needs to be solved: It is key to our computational complexity analysis in \Cref{sec:compl}.
@@ -1016,7 +1016,7 @@ The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Ea
     If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by $\MQ_{\lambda_l}$ it cannot be given as a counterexample by $\EQ_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, $\MQ_{\lambda_l}$ and $\EQ_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to $\EQ_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
 \end{proof}
 When $\lambda_s < \lambda_u$, the EQ has an inconclusive area given by the interval $(\lambda_s, \lambda_u)$.
-This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}(\textbf{Q4})\lm{We no longer have the questions, just refrence the section now?}.
+This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}.
 
 \paragraph{Conformance queries.}
 An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counter example. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counter example faster if one has a high probability of occurring.
@@ -1034,17 +1034,8 @@ To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is NP-hard.
 \end{lemma}
-The lemma holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem  from 3CNF. We outline the construction below.
+The lemma holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem from 3CNF, i.e., the problem of satisfiability of a 3CNF formula. We illustrate the construction briefly and provide details in \cref{app:complexity}.
 
-Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
-
-Before we give a formal definition of $\mc_\varphi$, we give some intuition.
-We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$ defined below. Next, we show that the gadget reaches positive risk in every gadget only if the corresponding clause is satisfied by the assignment.
-
-The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.  We enter the gadget with trace $\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$, i.e., the first observation has been matched by the initial state.
-A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. Thus, in every gadget, there is only one path that corresponds to a given trace and so they can be used interchangeably.
-State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, \bot$, respectively. We note that a path  reaches $s_{i,j}^\top$ if $\alpha(x_i) = \top$ and (analogously for $\bot$).
-From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. A path ends in $t$ only via a state $s'_{i,j}$, which is only possible if the path visits a state corresponding to a literal in the clause. Thus, (conditionally) reaching state $s'_{i,j}$ with positive conditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment.
 \begin{figure}[t]
     \begin{subfigure}{0.13\textwidth}
         \begin{tikzpicture}
@@ -1121,27 +1112,15 @@ From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$
     \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
 \end{figure}
 
-Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and set $\lambda = 1$:
-\begin{itemize}
-    \item
-          $\Sts = \{ s_{i,j}, s_{i,j}^\bot, s_{i,j}^\top,
-              s_{i,j}', s_{i,j}'^\bot, s_{i,j}'^\top
-              \mid i \in \{1, \dots, n+1 \},  j \in \{ 1, \dots, m \} \} \cup \{ s_\init \}$.
-    \item $\ptrans$ is given such that for all $i \in \{1,\dots, n\}, j \in \{1, \dots, m\}$:
-          \begin{itemize}
-              \item  $\ptrans(s_\init,s_{1,j}) = \frac{1}{m}$,
-              \item  $\ptrans(s_{i,j},s_{i,j}^\top) = \ptrans(s_{i,j},s_{i,j}^\bot) = \frac{1}{2}= \ptrans(s'_{i,j},s_{i,j}'^\top) = \ptrans(s_{i,j}',s_{i,j}'^
-                        \bot)$,
-              \item $\ptrans(s_{i,j}^\top,s'_{i+1,j}) = \indicator{x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\top,s_{i+1,j}) = \indicator{x_i \neq \ell_j^k \text{ for all k}}$,
-              \item $\ptrans(s_{i,j}^\bot,s'_{i+1,j}) = \indicator{\neg x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\bot,s_{i+1,j}) = \indicator{\neg x_i \neq \ell_j^k \text{ for all k}}$
-              \item $\ptrans(s'_{n+1,j}, t) = 1 = \ptrans(s_{n+1,j}, f)$
-          \end{itemize}
-    \item $\Obs = \{\top, \bot, \#\}$ and $\obsf(s_{i,j}^\top) = (s_{i,j}'^\top) = \top$,
-          $\obsf(s_{i,j}^\bot) = (s_{i,j}'^\bot) = \bot$,
-          $\obsf(s_{i,j}) = \obsf(s'_{i,j}) = \# = \obsf(s_\init) = \obsf(t) = \obsf(f)$.
-    \item $r(t) = 1$ and $r(s) = 0$ for all $s \in \Sts \setminus \{ t\}$.
-\end{itemize}
-The construction runs in polynomial time. The formal proof of its correctness follows the explanation above precisely.
+The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$. 
+We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. 
+We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: 
+That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$. 
+The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause. 
+
+
+
 %
 %\begin{definition}[binary-CTP Decision Problem]
 %    Given an HMM $\mc$ with colors $C$, a binary encoded horizon $h$, and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in C^{h}$ such that $\Prob^\mc(\lozenge G \mid \tau) \geq \lambda$.
@@ -1160,7 +1139,7 @@ Approximating the verification of monitors is also hard, in the sense that it is
 
 The maximal risk problem is an optimization problem
 \begin{definition}[CTP Optimization Problem]
-    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$: \[\max_{\tau \in \lang{\mc}}~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow)\]\sj{check notation for paths of length $h$}
+    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$: \[\max\nolimits_{\tau \in \lang{\mc}}~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow)\]\sj{check notation for paths of length $h$}
 \end{definition}\sj{Sync with CTP definition}
 \begin{lemma}
     \label{lem:ctpapxhard}
@@ -1433,6 +1412,45 @@ Questionable relevance
 \appendix
 
 % \section{Description of benchmarks}\label{sec:benchmarksdescr}
+
+\section{Construction for NP-hardness/APX-hardness}
+\label{app:complexity}
+
+
+
+Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTP instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
+
+Before we give a formal definition of $\mc_\varphi$, we give some intuition.
+We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$ defined below. Next, we show that the gadget reaches positive risk in every gadget only if the corresponding clause is satisfied by the assignment.
+
+The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.  We enter the gadget with trace $\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$, i.e., the first observation has been matched by the initial state.
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. Thus, in every gadget, there is only one path that corresponds to a given trace and so they can be used interchangeably.
+State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, \bot$, respectively. We note that a path  reaches $s_{i,j}^\top$ if $\alpha(x_i) = \top$ and (analogously for $\bot$).
+From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. A path ends in $t$ only via a state $s'_{i,j}$, which is only possible if the path visits a state corresponding to a literal in the clause. Thus, (conditionally) reaching state $s'_{i,j}$ with positive conditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment.
+
+
+Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and set $\lambda = 1$:
+\begin{itemize}
+    \item
+          $\Sts = \{ s_{i,j}, s_{i,j}^\bot, s_{i,j}^\top,
+              s_{i,j}', s_{i,j}'^\bot, s_{i,j}'^\top
+              \mid i \in \{1, \dots, n+1 \},  j \in \{ 1, \dots, m \} \} \cup \{ s_\init \}$.
+    \item $\ptrans$ is given such that for all $i \in \{1,\dots, n\}, j \in \{1, \dots, m\}$:
+          \begin{itemize}
+              \item  $\ptrans(s_\init,s_{1,j}) = \frac{1}{m}$,
+              \item  $\ptrans(s_{i,j},s_{i,j}^\top) = \ptrans(s_{i,j},s_{i,j}^\bot) = \frac{1}{2}= \ptrans(s'_{i,j},s_{i,j}'^\top) = \ptrans(s_{i,j}',s_{i,j}'^
+                        \bot)$,
+              \item $\ptrans(s_{i,j}^\top,s'_{i+1,j}) = \indicator{x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\top,s_{i+1,j}) = \indicator{x_i \neq \ell_j^k \text{ for all k}}$,
+              \item $\ptrans(s_{i,j}^\bot,s'_{i+1,j}) = \indicator{\neg x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\bot,s_{i+1,j}) = \indicator{\neg x_i \neq \ell_j^k \text{ for all k}}$
+              \item $\ptrans(s'_{n+1,j}, t) = 1 = \ptrans(s_{n+1,j}, f)$
+          \end{itemize}
+    \item $\Obs = \{\top, \bot, \#\}$ and $\obsf(s_{i,j}^\top) = (s_{i,j}'^\top) = \top$,
+          $\obsf(s_{i,j}^\bot) = (s_{i,j}'^\bot) = \bot$,
+          $\obsf(s_{i,j}) = \obsf(s'_{i,j}) = \# = \obsf(s_\init) = \obsf(t) = \obsf(f)$.
+    \item $r(t) = 1$ and $r(s) = 0$ for all $s \in \Sts \setminus \{ t\}$.
+\end{itemize}
+The construction runs in polynomial time. The formal proof of its correctness follows the explanation above precisely.
+
 
 \section{Results from \alg Verification Experiments} \label{sec:resverify}
 We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each. \Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states,transitions), the number of observations, and the size of the DFA (states,transtitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.
