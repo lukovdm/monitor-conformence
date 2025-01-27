@@ -996,7 +996,7 @@ For the MQ, each trace must be unambigiously be defined as safe or unsafe: the M
 \begin{definition}\label{def:toverMQ}
     Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ safe is an arbitrary decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{jungesRuntimeMonitorsMarkov2021}.\sj{Forward filtering in HMMs should have a different citation as well. }\sj{Not urgent: Couldnt this be done with the techniques in section 3 as well (although inefficiently)?}\lm{Yes, you can create a policy from a trace and evaluate the induced MC.}
+Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{rabinerTutorialHiddenMarkov1989, jungesRuntimeMonitorsMarkov2021}.\sj{Not urgent: Couldn't this be done with the techniques in section 3 as well (although inefficiently)?}\lm{Yes, you can create a policy from a trace and evaluate the induced MC.}
 
 We use the verification described in \cref{sec:monver} to define the EQ.
 \begin{definition}\label{def:toverEQ}
@@ -1196,8 +1196,10 @@ We investigate scalability along different dimensions and identify the bottlenec
 
 \paragraph{Setup.}
 %We run the \alg verifier on the benchmarks as described above. 
-We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained half way the learning process, and the final correct monitor.
-For each monitor we (1)~verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$ and (2)~find the minimum in monitor risk and maximum out of monitor risk\sj{vague}.\sj{I wonder whether we really want to present case (2) in the main text. It is not solving any of our problem statements, it is typically harder, and it makes the table harder to read. We could still have that in the appendix.}
+We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained half way through the learning process, and the final correct monitor.
+For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
+
+%(2)~find the minimum in monitor risk and maximum out of monitor risk\sj{vague}.\sj{I wonder whether we really want to present case (2) in the main text. It is not solving any of our problem statements, it is typically harder, and it makes the table harder to read. We could still have that in the appendix.}
 %We refer to benchmark runs with short IDs that consist of a reference to the benchmark family and a counter, e.g., A-10 for the tenth \textsc{Airport} run.
 
 % lambda found afronden
@@ -1215,52 +1217,41 @@ For each monitor we (1)~verify correctness w.r.t.\ the same $\lambda_s, \lambda_
 % Tijd verdeling:
 % Tover tijd correspondeerd met model en monitor grote
 % PAYNT tijd lost NP probleem op en dus is lastig iets over te zeggen
-
+\lm{Fix table with new results and $\leq 1s$}
 \begin{table}[t]
     \begin{adjustbox}{max width=\linewidth}
         \begin{scriptsize}
-            \begin{tabular}{{@{}llrrrrrrrrrrrr@{}}}
+            \begin{tabular}{{@{}llrrrrrrrrrrr@{}}}
                 \toprule
-                                     &      & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                            \\
-                \cmidrule(lr){3-10}\cmidrule(lr){11-14}
-                                     &      & $\lambda_l$                   & $h$                      & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Trans (s) & PAYNT (s) & $\lambda^{found}$ \\
+                                     &               & \multicolumn{7}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                    \\
+                \cmidrule(lr){3-9}\cmidrule(lr){10-13}
+                                     &               & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Trans (s) & PAYNT (s) & $\lambda^{found}$ \\
                 \midrule
-                \textsc{AirportA-3}  & A-0  & \sfrac{3}{10}                 & 10                       & MA    & 45           & 113             & 18    & 25            & 450              & 0.92     & 0.31      & 0.41      & 0.94              \\
-                \textsc{AirportA-3}  & A-1  & -                             & 10                       & MA    & 45           & 113             & 18    & 25            & 450              & 6.24     & 0.31      & 5.73      & 1.00              \\
-                \textsc{AirportA-3}  & A-2  & \sfrac{3}{10}                 & 10                       & FA    & 45           & 113             & 18    & 25            & 450              & 0.95     & 0.31      & 0.43      & 0.08              \\
-                \textsc{AirportA-3}  & A-3  & -                             & 10                       & FA    & 45           & 113             & 18    & 25            & 450              & 1014.53  & 0.31      & 1014.02   & 0.01              \\
-                \textsc{AirportA-3}  & A-8  & \sfrac{3}{10}                 & 10                       & MA    & 45           & 113             & 18    & 128           & 2304             & 833.83   & 0.56      & 832.93    & -                 \\
-                \textsc{AirportA-3}  & A-9  & -                             & 10                       & MA    & 45           & 113             & 18    & 128           & 2304             & 788.22   & 0.56      & 787.31    & 0.30              \\
-                \textsc{AirportA-3}  & A-10 & \sfrac{3}{10}                 & 10                       & FA    & 45           & 113             & 18    & 128           & 2304             & 1143.18  & 0.53      & 1142.35   & -                 \\
-                \textsc{AirportA-3}  & A-11 & -                             & 10                       & FA    & 45           & 113             & 18    & 128           & 2304             & 1106.29  & 0.55      & 1105.43   & 0.30              \\
+                \textsc{AirportA-3}  & \textsc{A-0}  & 10                            & MA                       & 45           & 113             & 18    & 25            & 450              & 0.92     & 0.31      & 0.41      & 0.94              \\
+                \textsc{AirportA-3}  & \textsc{A-2}  & 10                            & FA                       & 45           & 113             & 18    & 25            & 450              & 0.95     & 0.31      & 0.43      & 0.08              \\
+                \textsc{AirportA-3}  & \textsc{A-8}  & 10                            & MA                       & 45           & 113             & 18    & 128           & 2304             & 833.83   & 0.56      & 832.93    & -                 \\
+                \textsc{AirportA-3}  & \textsc{A-1}0 & 10                            & FA                       & 45           & 113             & 18    & 128           & 2304             & 1143.18  & 0.53      & 1142.35   & -                 \\
                 \midrule
-                \textsc{Evade}       & E-20 & \sfrac{3}{10}                 & 9                        & MA    & 385          & 1473            & 325   & 328           & 106600           & 49.11    & 33.35     & 8.23      & -                 \\
-                \textsc{Evade}       & E-21 & -                             & 9                        & MA    & 385          & 1473            & 325   & 328           & 106600           & 50.67    & 33.39     & 8.20      & 0.27              \\
-                \textsc{Evade}       & E-22 & \sfrac{3}{10}                 & 9                        & FA    & 385          & 1473            & 325   & 328           & 106600           & 49.75    & 34.26     & 8.14      & -                 \\
-                \textsc{Evade}       & E-23 & -                             & 9                        & FA    & 385          & 1473            & 325   & 328           & 106600           & 50.18    & 33.36     & 7.88      & 0.30              \\
+                \textsc{Evade}       & \textsc{E-20} & 9                             & MA                       & 385          & 1473            & 325   & 328           & 106600           & 49.11    & 33.35     & 8.23      & -                 \\
+                \textsc{Evade}       & \textsc{E-22} & 9                             & FA                       & 385          & 1473            & 325   & 328           & 106600           & 49.75    & 34.26     & 8.14      & -                 \\
                 \midrule
-                \textsc{Icy-Driving} & I-34 & \sfrac{3}{10}                 & 3                        & FA    & 3            & 6               & 2     & 8             & 16               & 0.02     & 0.00      & 0.01      & -                 \\
-                \textsc{Icy-Driving} & I-35 & -                             & 3                        & FA    & 3            & 6               & 2     & 8             & 16               & 0.02     & 0.00      & 0.01      & 0.33              \\
+                \textsc{Icy-Driving} & \textsc{I-34} & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & 0.02     & 0.00      & 0.01      & -                 \\
 
-                \textsc{Icy-Driving} & I-14 & \sfrac{3}{10}                 & 25                       & FA    & 3            & 6               & 2     & 2             & 4                & 1225.78  & 0.01      & 1225.76   & -                 \\
-                \textsc{Icy-Driving} & I-15 & -                             & 25                       & FA    & 3            & 6               & 2     & 2             & 4                & 1173.95  & 0.01      & 1173.94   & 0.33              \\
+                \textsc{Icy-Driving} & \textsc{I-14} & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & 1225.78  & 0.01      & 1225.76   & -                 \\
             \end{tabular}
         \end{scriptsize}
     \end{adjustbox}
     \vspace{.2cm}
-    \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, learning threshold and horizon, whether we check for missed alarms of ralse alarms. We give the size of the HMM (states, transitions), the number of observations, and the size of the DFA (states, transitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in the $\lambda_l$ column indicate finding the extreme instead of verifying a bound. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
+    \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, learning threshold and horizon, whether we check for missed alarms of ralse alarms. We give the size of the HMM (states, transitions), the number of observations, and the size of the DFA (states, transitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
     \label{tab:verifysubest}
-\end{table}\sj{I would report times ${<}1 s$ as such, and not give such precise timings, unless your timings are that precise}
-\sj{The column $\lambda_l$ is not necessary?}
-
-\sj{Although I liked the two-question structure, I simplified it as we dont have that much space}
+\end{table}
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
 \sj{Todo self: say something about search space}
-We present our results in \Cref{tab:verifysubest}, which is a subset of a XX benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we  verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks E-20 to E-23\sj{can we give benchmark IDs another font?}. \sj{can we add the order of magnitude for their product?}\sj{Can we clarify the size of $\lang{\mc}$ (orders of magnitude?)}
-Benchmarks A-0 to A-3 reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find an counterexample, whereas A-8 to A-11 reflect verification of the same HMM with respect to a larger correct monitor. However, verifying an extreme bound can still be hard, as seen with A-2 compared to A-3. For such benchmarks, missed alarms seem harder to find than false alarms.
-Increasing the horizon significantly increases the runtime, even for small models, e.g., I-14/15 compared to I-34/35.
+We present our results in \Cref{tab:verifysubest}, which is a subset of a 336 benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20}/\textsc{E-22}. \lm{TODO: add magnitude of product (for now min=8, avg=3180.43, max=23858)}\lm{Results for family size now are min=2, avg=$10^{21}$, max=$10^{23}$}
+Benchmarks \textsc{A-0}/\textsc{A-2} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, whereas \textsc{A-8}/\textsc{A-10} reflect verification of the same HMM with respect to a larger correct monitor.
+Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-14} compared to \textsc{I-34}.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
 In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see Appendix\sj{fix that appendix, or scrap it :-)}, whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
 
@@ -1274,10 +1265,9 @@ We consider the necessity of EQs in the learning, the size of the learned, and t
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning}.
 %The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
-Before every EQ, conformance checking (max.\ 100 samples for $\lambda_s$ and 100 samples for $\lambda_u$, see \cref{sec:learning})\sj{What does it mean to run a sample for $\lambda_s$?}.
+Before every EQ, conformance checking (max.\ 100 samples using as threshold $\lambda_s$ and 100 samples with $\lambda_u$, see \cref{sec:learning}).
 As hyper-parameters, we investigate (1) $\lambda_l = 0.3, \lambda_s = 0.35, \lambda_u = 0.1$ and (2) $\lambda_s = \lambda_l = \lambda_u = 0.3$
-\footnote{The role of $\lambda_l$ was evaluated with sampling as can be seen in \Cref{sec:ressampling}.}.
-\sj{The footnote is vague}
+\footnote{The effect of $\lambda_l$ on the correctness of monitor produced by the baseline is evaluated in \Cref{sec:ressampling}.}.
 We compare with a baseline that does not use EQs, i.e., we use the MAT framework with only conformance checking (max.\ 100000 samples, cf.\ \cref{sec:learning}) with 100000 samples. Baselines with different numbers of samples are tested in \Cref{sec:ressampling}.
 %We only discuss the results of learning with $\lambda_s = \lambda_l = \lambda_u$ and with $\lambda_s \leq \lambda_l \leq \lambda_u$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.\sj{This makes things a bit complicated}
 
@@ -1316,14 +1306,14 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 
 
 \begin{figure}[t]
-    \begin{subfigure}{.24\linewidth}
+    \begin{subfigure}{.255\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .3cm}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
         \caption{\alg with $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:monsizes}
     \end{subfigure}\hfill
-    \begin{subfigure}{.24\linewidth}
+    \begin{subfigure}{.22\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
@@ -1344,12 +1334,11 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
     \end{subfigure}
     \caption{States in learned monitors and runtimes: \alg vs baseline.}
 \end{figure}
-\sj{I would simplify the visual of this plot and the other (and increase contrast) by only having black circle/cross for benchmarks.}
 
 \paragraph{How fast do we learn the monitors?}
-\sj{How many EQs do we need to learn a monitor?}\lm{Should I add this to the table?}
+\sj{How many EQs do we need to learn a monitor?}\lm{I added this to the table, but only for \alg, I don't know this for the baseline.}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
-We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. In particular, it tends to find counterexamples in the early stages much faster. This observation is independent of $\lambda_s = \lambda_u$ or $\lambda_s \neq \lambda_u$. In Appendix~?\lm{Add this infromation to a table}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
+We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. In particular, it tends to find counterexamples in the early stages much faster. This observation is independent of $\lambda_s = \lambda_u$ or $\lambda_s \neq \lambda_u$. In \Cref{sec:reslearn}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
 
 
 %
@@ -1462,6 +1451,11 @@ Questionable relevance
 \end{figure}
 
 
+\begin{scriptsize}
+    \input{images/plots/verify.tex}
+\end{scriptsize}
+
+
 \section{Results from \alg Learning Experiments}\label{sec:reslearn}
 \lm[inline]{TODO: write about plots}
 
@@ -1484,12 +1478,6 @@ Questionable relevance
 
 \begin{scriptsize}
     \input{images/plots/experiments.tex}
-\end{scriptsize}
-
-\section{Results from Verification Experiment}
-
-\begin{scriptsize}
-    \input{images/plots/verify.tex}
 \end{scriptsize}
 
 \section{Results from Baseline Sampling Count Experiment}\label{sec:ressampling}
