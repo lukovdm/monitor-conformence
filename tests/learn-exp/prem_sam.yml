@@ -14,10 +14,7 @@
   good_label: crash
   loader: pomdp
   learning_algs: 
-    - [verimon]
-  slack: 
-    - [0, 0]
-    - [0.2, 0.05]
+    - [sampling]
   use_exact: true
 
 - type: LearningExperiment
@@ -33,10 +30,7 @@
   good_label: empty
   loader: pomdp
   learning_algs: 
-    - [verimon]
-  slack: 
-    - [0, 0]
-    - [0.2, 0.05]
+    - [sampling]
   use_exact: true
 
 - type: LearningExperiment
@@ -51,10 +45,7 @@
     - 8
     - 9
   learning_algs: 
-    - [verimon]
-  slack: 
-    - [0, 0]
-    - [0.2, 0.05]
+    - [sampling]
   use_exact: true
 
 - type: LearningExperiment
@@ -66,10 +57,7 @@
   good_label: crash
   loader: pomdp
   learning_algs: 
-    - [verimon]
-  slack: 
-    - [0, 0]
-    - [0.2, 0.05]
+    - [sampling]
   use_exact: true
 
 - type: LearningExperiment
@@ -87,8 +75,5 @@
   good_label: crash
   loader: pomdp
   learning_algs: 
-    - [verimon]
-  slack: 
-    - [0, 0]
-    - [0.2, 0.05]
+    - [sampling]
   use_exact: true

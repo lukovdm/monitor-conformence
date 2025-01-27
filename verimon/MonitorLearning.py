@@ -206,7 +206,6 @@ class SamplingEqOracle(Oracle):
 
 
 class VerimonEqOracle(Oracle):
-
     def __init__(
         self,
         alphabet,
@@ -292,16 +291,16 @@ class VerimonEqOracle(Oracle):
             )
             self.filter_sul.threshold = self.threshold + self.fn_slack
             cex = self.eq_orcale.find_cex(hypothesis)
-            if cex is None or self._check_hyp_on_trace(
-                hypothesis, cex
+            if (
+                cex is None or self._check_hyp_on_trace(hypothesis, cex)
             ):  # We found a counter example but it is not a false negative, thus we ignore it
                 logger.debug(
                     f"Finding fp using eq oracle, threshold: {self.threshold - self.fp_slack}"
                 )
                 self.filter_sul.threshold = self.threshold - self.fp_slack
                 cex = self.eq_orcale.find_cex(hypothesis)
-                if cex is None or not self._check_hyp_on_trace(
-                    hypothesis, cex
+                if (
+                    cex is None or not self._check_hyp_on_trace(hypothesis, cex)
                 ):  # We found a counter example but it is not a false positive, thus we ignore it
                     logger.debug("No counter example found using eq oracle")
                     cex = None

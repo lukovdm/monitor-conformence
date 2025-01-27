@@ -13,6 +13,10 @@ from tabulate import SEPARATING_LINE, tabulate
 import numpy as np
 
 
+VERIFY_EXPERIMENTS = 336
+LEARN_EXPERIMENTS = 146
+
+
 def clean_dict(d):
     # If value is rational number, convert to float
     for k, v in d.items():
@@ -29,6 +33,28 @@ def clean_data(data):
     # Correctly interpret rational numebrs in data
     for d in data:
         clean_dict(d)
+
+
+def combine_sampling_and_verimon(data, equal_fields):
+    for d in data:
+        if "sampling" in d["experiment"]["learning_algs"]:
+            continue
+        for d2 in data:
+            if d == d2 or "sampling" not in d2["experiment"]["learning_algs"]:
+                continue
+            if all(
+                d["experiment"][field] == d2["experiment"][field]
+                for field in equal_fields
+            ):
+                if "sampling" in d2:
+                    d["sampling"] = d2["sampling"]
+                if "verimon" in d2:
+                    d["verimon"] = d2["verimon"]
+                d["experiment"]["learning_algs"] += d2["experiment"]["learning_algs"]
+                d2["ignore"] = True
+                break
+
+    return [d for d in data if "ignore" not in d]
 
 
 def prep_data_for_latex(data):
@@ -68,7 +94,10 @@ def add_symbol_color(data, verify=False, color_map="hsv"):
         "d",
     ]
     seed(42)
-    colors = plt.get_cmap(color_map)
+    if color_map is None:
+        colors = lambda x: "black"
+    else:
+        colors = plt.get_cmap(color_map)
 
     if verify:
         experiment_names = set(
@@ -116,12 +145,13 @@ def add_symbol_color(data, verify=False, color_map="hsv"):
     return symbols, colors
 
 
-def load_experiment_data(path):
+def load_experiment_data(path: str):
     json_files: list[str] = [
         f for f in os.listdir(path + "/json") if f.endswith(".json")
     ]
 
     experiment_data: list[dict] = []
+    unfished_count = 0
     for json_file in json_files:
         with open(os.path.join(path + "/json/", json_file), "r") as f:
             try:
@@ -140,6 +170,7 @@ def load_experiment_data(path):
             )
 
             if not data["finished"]:
+                unfished_count += 1
                 if "time" not in data:
                     data["time"] = {"total": 0}
                 if (
@@ -194,7 +225,9 @@ def load_experiment_data(path):
                     }
             experiment_data.append(data)
 
-    print(f"Loaded {len(experiment_data)} JSON files from {path}")
+    print(
+        f"Loaded {len(experiment_data) - unfished_count}/{len(experiment_data)}/{(VERIFY_EXPERIMENTS if 'verify' in path else LEARN_EXPERIMENTS) - len(experiment_data)} ({(len(experiment_data) - unfished_count) / (VERIFY_EXPERIMENTS if 'verify' in path else LEARN_EXPERIMENTS) * 100:.2f}%) JSON files from {path}"
+    )
     experiment_data.sort(
         key=lambda x: (x["experiment"]["name"], str(x["experiment"]["variant"]))
     )
@@ -246,9 +279,23 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["mc"]["mc_observations"],
             d["monitor"]["monitor_states"],
             d["monitor"]["monitor_transitions"],
-            d["result"]["time"] if "fake" not in d["result"] else "-",
-            d["result"]["product_time"] if "fake" not in d["result"] else "-",
-            d["result"]["paynt_time"] if "fake" not in d["result"] else "-",
+            (d["result"]["time"] if d["result"]["time"] >= 1 else r"\leq 1s")
+            if "fake" not in d["result"]
+            else "-",
+            (
+                d["result"]["product_time"]
+                if d["result"]["product_time"] >= 1
+                else r"\leq 1s"
+            )
+            if "fake" not in d["result"]
+            else "-",
+            (
+                d["result"]["paynt_time"]
+                if d["result"]["paynt_time"] >= 1
+                else r"\leq 1s"
+            )
+            if "fake" not in d["result"]
+            else "-",
             float(d["result"]["goal_threshold"])
             if "fake" not in d["result"] and d["result"]["goal_threshold"] is not None
             else "-",
@@ -266,13 +313,13 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 
 def generate_learn_table(data, save_figures=False, save_path="./", file_name="runtime"):
     preamble = r"""% Auto generated table
-\begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
+\begin{longtable}[c]{@{}llrrrrrrrrrrrrrrr@{}}
 % \caption{Table of all experiments with runtime and monitor states for baseline and \alg learning}
 % \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
 \toprule
- & & \multicolumn{6}{c}{Benchmark} & \multicolumn{4}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
-\cmidrule(lr){3-8}\cmidrule(lr){9-12}\cmidrule(lr){13-16}
- & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-16}
+ & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
 \endhead"""
 
@@ -281,7 +328,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
         "evade": r"\textsc{Evade}",
         "refuel": r"\textsc{Refuel}",
         "icy-driving": r"\textsc{Icy-Driving}",
-        "hidden_incentive": r"\textsc{Hidden-Incentive}",
+        "hidden_incentive": r"\textsc{Hidden-Incen.}",
         "snakes_ladders": r"\textsc{SnL}",
     }
     tab_data = [
@@ -294,7 +341,10 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
-            d["verimon"]["time"] if "fake" not in d["verimon"] else "-",
+            (d["verimon"]["time"] if d["verimon"]["time"] >= 1 else r"\leq 1s")
+            if "fake" not in d["verimon"]
+            else "-",
+            len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else "-",
             d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else "-",
             float(d["verimon"]["false_positive"])
             if "fake" not in d["verimon"]
@@ -302,7 +352,9 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             float(d["verimon"]["false_negative"])
             if "fake" not in d["verimon"]
             else "-",
-            d["sampling"]["time"] if "fake" not in d["sampling"] else "-",
+            (d["sampling"]["time"] if d["sampling"]["time"] >= 1 else r"\leq 1s")
+            if "fake" not in d["sampling"]
+            else "-",
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else "-",
             float(d["sampling"]["false_positive"])
             if "fake" not in d["sampling"]
@@ -785,7 +837,9 @@ def compare_thresholds_bar(
                 max_idx = thresh[1][j : j + bundle].index(
                     max(thresh[1][j : j + bundle])
                 )
-                exp_names.append(bottom_func(exp_data[j : j + bundle][max_idx]))
+                exp_names.append(
+                    "/".join([bottom_func(exp_data[k]) for k in range(j, j + bundle)])
+                )
                 found_bundled_thresholds[-1][0].append(
                     thresh[0][j : j + bundle][max_idx]
                 )
