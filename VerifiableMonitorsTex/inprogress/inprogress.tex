@@ -1192,7 +1192,7 @@ All experiments are run (using exact arithmetic) on a single thread of an AMD Ry
 We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the central example and \textsc{SnL} based on the game ``Snakes and Ladders''.
 While the existing benchmarks contain many observations, the new benchmarks only have a few different observations. All benchmarks are scalable.
 % We use benchmarks up to hundreds of states and thousands of transitions.
-Details are given in \Cref{sec:benchmarksdescr}.
+Details are given in \Cref{sec:benchmarksdescr}\lm{There is already much information about the benchmarks in the tables of verify and learn, is this still needed?}.
 Code, benchmarks, and logs will be publicly available via the artifact evaluation.
 
 \subsubsection{Efficiency of Monitor Verification}
@@ -1200,7 +1200,7 @@ We investigate scalability along different dimensions and identify the bottlenec
 
 \paragraph{Setup.}
 %We run the \alg verifier on the benchmarks as described above. 
-We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained half way through the learning process, and the final correct monitor.
+We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained halfway through the learning process, and the final correct monitor.
 For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
 
 %(2)~find the minimum in monitor risk and maximum out of monitor risk\sj{vague}.\sj{I wonder whether we really want to present case (2) in the main text. It is not solving any of our problem statements, it is typically harder, and it makes the table harder to read. We could still have that in the appendix.}
@@ -1246,18 +1246,18 @@ For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
         \end{scriptsize}
     \end{adjustbox}
     \vspace{.2cm}
-    \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, learning threshold and horizon, whether we check for missed alarms of ralse alarms. We give the size of the HMM (states, transitions), the number of observations, and the size of the DFA (states, transitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
+    \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, and the size of the DFA (states, transitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
     \label{tab:verifysubest}
 \end{table}
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
 \sj{Todo self: say something about search space}
-We present our results in \Cref{tab:verifysubest}, which is a subset of a 336 benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20}/\textsc{E-22}. \lm{TODO: add magnitude of product (for now min=8, avg=3180.43, max=23858)}\lm{Results for family size now are min=2, avg=$10^{21}$, max=$10^{23}$}
+We present our results in \Cref{tab:verifysubest}, which is a subset of the 336 benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20}/\textsc{E-22}. \lm{TODO: add magnitude of product (for now min=8, avg=3180.43, max=23858)}\lm{Results for family size now are min=2, avg=$10^{21}$, max=$10^{23}$}
 Benchmarks \textsc{A-0}/\textsc{A-2} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, whereas \textsc{A-8}/\textsc{A-10} reflect verification of the same HMM with respect to a larger correct monitor.
 Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-14} compared to \textsc{I-34}.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
-In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see Appendix\sj{fix that appendix, or scrap it :-)}, whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
+In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time\lm{Is it polynomial, because the plot is in log scale, so wouldn't that make it exponential. (Maybe I am just wrong)} in the size of the input (see \Cref{sec:resverify}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
 
 %\paragraph{What steps are most expensive?}
 %The time spent to verify a monitor can mostly be split up in time to apply the transformation from \cref{sec:monver}, and time spent to verify the created colored MDP using PAYNT. Verifying a colored MDP is an NP-complete problem, and its runtime is heavily dependent on the internal structures and thresholds used. From \cref{tab:verifysubest}, the \textsc{Evade} benchmarks are comparably large but take only around eight seconds to verify by PAYNT, where A-10 and A-11 are much smaller, but take around a thousand seconds to verify. The transformation step does seem to increase if the size of the HMM or the monitor increases as can be seen in \cref{fig:sizevsprod}. But this again does differ between benchmarks.
@@ -1310,27 +1310,27 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 
 
 \begin{figure}[t]
-    \begin{subfigure}{.255\linewidth}
+    \begin{subfigure}{.25\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .3cm}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
         \caption{\alg with $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:monsizes}
     \end{subfigure}\hfill
-    \begin{subfigure}{.22\linewidth}
+    \begin{subfigure}{.225\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
         \caption{\alg with $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:monsizens}
     \end{subfigure}
-    \begin{subfigure}{.24\linewidth}
+    \begin{subfigure}{.258\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_with_slack.pgf}}
         \caption{Runtime comparison, $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:runtime-ws-comp}
     \end{subfigure}\hfill
-    \begin{subfigure}{.24\linewidth}
+    \begin{subfigure}{.258\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_no_slack.pgf}}
         \caption{Runtime comparison, $\lambda_s=\lambda_l=\lambda_u$}
@@ -1432,9 +1432,10 @@ Questionable relevance
 
 \appendix
 
-\section{Description of benchmarks}\label{sec:benchmarksdescr}
+% \section{Description of benchmarks}\label{sec:benchmarksdescr}
 
 \section{Results from \alg Verification Experiments} \label{sec:resverify}
+We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each. \Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states,transitions), the number of observations, and the size of the DFA (states,transtitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.
 
 
 \begin{figure}[t]
@@ -1460,16 +1461,24 @@ Questionable relevance
 \end{scriptsize}
 
 
-\section{Results from \alg Learning Experiments}\label{sec:reslearn}
-\lm[inline]{TODO: write about plots}
-
-\begin{figure}
+\section{Results from Learning Experiments}\label{sec:reslearn}
+\begin{figure}[t]
     \resizebox{\linewidth}{!}{
         \input{images/plots/verimon_times.pgf}}
     \caption{Runtime division over steps in \alg learning. Empty bars are HMMs for which learning did not finish.}
     \label{fig:runtimediv}
 
 \end{figure}
+We present the complete results for the Learning experiments. \Cref{fig:runtimediv} contains the division of the runtime during \alg learning into its component parts. We split the runtime in the following sections:
+\begin{description}
+    \item[PAYNT] Time spent by PAYNT verifying colored MDPS
+    \item[L$^\star$] Time spent by the L$^\star$ algorithm creating a hypothesis. Does include time spent on MQs.
+    \item[Transformation] Time spent transforming HMMs and monitors into colored MDPs for PAYNT.
+    \item[Conformance] Time spent on conformance testing during the EQs.
+    \item[Other] Any time not spent by the above processes.
+\end{description}
+
+\Cref{fig:legend} contains the symbol legend for all learning and verification experiment figures.
 
 \begin{figure}
     \centerline{
@@ -1480,12 +1489,19 @@ Questionable relevance
     \label{fig:legend}
 \end{figure}
 
+\Cref{tab:fulllearnexp} contains the full results of the learning experiments. The columns give the family name and ID. They also list the threshold parameters and the horizon. We report the size of the HMM (states, transitions, number of observations). Furthermore, we detail the results of \alg learning. We give the total runtime for the learning procedure. We also show the amount of learning rounds needed and the number of states in the learned monitor. Additionally, we present the found minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor. Lastly, we detail the results of the baseline learning method. We again list the amount of time spent, the number of states in the learned monitor, and the minimum and maximum threshold as before.
+
+Whenever either the \alg columns of a row or the baseline columns of a row only contain dashes, this method either went over the 24-hour timeout, or used more than 15 GiB of memory.
+
 \begin{scriptsize}
     \input{images/plots/experiments.tex}
 \end{scriptsize}
 
 \section{Results from Baseline Sampling Count Experiment}\label{sec:ressampling}
+We evaluate the impact of the learning threshold $\lambda_l$ and the amount of samples used during conformance testing for the baseline model. \Cref{fig:samplingn} contains the minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor for
+$\lambda_l \in \{0.05, 0.2, 0.4\}$ and sampling counts in $\{100,1000,10000,100000\}$. All combinations where evaluated on \textsc{AiportB-3} and \textsc{AirportB-7}.
 
+Using $10000$ samples and $100000$ samples both had the same number of missed alarms. However, $10000$ Samples had more false alarms then $100000$ samples. The learning threshold seemed to have no effect on the correctness of the learned monitors.
 \begin{figure}[h]
     \begin{subfigure}{.5\linewidth}
         \resizebox{\linewidth}{!}{
