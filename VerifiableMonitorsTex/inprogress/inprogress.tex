@@ -58,6 +58,9 @@
 
 \newcommand{\ccSched}{\Sigma_c}
 
+\newcommand{\EQ}{\operatorname{EQ}}
+\newcommand{\MQ}{\operatorname{MQ}}
+
 \renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}}
 \usetikzlibrary{automata, positioning, arrows.meta, fit}
 \tikzset{
@@ -977,8 +980,10 @@ We modify the transformation from \cref{thm:maintheorem} such that it solves the
     We reuse the transformation from \cref{thm:maintheorem} with the following modifications. We no longer take the complement of the monitor. Instead of doing reachability on the alarm state, we instead do reachability on the safe state.
 \end{proof}
 
-\section{Learning Correct Monitors}\label{sec:learning}\lm{Maybe refrence \cref{prob:Learn} somewhere here.}
-We now describe how to \emph{learn} correct monitors, by combining the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} and the verification approach above. %This combination needs only minor glue. 
+\section{Learning Correct Monitors}\label{sec:learning}
+We now describe how to \emph{learn} correct monitors, by combining the automata learning framework based on a Minimally Adequate Teacher (MAT) \cite{DBLP:journals/iandc/Angluin87} and the verification approach above.
+\lm{Maybe refrence \cref{prob:Learn} somewhere here.}
+%This combination needs only minor glue. 
 %We furthermore discuss some improvements that bridge the gap between common assumptions in MAT automata learning and our monitor setup\sj{is this still true? I havent seen anything about unrolling etc}.
 
 \paragraph{MAT framework.}
@@ -994,23 +999,22 @@ To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a hori
 For the MQ, each trace must be unambigiously be defined as safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}. However, if a trace has a risk between $\lambda_s$ and $\lambda_u$, the trace is neither safe nor unsafe.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}.
 % for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
 \begin{definition}\label{def:toverMQ}
-    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  MQ$_{\lambda_l}$ is a function such that  MQ$_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ safe is an arbitrary decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
+    Given any trace $\tau \in \Obs^\star$, and a horizon $h$, membership query  $\MQ_{\lambda_l}$ is a function such that $\MQ_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ safe is an arbitrary decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function for MQ_$_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{rabinerTutorialHiddenMarkov1989, jungesRuntimeMonitorsMarkov2021}.\sj{Not urgent: Couldn't this be done with the techniques in section 3 as well (although inefficiently)?}\lm{Yes, you can create a policy from a trace and evaluate the induced MC.}
+Such a function for $\MQ_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \cite{rabinerTutorialHiddenMarkov1989, jungesRuntimeMonitorsMarkov2021}.\sj{Not urgent: Couldn't this be done with the techniques in section 3 as well (although inefficiently)?}\lm{Yes, you can create a policy from a trace and evaluate the induced MC.}
 
 We use the verification described in \cref{sec:monver} to define the EQ.
 \begin{definition}\label{def:toverEQ}
-    Given a HMM $\mc$, and a monitor $\dfa$, an EQ$_{\lambda_s, \lambda_u}$ is a function $g$\sj{give the return type (true or trace)} such that $g^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). And returns a counterexample trace if $\dfa$ is not correct.\sj{Be more specific, it is either a missed alarm or a false alarm?}
-\end{definition}\lo{Why not let EQ$_{\lambda_s, \lambda_u}$ be the function instead of $g$?}\sj{agree}
-The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}. \sj{no need to repeat these steps, so i commented out the next line}
-%We first apply the transformation in order to create a colored MDP problem. Which is then solved using PAYNT. If a false alarm or missed alarm trace is found, it is returned as a counter example.
+    Given a HMM $\mc$, and a monitor $\dfa$, an $\EQ_{\lambda_s, \lambda_u}$ is a function $\EQ_{\lambda_s, \lambda_u}(\dfa)\in\{\top,\bot\}$ such that $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}). While returns the missed alarm or false alarm trace for an incorrect $\dfa$.
+\end{definition}
+The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}.
 
 \begin{lemma}
-    Given a MAT with an EQ$_{\lambda_s, \lambda_u}$ and an MQ$_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
+    Given a MAT with a $\EQ_{\lambda_s, \lambda_u}$ and a $\MQ_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
 \end{lemma}
 \begin{proof}
-    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by MQ$_{\lambda_l}$ it cannot be given as a counterexample by EQ$_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, MQ$_{\lambda_l}$ and EQ$_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to EQ$_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
-\end{proof}\lm{This is a bit short through the corner. But don't know how detailed to be.}
+    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by $\MQ_{\lambda_l}$ it cannot be given as a counterexample by $\EQ_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, $\MQ_{\lambda_l}$ and $\EQ_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to $\EQ_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
+\end{proof}
 When $\lambda_s < \lambda_u$, the EQ has an inconclusive area given by the interval $(\lambda_s, \lambda_u)$.
 This means that our EQ strictly speaking does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}(\textbf{Q4})\lm{We no longer have the questions, just refrence the section now?}.
 
