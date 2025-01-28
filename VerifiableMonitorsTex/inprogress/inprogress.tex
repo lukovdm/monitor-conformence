@@ -62,6 +62,7 @@
 \newcommand{\MQ}{\operatorname{MQ}}
 
 \renewcommand{\paragraph}[1]{\smallskip\noindent\emph{#1}}
+\spnewtheorem*{proofoutline}{Proof Sketch}{\itshape}{\rmfamily}
 \usetikzlibrary{automata, positioning, arrows.meta, fit}
 \tikzset{
     %->, % makes the edges directed
@@ -465,7 +466,7 @@ Finally, the conditional probability on a trace $\tau\in\lang{\mc}$ is defined u
 $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}$.
 
 \begin{example}
-    We consider the HMM from \cref{fig:centralhmm}. The probability $\Prob(q_c,q_i,q_i\mid\dry, \icy, \icy)$ is $\sfrac{\Prob(\dry, \icy, \icy\mid q_c,q_i,q_i)\cdot \Prob(q_c,q_i,q_i)}{\Prob(\dry, \icy, \icy)}$. $\Prob(\dry, \icy, \icy\mid q_c,q_i,q_i)$ is 1, and $\Prob(q_c,q_i,q_i)$ is $\sfrac{9}{40}$. The sum of all paths which observe $\dry, \icy, \icy$ is $\sfrac{11}{20}$. Thus, the total probability of $q_c,q_i,q_i$ given $\dry, \icy, \icy$ is $\sfrac{9}{22}$.
+    We consider the HMM from \cref{fig:centralhmm}. The conditional probability $\Prob(q_c,q_i,q_i\mid~\dry, \icy, \icy)$ is $\sfrac{\Prob(\dry, \icy, \icy\mid~q_c,q_i,q_i)\cdot \Prob(q_c,q_i,q_i)}{\Prob(\dry, \icy, \icy)}$. $\Prob(\dry, \icy, \icy\mid q_c,q_i,q_i)$ is 1, and $\Prob(q_c,q_i,q_i)$ is $\sfrac{9}{40}$. The sum of all paths which observe $\dry, \icy, \icy$ is $\sfrac{11}{20}$. Thus, the total probability of $q_c,q_i,q_i$ given $\dry, \icy, \icy$ is $\sfrac{9}{22}$.
 \end{example}
 
 
@@ -557,9 +558,7 @@ We present our approach to the monitor correctness problem, which reduces checki
 
 
 \subsection{Relating Missed Alarms with Color-Consistent Policies}\label{ssec:maintheorem}
-Policy synthesis for an MDP for a property $\phi$ thus entails finding a policy for an MDP such that the induced MC entails $\phi$.
-A policy for MDP $\mc$ is a function $\sigma\colon \Pi_{fin}^\mc \to \Act$, which selects actions for every finite path. An MDP and a policy induce an MC.
-\sj{Moved these sentences down, need to integrate them?}
+A policy for MDP $\mc$ is a function $\sigma\colon \Pi_{fin}^\mc \to \Act$, which selects actions for every finite path. An MDP and a policy induce an MC. Policy synthesis for a MDP for a property $\phi$ entails finding a policy for an MDP such that the induced MC entails $\phi$.
 
 Colored (Labelled) MDPs are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition simplifies the notion of colored MDPs from \cite{}, and suffices for our needs:
 \begin{definition}[Colored MDP]\label{def:colMDP}
@@ -652,6 +651,9 @@ The following lemma states the correctness of the transformation and follows dir
     Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
     \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
 \end{lemma}
+\begin{proofoutline}
+    By the product construction, there exists a bijective mapping between paths in $M_{\times\overline{\dfa}}$ and paths in the monitor $\dfa$ and HMM $\mc$. If the final state of a path is in $F$, the mapped path is not accepted by the monitor. The risk of a path in $M_{\times\overline{\dfa}}$ has the same risk as the mapped path in $\mc$. Thus, if a trace is a witness for the CTP problem, it is a missed alarm for $\mc$ and $\dfa$.
+\end{proofoutline}
 
 %
 %We transform the HMM using the Product Markov Chain construction from \citeauthor{baierPrinciplesModelChecking2008} \cite{baierPrinciplesModelChecking2008}.
@@ -703,7 +705,7 @@ The following lemma states the correctness of the transformation and follows dir
         \draw[->] (alarm) edge[loop right] node[right] {$1$} ();
         \draw[->] (ignore) edge[loop right] node[right] {$1$} ();
     \end{tikzpicture}
-    \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \atop \langle s,j\rangle \right\rangle$.}
+    \caption{ACTP, brown and cyan are \dry and \icy observations. Black is the new \en observation, and gray is the new \ig observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \langle s,j\rangle \right\rangle$.}
     \label{fig:actp}
 \end{figure}
 We further simplify the problem by unrolling the model along the horizon. We also eliminate the risk function.
@@ -718,17 +720,17 @@ We further simplify the problem by unrolling the model along the horizon. We als
     \label{def:acyclichmm}
     The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $F \subseteq \Sts$ is the HMM $\mc_{\blacktriangleright h} = (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf')$, with the new transition and observation function:
     \begin{align*}
-        \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle)(\langle i+1, s'\rangle)          & = \ptrans(s)(s')                                                                       \\
+        \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle)(\langle i+1, s'\rangle)          & = \ptrans(s)(s')                                                                        \\
         \ptrans'(\langle h, s\rangle)\left(\left\langle h+1, t\right\rangle\right)                         & = \begin{cases}
-                                                                                                                   \frac{r(s)}{\max_{s\in\Sts} r(s)}     & \text{if } s \in F \land t = \talrm  \\
-                                                                                                                   1 - \frac{r(s)}{\max_{s\in\Sts} r(s)} & \text{if } s \in F \land t = \tsafe  \\
-                                                                                                                   1                                     & \text{if } s \notin F \land t = \tig \\
+                                                                                                                   \frac{r(s)}{\max_{s\in\Sts} r(s)}     & \text{if } s \in F \land t = \talrm,  \\
+                                                                                                                   1 - \frac{r(s)}{\max_{s\in\Sts} r(s)} & \text{if } s \in F \land t = \tsafe,  \\
+                                                                                                                   1                                     & \text{if } s \notin F \land t = \tig, \\
                                                                                                                    0                                     & \text{otherwise}
                                                                                                                \end{cases} \\
-        \ptrans'\left(\left\langle h+1, t\right\rangle\right)\left(\left\langle h+1, t\right\rangle\right) & = 1                                                                                    \\
-        \obsf'(\langle i, s\rangle)                                                                        & = \obsf(s)                                                                             \\
+        \ptrans'\left(\left\langle h+1, t\right\rangle\right)\left(\left\langle h+1, t\right\rangle\right) & = 1                                                                                     \\
+        \obsf'(\langle i, s\rangle)                                                                        & = \obsf(s)                                                                              \\
         \obsf'(\langle h+1, t\rangle)                                                                      & = \begin{cases}
-                                                                                                                   \en & \text{if } t \in \{\talrm, \tsafe\} \\
+                                                                                                                   \en & \text{if } t \in \{\talrm, \tsafe\}, \\
                                                                                                                    \ig & \text{if } t = \tig
                                                                                                                \end{cases}
     \end{align*}
@@ -737,7 +739,7 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 
 \begin{lemma}
     \label{lem:toactp}
-    Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_s$, $\exists\lambda\in(0,1]$:
+    Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_s$, there exists a $\lambda\in(0,1]$ such that:
     \[ \exists \tau \in \mathsf{CTP}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
     where $z_\mathsf{end}$ is the final observation and $\talrm$ is the alarm state.\sj{I wonder whether we should simplify notation on the right hand side. I am not too fond of the $z$ and $s_a$ symbols. }
 
@@ -844,8 +846,8 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
     \begin{align*}
         \ptrans'(\langle i, s\rangle, z)(\langle j, q\rangle) :=
         \begin{cases}
-            \ptrans'(\langle i, s\rangle)(\langle j, q\rangle)                                                                              & \text{if } \obsf(\langle j, q\rangle) = z \text{,} \\
-            \sum_{(\langle k, q'\rangle)\in S' \mid \obsf(\langle k, q'\rangle) \neq z} \ptrans'(\langle i, s\rangle)(\langle k, q'\rangle) & \text{if } (\langle j, q\rangle) = \iota  \text{,} \\
+            \ptrans'(\langle i, s\rangle)(\langle j, q\rangle)                                                                              & \text{if } \obsf(\langle j, q\rangle) = z, \\
+            \sum_{(\langle k, q'\rangle)\in S' \mid \obsf(\langle k, q'\rangle) \neq z} \ptrans'(\langle i, s\rangle)(\langle k, q'\rangle) & \text{if } (\langle j, q\rangle) = \iota , \\
             0                                                                                                                               & \text{otherwise}
         \end{cases}
     \end{align*}
@@ -875,6 +877,9 @@ Which is solved using PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
     Given an HMM $\mc$, horizon $h$, alarm states $F$ and threshold $\lambda$:
     \[  \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda, \]
 \end{lemma}\lm{Fix hbox}
+\begin{proofoutline}
+    We define a bijective map between finite paths $\pi$ in $\mc_{\blacktriangleright h}$ and a set $X$ in the partition of the infinite paths in the induced MC by $\sigma$ in $\mdp_{\gtrdot h}$. The map is defined such that $\pi$ followed by the infinite sequence of $T$ is the postfix for every path in $X$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between trace consistent policies and traces, we can show that $\Prob^{\mdp_{\gtrdot h}}_{\sigma_\tau}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid t(\sigma_\tau) \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold, and similarly using $t^{-1}$ in the other direction.
+\end{proofoutline}
 
 \begin{corollary}
     There exists a map $t(\sigma_\tau) = \tau$ which, given a trace consistent policy $\sigma_\tau$, finds its associated trace $\tau$.
@@ -1112,12 +1117,12 @@ The lemma holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem f
     \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
 \end{figure}
 
-The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$. 
-We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. 
-We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: 
-That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$. 
+The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
+We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$.
+We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}:
+That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$.
 The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.
-A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause. 
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause.
 
 
 
@@ -1343,6 +1348,29 @@ We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = 
 %\Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} contain the runtime of \alg learning compared to the baseline, when running with and without a gray area. The \textsc{Icy-Driving} ($\blacktriangleright$), \textsc{Evade} ($\blacksquare$), and \textsc{Airport} ($\bullet$), are generally faster when run with a gray area. In other benchmarks, adding a gray area has little effect on the runtime. A few HMMs were much faster to learn when using a gray area, one of these is the brown \textsc{Icy-Driving} HMM.
 
 \section{Related}
+This work builds on previous research into model-based runtime verification with partial observability and probabilities. There are two major directions runtime verification has been taken. (1)~Create a HMM of the system and use state estimation to estimate in which state in the HMM the system is. (2)~Learn some monitor on the system directly. We will discuss both these approaches.
+
+\paragraph{State estimation}
+State estimation for stochastic systems was first studied where the system is the HMM \cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, and extend to hybrid models \cite{sistlaRuntimeMonitoringStochastic2012}. The Premise tool extends this to MDPs and details state estimation with risk for HMMs (Filtering) \cite{jungesRuntimeMonitorsMarkov2021}. Filtering is the basis the membership queries in our learning procedure.
+
+Runtime verification using state estimation is also studied for black box systems. The Prevent tool \cite{babaeeEmphPreventPredictiveRunTime2018} learns a HMM from a set of traces \lm{Should I say something about the guarantees of prevent}. At runtime the most likely path is estimated. This was improved in \cite{babaeeAcceleratedLearningPredictive2019} to learn a HMM faster by focussing on rare events\lm{Vague}.
+
+This is also extended to probabilistic automata\cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification. The monitors are conservative if the model is\lm{Explain conservative?}.
+
+\paragraph{Active learning}
+Learning monitors using active learning has been done previously. \cite{jungesActiveLearningRuntime2025} uses active learning on sytems modeled by MDPs. Membership queries are done using the filtering approach of Premise, while equivalence queries are done using conformance checking. Thus, they only have a statistical guarantee on the correctness of the monitor.
+
+\cite{cairoliNeuralPredictiveMonitoring2021} learns a neural network monitor using active learning. They apply this to a system with noisy partial observability.
+
+\paragraph{Correctness of monitors}
+A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
+
+\paragraph{Model checking of conditional probabilities}
+Model checking on conditional probabilities was first\lm{Where they the first?} investigated in \cite{baierComputingConditionalProbabilities2014}. They condition on a reachability property instead of a trace. Both \cite{badingsCTMCsImpreciselyTimed2024} and \cite{jungesRuntimeMonitorsMarkov2021} condition the model on a specific piece of memory. However, they don't allow the model checker to find the maximal evidence based on a property.
+
+\lm{I don't know where to mention PAYNT}
+
+\lm[inline]{Color coded papers, green is included, orange is not relevant, black is undecided}
 \begin{itemize}
     \item LTLf
     \item Predictors or so by Ziemek et al.
@@ -1350,47 +1378,47 @@ We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = 
     \item Computing conditional probabilities (About reachability conditionals, not ending conditionals)
 \end{itemize}
 
-Theorectical results used in transformation or learning
+Theoretical results used in transformation or learning
 \begin{itemize}
-    \item \citeauthor{baierComputingConditionalProbabilities2014} \cite{baierComputingConditionalProbabilities2014} Conditional probabilities, \citeauthor{badingsCTMCsImpreciselyTimed2024} \cite{badingsCTMCsImpreciselyTimed2024} also contains conditioning on evidence, same as \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021}. However, they all condition on a specific set of evidence, they don't allow the model checker to choose which evidence to condition on.\lm{This is a novel idea? Letting the model checker choose which evidence to condition on?}
+    \item {\color{green}\citeauthor{baierComputingConditionalProbabilities2014} \cite{baierComputingConditionalProbabilities2014} Conditional probabilities, \citeauthor{badingsCTMCsImpreciselyTimed2024} \cite{badingsCTMCsImpreciselyTimed2024} also contains conditioning on evidence, same as \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021}. However, they all condition on a specific set of evidence, they don't allow the model checker to choose which evidence to condition on.\lm{This is a novel idea? Letting the model checker choose which evidence to condition on?}}
     \item \citeauthor{andriushchenkoPAYNTToolInductive2021} \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
 \end{itemize}
 
 Monitoring on HMMs\lm{Denk dat dit relevante papers zijn uit de premise paper, maar mijn brein is wat op}
 \begin{itemize}
-    \item \citeauthor{sistlaMonitoringTemporalProperties2008} \cite{sistlaMonitoringTemporalProperties2008}
-    \item \citeauthor{stollerRuntimeVerificationState2012} \cite{stollerRuntimeVerificationState2012}
-    \item \citeauthor{wilcoxRuntimeVerificationStochastic2010} \cite{wilcoxRuntimeVerificationStochastic2010}
-    \item \citeauthor{sistlaRuntimeMonitoringStochastic2012} \cite{sistlaRuntimeMonitoringStochastic2012}
-    \item \citeauthor{cimattiAssumptionBasedRuntimeVerification2019} \cite{cimattiAssumptionBasedRuntimeVerification2019}
-    \item \citeauthor{SelectiveMonitoringScienceDirect} \cite{SelectiveMonitoringScienceDirect}
-    \item \citeauthor{wooRealTimeMonitoringUncertain2007} \cite{wooRealTimeMonitoringUncertain2007}
+    \item {\color{green}\citeauthor{sistlaMonitoringTemporalProperties2008} \cite{sistlaMonitoringTemporalProperties2008}}
+    \item {\color{green}\citeauthor{stollerRuntimeVerificationState2012} \cite{stollerRuntimeVerificationState2012}}
+    \item {\color{green}\citeauthor{wilcoxRuntimeVerificationStochastic2010} \cite{wilcoxRuntimeVerificationStochastic2010}}
+    \item {\color{green}\citeauthor{sistlaRuntimeMonitoringStochastic2012} \cite{sistlaRuntimeMonitoringStochastic2012}}
+    \item {\color{green}\citeauthor{cimattiAssumptionBasedRuntimeVerification2019} \cite{cimattiAssumptionBasedRuntimeVerification2019}}
+    \item {\color{orange}\citeauthor{SelectiveMonitoringScienceDirect} \cite{SelectiveMonitoringScienceDirect}}
+    \item {\color{orange}\citeauthor{wooRealTimeMonitoringUncertain2007} \cite{wooRealTimeMonitoringUncertain2007}}
 \end{itemize}
 
 Learn a monitor using AL
 \begin{itemize}
-    \item \citeauthor{jungesActiveLearningRuntime2025} \cite{jungesActiveLearningRuntime2025} Use AL to learn decision trees. Verify them using conformance testing.
-    \item \citeauthor{cairoliNeuralPredictiveMonitoring2021} \cite{cairoliNeuralPredictiveMonitoring2021} Use AL to learn a neural network monitor.
+    \item {\color{green}\citeauthor{jungesActiveLearningRuntime2025} \cite{jungesActiveLearningRuntime2025} Use AL to learn decision trees. Verify them using conformance testing.}
+    \item {\color{green}\citeauthor{cairoliNeuralPredictiveMonitoring2021} \cite{cairoliNeuralPredictiveMonitoring2021} Use AL to learn a neural network monitor.}
 \end{itemize}
 
-Learn a HMM, then do simple reachability to find the probability of error
+Learn a HMM, then do state estimation/simple reachability to find the probability of error
 \begin{itemize}
-    \item \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021} Premise paper
-    \item \citeauthor{babaeeEmphPreventPredictiveRunTime2018} \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.
-    \item \citeauthor{babaeeAcceleratedLearningPredictive2019} \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?
-    \item \citeauthor{cleavelandConservativeSafetyMonitors2023} \cite{cleavelandConservativeSafetyMonitors2023} Model a PA and store risk for each state in PA. Use state estimation at runtime to monitor.
+    \item {\color{green}\citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021} Premise paper}
+    \item {\color{green} \citeauthor{babaeeEmphPreventPredictiveRunTime2018} \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.}
+    \item {\color{green}\citeauthor{babaeeAcceleratedLearningPredictive2019} \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?}
+    \item {\color{green}\citeauthor{cleavelandConservativeSafetyMonitors2023} \cite{cleavelandConservativeSafetyMonitors2023} Model a PA and store risk for each state in PA. Use state estimation at runtime to monitor.}
 \end{itemize}
 
 Correctness of monitors
 \begin{itemize}
-    \item \citeauthor{acetoProbabilisticMonitorability2022} \cite{acetoProbabilisticMonitorability2022} Defines soundness and completeness for monitors in terms of some property. Thus defines some correctness for monitors. Does not include a gray area. It does include a margin of error.
+    \item {\color{green}\citeauthor{acetoProbabilisticMonitorability2022} \cite{acetoProbabilisticMonitorability2022} Defines soundness and completeness for monitors in terms of some property. Thus defines some correctness for monitors. Does not include a gray area. It does include a margin of error.}
 \end{itemize}
 
 Questionable relevance
 \begin{itemize}
     \item \citeauthor{sanchezSurveyChallengesRuntime2019} \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
     \item \citeauthor{zolfagharianSMARLASafetyMonitoring2025} \cite{zolfagharianSMARLASafetyMonitoring2025} SMARLA: Machine learned monitor for RL algorithms.
-    \item \citeauthor{henzingerMonitoringAlgorithmicFairness2023} \cite{henzingerMonitoringAlgorithmicFairness2023} Monitor which evaluates fairness not safety.
+    \item {\color{orange} \citeauthor{henzingerMonitoringAlgorithmicFairness2023} \cite{henzingerMonitoringAlgorithmicFairness2023} Monitor which evaluates fairness not safety. Uses Randomized register monitors (does not seem relevant).}
 \end{itemize}
 % Wie heeft premise geciteerd
 
@@ -1412,6 +1440,12 @@ Questionable relevance
 \appendix
 
 % \section{Description of benchmarks}\label{sec:benchmarksdescr}
+
+\section{Proof Outlines}
+Proof sketch of \cref{lem:toactp}.
+\begin{proofoutline}
+    We choose $\lambda = \sfrac{\lambda_s}{\max_{s\in S}r(s)}$. Both directions follow from applying \cref{def:CTPdecprob} and defining a bijective mapping $f$ between paths in $\mc_{CTP}$ and $\mc_{\blacktriangleright h}$ such that $\Prob^{\mc_{CTP}}(\pi) = \Prob^{\mc_{\blacktriangleright h}}(f(\pi))$. Then, it follows that \ldots \lm{TODO: Finish this}
+\end{proofoutline}
 
 \section{Construction for NP-hardness/APX-hardness}
 \label{app:complexity}
