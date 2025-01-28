@@ -1030,9 +1030,9 @@ Verifying whether a trace is a false or missed alarm can be done in polynomial t
 To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}. As a solution to the monitor co-verification problem solves the CTP problem (using a trivial monitor), this implies NP-hardness of the former problem.
 \begin{lemma}
     \label{lem:ctpdecnphard}
-    The CTP Decision Problem is NP-hard.
+    The CTP Decision Problem is (strongly) NP-hard.
 \end{lemma}
-The lemma holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem from 3CNF, i.e., the problem of satisfiability of a 3CNF formula. We illustrate the construction briefly and provide details in \cref{app:complexity}.
+The lemma holds even for acyclic HMMs. We reduce the problem from 3CNF, i.e., the problem of satisfiability of a 3CNF formula. We illustrate the construction briefly and provide details in \cref{app:complexity}.
 
 \begin{figure}[t]
     \begin{subfigure}{0.13\textwidth}
@@ -1110,7 +1110,7 @@ The lemma holds even for $\lambda = 1$ and acyclic HMMs. We reduce the problem f
     \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
 \end{figure}
 
-The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
+We construct HMM $\mc_\varphi$ from 3CNF $\varphi$ such that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In particular, that trace exists iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
 We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$.
 We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}:
 That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$.
@@ -1234,7 +1234,7 @@ We present our results in \Cref{tab:verifysubest}, which is a subset of the 336 
 Benchmarks \textsc{A-0}/\textsc{A-2} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, whereas \textsc{A-8}/\textsc{A-10} reflect verification of the same HMM with respect to a larger correct monitor.\sj{Generally, I think sets of three are better to see a trend (small, medium, large sized)}
 Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-14} compared to \textsc{I-34}.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
-In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time\lm{Is it polynomial, because the plot is in log scale, so wouldn't that make it exponential. (Maybe I am just wrong)} in the size of the input (see \Cref{sec:resverify}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
+In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time\lm{Is it polynomial, because the plot is in log scale, so wouldn't that make it exponential. (Maybe I am just wrong)}\sj{I mostly meant that its theoretical runtime is polynomial. Looking at the plot it is hard to see whether this grows exponentially or not. In particular, I would argue that it is polynomial in the size of the MDP, not in the size of the monitor or HMM.} in the size of the input (see \Cref{sec:resverify}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
 
 %\paragraph{What steps are most expensive?}
 %The time spent to verify a monitor can mostly be split up in time to apply the transformation from \cref{sec:monver}, and time spent to verify the created colored MDP using PAYNT. Verifying a colored MDP is an NP-complete problem, and its runtime is heavily dependent on the internal structures and thresholds used. From \cref{tab:verifysubest}, the \textsc{Evade} benchmarks are comparably large but take only around eight seconds to verify by PAYNT, where A-10 and A-11 are much smaller, but take around a thousand seconds to verify. The transformation step does seem to increase if the size of the HMM or the monitor increases as can be seen in \cref{fig:sizevsprod}. But this again does differ between benchmarks.
@@ -1242,7 +1242,7 @@ In all benchmarks, the runtime consists almost exclusively of creating the input
 
 \subsubsection{Efficiency of Monitor Learning}
 A key contribution of this paper is the ability to implement EQs for monitor learning. 
-We consider the necessity of EQs in the learning, the size of the learned, and the efficiency of learning them, both for $\lambda_s = \lambda_u$ and $\lambda_s \neq \lambda_u$.
+We consider the necessity of EQs, the size of the learned monitors, and the efficiency of learning them, both for $\lambda_s = \lambda_u$ and $\lambda_s \neq \lambda_u$.
 
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning}.
