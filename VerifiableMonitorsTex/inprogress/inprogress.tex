@@ -131,7 +131,7 @@
 Runtime assurance is an essential ingredient in the deployment of safe autonomous systems.
 Runtime monitors provide assurance by flagging potentially dangerous system behavior by observing a system execution.
 More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envelope. A monitor is correct if it correctly raises such alarms based on a formal specification.
-Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{}, such as:
+Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{sanchezSurveyChallengesRuntime2019}, such as:
 (1)~the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does not uniquely identify the state of a system,
 (2)~the behavior of the system and/or the sensors may be subject to probabilistic uncertainty,
 (3)~the monitor itself is subject to resource constraints (time, memory, etc), and
@@ -1347,80 +1347,71 @@ We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = 
 
 %\Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} contain the runtime of \alg learning compared to the baseline, when running with and without a gray area. The \textsc{Icy-Driving} ($\blacktriangleright$), \textsc{Evade} ($\blacksquare$), and \textsc{Airport} ($\bullet$), are generally faster when run with a gray area. In other benchmarks, adding a gray area has little effect on the runtime. A few HMMs were much faster to learn when using a gray area, one of these is the brown \textsc{Icy-Driving} HMM.
 
-\section{Related}
-This work builds on previous research into model-based runtime verification with partial observability and probabilities. There are two major directions runtime verification has been taken. (1)~Create a HMM of the system and use state estimation to estimate in which state in the HMM the system is. (2)~Learn some monitor on the system directly. We will discuss both these approaches.
+\section{Related Work}
+This work studies \emph{model-based monitoring for stochastic systems} and combines \emph{active learning} with \emph{probabilistic verification}. We consider the related work in each of these directions. 
+%builds on previous research into model-based runtime verification with partial observability and probabilities. There are two major directions runtime verification has been taken. (1)~Create a HMM of the system and use state estimation to estimate in which state in the HMM the system is. (2)~Learn some monitor on the system directly. We will discuss both these approaches.
+\sj{TODO Check of werk van Stefan Kiefer et al over labelled MCs relevant is}
 
-\paragraph{State estimation}
-State estimation for stochastic systems was first studied where the system is the HMM \cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, and extend to hybrid models \cite{sistlaRuntimeMonitoringStochastic2012}. The Premise tool extends this to MDPs and details state estimation with risk for HMMs (Filtering) \cite{jungesRuntimeMonitorsMarkov2021}. Filtering is the basis the membership queries in our learning procedure.
+\paragraph{Model-based monitoring for stochastic systems.}
+Runtime verification is a wide field, see~\cite{sanchezSurveyChallengesRuntime2019}\sj{good to add a more software oriented survey, maybe by havelund?} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{badingsCTMCsImpreciselyTimed2024}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?} 
+\sj{TODO Sebastian: Say something about shielding.}
+Finally, \cite{acetoProbabilisticMonitorability2022}, a more general notion of correct monitors via linear time $\mu$-calculus is investigated, while in \cite{DBLP:journals/corr/abs-2412-11754} a notion of correct \emph{predictors} is introduced. 
+Both can be seen as generalizations of our definitions. 
+% The monitors are conservative if the model is\lm{Explain conservative?}.
 
-Runtime verification using state estimation is also studied for black box systems. The Prevent tool \cite{babaeeEmphPreventPredictiveRunTime2018} learns a HMM from a set of traces \lm{Should I say something about the guarantees of prevent}. At runtime the most likely path is estimated. This was improved in \cite{babaeeAcceleratedLearningPredictive2019} to learn a HMM faster by focussing on rare events\lm{Vague}.
+\paragraph{Learning monitors}
+Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMonitoring2021, zolfagharianSMARLASafetyMonitoring2025}\sj{There must be more papers by Hazem that we can add here, maybe also something by Anna Lukina?}. Closest to our setting is recent work in \cite{jungesActiveLearningRuntime2025}, which also uses state estimation for membership queries, but combines this with conformance queries and learns decision trees rather than automata. Crucially, by using conformance queries, the guarantees are significantly weaker, see also our experiments. \sj{Unsure whether we should say something about automata learning in general. Maybe better to have that only in section 4}
 
-This is also extended to probabilistic automata\cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification. The monitors are conservative if the model is\lm{Explain conservative?}.
 
-\paragraph{Active learning}
-Learning monitors using active learning has been done previously. \cite{jungesActiveLearningRuntime2025} uses active learning on sytems modeled by MDPs. Membership queries are done using the filtering approach of Premise, while equivalence queries are done using conformance checking. Thus, they only have a statistical guarantee on the correctness of the monitor.
+%\paragraph{Probabilistic verification and correctness of monitors}
+%A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
 
-\cite{cairoliNeuralPredictiveMonitoring2021} learns a neural network monitor using active learning. They apply this to a system with noisy partial observability.
+\paragraph{Probabilistic verification}
+The verification of our monitors applies model checking of conditional probabilities~\cite{baierComputingConditionalProbabilities2014}\sj{add Peter van Rossum, TACAS 2006} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,badingsCTMCsImpreciselyTimed2024}. Most related is recent work in~\cite{badingsCTMCsImpreciselyTimed2024}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{}\sj{Maybe just cite the QCOMP 2023 paper here?}, which can also be tackled using synthesis approaches~\cite{}. Finally, considering MDPs as distribution transfomers~\cite{}\sj{stuff by Akshay S} gives a distinct semantics  
+%
+%Theoretical results used in transformation or learning
+%\begin{itemize}
+%    \item {\color{green}\citeauthor{baierComputingConditionalProbabilities2014} \cite{baierComputingConditionalProbabilities2014} Conditional probabilities, \citeauthor{badingsCTMCsImpreciselyTimed2024} \cite{badingsCTMCsImpreciselyTimed2024} also contains conditioning on evidence, same as \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021}. However, they all condition on a specific set of evidence, they don't allow the model checker to choose which evidence to condition on.\lm{This is a novel idea? Letting the model checker choose which evidence to condition on?}}
+%    \item \citeauthor{andriushchenkoPAYNTToolInductive2021} \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
+%\end{itemize}
+%
+%Monitoring on HMMs\lm{Denk dat dit relevante papers zijn uit de premise paper, maar mijn brein is wat op}
+%\begin{itemize}
+%    \item {\color{green}\citeauthor{sistlaMonitoringTemporalProperties2008} \cite{sistlaMonitoringTemporalProperties2008}}
+%    \item {\color{green}\citeauthor{stollerRuntimeVerificationState2012} \cite{stollerRuntimeVerificationState2012}}
+%    \item {\color{green}\citeauthor{wilcoxRuntimeVerificationStochastic2010} \cite{wilcoxRuntimeVerificationStochastic2010}}
+%    \item {\color{green}\citeauthor{sistlaRuntimeMonitoringStochastic2012} \cite{sistlaRuntimeMonitoringStochastic2012}}
+%    \item {\color{green}\citeauthor{cimattiAssumptionBasedRuntimeVerification2019} \cite{cimattiAssumptionBasedRuntimeVerification2019}}
+%    \item {\color{orange}\citeauthor{SelectiveMonitoringScienceDirect} \cite{SelectiveMonitoringScienceDirect}}
+%    \item {\color{orange}\citeauthor{wooRealTimeMonitoringUncertain2007} \cite{wooRealTimeMonitoringUncertain2007}}
+%\end{itemize}
+%
+%Learn a monitor using AL
+%\begin{itemize}
+%    \item {\color{green}\citeauthor{jungesActiveLearningRuntime2025} \cite{jungesActiveLearningRuntime2025} Use AL to learn decision trees. Verify them using conformance testing.}
+%    \item {\color{green}\citeauthor{cairoliNeuralPredictiveMonitoring2021} \cite{cairoliNeuralPredictiveMonitoring2021} Use AL to learn a neural network monitor.}
+%\end{itemize}
 
-\paragraph{Correctness of monitors}
-A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
+%Learn a HMM, then do state estimation/simple reachability to find the probability of error
+%\begin{itemize}
+%    \item {\color{green}\citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021} Premise paper}
+%    \item {\color{green} \citeauthor{babaeeEmphPreventPredictiveRunTime2018} \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.}
+%    \item {\color{green}\citeauthor{babaeeAcceleratedLearningPredictive2019} \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?}
+%    \item {\color{green}\citeauthor{cleavelandConservativeSafetyMonitors2023} \cite{cleavelandConservativeSafetyMonitors2023} Model a PA and store risk for each state in PA. Use state estimation at runtime to monitor.}
+%\end{itemize}
 
-\paragraph{Model checking of conditional probabilities}
-Model checking on conditional probabilities was first\lm{Where they the first?} investigated in \cite{baierComputingConditionalProbabilities2014}. They condition on a reachability property instead of a trace. Both \cite{badingsCTMCsImpreciselyTimed2024} and \cite{jungesRuntimeMonitorsMarkov2021} condition the model on a specific piece of memory. However, they don't allow the model checker to find the maximal evidence based on a property.
-
-\lm{I don't know where to mention PAYNT}
-
-\lm[inline]{Color coded papers, green is included, orange is not relevant, black is undecided}
-\begin{itemize}
-    \item LTLf
-    \item Predictors or so by Ziemek et al.
-    \item MDPs as Distribution transformers
-    \item Computing conditional probabilities (About reachability conditionals, not ending conditionals)
-\end{itemize}
-
-Theoretical results used in transformation or learning
-\begin{itemize}
-    \item {\color{green}\citeauthor{baierComputingConditionalProbabilities2014} \cite{baierComputingConditionalProbabilities2014} Conditional probabilities, \citeauthor{badingsCTMCsImpreciselyTimed2024} \cite{badingsCTMCsImpreciselyTimed2024} also contains conditioning on evidence, same as \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021}. However, they all condition on a specific set of evidence, they don't allow the model checker to choose which evidence to condition on.\lm{This is a novel idea? Letting the model checker choose which evidence to condition on?}}
-    \item \citeauthor{andriushchenkoPAYNTToolInductive2021} \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
-\end{itemize}
-
-Monitoring on HMMs\lm{Denk dat dit relevante papers zijn uit de premise paper, maar mijn brein is wat op}
-\begin{itemize}
-    \item {\color{green}\citeauthor{sistlaMonitoringTemporalProperties2008} \cite{sistlaMonitoringTemporalProperties2008}}
-    \item {\color{green}\citeauthor{stollerRuntimeVerificationState2012} \cite{stollerRuntimeVerificationState2012}}
-    \item {\color{green}\citeauthor{wilcoxRuntimeVerificationStochastic2010} \cite{wilcoxRuntimeVerificationStochastic2010}}
-    \item {\color{green}\citeauthor{sistlaRuntimeMonitoringStochastic2012} \cite{sistlaRuntimeMonitoringStochastic2012}}
-    \item {\color{green}\citeauthor{cimattiAssumptionBasedRuntimeVerification2019} \cite{cimattiAssumptionBasedRuntimeVerification2019}}
-    \item {\color{orange}\citeauthor{SelectiveMonitoringScienceDirect} \cite{SelectiveMonitoringScienceDirect}}
-    \item {\color{orange}\citeauthor{wooRealTimeMonitoringUncertain2007} \cite{wooRealTimeMonitoringUncertain2007}}
-\end{itemize}
-
-Learn a monitor using AL
-\begin{itemize}
-    \item {\color{green}\citeauthor{jungesActiveLearningRuntime2025} \cite{jungesActiveLearningRuntime2025} Use AL to learn decision trees. Verify them using conformance testing.}
-    \item {\color{green}\citeauthor{cairoliNeuralPredictiveMonitoring2021} \cite{cairoliNeuralPredictiveMonitoring2021} Use AL to learn a neural network monitor.}
-\end{itemize}
-
-Learn a HMM, then do state estimation/simple reachability to find the probability of error
-\begin{itemize}
-    \item {\color{green}\citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021} Premise paper}
-    \item {\color{green} \citeauthor{babaeeEmphPreventPredictiveRunTime2018} \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.}
-    \item {\color{green}\citeauthor{babaeeAcceleratedLearningPredictive2019} \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?}
-    \item {\color{green}\citeauthor{cleavelandConservativeSafetyMonitors2023} \cite{cleavelandConservativeSafetyMonitors2023} Model a PA and store risk for each state in PA. Use state estimation at runtime to monitor.}
-\end{itemize}
-
-Correctness of monitors
-\begin{itemize}
-    \item {\color{green}\citeauthor{acetoProbabilisticMonitorability2022} \cite{acetoProbabilisticMonitorability2022} Defines soundness and completeness for monitors in terms of some property. Thus defines some correctness for monitors. Does not include a gray area. It does include a margin of error.}
-\end{itemize}
-
-Questionable relevance
-\begin{itemize}
-    \item \citeauthor{sanchezSurveyChallengesRuntime2019} \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
-    \item \citeauthor{zolfagharianSMARLASafetyMonitoring2025} \cite{zolfagharianSMARLASafetyMonitoring2025} SMARLA: Machine learned monitor for RL algorithms.
-    \item {\color{orange} \citeauthor{henzingerMonitoringAlgorithmicFairness2023} \cite{henzingerMonitoringAlgorithmicFairness2023} Monitor which evaluates fairness not safety. Uses Randomized register monitors (does not seem relevant).}
-\end{itemize}
-% Wie heeft premise geciteerd
+%Correctness of monitors
+%\begin{itemize}
+%    \item {\color{green}\citeauthor{acetoProbabilisticMonitorability2022} \cite{acetoProbabilisticMonitorability2022} Defines soundness and completeness for monitors in terms of some property. Thus defines some correctness for monitors. Does not include a gray area. It does include a margin of error.}
+%\end{itemize}
+%
+%Questionable relevance
+%\begin{itemize}
+%    \item \citeauthor{sanchezSurveyChallengesRuntime2019} \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
+%    \item \citeauthor{zolfagharianSMARLASafetyMonitoring2025} \cite{zolfagharianSMARLASafetyMonitoring2025} SMARLA: Machine learned monitor for RL algorithms.
+%    \item {\color{orange} \citeauthor{henzingerMonitoringAlgorithmicFairness2023} \cite{henzingerMonitoringAlgorithmicFairness2023} Monitor which evaluates fairness not safety. Uses Randomized register monitors (does not seem relevant).}
+%\end{itemize}
+%% Wie heeft premise geciteerd
 
 
 \section{Conclusion and Future Work}
