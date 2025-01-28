@@ -237,8 +237,8 @@ def load_experiment_data(path: str):
 def generate_verify_table(data, save_figures=False, save_path="./", file_name="verify"):
     preamble = r"""% Auto generated table
 \begin{longtable}[c]{@{}llrrrrrrrrrrrr@{}}
-% \caption{Table of all experiments with runtime and monitor states for baseline and \alg learning}
-% \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
+\caption{Table of all verification experiments.}
+\label{tab:fullverifyres}\\                                                                                                                                                                                                                                                                                                        \\
 \toprule
  & & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                                       \\
 \cmidrule(lr){3-10}\cmidrule(lr){11-14}
@@ -251,7 +251,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
         "evade": r"\textsc{Evade}",
         "refuel": r"\textsc{Refuel}",
         "icy-driving": r"\textsc{Icy-Driving}",
-        "hidden_incentive": r"\textsc{Hidden-Incentive}",
+        "hidden_incentive": r"\textsc{Hidden-Incen.}",
         "snakes_ladders": r"\textsc{SnL}",
     }
     file_map = {
@@ -314,8 +314,8 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 def generate_learn_table(data, save_figures=False, save_path="./", file_name="runtime"):
     preamble = r"""% Auto generated table
 \begin{longtable}[c]{@{}llrrrrrrrrrrrrrrr@{}}
-% \caption{Table of all experiments with runtime and monitor states for baseline and \alg learning}
-% \label{tab:experiments}                                                                                                                                                                                                                                                                                                          \\
+\caption{Table of all learn experiments.}
+\label{tab:fulllearnexp}\\                                                                                                                                                                                                                                                                                                    \\
 \toprule
  & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
 \cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-17}
@@ -523,11 +523,11 @@ def compare_runtimes(
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.xlabel(xlabel if xlabel else "ToVer run time (s log)")
+    plt.xlabel(xlabel if xlabel else "ToVer (s log)")
     if not show_y_axis:
         plt.ylabel("")
     else:
-        plt.ylabel(ylabel if ylabel else "Baseline run time (s log)")
+        plt.ylabel(ylabel if ylabel else "Baseline (s log)")
 
     plt.yticks(
         [10**i for i in range(-1, 6)],
@@ -657,13 +657,13 @@ def compare_monitor_sizes(
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.xlabel(xlabel if xlabel else "ToVer monitor states (log)")
+    plt.xlabel(xlabel if xlabel else r"ToVer $|\mathcal{A}|$ (log)")
     if not show_y_axis:
         plt.ylabel("")
         plt.yticks([10**i for i in range(0, 4)], ["" for i in range(0, 4)])
     else:
         plt.ylabel(
-            ylabel if ylabel else "Baseline monitor states (log)",
+            ylabel if ylabel else r"Baseline $|\mathcal{A}|$ (log)",
             ha="center",
             y=0.43,
         )
