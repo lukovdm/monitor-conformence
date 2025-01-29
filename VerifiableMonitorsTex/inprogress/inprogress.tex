@@ -19,6 +19,7 @@
 \usepackage{longtable}
 \usepackage{xfrac}
 \usepackage{adjustbox}
+\usepackage{thmtools}
 
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
@@ -348,9 +349,9 @@ We formalise the adequate problem using colored MDPs and solve it using (exact) 
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
-Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors. 
+Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors.
 Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
-We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other popular oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}. 
+We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other popular oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor.
 Practically, some minor modifications are necessary to embed our approach in  AAL framework: We have to handle the finite horizon, resolve some traces that are not relevant for the monitor, and we combine conformance and equivalence queries to boost performance.
 
@@ -636,11 +637,11 @@ We state the decision problem that needs to be solved: It is key to our computat
 \end{definition}
 We denote the set of witnesses $\tau$ to a CTP decision problem as $\mathsf{CTP}(\mc, h, F, \lambda_s)$.
 The following lemma states the correctness of the transformation and follows directly from the definition of missing alarms and the product with the complement.
-\begin{lemma}
+\begin{restatable}{lemma}{toctp}
     \label{lem:toctp}
     Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
     \[ \exists \tau \in \mathsf{CTP}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
-\end{lemma}
+\end{restatable}
 We provide a proof sketch in \cref{app:proofs}.
 
 %
@@ -726,7 +727,7 @@ We further simplify the problem by unrolling the model along the horizon. We als
 \end{definition}
 For the first $h$ steps, the unrolling is standard. At the horizon we transition to the three dedicated states $\talrm$, $\tsafe$ and $\tig$\footnote{We add the $\igs$ state, instead of redirecting all traces we don't care about to the $\safes$ state, to more easily modify the transformation for the no-false-alarms problem (See \cref{ssec:nfa}).} according to the risk.
 
-\begin{lemma}
+\begin{restatable}{lemma}{toactp}
     \label{lem:toactp}
     Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_s$, there exists a $\lambda\in(0,1]$ such that:
     \[ \exists \tau \in \mathsf{CTP}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot z_\mathsf{end}) \geq \lambda, \]
@@ -734,7 +735,7 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 
-\end{lemma}
+\end{restatable}
 We provide a proof in \cref{app:proofs}.
 %The proof of the lemma essentially starts by using that the lhs of the lemma is by definition $\exists \tau \in \lang{\mc}.~ \sum_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) \geq \lambda$. \sj{keep this in sync with def \cref{def:CTPdecprob}}\lm{I am not sure about either $s_a$ or $alarm$, the first is shorter, but the second is a lot more descriptive}
 %
@@ -861,11 +862,11 @@ Using the coloring as described in \cref{def:polsyntrans}, the trace consistent 
 \[\exists \sigma\in\ccSched. \Prob^{\sigma}(\lozenge \alarms) > \lambda \]
 Which is solved using PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
 
-\begin{lemma}
+\begin{restatable}{lemma}{tocoloredmdp}
     \label{lem:tocoloredmdp}
     Given an HMM $\mc$, horizon $h$, alarm states $F$, target state $T$ and threshold $\lambda$:
     \[  \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda, \]
-\end{lemma}
+\end{restatable}
 We provide a proof sketch in \Cref{app:proofs}.
 
 \begin{corollary}
@@ -874,12 +875,12 @@ We provide a proof sketch in \Cref{app:proofs}.
 
 \subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}
 \subsubsection{Traces of Length up to the Horizon}
-The approach for \cref{thm:maintheorem} only works for traces of length exactly the horizon. We generalize this theorem to traces of length at most the horizon.
-\begin{theorem}\lm{Make sure this still matches \cref{thm:maintheorem}.}
+The approach for \cref{thm:maintheorem} only works for traces of length exactly the horizon. We generalize this theorem to traces of length at most the horizon.\lm{Make sure this still matches \cref{thm:maintheorem}.}
+\begin{restatable}{theorem}{leqhtheorem}
     \label{thm:leqhtheorem}
     Given a HMM $\mc$ with a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa).\]
-\end{theorem}
+\end{restatable}
 The main insight for this theorem is show in \cref{fig:leqhorizon}. We combine the colored MDPs given by \cref{thm:maintheorem} for horizons 1 to $h$ into one colored MDP, such that a policy starts by choosing which length trace to use (\cref{fig:leqstepa}). Using bisimulation minimization, we can transform this combined MDP back into just $\mc_{\gtrdot h}$ with a small addition (\cref{fig:leqstepb}). We give a more detailed explanation in \Cref{app:proofs}.
 
 \begin{figure}[t]
@@ -950,11 +951,11 @@ The main insight for this theorem is show in \cref{fig:leqhorizon}. We combine t
 \subsubsection{No-False-Alarms Problem}\lm{Reference \cref{prob:FA} somewhere here.}
 We modify the transformation from \cref{thm:leqhtheorem} such that it solves the no-false-alarms problem.
 The no-false-alarms problem differs in two ways from the no-missed-alarms problem. We are finding a trace \emph{accepted by} the monitor, and we find a trace whose risk is \emph{below} the \emph{unsafe} threshold.
-\begin{theorem}
+\begin{restatable}{theorem}{nfa}
     \label{thm:nfa}
     Given a HMM $\mc$ with a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa).\]
-\end{theorem}
+\end{restatable}
 We provide a proof sketch for this theorem in \Cref{app:proofs}, however, we highlight the main ideas here. In order to find a trace accepted by the monitor, we no longer take the complement of the monitor while transforming to CTP. To find a safe trace we do reachability on $\tsafe$ instead of $\talrm$ while taking as a threshold $1-\lambda$. Thus, we find a trace whose probability of being safe is above a threshold\footnote{We cannot find a trace whose risk is below a threshold since minimizing reachability of $\talrm$ will try to choose a path that never takes a $\en$ action.}.
 
 \section{Learning Correct Monitors}\label{sec:learning}
@@ -971,13 +972,13 @@ Various algorithms implementing the MAT framework for DFA learning exist. For th
 
 
 \paragraph{Verification as a MAT.}
-To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. The  additional risk\sj{risk or learning?} threshold $\lambda_l$ is used to define an MQ whenever $\lambda_s \neq \lambda_u$: In particular, for MQs, each trace must be unambigiously safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}, while  traces with a risk between $\lambda_s$ and $\lambda_u$ can be considered don't care in our setting.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}.
+To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a horizon $h$, a learning threshold $\lambda_l$, and the safe and unsafe thresholds $\lambda_s$ and $\lambda_u$. The  additional learning threshold $\lambda_l$ is used to define an MQ whenever $\lambda_s \neq \lambda_u$: In particular, for MQs, each trace must be unambiguously safe or unsafe: the MAT framework does not allow for flagging certain traces as \emph{don't care}, while  traces with a risk between $\lambda_s$ and $\lambda_u$ can be considered don't care in our setting.  Likewise, the MQ must also be defined for traces $\tau \not \in \lang{\mc}$ or traces longer than the horizon. We thus adapt the notion of safe traces from \cref{def:safeunsafe}.
 % for $\tau \in \Obs^\star$ while making use of $\lambda_l$ to define the MQ.
 \begin{definition}\label{def:toverMQ}
     Given any trace $\tau \in \Obs^\star$ and a horizon $h$, membership query  $\MQ_{\lambda_l}$ is a function such that $\MQ_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ as safe is an arbitrary design decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
 Such a function for $\MQ_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \emph{or} by model checking the induced Markov chain that reflects the trace-consistent policy in \Cref{sec:monver}~\cite{rabinerTutorialHiddenMarkov1989, jungesRuntimeMonitorsMarkov2021}.
-For EQs, we simply use the notion of correctness from Definition~\sj{fix}.
+For EQs, we simply use the notion of correctness from \cref{def:cormon}.
 \begin{definition}\label{def:toverEQ}
     Given a HMM $\mc$, and a monitor $\dfa$, an $\EQ_{\lambda_s, \lambda_u}$ is a function $\EQ_{\lambda_s, \lambda_u}(\dfa)\in\{\top\}\cup\Obs^\star$. Such that, $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}), and $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ returns the missed alarm or false alarm trace for an incorrect $\dfa$.
 \end{definition}
@@ -993,7 +994,7 @@ When $\lambda_s < \lambda_u$, the EQ has an inconclusive area given by the inter
 This means that our EQ does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}.
 
 \paragraph{Conformance queries.}
-An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counterexample\sj{counterexample is typically one word in CS}. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring.
+An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counterexample. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring.
 
 \section{Computational Complexity}\label{sec:compl}
 This section discusses the hardness of monitor verification (\cref{lem:complexity}) and the inapproximability of a related optimization problem (\cref{lem:ctpapxhard}).
@@ -1187,28 +1188,31 @@ For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
 \begin{table}[t]
     \begin{adjustbox}{max width=\linewidth}
         \begin{scriptsize}
-            \begin{tabular}{{@{}llrrrrrrrrrrr@{}}}
+            \begin{tabular}{{@{}llrrrrrrrrrrrrr@{}}}
                 \toprule
-                                     &               & \multicolumn{7}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                    \\
-                \cmidrule(lr){3-9}\cmidrule(lr){10-13}
-                                     &               & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Trans (s) & PAYNT (s) & $\lambda^{found}$ \\
+                                       &               & \multicolumn{7}{c}{Benchmark} & \multicolumn{5}{c}{\alg}                                                                                                                                                                                       \\
+                \cmidrule(lr){3-10}\cmidrule(lr){11-15}
+                                       &               & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\mathcal{L}^{\leq h}|$ & Time (s)  & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$ \\
                 \midrule
-                \textsc{AirportA-3}  & \textsc{A-0}  & 10                            & MA                       & 45           & 113             & 18    & 25            & 450              & 0.92     & 0.31      & 0.41      & 0.94              \\
-                \textsc{AirportA-3}  & \textsc{A-2}  & 10                            & FA                       & 45           & 113             & 18    & 25            & 450              & 0.95     & 0.31      & 0.43      & 0.08              \\
-                \textsc{AirportA-3}  & \textsc{A-8}  & 10                            & MA                       & 45           & 113             & 18    & 128           & 2304             & 833.83   & 0.56      & 832.93    & -                 \\
-                \textsc{AirportA-3}  & \textsc{A-1}0 & 10                            & FA                       & 45           & 113             & 18    & 128           & 2304             & 1143.18  & 0.53      & 1142.35   & -                 \\
+                \textsc{AirportA-3}    & \textsc{A-0}  & 10                            & MA                       & 45           & 113             & 18    & 23            & 414              & $10^{12}$                & 1.82      & $\leq 1s$ & 1.64      & 328                  & 0.30              \\
+                \textsc{AirportA-3}    & \textsc{A-2}  & 10                            & FA                       & 45           & 113             & 18    & 23            & 414              & $10^{13}$                & 6.00      & $\leq 1s$ & 5.82      & 328                  & 0.19              \\
+                \textsc{AirportA-3}    & \textsc{A-8}  & 10                            & MA                       & 45           & 113             & 18    & 81            & 1458             & $10^{12}$                & 900.48    & $\leq 1s$ & 900.08    & \checkmark           & \checkmark        \\
+                \textsc{AirportA-3}    & \textsc{A-10} & 10                            & FA                       & 45           & 113             & 18    & 81            & 1458             & $10^{13}$                & 1070.69   & $\leq 1s$ & 1070.27   & \checkmark           & \checkmark        \\
                 \midrule
-                \textsc{Evade}       & \textsc{E-20} & 9                             & MA                       & 385          & 1473            & 325   & 328           & 106600           & 49.11    & 33.35     & 8.23      & -                 \\
-                \textsc{Evade}       & \textsc{E-22} & 9                             & FA                       & 385          & 1473            & 325   & 328           & 106600           & 49.75    & 34.26     & 8.14      & -                 \\
+                \textsc{Evade}         & \textsc{E-20} & 9                             & MA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 79.85     & 70.47     & 9.24      & \checkmark           & \checkmark        \\
+                \textsc{Evade}         & \textsc{E-22} & 9                             & FA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 79.30     & 70.28     & 9.01      & \checkmark           & \checkmark        \\
                 \midrule
-                \textsc{Icy-Driving} & \textsc{I-34} & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & 0.02     & 0.00      & 0.01      & -                 \\
-
-                \textsc{Icy-Driving} & \textsc{I-14} & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & 1225.78  & 0.01      & 1225.76   & -                 \\
+                \textsc{Hidden-Incen.} & \textsc{H-8}  & 10                            & MA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 1233.95   & 10.10     & 1223.79   & \checkmark           & \checkmark        \\
+                \textsc{Hidden-Incen.} & \textsc{H-10} & 10                            & FA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 4888.19   & 10.27     & 4877.91   & \checkmark           & \checkmark        \\
+                \midrule
+                \textsc{Icy-Driving}   & \textsc{I-34} & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & $10^{0}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & \checkmark           & \checkmark        \\
+                \textsc{Icy-Driving}   & \textsc{I-14} & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{11}$                & 1393.58   & $\leq 1s$ & 1393.57   & \checkmark           & \checkmark        \\
+                \bottomrule
             \end{tabular}
         \end{scriptsize}
     \end{adjustbox}
     \vspace{.2cm}
-    \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, and the size of the DFA (states, transitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
+    \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
     \label{tab:verifysubest}
 \end{table}
 \sj{A dash looks like a bad thing, but maybe we should use a checkmark instead?}
@@ -1411,24 +1415,22 @@ This paper presented a first approach to verification of monitors with respect t
 
 \section{Proof Outlines for \Cref{sec:monver}}\label{app:proofs}
 
-Proof sketch of \cref{lem:toctp}.
+\toctp*
 \begin{proofoutline}
     By the product construction, there exists a bijective mapping between paths in $M_{\times\overline{\dfa}}$ and paths in the monitor $\dfa$ and HMM $\mc$. If the final state of a path is in $F$, the mapped path is not accepted by the monitor. The risk of a path in $M_{\times\overline{\dfa}}$ has the same risk as the mapped path in $\mc$. Thus, if a trace is a witness for the CTP problem, it is a missed alarm for $\mc$ and $\dfa$.
 \end{proofoutline}
 
-
-Proof sketch of \cref{lem:toactp}.
+\toactp*
 \begin{proofoutline}
     We choose $\lambda = \sfrac{\lambda_s}{\max_{s\in S}r(s)}$. Both directions follow from applying \cref{def:CTPdecprob} and defining a bijective mapping $f$ between paths in $\mc_{\times\overline{\dfa}}$ (From the CTP problem) and $\mc_{\blacktriangleright h}$ such that $\Prob^{\mc_{\times\overline{\dfa}}}(\pi) = \Prob^{\mc_{\blacktriangleright h}}(f(\pi))$. Now, for any path $\pi$ of length $h$ ending in a state in $F$, the transition of $f(\pi_\downarrow)$ to $\talrm$ is equal to the normalized risk on $\pi_\downarrow$. From this we can conclude that risk for a trace in CTP is equal to the risk for a trace in ACTP, and thus that they have the same witnesses.
 \end{proofoutline}
 
-Proof sketch of \cref{lem:tocoloredmdp}.
+\tocoloredmdp*
 \begin{proofoutline}
     We define a bijective map between finite paths $\pi$ in $\mc_{\blacktriangleright h}$ and a set $X$ in the partition of the infinite paths in the induced MC by $\sigma$ in $\mdp_{\gtrdot h}$. The map is defined such that $\pi$ followed by the infinite sequence of $T$ is the postfix for every path in $X$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between trace consistent policies and traces, we can show that $\Prob^{\mdp_{\gtrdot h}}_{\sigma_\tau}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid t(\sigma_\tau) \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold, and similarly using $t^{-1}$ in the other direction.
 \end{proofoutline}
 
-Proof sketch of \cref{thm:leqhorizon}
-
+\leqhtheorem*
 \begin{proof}
     We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, it gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. The actions now transition to the state $\langle l, \iota\rangle$.
     \begin{align*}
@@ -1446,6 +1448,11 @@ Proof sketch of \cref{thm:leqhorizon}
     \lm{Maybe note that the $\mdp_{\gtrdot l}$ only differed when they where in the CTP stage by the horizon, nothing else.}
     We now note that for any $l<l'\leq h$ the initial state $\langle 1, \iota^{CTP}\rangle$ of $\mdp_{\gtrdot l}$ is bisimilar to the state $\langle l' - l + 1, \iota^CTP \rangle$ in $\mdp_{\gtrdot l'}$. We now claim that the result of bisimulation minimization on this combined colored MDP is described by the transformation described at the start of the proof.
 \end{proof}
+
+\nfa*
+\begin{proofoutline}
+
+\end{proofoutline}
 
 \section{Construction for NP-hardness/APX-hardness}
 \label{app:complexity}
@@ -1509,6 +1516,7 @@ We present the complete results of the monitor verification experiments. \Cref{f
 
 
 \begin{scriptsize}
+    \setlength\LTleft{-4cm}
     \input{images/plots/verify.tex}
 \end{scriptsize}
 
