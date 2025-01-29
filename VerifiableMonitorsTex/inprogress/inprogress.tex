@@ -67,7 +67,7 @@
 \tikzset{
     %->, % makes the edges directed
     >=stealth, % makes the arrow heads bold
-    every state/.style={thick, fill=gray!10, minimum size=0.8cm,inner sep=1pt}, % sets the properties for each ’state’ node
+    every state/.style={thick, fill=gray!10, minimum size=0.6cm,inner sep=1pt}, % sets the properties for each ’state’ node
     initial text=$ $, % sets the text that appears on the start arrow
     action/.style={circle, fill, inner sep=1pt},
     icy/.style={draw=cyan},
@@ -279,7 +279,7 @@ The key verification question in this paper is now: Is this a correct monitor fo
             \draw[->] (qi) edge node[right] {$\frac{1}{4}$} (qc);
             \draw[->] (qc) edge[loop right] node {$1$} ();
         \end{tikzpicture}
-        \caption{Example HMM, where the cyan states $q_i$ and $q_c$ have the observation $\icy$ and the brown state $q_d$ has the observation $\dry$.}
+        \caption{HMM. States $q_i, q_c$ have the observation $\icy$, state $q_d$ has $\dry$.}
         \label{fig:centralhmm}
     \end{subfigure}
     \hfill
@@ -295,33 +295,36 @@ The key verification question in this paper is now: Is this a correct monitor fo
             \node[state] (q1) [right of=q0] {$s_2$};
             \node[state, accepting] (q2) [right of=q1] {$s_3$};
 
-            \draw[->] (q0) edge[loop above, dry] node {$\dry$} ();
+            \draw[->] (q0) edge[loop above, dry] node [left] {$\dry$} ();
             \draw[->] (q0) edge[icy] node[below] {$\icy$} (q1);
             \draw[->] (q1) edge[dry, bend right] node[above] {$\dry$} (q0);
             \draw[->] (q1) edge[icy] node[below] {$\icy$} (q2);
             \draw[->] (q2) edge[icy, loop right] node {$\icy$} ();
-            \draw[->] (q2) edge[dry, loop above] node {$\dry$} ();
+            \draw[->] (q2) edge[dry, loop above] node[left] {$\dry$} ();
 
-            \begin{scope}[yshift=-2cm]
+            \begin{scope}[yshift=-1.4cm]
                 \node[state,initial,accepting] (q0) {$s_1$};
                 \node (B) [left= 0.5cm of q0] {$\dfaB:$};
                 \node[state, accepting] (q1) [right of=q0] {$s_2$};
                 \node[state] (q2) [right of=q1] {$s_3$};
 
-                \draw[->] (q0) edge[loop above, dry] node {$\dry$} ();
+                \draw[->] (q0) edge[loop above, dry] node[left] {$\dry$} ();
                 \draw[->] (q0) edge[icy] node[below] {$\icy$} (q1);
                 \draw[->] (q1) edge[dry, bend right] node[above] {$\dry$} (q0);
                 \draw[->] (q1) edge[icy] node[below] {$\icy$} (q2);
                 \draw[->] (q2) edge[icy, loop right] node {$\icy$} ();
-                \draw[->] (q2) edge[dry, loop above] node {$\dry$} ();
+                \draw[->] (q2) edge[dry, loop above] node[left] {$\dry$} ();
             \end{scope}
         \end{tikzpicture}
-        \caption{Two example monitors for the HMM in \cref{fig:centralhmm}, correct monitor $\dfa$ and faulty monitor $\dfaB$. $\dfa$ raises an alarm as soon as two consecutive steps on an $\icy$ section have been observed. While $\dfaB$ raises an alarm if less than two consecutive steps on $\icy$ road has been observed.}
+        \caption{A correct monitor $\dfa$ and an incorrect monitor~$\dfaB$ (for $\lambda=0.8$). 
+        %$\dfa$ raises an alarm as soon as two consecutive steps on an $\icy$ section have been observed. While $\dfaB$ raises an alarm if less than two consecutive steps on $\icy$ road has been observed.
+        }
         \label{fig:centralmon}
     \end{subfigure}
-    \caption{The central example model as a HMM with both a correct monitor and a faulty monitor for a threshold of $0.8$.}
+    \caption{Running example: HMM (a) and two monitors (b).}
     \label{fig:centralexample}
 \end{figure}
+\sj{caption requires a hrizon?}
 
 %  road, it can be o
 
@@ -329,19 +332,19 @@ The key verification question in this paper is now: Is this a correct monitor fo
 
 \paragraph{Computational complexity results.}
 Deciding whether a monitor is correct is coNP-complete (\Cref{lem:complexity}), assuming that the horizon is unary encoded.  In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace as safe/unsafe.
-We consider a simpler variant of this problem that asks whether there is a bounded trace in the HMM that is unsafe. 
+A simpler variant of this problem asks whether there is a bounded trace in the HMM that is unsafe. 
 %\footnote{The results also apply to checking for safe traces.}
 %The problem is clearly in NP (assuming that the bound is unary encoded).
-This simplified problem is already strongly NP-hard (\Cref{lem:ctpdecnphard}) and the optimization problem that asks to compute (the risk of) most risky trace is APX-hard (\Cref{lem:ctpapxhard}), which indicates that it is intractable to even approximate this risk.
+This problem is already strongly NP-hard (\Cref{lem:ctpdecnphard}) and the optimization problem that asks to compute (the risk of) most risky trace is APX-hard (\Cref{lem:ctpapxhard}), which indicates that it is intractable to even approximate this risk.
 
 \paragraph{Our verification approach.}
-While deciding whether a monitor is correct is in general not tractable, we suggest to utilise recent advances in the synthesis of probabilistic systems~\cite{}. 
+While deciding whether a monitor is correct is in general not tractable, we suggest to utilise recent advances in the synthesis of probabilistic systems~\cite{andriushchenkoPAYNTToolInductive2021}. 
 We concentrate on proving the absence of \emph{missed alarms}, i.e., we concentrate on showing that the monitor correctly identifies every unsafe trace. A similar reduction works to show that a monitor correctly identifies safe traces.
  First, for a single trace, computing the risk can be reduced to computing a reachability probability in a MC that is some kind of product between a DFA that accepts exactly the trace and the HMM~\cite{jungesRuntimeMonitorsMarkov2021}.
-Thus, it is natural to reduce our problem to the question: \emph{Is there a DFA (accepting exactly one trace, accepted by our monitor)
+Thus, inspired by~\cite{DBLP:conf/tacas/BadingsVJSJ24}, we reduce our problem to the question: \emph{Is there a DFA (accepting exactly one trace, accepted by our monitor)
 such that the probability in the product MC exceeds a threshold?} 
-If the answer is no, then the monitor has no missed alarms.
-This decision problem can be solved using (exact) probabilistic model synthesis methods~\cite{} as implemented in the tool Paynt~\cite{}%\footnote{Alternatively, in \cref{sec:monver}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. 
+The answer is no iff the monitor has no missed alarms.
+We formalise the adequate problem using colored MDPs and solve it using (exact) probabilistic model synthesis methods~\cite{DBLP:conf/uai/Andriushchenko022} as implemented in the tool Paynt~\cite{andriushchenkoPAYNTToolInductive2021}. %\footnote{Alternatively, in \cref{sec:monver}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. 
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
@@ -1034,6 +1037,19 @@ To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}
 \end{lemma}
 %The lemma holds even for acyclic HMMs. 
 The proof features a reduction from SAT, the problem of satisfiability of a propositional formula. We illustrate the reduction, details are in \cref{app:complexity}.
+
+\tikzset{
+    %->, % makes the edges directed
+    >=stealth, % makes the arrow heads bold
+    every state/.style={thick, fill=gray!10, minimum size=0.8cm,inner sep=1pt}, % sets the properties for each ’state’ node
+    initial text=$ $, % sets the text that appears on the start arrow
+    action/.style={circle, fill, inner sep=1pt},
+    icy/.style={draw=cyan},
+    dry/.style={draw=brown},
+    return/.style={color=lightgray, line width=1mm},
+    other/.style={rounded rectangle},
+    problem/.style={rectangle, draw, minimum height=1cm, minimum width=1.5cm, align=center}
+}
 
 \begin{figure}[t]
     \begin{subfigure}{0.13\textwidth}
