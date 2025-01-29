@@ -1020,6 +1020,7 @@ This means that our EQ does not check for equivalence, but simply accepts any co
 An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counterexample\sj{counterexample is typically one word in CS}. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring.
 
 \section{Computational Complexity}\label{sec:compl}
+This section discusses the hardness of monitor verification (\cref{lem:complexity}) and the inapproximability of a related optimization problem (\cref{lem:ctpapxhard}).
 \begin{theorem}
     \label{lem:complexity}
     \emph{Is a monitor correct?} (w.\ unary coded horizon) is coNP-complete.
@@ -1032,7 +1033,8 @@ To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is (strongly) NP-hard.
 \end{lemma}
-The lemma holds even for acyclic HMMs. We reduce the problem from 3SAT, i.e., the problem of satisfiability of a 3SAT formula. We illustrate the construction briefly and provide details in \cref{app:complexity}.
+%The lemma holds even for acyclic HMMs. 
+The proof features a reduction from SAT, the problem of satisfiability of a propositional formula. We illustrate the reduction, details are in \cref{app:complexity}.
 
 \begin{figure}[t]
     \begin{subfigure}{0.13\textwidth}
@@ -1110,12 +1112,12 @@ The lemma holds even for acyclic HMMs. We reduce the problem from 3SAT, i.e., th
     \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
 \end{figure}
 
-We construct HMM $\mc_\varphi$ from 3CNF $\varphi$ such that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In particular, that trace exists iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
-We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$.
-We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}:
-That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$.
-The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment $\alpha$, by starting in $s_{1,j}$ with a gadget for this clause, as exemplified in Fig.~\ref{fig:hmmgadget}.
-A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, only one of these paths corresponds to the trace. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause.
+We construct HMM $\mc_\varphi$ from CNF $\varphi$ over variables $X$ such that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In particular, that trace exists iff all thre is a trace $\tau$ s.t.\  all corresponding\sj{make sure that corresponding paths are the right formal notion} paths reach some state $t$.
+The traces are of the form $\#\# \cdot \{ \bot, \top \} \cdot \# \cdot \{ \bot, \top \} \dots \cdot \#$: Trace $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$ represents assignment  $\alpha\colon X \rightarrow \{\bot,\top \}$. 
+We now construct $\mc_\varphi$ such that any trace that ensures reaching $t$ reflects a satisfying assignment.  We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}:
+That is, to ensure reaching $t$ along every path, we must reach $t$ in every gadget. 
+The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment, as exemplified in Fig.~\ref{fig:hmmgadget}.
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, for a trace where $\alpha(x_i) = \top$, only the former path corresponds to the trace (and symmetrically for $\alpha(x_i) = \bot$. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause.
 
 
 
@@ -1131,11 +1133,7 @@ A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s
 %
 %\textcolor{red}{I have no clue how to show that is PSPACE hard... The PSPACE hardness would somehow have to use the long horizons.... I also dont believe it is important.}
 
-\subsubsection{Approximability}
-
-Approximating the verification of monitors is also hard, in the sense that it is hard to approximate the maximal risk that a monitor admits.
-
-The maximal risk problem is an optimization problem
+We now show that the construction above suffices to show that it is hard to approximate the maximal risk that a monitor admits.
 \begin{definition}[CTP Optimization Problem]
     Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $F\subseteq\Sts$: \[\max\nolimits_{\tau \in \lang{\mc}}~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow).\]\end{definition}
 \begin{lemma}
@@ -1492,7 +1490,6 @@ We present the complete results of the monitor verification experiments. \Cref{f
 \begin{scriptsize}
     \input{images/plots/verify.tex}
 \end{scriptsize}
-
 
 \section{Results from Learning Experiments}\label{sec:reslearn}
 \begin{figure}[t]
