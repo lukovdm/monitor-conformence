@@ -1735,6 +1735,10 @@
 \pgfpathclose%
 \pgfusepath{stroke,fill}%
 }%
+\begin{pgfscope}%
+\pgfsys@transformshift{1.545061in}{1.089250in}%
+\pgfsys@useobject{currentmarker}{}%
+\end{pgfscope}%
 \end{pgfscope}%
 \begin{pgfscope}%
 \pgfpathrectangle{\pgfqpoint{0.830710in}{0.545694in}}{\pgfqpoint{2.901589in}{1.161889in}}%
