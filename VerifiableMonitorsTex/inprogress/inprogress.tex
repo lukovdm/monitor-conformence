@@ -1074,7 +1074,7 @@ The proof features a reduction from SAT, the problem of satisfiability of a prop
             \node[state,above=1.2cm of s4,] (s4p) {$s'_{4,j}$};
 
             \node[state,right=0.4cm of s4,] (f) {$f$};
-            \node[state,above=1.2cm of f,] (t) {$t$};
+            \node[state,accepting, above=1.2cm of f,] (t) {$t$};
             \draw[->] (s4) edge (f);
             \draw[->] (s4p) edge (t);
 
@@ -1106,7 +1106,7 @@ The proof features a reduction from SAT, the problem of satisfiability of a prop
             \draw[->] (s3np) edge node[above] {$1$} (s4p);
 
         \end{tikzpicture}
-        \caption{Gadget demonstrated for $x_1 \lor\neg x_3$}
+        \caption{Gadget $\mathcal{G}_c$ demonstrated for $c = x_1 \lor\neg x_3$}
         \label{fig:hmmgadget}
     \end{subfigure}
     \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
@@ -1117,7 +1117,7 @@ The traces are of the form $\#\# \cdot \{ \bot, \top \} \cdot \# \cdot \{ \bot, 
 We now construct $\mc_\varphi$ such that any trace that ensures reaching $t$ reflects a satisfying assignment.  We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}:
 That is, to ensure reaching $t$ along every path, we must reach $t$ in every gadget. 
 The gadget $\mathcal{G}_j$ intuitively `evaluates' $c_j$ with respect to an assignment, as exemplified in Fig.~\ref{fig:hmmgadget}.
-A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. However, for a trace where $\alpha(x_i) = \top$, only the former path corresponds to the trace (and symmetrically for $\alpha(x_i) = \bot$. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause.
+A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s_{i,j}$ and transitions to $s_{i,j}^\top$ or to $s_{i,j}^\bot$. The states are labelled $\#, \top, \bot$, respectively. However, for a trace where $\alpha(x_i) = \top$, only the former path corresponds to the trace (and symmetrically for $\alpha(x_i) = \bot$. That path reaches state $t$ iff the assignment satisfies at least one literal in the clause.
 
 
 
