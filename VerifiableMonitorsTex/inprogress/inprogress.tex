@@ -881,7 +881,7 @@ The approach for \cref{thm:maintheorem} only works for traces of length exactly 
     Given a HMM $\mc$ with a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa).\]
 \end{restatable}
-The main insight for this theorem is show in \cref{fig:leqhorizon}. We combine the colored MDPs given by \cref{thm:maintheorem} for horizons 1 to $h$ into one colored MDP, such that a policy starts by choosing which length trace to use (\cref{fig:leqstepa}). Using bisimulation minimization, we can transform this combined MDP back into just $\mc_{\gtrdot h}$ with a small addition (\cref{fig:leqstepb}). We give a more detailed explanation in \Cref{app:proofs}.
+\noindent The main insight for this theorem is show in \cref{fig:leqhorizon}. We combine the colored MDPs given by \cref{thm:maintheorem} for horizons 1 to $h$ into one colored MDP, such that a policy starts by choosing which length trace to use (\cref{fig:leqstepa}). Using bisimulation minimization, we can transform this combined MDP back into just $\mc_{\gtrdot h}$ with a small addition (\cref{fig:leqstepb}). We give a more detailed explanation in \Cref{app:proofs}.
 
 \begin{figure}[t]
     \begin{subfigure}{.48\linewidth}
@@ -1451,7 +1451,15 @@ This paper presented a first approach to verification of monitors with respect t
 
 \nfa*
 \begin{proofoutline}
+    The transformation from \cref{sec:monver} is reused with the following differences. The complement of the monitor in \cref{lem:toctp} is no longer taken, and $\tsafe$ is used as the target state in \cref{lem:tocoloredmdp}. An outline of why the second step is correct is given below by showing the following.
 
+    \[
+        \begin{array}{c}
+            \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge \tsafe) \geq 1 - \lambda \\
+            \Updownarrow                                                                                      \\
+            \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \leq \lambda
+        \end{array}
+    \]
 \end{proofoutline}
 
 \section{Construction for NP-hardness/APX-hardness}
