@@ -348,7 +348,7 @@ We formalise the adequate problem using colored MDPs and solve it using (exact) 
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
-Ultimately, we do not only want to verify the correctness of a monitor, but we want to \empph{synthesise} such monitors. 
+Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors. 
 Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
 We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other popular oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}. 
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor.
