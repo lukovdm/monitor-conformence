@@ -348,12 +348,10 @@ We formalise the adequate problem using colored MDPs and solve it using (exact) 
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
-Ultimately, we do not only want to verify the correctness of a monitor, but we want to construct such a monitor.
-Above, we already mentioned that the monitors are formal languages. When considering bounded trace, these monitors are regular, and can thus be captured using DFAs.
-Inspired by a recent short paper~\cite{}, we investigate learning these monitors:
-We choose to do this using active automata learning~\cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}, which closely relates to other popular oracle-guided inductive synthesis loops~\cite{}.
-To use active automata learning (AAL),
-we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented by computing the risk for a single trace as above and comparing it to a threshold, while the equivalence oracle can be implemented by checking for the absence of missed and false alarms.
+Ultimately, we do not only want to verify the correctness of a monitor, but we want to \empph{synthesise} such monitors. 
+Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
+We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other popular oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}. 
+To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor.
 Practically, some minor modifications are necessary to embed our approach in  AAL framework: We have to handle the finite horizon, resolve some traces that are not relevant for the monitor, and we combine conformance and equivalence queries to boost performance.
 
 %
