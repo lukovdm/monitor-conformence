@@ -868,52 +868,30 @@ Which is solved using PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
     Given an HMM $\mc$, horizon $h$, alarm states $F$, target state $T$ and threshold $\lambda$:
     \[  \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge T) \geq \lambda \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda, \]
 \end{lemma}
-We provide a proof sketch in \cref{app:proofs}.
+We provide a proof sketch in \Cref{app:proofs}.
 
 \begin{corollary}
     There exists a map $t(\sigma_\tau) = \tau$ which, given a trace consistent policy $\sigma_\tau$, finds its associated trace $\tau$.
 \end{corollary}
 
-\subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}\lm{Reference \cref{prob:FA} somewhere here.}
-\begin{itemize}
-    \item Add end transitions to non horizon states.
-    \item We want to minimize alarm probability, not possible.
-    \item Instead maximize safe probability.
-\end{itemize}
-
+\subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}
 \subsubsection{Traces of Length up to the Horizon}
-The aproach for \cref{thm:maintheorem} works only for traces of exactly the length of the horizon. \lm[inline]{Something about it being hard for ACTP but easy for Pol Syn} We transform \cref{def:polsyntrans} such that the following theorem holds:
-\begin{theorem}\label{thm:leqhorizon}
-    \lm[inline,noinlinepar,inlinewidth=8cm]{Something relating the modified transformation to missing alarms on $\leq h$}
+The approach for \cref{thm:maintheorem} only works for traces of length exactly the horizon. We generalize this theorem to traces of length at most the horizon.
+\begin{theorem}\lm{Make sure this still matches \cref{thm:maintheorem}.}
+    \label{thm:leqhtheorem}
+    Given a HMM $\mc$ with a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
+    \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa).\]
 \end{theorem}
-\begin{proof}
-    We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, it gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. The actions now transition to the state $\langle l, \iota\rangle$.
-    \begin{align*}
-        \ptrans'(\iota', l)(\langle l, \iota\rangle) & = 1
-    \end{align*}
-    We now show this transformation is correct.
+The main insight for this theorem is show in \cref{fig:leqhorizon}. We combine the colored MDPs given by \cref{thm:maintheorem} for horizons 1 to $h$ into one colored MDP, such that a policy starts by choosing which length trace to use (\cref{fig:leqstepa}). Using bisimulation minimization, we can transform this combined MDP back into just $\mc_{\gtrdot h}$ with a small addition (\cref{fig:leqstepb}). We give a more detailed explanation in \Cref{app:proofs}.
 
-    In order to verify that there are no-missed-alarms for all $l<h$, we could use the transformation from \cref{thm:maintheorem} with the horizon equal to all $l<h$. This would neccesitate doing policy synthesis for $h$ colored MDPs.
-    \[ \exists_{\tau} \exists_{l\leq h} \Prob^{\sigma_\tau}[\lozenge alarm] > \lambda_s \]
-    If any of these $h$ policy synthesis problems can find a policy $\sigma_\tau$, there exists a trace $\tau\in\missedalarms{\leq h}{}$.
-
-    We combine these $h$ colored MDPs into one colored MDP in the following way.
-    We add a new initial state, and give it $h$ actions $\{1,\ldots,h\}$. Action $l\in\{1,\ldots,h\}$ points, with probability $1$, to the initial state of colored MDP $\mdp_{\gtrdot l}$. This is equivalent to solving policy synthesis on the $h$ individual MDPs.
-
-    \lm{Maybe note that the $\mdp_{\gtrdot l}$ only differed when they where in the CTP stage by the horizon, nothing else.}
-    We now note that for any $l<l'\leq h$ the initial state $\langle 1, \iota^{CTP}\rangle$ of $\mdp_{\gtrdot l}$ is bisimilar to the state $\langle l' - l + 1, \iota^CTP \rangle$ in $\mdp_{\gtrdot l'}$. We now claim that the result of bisimulation minimization on this combined colored MDP is described by the transformation described at the start of the proof.
-\end{proof}
-\begin{example}
-    The transformation in \cref{thm:leqhorizon} can be seen in \cref{fig:leqhorizon}
-\end{example}
 \begin{figure}[t]
-    \begin{subfigure}{.45\linewidth}
+    \begin{subfigure}{.48\linewidth}
         \begin{tikzpicture}[node distance=.4cm and 1cm,every node/.style={font=\tiny}]
             \node[state, initial] (init) {$\iota$};
 
-            \node[state, cloud, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (Mdots) [right = 1cm of init] {$\mdp_{\gtrdot l}$};
-            % \node[state, cloud, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (M1) [above =of Mdots] {$\mdp_{\gtrdot 1}$};
-            \node[state, cloud, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (Mh) [below = .7cm of Mdots] {$\mdp_{\gtrdot h}$};
+            \node[state, cloud, cloud puffs = 12, minimum width = 2cm, cloud puff arc=120] (Mdots) [right = 1cm of init] {$\mdp_{\gtrdot l}$};
+            % \node[state, cloud, cloud puffs = 12, minimum width = 2.5cm, minimum height = .75cm, cloud puffs = 15, cloud puff arc=120] (M1) [above =of Mdots] {$\mdp_{\gtrdot 1}$};
+            \node[state, cloud, cloud puffs = 12, minimum width = 2cm, cloud puff arc=120] (Mh) [below = .7cm of Mdots] {$\mdp_{\gtrdot h}$};
 
             \node (tvdots) [above=.1cm of Mdots] {\vdots};
             \node at ($(Mdots.south)!0.5!(Mh.north)$) {\vdots};
@@ -929,50 +907,57 @@ The aproach for \cref{thm:maintheorem} works only for traces of exactly the leng
             \draw (init) edge node[above] {$h$} (Mha);
             \draw[->] (Mha) edge node[above left] {} (Mh);
         \end{tikzpicture}
-        \caption{}
+        \caption{A colored MDP combining the colored MDPs from \cref{def:polsyntrans} for horizons up to $h$, $\{\mdp_{\gtrdot l}\mid l \in \{1,\ldots,h\}\}$, into one MDP. }
+        \label{fig:leqstepa}
     \end{subfigure}\hfill
-    \begin{subfigure}{.45\linewidth}
+    \begin{subfigure}{.48\linewidth}
         \begin{tikzpicture}[node distance=.4cm and 1.2cm,every node/.style={font=\tiny}]
             \node[state, initial] (init) {$\iota$};
 
-            \node[state, cloud, minimum width = 3.5cm, minimum height = 1cm, cloud puffs = 18, cloud puff arc=120] (Mh) [below right =of init] {$\mdp_{\gtrdot h}$};
-
-            \node[state,xshift=-.4cm] (il) [above=of Mh] {$\langle \iota, l\rangle$};
-            \node[state] (i1) [left= .5cm of il] {$\langle \iota, 1\rangle$};
+            \node[state] (i1) [right= of init] {$\langle \iota, 1\rangle$};
+            \node[state] (il) [right= .5cm of i1] {$\langle \iota, l\rangle$};
             \node[state] (ih) [right= .5cm of il] {$\langle \iota, h\rangle$};
+            \node at ($(i1)!0.5!(il)$) {\dots};
+            \node at ($(il)!0.5!(ih)$) {\dots};
+
+
+            \node[state, cloud, minimum width = 3.5cm, minimum height = 1cm, cloud puffs = 18, cloud puff arc=120] (Mh) [below =of il] {$\mdp_{\gtrdot h}$};
 
             \draw[->] (i1) -- (Mh.puff 3);
             \draw[->] (Mh.puff 2) -- (il);
-            \draw[->] (il) -- (Mh.puff 1);
+            \draw[->] (il) -- (Mh.puff 18);
             \draw[->] (Mh.puff 18) -- (ih);
             \draw[->] (ih) -- (Mh.puff 16);
 
-            % \node[action] (Mha) at ($(init)!0.4!(Mh)$) {};
+            \node[action] (i1a) at ($(init)!0.5!(i1)$) {};
+            \node[action, yshift=.5cm] (ila) at (i1a) {};
+            \node[action, yshift=1cm] (iha) at (i1a) {};
 
-            % \draw (init) edge node[above] {$1$} (M1a);
-            % \draw[->] (M1a) edge node[above left] {} (M1);
-            % \draw (init) edge node[above] {$l$} (Mdotsa);
-            % \draw[->] (Mdotsa) edge node[above left] {} (Mdots);
-            % \draw (init) edge node[above] {$h$} (Mha);
-            % \draw[->] (Mha) edge node[above left] {} (Mh);
+            \draw (init) --node[below, near end] {$1$} (i1a);
+            \draw[->] (i1a) -- (i1);
+
+            \draw (init) --node[below, near end] {$l$} (ila);
+            \draw[->] (ila) edge[bend left] (il);
+
+            \draw (init) --node[above, near end] {$h$} (iha);
+            \draw[->] (iha) edge[bend left] (ih);
         \end{tikzpicture}
-        \caption{}
+        \caption{A bisimial colored to MDP to \cref{fig:leqstepa}, containing only $\mdp_{\gtrdot h}$. States $\langle \iota, 1\rangle$ through $\langle \iota, h\rangle$ from $\mdp_{\gtrdot h}$ are shown separate in order to show their relation to $\iota$.}
+        \label{fig:leqstepb}
     \end{subfigure}
-    \caption{}
+    \caption{Transformation steps needed for \cref{thm:leqhtheorem}.}
     \label{fig:leqhorizon}
 \end{figure}
 
-\subsubsection{No-False-Alarms Problem}
-We modify the transformation from \cref{thm:maintheorem} such that it solves the no-false-alarms problem. The no-false-alarms problem differs in two ways from the no-missed-alarms problem. Fristly, instead of finding a trace not in the monitor, we have to find a trace in the monitor. Secondly, this trace should have a conditional probability below the threshold. We solve these one at a time after stating \cref{thm:maintheorem} for no-false-alarms.
-
+\subsubsection{No-False-Alarms Problem}\lm{Reference \cref{prob:FA} somewhere here.}
+We modify the transformation from \cref{thm:leqhtheorem} such that it solves the no-false-alarms problem.
+The no-false-alarms problem differs in two ways from the no-missed-alarms problem. We are finding a trace \emph{accepted by} the monitor, and we find a trace whose risk is \emph{below} the \emph{unsafe} threshold.
 \begin{theorem}
-    \label{thm:nfatheorem}
-    Given a HMM $\mc$ with a monitor $\dfa$, threshold $\lambda_u$, horizon $h$, and risk $r$, there exists a colored MDP $\mdpc$ and a $\lambda$ such that
-    \[ \exists \sigma \in \ccSched. \Prob^{\mdpc}_{\sigma}(\lozenge T) \leq \lambda \quad\text{ iff }\quad \exists \tau \in \falsealarms{\mc,\lambda_s}{= h}\!(\dfa).\]
+    \label{thm:nfa}
+    Given a HMM $\mc$ with a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
+    \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \falsealarms{\mc,\lambda_u}{\leq h}\!(\dfa).\]
 \end{theorem}
-\begin{proof}
-    We reuse the transformation from \cref{thm:maintheorem} with the following modifications. We no longer take the complement of the monitor. Instead of doing reachability on the alarm state, we instead do reachability on the safe state.
-\end{proof}
+We provide a proof sketch for this theorem in \Cref{app:proofs}, however, we highlight the main ideas here. In order to find a trace accepted by the monitor, we no longer take the complement of the monitor while transforming to CTP. To find a safe trace we do reachability on $\tsafe$ instead of $\talrm$ while taking as a threshold $1-\lambda$. Thus, we find a trace whose probability of being safe is above a threshold\footnote{We cannot find a trace whose risk is below a threshold since minimizing reachability of $\talrm$ will try to choose a path that never takes a $\en$ action.}.
 
 \section{Learning Correct Monitors}\label{sec:learning}
 We describe how to \emph{learn} correct monitors (\cref{prob:Learn}), by combining automata learning  with a \emph{Minimally Adequate Teacher} (MAT,~\cite{DBLP:journals/iandc/Angluin87}) and monitor verification.
@@ -1426,7 +1411,7 @@ This paper presented a first approach to verification of monitors with respect t
 
 % \section{Description of benchmarks}\label{sec:benchmarksdescr}
 
-\section{Proof Outlines}\label{app:proofs}
+\section{Proof Outlines for \Cref{sec:monver}}\label{app:proofs}
 
 Proof sketch of \cref{lem:toctp}.
 \begin{proofoutline}
@@ -1443,6 +1428,26 @@ Proof sketch of \cref{lem:tocoloredmdp}.
 \begin{proofoutline}
     We define a bijective map between finite paths $\pi$ in $\mc_{\blacktriangleright h}$ and a set $X$ in the partition of the infinite paths in the induced MC by $\sigma$ in $\mdp_{\gtrdot h}$. The map is defined such that $\pi$ followed by the infinite sequence of $T$ is the postfix for every path in $X$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between trace consistent policies and traces, we can show that $\Prob^{\mdp_{\gtrdot h}}_{\sigma_\tau}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid t(\sigma_\tau) \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold, and similarly using $t^{-1}$ in the other direction.
 \end{proofoutline}
+
+Proof sketch of \cref{thm:leqhorizon}
+
+\begin{proof}
+    We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, it gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. The actions now transition to the state $\langle l, \iota\rangle$.
+    \begin{align*}
+        \ptrans'(\iota', l)(\langle l, \iota\rangle) & = 1
+    \end{align*}
+    We now show this transformation is correct.
+
+    In order to verify that there are no-missed-alarms for all $l<h$, we could use the transformation from \cref{thm:maintheorem} with the horizon equal to all $l<h$. This would neccesitate doing policy synthesis for $h$ colored MDPs.
+    \[ \exists_{\tau} \exists_{l\leq h} \Prob^{\sigma_\tau}[\lozenge alarm] > \lambda_s \]
+    If any of these $h$ policy synthesis problems can find a policy $\sigma_\tau$, there exists a trace $\tau\in\missedalarms{\leq h}{}$.
+
+    We combine these $h$ colored MDPs into one colored MDP in the following way.
+    We add a new initial state, and give it $h$ actions $\{1,\ldots,h\}$. Action $l\in\{1,\ldots,h\}$ points, with probability $1$, to the initial state of colored MDP $\mdp_{\gtrdot l}$. This is equivalent to solving policy synthesis on the $h$ individual MDPs.
+
+    \lm{Maybe note that the $\mdp_{\gtrdot l}$ only differed when they where in the CTP stage by the horizon, nothing else.}
+    We now note that for any $l<l'\leq h$ the initial state $\langle 1, \iota^{CTP}\rangle$ of $\mdp_{\gtrdot l}$ is bisimilar to the state $\langle l' - l + 1, \iota^CTP \rangle$ in $\mdp_{\gtrdot l'}$. We now claim that the result of bisimulation minimization on this combined colored MDP is described by the transformation described at the start of the proof.
+\end{proof}
 
 \section{Construction for NP-hardness/APX-hardness}
 \label{app:complexity}
