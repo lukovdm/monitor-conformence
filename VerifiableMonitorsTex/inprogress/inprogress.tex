@@ -1032,7 +1032,7 @@ To establish NP-hardness, we consider the CTP problem from~\Cref{def:CTPdecprob}
     \label{lem:ctpdecnphard}
     The CTP Decision Problem is (strongly) NP-hard.
 \end{lemma}
-The lemma holds even for acyclic HMMs. We reduce the problem from 3CNF, i.e., the problem of satisfiability of a 3CNF formula. We illustrate the construction briefly and provide details in \cref{app:complexity}.
+The lemma holds even for acyclic HMMs. We reduce the problem from 3SAT, i.e., the problem of satisfiability of a 3SAT formula. We illustrate the construction briefly and provide details in \cref{app:complexity}.
 
 \begin{figure}[t]
     \begin{subfigure}{0.13\textwidth}
@@ -1137,8 +1137,7 @@ Approximating the verification of monitors is also hard, in the sense that it is
 
 The maximal risk problem is an optimization problem
 \begin{definition}[CTP Optimization Problem]
-    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $A\subseteq\Sts$: \[\max\nolimits_{\tau \in \lang{\mc}}~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in A}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow)\]\sj{check notation for paths of length $h$}
-\end{definition}\sj{Sync with CTP definition}
+    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $F\subseteq\Sts$: \[\max\nolimits_{\tau \in \lang{\mc}}~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow).\]\end{definition}
 \begin{lemma}
     \label{lem:ctpapxhard}
     The CTP Optimization Problem is APX-hard.
@@ -1342,13 +1341,13 @@ We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = 
 %\Cref{fig:runtime-ws-comp,fig:runtime-ns-comp} contain the runtime of \alg learning compared to the baseline, when running with and without a gray area. The \textsc{Icy-Driving} ($\blacktriangleright$), \textsc{Evade} ($\blacksquare$), and \textsc{Airport} ($\bullet$), are generally faster when run with a gray area. In other benchmarks, adding a gray area has little effect on the runtime. A few HMMs were much faster to learn when using a gray area, one of these is the brown \textsc{Icy-Driving} HMM.
 
 \section{Related Work}
-This work studies \emph{model-based monitoring for stochastic systems} and combines \emph{active learning} with \emph{probabilistic verification}. We consider the related work in each of these directions. 
+This work studies \emph{monitoring based on stochastic systems} and combines \emph{active learning} with \emph{probabilistic verification}. We consider related work those directions. 
 %builds on previous research into model-based runtime verification with partial observability and probabilities. There are two major directions runtime verification has been taken. (1)~Create a HMM of the system and use state estimation to estimate in which state in the HMM the system is. (2)~Learn some monitor on the system directly. We will discuss both these approaches.
 \sj{TODO Check of werk van Stefan Kiefer et al over labelled MCs relevant is}
 
 \paragraph{Model-based monitoring for stochastic systems.}
-Runtime verification is a wide field, see~\cite{sanchezSurveyChallengesRuntime2019}\sj{good to add a more software oriented survey, maybe by havelund?} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{badingsCTMCsImpreciselyTimed2024}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?} 
-\sj{TODO Sebastian: Say something about shielding.}
+Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{badingsCTMCsImpreciselyTimed2024}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?} 
+Related to runtime monitoring is related to runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is succesful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
 Finally, \cite{acetoProbabilisticMonitorability2022}, a more general notion of correct monitors via linear time $\mu$-calculus is investigated, while in \cite{DBLP:journals/corr/abs-2412-11754} a notion of correct \emph{predictors} is introduced. 
 Both can be seen as generalizations of our definitions. 
 % The monitors are conservative if the model is\lm{Explain conservative?}.
@@ -1361,7 +1360,7 @@ Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMoni
 %A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
 
 \paragraph{Probabilistic verification}
-The verification of our monitors applies model checking of conditional probabilities~\cite{baierComputingConditionalProbabilities2014}\sj{add Peter van Rossum, TACAS 2006} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,badingsCTMCsImpreciselyTimed2024}. Most related is recent work in~\cite{badingsCTMCsImpreciselyTimed2024}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{}\sj{Maybe just cite the QCOMP 2023 paper here?}, which can also be tackled using synthesis approaches~\cite{}. Finally, considering MDPs as distribution transfomers~\cite{}\sj{stuff by Akshay S} gives a distinct semantics  
+The verification of our monitors applies model checking of conditional probabilities~\cite{baierComputingConditionalProbabilities2014}\sj{add Peter van Rossum, TACAS 2006} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,badingsCTMCsImpreciselyTimed2024}. Most related is recent work in~\cite{badingsCTMCsImpreciselyTimed2024}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{DBLP:journals/corr/abs-2405-13583}, which can also be tackled using synthesis approaches~\cite{DBLP:conf/cav/AndriushchenkoBCJKM23}. Finally, considering MDPs as distribution transfomers~\cite{}\sj{stuff by Akshay S} gives a distinct semantics\sj{can we say something useful here}  
 %
 %Theoretical results used in transformation or learning
 %\begin{itemize}
@@ -1409,12 +1408,9 @@ The verification of our monitors applies model checking of conditional probabili
 
 
 \section{Conclusion and Future Work}
+This paper presented a first approach to verification of monitors with respect to hidden Markov models. It embeds this verification procedure in an automata learning framework. The empirical evaluation is encouraging but also shows the limitations of the off-the-shelf frameworks. We see three avenues for future work: (1)~Dedicated synthesis methods for conditional probabilities and the specific structure of our colored MDPs. (2)~Automata learning for acyclic models and don't-care results.
+ (3)~Verification over unbounded (or very long) traces.
 
-\sj{Something about the size of monitor and model together}
-\begin{itemize}
-    \item Long traces (complexity and practical implementation).
-    \item Unbounded traces (It woudl be great if we can add why this is hard)
-\end{itemize}
 
 \clearpage
 \printbibliography{}
