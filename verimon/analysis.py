@@ -291,7 +291,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["mc"]["mc_observations"],
             d["monitor"]["monitor_states"],
             d["monitor"]["monitor_transitions"],
-            f"$10^{int(math.log10(d['family_size']))}$"
+            f"$10^{{{int(math.log10(d['family_size']))}}}$"
             if d["family_size"] is not None
             else "-",
             (d["result"]["time"] if d["result"]["time"] >= 1 else r"$\leq 1s$")
