@@ -57,6 +57,20 @@ def combine_sampling_and_verimon(data, equal_fields):
     return [d for d in data if "ignore" not in d]
 
 
+def add_family_size(data):
+    # Use regex on log file to find family size
+    for d in data:
+        if "family_size" in d:
+            continue
+        with open(d["log_path"], "r") as f:
+            log = f.read()
+        match = re.search(r"family size: (\d+e?\d*),", log)
+        if match:
+            d["family_size"] = float(match.group(1))
+        else:
+            d["family_size"] = None
+
+
 def prep_data_for_latex(data):
     for d in data:
         d["experiment"]["name"] = d["experiment"]["name"].replace("_", "\\_")
@@ -165,9 +179,7 @@ def load_experiment_data(path: str):
                 continue
 
             data["json_path"] = os.path.join(path + "/json/", json_file)
-            data["log_path"] = os.path.join(
-                path + "/logs/", json_file.replace(".json", ".log")
-            )
+            data["log_path"] = os.path.join(path + "/logs/", json_file[:-5] + ".log")
 
             if not data["finished"]:
                 unfished_count += 1
@@ -236,13 +248,13 @@ def load_experiment_data(path: str):
 
 def generate_verify_table(data, save_figures=False, save_path="./", file_name="verify"):
     preamble = r"""% Auto generated table
-\begin{longtable}[c]{@{}llrrrrrrrrrrrr@{}}
+\begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
 \caption{Table of all verification experiments.}
 \label{tab:fullverifyres}\\                                                                                                                                                                                                                                                                                                        \\
 \toprule
- & & \multicolumn{8}{c}{Benchmark} & \multicolumn{4}{c}{\alg}                                                                                                                                                       \\
-\cmidrule(lr){3-10}\cmidrule(lr){11-14}
- & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & Time (s) & Trans (s) & PAYNT (s) & $\lambda^{found}$  \\
+ & & \multicolumn{8}{c}{Benchmark} & \multicolumn{5}{c}{\alg}                                                                                                                                                       \\
+\cmidrule(lr){3-11}\cmidrule(lr){12-16}
+ & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\lang{\mc}^{\leq h}|$ & Time (s) & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$  \\
 \midrule
 \endhead"""
 
@@ -279,6 +291,9 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["mc"]["mc_observations"],
             d["monitor"]["monitor_states"],
             d["monitor"]["monitor_transitions"],
+            f"$10^{{{int(math.log10(d['family_size']))}}}$"
+            if d["family_size"] is not None
+            else "-",
             (d["result"]["time"] if d["result"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["result"]
             else "-",
@@ -295,6 +310,9 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
                 else r"$\leq 1s$"
             )
             if "fake" not in d["result"]
+            else "-",
+            d["result"]["pomdp_states"]
+            if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
             else "-",
             float(d["result"]["goal_threshold"])
             if "fake" not in d["result"] and d["result"]["goal_threshold"] is not None
