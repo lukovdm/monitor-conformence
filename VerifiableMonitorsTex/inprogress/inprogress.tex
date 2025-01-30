@@ -188,9 +188,9 @@ The trace associated to a system execution describes the information received by
                 \node[rectangle, draw, right=0.3cm of syscenter] (sensor) {\scriptsize Sensor};
 
                 \node[rectangle, draw, dotted, very thick, fit=(env)(controller)(act)(sensor)] (Sys) {};
-                \node[below=0.2cm of Sys] {\small \textcolor{green!50!black}{System}};
-                \node[rectangle, draw, right=.8cm of Sys, minimum height=2.4cm, minimum width=.8cm] (monitor) {\rotatebox{90}{\small\textcolor{green!50!black}{Monitor}}};
-                \node[rectangle, draw, minimum height=1.1cm, right=1cm of monitor, yshift=0.7cm, align=center, minimum width=1.4cm] (model) {\textcolor{green!50!black}{HMM}};
+                \node[below=0.2cm of Sys] {\small System};
+                \node[rectangle, draw, right=.8cm of Sys, minimum height=2.4cm, minimum width=.8cm] (monitor) {\rotatebox{90}{Monitor}};
+                \node[rectangle, draw, minimum height=1.1cm, right=1cm of monitor, yshift=0.7cm, align=center, minimum width=1.4cm] (model) {HMM};
                 \node[rectangle, draw, minimum height=1.1cm, right=1cm of monitor, yshift=-0.7cm, minimum width=1.4cm] (inference) {\scriptsize{inference}};
 
 
@@ -1464,7 +1464,7 @@ The construction runs in polynomial time. The formal proof of its correctness fo
 
 
 \section{Results from \alg Verification Experiments} \label{sec:resverify}
-We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each. \Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the approximate size of the language of the HMM. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. We list the size of the created Colored MDP, and finally the found threshold. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Checkmarks in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.\lm{Update with added collumns}
+We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each. \Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the approximate size of the language of the HMM. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. We list the size of the created Colored MDP, and finally the found threshold. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Checkmarks in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.
 
 
 \begin{figure}[t]
