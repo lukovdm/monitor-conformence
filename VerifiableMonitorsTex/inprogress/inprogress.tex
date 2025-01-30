@@ -1414,11 +1414,8 @@ This paper presented a first approach to verification of monitors with respect t
 
 \tocoloredmdp*
 \begin{proofoutline}
-\sj{I have a hard time following this proof. In particular, I would expect a citation to the result by Baier that this resetting via the initial states is ok. I do not see how to do that via a bijection. I can think a bit more about this, but I would consider the two directions of the equivalence and say 
-
-If there is a color consistent scheduler, then take the induced Markov chain, in that we reach t alrm with some probability. That conditional probability is by baier et al the same as the conditional probability of xyz, which is exactly what you want...
-}
-    We define a bijective map between finite paths\sj{paths of length horizon?} $\pi$ in $\mc_{\blacktriangleright h}$ and a set $X$ in the partition of the infinite paths\sj{what is -the- partition of the infinite paths?} in in the induced MC by $\sigma$ in $\mdp_{\gtrdot h}$. The map is defined such that $\pi$ followed by the infinite sequence of $\alarms$ is the postfix for every path in $X$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between trace consistent policies and traces, we can show that $\Prob^{\mdp_{\gtrdot h}}_{\sigma_\tau}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid t(\sigma_\tau) \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold, and similarly using $t^{-1}$ in the other direction.
+    Given a trace $\tau$ we define a bijective map $f_\tau$ between finite paths $\pi$ in $\mc_{\blacktriangleright h}$ with $\Prob^{\mc_{\blacktriangleright h}}(\tau\mid\pi) = 1$, and a set $X$ in the partition of the infinite paths in the induced MC by $\sigma_\tau$ in $\mdp_{\gtrdot h}$. $f$ is defined such that a path $\pi$ maps to the set of paths $\{\pi'\cdot\pi\cdot\alarms^\star\mid\pi'\in\Pi^{\mdp_{\gtrdot h}^\sigma}\}$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between traces and trace consistent policies, we can show that $\Prob^{\mdp_{\gtrdot h}}_{t(\tau)}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold.
+    The other direction follows similarly using $t^{-1}$ and assuming a policy.
 \end{proofoutline}
 
 \leqhtheorem*
