@@ -12,6 +12,7 @@ import resource
 from time import time
 import traceback
 from typing import Any, Literal
+from numpy import double
 from setproctitle import getproctitle, setproctitle
 import yaml
 
@@ -690,7 +691,11 @@ class VerifyExperiment(Experiment):
                         "time": verify_time,
                         "product_time": stats["product_time"],
                         "paynt_time": stats["paynt_time"],
-                        "double_check_time": (stats["double_check_time"]),
+                        "double_check_time": (
+                            stats["double_check_time"]
+                            if "double_check_time" in stats
+                            else None
+                        ),
                         "pomdp_states": len(model.pomdp.states),
                     }
                     if model:

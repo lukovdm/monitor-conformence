@@ -71,6 +71,20 @@ def add_family_size(data):
             d["family_size"] = None
 
 
+def add_learning_rounds(data):
+    # Use regex on log file to find learning rounds
+    for d in data:
+        if "verimon" in d:
+            continue
+        with open(d["log_path"], "r") as f:
+            log = f.read()
+        match = re.search(r"Learning Rounds:  (\d+)", log)
+        if match:
+            d["sampling"]["learning_rounds"] = int(match.group(1))
+        else:
+            d["sampling"]["learning_rounds"] = None
+
+
 def prep_data_for_latex(data):
     for d in data:
         d["experiment"]["name"] = d["experiment"]["name"].replace("_", "\\_")
@@ -254,7 +268,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 \toprule
  & & \multicolumn{8}{c}{Benchmark} & \multicolumn{5}{c}{\alg}                                                                                                                                                       \\
 \cmidrule(lr){3-11}\cmidrule(lr){12-16}
- & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\lang{\mc}^{\leq h}|$ & Time (s) & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$  \\
+ & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\lang^{\leq h}|$ & Time (s) & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$  \\
 \midrule
 \endhead"""
 
@@ -331,13 +345,13 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 
 def generate_learn_table(data, save_figures=False, save_path="./", file_name="runtime"):
     preamble = r"""% Auto generated table
-\begin{longtable}[c]{@{}llrrrrrrrrrrrrrrr@{}}
+\begin{longtable}[c]{@{}llrrrrrrrrrrrrrrrr@{}}
 \caption{Table of all learn experiments.}
 \label{tab:fulllearnexp}\\                                                                                                                                                                                                                                                                                                    \\
 \toprule
- & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{4}{c}{Baseline}                                                                                                                                                       \\
-\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-17}
- & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
+ & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{5}{c}{Baseline}                                                                                                                                                       \\
+\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-18}
+ & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & Rounds & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
 \endhead"""
 
@@ -361,31 +375,26 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_observations"],
             (d["verimon"]["time"] if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["verimon"]
-            else r"\checkmark",
-            len(d["verimon"]["monitors"])
-            if "fake" not in d["verimon"]
-            else r"\checkmark",
-            d["verimon"]["monitor_states"]
-            if "fake" not in d["verimon"]
-            else r"\checkmark",
+            else r"-",
+            len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
+            d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else r"-",
             float(d["verimon"]["false_positive"])
             if "fake" not in d["verimon"]
-            else r"\checkmark",
+            else r"-",
             float(d["verimon"]["false_negative"])
             if "fake" not in d["verimon"]
-            else r"\checkmark",
+            else r"-",
             (d["sampling"]["time"] if d["sampling"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["sampling"]
-            else r"\checkmark",
-            d["sampling"]["monitor_states"]
-            if "fake" not in d["sampling"]
-            else r"\checkmark",
+            else r"-",
+            d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
+            d["sampling"]["learning_rounds"] if "fake" not in d["sampling"] else r"-",
             float(d["sampling"]["false_positive"])
             if "fake" not in d["sampling"]
-            else r"\checkmark",
+            else r"-",
             float(d["sampling"]["false_negative"])
             if "fake" not in d["sampling"]
-            else r"\checkmark",
+            else r"-",
         ]
         for d in data
     ]
