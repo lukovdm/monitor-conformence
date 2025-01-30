@@ -80,8 +80,9 @@
 \usetikzlibrary{patterns, intersections, positioning, shapes.geometric, shapes.misc, shapes.symbols, calc,
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
 
-\addbibresource{literature.bib}
 \addbibresource{zotero_dblp.bib}
+
+\addbibresource{literature.bib}	
 
 \crefname{figure}{Fig.}{Figs.}
 \Crefname{figure}{Figure}{Figures}
@@ -112,7 +113,18 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe. A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations is below some threshold. The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite automata. The contribution combines four ingredients: First, we establish the coNP-hardness of checking whether an automaton is a correct monitor, i.e., a monitor without misclassifications. Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem. Third, we integrate the verification routine into an active automata learning routine to synthesize correct monitors. Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
+Runtime monitors assess whether a system is in a unsafe state based on a stream of observations. We study the problem where the system is subject to probabilistic uncertainty and described by a hidden Markov model.
+ A stream of observations is then unsafe, if  it the probability of being in an unsafe state is above a threshold. 
+ A correct monitor recognises the set of unsafe observations. 
+%
+%We study white-box monitoring, where the system is given by a hidden Markov model. 
+%The verification problem asks to decide whether a finite automaton is a correct monitor, i.e., whether it raises an alarm for observation
+%
+%
+%    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe. 
+%    A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations is below some threshold. 
+%    
+    The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite automata. The contribution combines four ingredients: First, we establish the coNP-hardness of checking whether an automaton is a correct monitor, i.e., a monitor without misclassifications. Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem. Third, we integrate the verification routine into an active automata learning routine to synthesize correct monitors. Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
     %
     % In particular, we provide a verification procedure that can establish the absence of mi
     %This paper contributes the first correct-by-construction synthesis approach for  such monitors, represented as finite automata. We assume that the system is described by a known hidden Markov model.
@@ -128,10 +140,10 @@
 
 \section{Introduction}
 \sj{Fix citations with xx}
-
+\sj{new abstract, please read and sync with hotcrp}
 \noindent
-Runtime assurance is an essential ingredient in the deployment of safe autonomous systems~\cite{bartocciLecturesRuntimeVerification2018,DBLP:conf/aaai/ChatterjeeCD16, sanchezSurveyChallengesRuntime2019}.
-Runtime monitors provide assurance by flagging potentially dangerous system behavior by observing a system execution.
+Runtime assurance is an essential ingredient in the deployment of safe autonomous systems~\cite{bartocciLecturesRuntimeVerification2018,sanchezSurveyChallengesRuntime2019}.
+Runtime monitors provide assurance by flagging potentially dangerous system behavior, based on a system execution.
 More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envelope. A monitor is correct if it correctly raises such alarms based on a formal specification.
 Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{sanchezSurveyChallengesRuntime2019}, such as:
 (1)~the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does not uniquely identify the state of a system,
@@ -223,8 +235,8 @@ The trace associated to a system execution describes the information received by
 
                 \node[rectangle, minimum height=2.5cm, draw] (learner) {\rotatebox{90}{\scriptsize{learner}}};
                 \node[rectangle,right=2cm of learner, yshift=0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (mq) {\scriptsize{Membership?}\\[-3pt] \scriptsize{(the monitor)}};
-                \node[rectangle,right=2cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Acceptance?}};
-                \node[rectangle, right=0.8cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Inclusion}};
+                \node[rectangle,right=2cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Equivalence?}};
+                \node[rectangle, right=0.8cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Verifier}};
                 \node[rectangle, right=0.8cm of mq, draw, minimum width=1.4cm, minimum height=1cm,align=center] (model) {HMM};
                 \node[above=.2cm of model] (dummy) {};
 
@@ -234,7 +246,7 @@ The trace associated to a system execution describes the information received by
                 \draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
                 \draw[->] (eq) --node[right] {\scriptsize sample} (mq);
 
-                \draw[->] (eq) --node[above] {\scriptsize verify} (inc);
+                \draw[->] (eq) --node[above] {invoke} (inc);
                 \draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
                 \draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
 
@@ -255,9 +267,9 @@ The trace associated to a system execution describes the information received by
 Like in~\cite{acetoProbabilisticMonitorability2022}, we summarise the behavior of monitors by the    set of traces (i.e., formal languages) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
 
 \paragraph{Illustrative toy example.}
-As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it can drifted off the road. The HMM in \Cref{fig:centralexample} describes how a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$ for this trace.
+As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \Cref{fig:centralexample} describes how a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$\sj{can we motivate this number} for this trace.
 In \cref{fig:centralmon}, monitor $\dfa$ is a finite automaton that describes the set of traces that end with two consecutive icy patches.
-The verification question in this paper is now: \emph{Is this a correct monitor for threshold $0.9$?} That is, is an alarm raised iff the trace risk is above $0.9$?
+The verification question in this paper is now: \emph{Is this a correct monitor for threshold $0.8$?} That is, is an alarm raised iff the trace risk is above $0.8$?\sj{Isnt the answer no, as we have $\sfrac{13}{22}$ for the example above? But later, we say that the monitor is correct?}
 
 %A correct monitor behaves as follows: First, it does raise an alarm on each unsafe trace (no false negatives) and second, it does \emph{not} raise an alarm on each safe trace (no false positives). %In terms of a formal languages, these are two inclusion checks.
 
@@ -348,9 +360,9 @@ We formalise the adequate problem using colored MDPs and solve it using (exact) 
 Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors.
 Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
 We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
+Consider \cref{fig:learning}:
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor, as popularized in \emph{black-box checking}~\cite{DBLP:journals/jalc/PeledVY02}.
-Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, resolve traces that are not relevant for the monitor, and combine our equivalence oracle with a conformance oracle to boost performance. Our approach is outlined in \cref{fig:learning}.\lm{Is this a good mention of fig 2?}
-%
+Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, resolve traces that are not relevant for the monitor, and combine our equivalence oracle with a conformance oracle to boost performance. %
 %\paragraph{Practical considerations in using active automata learning.}
 %Practically, some modifcations are important:
 %\begin{itemize}
@@ -370,7 +382,7 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 \textbf{(1)}~We solve the verification problem by exhaustively searching for a counterexample using probabilistic system synthesis (\cref{sec:monver}).
 \textbf{(2)}~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning (\cref{sec:learning}).
 \textbf{(3)}~We prove the hardness of the verification problem (\cref{sec:compl}).
-\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}) Our prototype can handle HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
+\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}) Our prototype finds monitors that are provably correct on $10^18$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
 %
 %\begin{figure}[t]
 %    \centerline{
@@ -445,12 +457,11 @@ A reachability property on target states T is the set of paths which contain a s
 %    From~\cite{baierPrinciplesModelChecking2008}
 %\end{definition}
 %\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
-Notions such as paths are lifted from MCs. Furthermore, a \emph{trace} $\tau$ is a sequence of observations.
+Notions such as paths are lifted from MCs. Furthermore, a \emph{trace} $\tau$ is a sequence of observations. We lift $\obs$ from states to paths.
 We define  $\Prob(\tau\mid\pi) \defeq 1$ if $\obsf(\pi) = \tau$ and zero otherwise. The probability of a trace $\tau$ is $\sum_{\pi\in\Pi^\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
 Finally, the conditional probability on a trace $\tau\in\lang{\mc}$ is defined using Bayes' rule
 $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}$.
-We define the set of traces $\tau$ of a HMM, for which there is path $\pi$ such that $\Prob(\tau\mid\pi) = 1$, as the language $\lang{\mc}$ of the HMM.
-
+We define $\lang{\mc} \defeq \{ \obsf(\pi) \mid \pi \in \Pi^\mc\}$.
 \begin{example}
     We consider the HMM from \cref{fig:centralhmm} and $\tau = \dry\cdot \icy\cdot \icy$. The conditional probability $\Prob(q_c,q_i,q_i\ |~\tau)$ is $\sfrac{\Prob(\tau\ |~q_c,q_i,q_i)\cdot \Prob(q_c,q_i,q_i)}{\Prob(\tau)}$. $\Prob(\tau \mid q_c,q_i,q_i)$ is 1, and $\Prob(q_c,q_i,q_i)$ is $\sfrac{9}{40}$. The sum of the probabilities of all paths which observe $\tau$ is $\sfrac{11}{20}$. Thus, $\Prob(q_c,q_i,q_i\mid\tau)$ is $\sfrac{9}{22}$.
 \end{example}
@@ -707,7 +718,7 @@ We further simplify the problem by unrolling the model along the horizon. We als
     \label{def:acyclichmm}
     The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of a HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with horizon $h$ and alarm states $F \subseteq \Sts$ is the HMM $\mc_{\blacktriangleright h} \defeq (\{1,\hdots,h\} \times \Sts \cup \{ \alarms, \safes, \igs \}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf')$,
     $\obsf'$ is given by $\obsf'(\langle i, s\rangle) \defeq \obsf(s)$, $\obsf'(\igs) \defeq \ig$, and $\obsf'(\alarms) = \obsf'(\safes) \defeq \en$
-    and $\ptrans'$ is given by:\sj{Is it really helpful to have these three special states as tuples? the $h+1$ is here not that helpful (but maybe later?)}\lm{It simplifies def 12, because it does not need a special case for the $\en$ observation.}
+    and $\ptrans'$ is given by:
     \begin{align*}
         \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle, \langle i+1, s'\rangle) & \defeq \ptrans(s,s'), \\
         \ptrans'(\langle h, s\rangle,\left\langle h+1, t\right\rangle)                            & \defeq
@@ -860,7 +871,7 @@ Using the coloring as described in \cref{def:polsyntrans}, the trace consistent 
 
 \subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}
 
-\paragraph{Traces of Length up to the Horizon}
+\paragraph{Traces of length at most horizon.}
 The approach for \cref{thm:maintheorem} only works for traces of length exactly the horizon. We generalize this approach to traces of length at most the horizon.\lm{Make sure this still matches \cref{thm:maintheorem}.}
 \begin{restatable}{theorem}{leqhtheorem}
     \label{thm:leqhtheorem}
@@ -934,7 +945,7 @@ The approach for \cref{thm:maintheorem} only works for traces of length exactly 
     \label{fig:leqhorizon}
 \end{figure}
 
-\paragraph{No-False-Alarms Problem (\cref{prob:FA})}
+\paragraph{Finding false alarms (Solving \cref{prob:FA}).}
 We modify the transformation from \cref{thm:leqhtheorem} such that it solves the no-false-alarms problem.
 This problem differs in two ways from the no-missed-alarms problem. We are finding a trace \emph{accepted by} the monitor, and we find a trace whose risk is \emph{below} the \emph{unsafe} threshold.
 \begin{restatable}{theorem}{nfa}
@@ -973,7 +984,7 @@ The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Ea
 
 \begin{lemma}
     Given a MAT with a $\EQ_{\lambda_s, \lambda_u}$ and a $\MQ_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
-\end{lemma}
+\end{lemma}\sj{Consider moving this proof to appendix and use space for experiments}
 \begin{proof}
     If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by $\MQ_{\lambda_l}$ it cannot be given as a counterexample by $\EQ_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, $\MQ_{\lambda_l}$ and $\EQ_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to $\EQ_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
 \end{proof}
@@ -1136,7 +1147,7 @@ Code, benchmarks, and logs will be publicly available via the artifact evaluatio
 \paragraph{Setup.}
 The \alg tool is implemented in Python and C++ on top of the model checker \textsc{Storm}~\cite{henselProbabilisticModelChecker2022} for data structures and for the MQs in \cref{sec:learning}~\cite{jungesRuntimeMonitorsMarkov2021}.
 We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify colored MDPs (\cref{def:colMDP}), using exact arithmetic to avoid numerical problems on these types of benchmarks~\cite{DBLP:conf/tacas/HartmannsJQW23}.
-The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.\sj{Maybe mention that for conformance queries, we sample traces in the HMM rather than using a test suite (test suites =  the things that Loes does)?}\lm{This is already mentioned in sec 4.}
+The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.
 All experiments are run  on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
 %We ran multiple benchmarks in parallel.
 
@@ -1375,9 +1386,9 @@ This paper presented a first approach to verification of monitors with respect t
 
 \leqhtheorem*
 \begin{proof}
-    We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, it gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. The actions now transition to the state $\langle l, \iota\rangle$.
+    We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, which gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. Taking action $l$ leads to the state $\langle l, \iota\rangle$.
     \begin{align*}
-        \ptrans'(\iota', l)(\langle l, \iota\rangle) & = 1
+        \ptrans'(\iota', l, \langle l, \iota\rangle) & = 1
     \end{align*}
     We now show this transformation is correct.
 
