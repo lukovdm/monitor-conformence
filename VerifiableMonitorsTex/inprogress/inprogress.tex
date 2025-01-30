@@ -328,12 +328,12 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
     \caption{Running example: HMM (a) and two monitors (b).}
     \label{fig:centralexample}
 \end{figure}
-\sj{caption requires a hrizon?}\lm{I think we mention the horizon whenever it is relevant}
+\sj{caption requires a hrizon?}\lm{I think we mention the horizon whenever it is relevant}\sj{Correctness is always wrt a horizon}
 
 
 
 \paragraph{Computational complexity results.}
-Deciding whether a monitor is correct is coNP-complete (\Cref{lem:complexity}), assuming that the horizon is unary encoded.  In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace as safe/unsafe.
+Deciding whether a monitor is correct is coNP-complete (\Cref{lem:complexity})\sj{Theorems? should be Theorem}, assuming that the horizon is unary encoded.  In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace as safe/unsafe.
 A simpler variant of this problem asks whether there is a bounded trace in the HMM that is unsafe.
 %\footnote{The results also apply to checking for safe traces.}
 %The problem is clearly in NP (assuming that the bound is unary encoded).
@@ -351,6 +351,7 @@ We formalise the adequate problem using colored MDPs and solve it using (exact) 
 
 \paragraph{Our learning approach. }
 \sj{Mention Fig 2}
+\sj{Ensure Fig1/Fig 2 fit}
 Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors.
 Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
 We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
