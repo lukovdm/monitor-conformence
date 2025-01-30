@@ -112,13 +112,7 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe.
-    A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations is below some threshold.
-    The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite automata. The contribution combines four ingredients:
-    First, we establish the coNP-hardness of checking whether an automaton is a correct monitor, i.e., a monitor without misclassifications.
-    Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem.
-    Third, we integrate the verification routine into an active automata learning routine to synthesise correct monitors.
-    Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
+    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe. A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations is below some threshold. The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite automata. The contribution combines four ingredients: First, we establish the coNP-hardness of checking whether an automaton is a correct monitor, i.e., a monitor without misclassifications. Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem. Third, we integrate the verification routine into an active automata learning routine to synthesize correct monitors. Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
     %
     % In particular, we provide a verification procedure that can establish the absence of mi
     %This paper contributes the first correct-by-construction synthesis approach for  such monitors, represented as finite automata. We assume that the system is described by a known hidden Markov model.
@@ -539,8 +533,8 @@ Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finit
 %\end{mdframed}
 
 \begin{example}
-    We discuss the example from \cref{fig:centralexample} using the correct monitor $\dfa$.
-    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{13}{22}, \sfrac{1}{10}$ respectively. If $\lambda_s$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not accepted by the monitor. Given that its risk is below $\lambda_s$, the monitor does not have any missed alarms. Similarly, monitor $\dfa$ does not have any false alarms for $\lambda_u = \sfrac{1}{4}$. Thus, $\dfa$ is a correct monitor for $\mc$ with $h$, $\lambda_s$, and $\lambda_u$.\sj{this is a bit hard to follow. What do we want to convey with this example?}
+    We discuss monitor correctness for the example from \cref{fig:centralexample} using the correct monitor $\dfa$.
+    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{13}{22}, \sfrac{1}{10}$ respectively. If $\lambda_s$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not accepted by the monitor. Given that its risk is below $\lambda_s$, the monitor does not have any missed alarms. Similarly, monitor $\dfa$ does not have any false alarms for $\lambda_u = \sfrac{1}{4}$. Thus, $\dfa$ is a correct monitor for $\mc$ with $h$, $\lambda_s$, and $\lambda_u$.
 \end{example}
 
 
@@ -1187,19 +1181,21 @@ For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
                 \cmidrule(lr){3-10}\cmidrule(lr){11-15}
                                        &               & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\mathcal{L}^{\leq h}|$ & Time (s)  & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$ \\
                 \midrule
-                \textsc{AirportA-3}    & \textsc{A-0}  & 10                            & MA                       & 45           & 113             & 18    & 23            & 414              & $10^{12}$                & 1.82      & $\leq 1s$ & 1.64      & 328                  & 0.30              \\
-                \textsc{AirportA-3}    & \textsc{A-2}  & 10                            & FA                       & 45           & 113             & 18    & 23            & 414              & $10^{13}$                & 6.00      & $\leq 1s$ & 5.82      & 328                  & 0.19              \\
-                \textsc{AirportA-3}    & \textsc{A-8}  & 10                            & MA                       & 45           & 113             & 18    & 81            & 1458             & $10^{12}$                & 900.48    & $\leq 1s$ & 900.08    & \checkmark           & \checkmark        \\
-                \textsc{AirportA-3}    & \textsc{A-10} & 10                            & FA                       & 45           & 113             & 18    & 81            & 1458             & $10^{13}$                & 1070.69   & $\leq 1s$ & 1070.27   & \checkmark           & \checkmark        \\
+                \textsc{AirportA-7}    & \textsc{A-36} & 10                            & MA                       & 128          & 440             & 32    & 23            & 736              & $10^{13}$                & 1.65      & $\leq 1s$ & 1.20      & 749                  & 0.32              \\
+                \textsc{AirportA-7}    & \textsc{A-38} & 10                            & FA                       & 128          & 440             & 32    & 23            & 736              & $10^{13}$                & 2.07      & $\leq 1s$ & 1.61      & 749                  & 0.07              \\
+                \textsc{AirportA-7}    & \textsc{A-40} & 10                            & MA                       & 128          & 440             & 32    & 203           & 6496             & $10^{13}$                & 56.91     & 1.31      & 55.57     & 2019                 & 0.33              \\
+                \textsc{AirportA-7}    & \textsc{A-42} & 10                            & FA                       & 128          & 440             & 32    & 203           & 6496             & $10^{13}$                & 4.92      & 1.22      & 3.69      & 2019                 & 0.08              \\
+                \textsc{AirportA-7}    & \textsc{A-44} & 10                            & MA                       & 128          & 440             & 32    & 394           & 12608            & $10^{13}$                & 1294.46   & 3.04      & 1291.34   & 3054                 & \checkmark        \\
+                \textsc{AirportA-7}    & \textsc{A-46} & 10                            & FA                       & 128          & 440             & 32    & 394           & 12608            & $10^{13}$                & 470.47    & 2.99      & 467.48    & 3054                 & \checkmark        \\
                 \midrule
-                \textsc{Evade}         & \textsc{E-20} & 9                             & MA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 79.85     & 70.47     & 9.24      & \checkmark           & \checkmark        \\
-                \textsc{Evade}         & \textsc{E-22} & 9                             & FA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 79.30     & 70.28     & 9.01      & \checkmark           & \checkmark        \\
+                \textsc{Evade}         & \textsc{E-20} & 9                             & MA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 80.18     & 70.73     & 9.30      & 683                  & \checkmark        \\
+                \textsc{Evade}         & \textsc{E-22} & 9                             & FA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 78.86     & 69.94     & 8.91      & 683                  & \checkmark        \\
                 \midrule
-                \textsc{Hidden-Incen.} & \textsc{H-8}  & 10                            & MA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 1233.95   & 10.10     & 1223.79   & \checkmark           & \checkmark        \\
-                \textsc{Hidden-Incen.} & \textsc{H-10} & 10                            & FA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 4888.19   & 10.27     & 4877.91   & \checkmark           & \checkmark        \\
+                \textsc{Hidden-Incen.} & \textsc{H-8}  & 10                            & MA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 1426.34   & 10.08     & 1416.20   & 1307                 & \checkmark        \\
+                \textsc{Hidden-Incen.} & \textsc{H-10} & 10                            & FA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 4746.12   & 10.11     & 4736.01   & 1307                 & \checkmark        \\
                 \midrule
-                \textsc{Icy-Driving}   & \textsc{I-34} & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & $10^{0}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & \checkmark           & \checkmark        \\
-                \textsc{Icy-Driving}   & \textsc{I-14} & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{11}$                & 1393.58   & $\leq 1s$ & 1393.57   & \checkmark           & \checkmark        \\
+                \textsc{Icy-Driving}   & \textsc{I-34} & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & $10^{0}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8                    & \checkmark        \\
+                \textsc{Icy-Driving}   & \textsc{I-14} & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{11}$                & 1274.44   & $\leq 1s$ & 1274.43   & 74                   & \checkmark        \\
                 \bottomrule
             \end{tabular}
         \end{scriptsize}
@@ -1208,11 +1204,12 @@ For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
     \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
     \label{tab:verifysubest}
 \end{table}
+\lm{I could add some Refuel to the table, they have a language size of $10^{23}$}
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
 We present our results in \Cref{tab:verifysubest}, which is a subset of the 336 benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20}/\textsc{E-22}.
-Benchmarks \textsc{A-0}/\textsc{A-2} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, whereas \textsc{A-8}/\textsc{A-10} reflect verification of the same HMM with respect to a larger correct monitor.\sj{Generally, I think sets of three are better to see a trend (small, medium, large sized)}
+Benchmarks \textsc{A-36}/\textsc{A-38} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, \textsc{A-40}/\textsc{A-42} reflect a semi-correct monitor, and \textsc{A-44}/\textsc{A-46} reflect verification of the same HMM with respect to a larger correct monitor.
 Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-14} compared to \textsc{I-34}.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
 In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see \Cref{sec:resverify}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
