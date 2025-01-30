@@ -1415,7 +1415,7 @@ This paper presented a first approach to verification of monitors with respect t
 
 \tocoloredmdp*
 \begin{proofoutline}
-    We define a bijective map between finite paths $\pi$ in $\mc_{\blacktriangleright h}$ and a set $X$ in the partition of the infinite paths in the induced MC by $\sigma$ in $\mdp_{\gtrdot h}$. The map is defined such that $\pi$ followed by the infinite sequence of $T$ is the postfix for every path in $X$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between trace consistent policies and traces, we can show that $\Prob^{\mdp_{\gtrdot h}}_{\sigma_\tau}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid t(\sigma_\tau) \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold, and similarly using $t^{-1}$ in the other direction.
+    We define a bijective map between finite paths $\pi$ in $\mc_{\blacktriangleright h}$ and a set $X$ in the partition of the infinite paths in the induced MC by $\sigma$ in $\mdp_{\gtrdot h}$. The map is defined such that $\pi$ followed by the infinite sequence of $\alarms$ is the postfix for every path in $X$. Using \cref{def:polsyntrans}, we can prove that the probability of $\pi$ and $X$ are equal. Now, using a bijective map $t$ between trace consistent policies and traces, we can show that $\Prob^{\mdp_{\gtrdot h}}_{\sigma_\tau}(\lozenge T) = \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid t(\sigma_\tau) \cdot \en)$. Thus, if there exists a trace consistent policy $\sigma_\tau$ above the threshold, $t(\sigma_\tau)$ is also above the threshold, and similarly using $t^{-1}$ in the other direction.
 \end{proofoutline}
 
 \leqhtheorem*
@@ -1439,15 +1439,34 @@ This paper presented a first approach to verification of monitors with respect t
 
 \nfa*
 \begin{proofoutline}
-    The transformation from \cref{sec:monver} is reused with the following differences. The complement of the monitor in \cref{lem:toctp} is no longer taken, and $\tsafe$ is used as the target state in \cref{lem:tocoloredmdp}. An outline of why the second step is correct is given below by showing the following.
+    The transformation from \cref{sec:monver} is reused with the following differences. The complement of the monitor in \cref{lem:toctp} is no longer taken, and $\safes$ is used as the target state in \cref{lem:tocoloredmdp}. An outline of why the second step is correct is given below by showing the following:
 
     \[
         \begin{array}{c}
-            \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge \tsafe) \geq 1 - \lambda \\
-            \Updownarrow                                                                                      \\
+            \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge \safes) > 1 - \lambda \\
+            \Updownarrow                                                                                   \\
             \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \leq \lambda
         \end{array}
     \]
+    Using the proof of \cref{lem:tocoloredmdp} where we replace $\talrm$ with $\tsafe$, and $\lambda$ with $1 - \lambda$, results in the following statement:
+    \[
+        \begin{array}{c}
+            \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \tsafe \mid \tau \cdot \en) > 1 - \lambda \\
+            \Updownarrow                                                                                                                                                                               \\
+            \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \leq \lambda
+        \end{array}
+    \]
+    This can be shown to hold using the following fact,
+    \begin{align*}
+        \forall\tau \in \lang{\mc_{\blacktriangleright h}} \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}
+        \left(
+        \begin{array}{l}
+                \Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \tsafe \mid \tau \cdot \en)\ + \\
+                \Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en)
+            \end{array}
+        \right)
+        \in \{0,1\}
+    \end{align*}
 \end{proofoutline}
 
 \section{Construction for NP-hardness/APX-hardness}
