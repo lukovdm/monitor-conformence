@@ -81,7 +81,7 @@
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
 
 \addbibresource{literature.bib}
-\addbibresource{zotero.bib}
+\addbibresource{zotero_dblp.bib}
 
 \crefname{figure}{Fig.}{Figs.}
 \Crefname{figure}{Figure}{Figures}
@@ -130,7 +130,7 @@
 \sj{Fix citations with xx}
 
 \noindent
-Runtime assurance is an essential ingredient in the deployment of safe autonomous systems~\cite{xx}.
+Runtime assurance is an essential ingredient in the deployment of safe autonomous systems~\cite{bartocciLecturesRuntimeVerification2018,DBLP:conf/aaai/ChatterjeeCD16, sanchezSurveyChallengesRuntime2019}.
 Runtime monitors provide assurance by flagging potentially dangerous system behavior by observing a system execution.
 More precisely, a monitor receives a stream of observations about the system and outputs a verdict, e.g., it raises an alarm that the system has left some safety envelope. A monitor is correct if it correctly raises such alarms based on a formal specification.
 Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{sanchezSurveyChallengesRuntime2019}, such as:
@@ -452,7 +452,7 @@ $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(
 We define the set of traces $\tau$ of a HMM, for which there is path $\pi$ such that $\Prob(\tau\mid\pi) = 1$, as the language $\lang{\mc}$ of the HMM.
 
 \begin{example}
-    We consider the HMM from \cref{fig:centralhmm} and $\tau = \dry, \icy, \icy$. The conditional probability $\Prob(q_c,q_i,q_i\ |~\tau)$ is $\sfrac{\Prob(\tau\ |~q_c,q_i,q_i)\cdot \Prob(q_c,q_i,q_i)}{\Prob(\tau)}$. $\Prob(\tau \mid q_c,q_i,q_i)$ is 1, and $\Prob(q_c,q_i,q_i)$ is $\sfrac{9}{40}$. The sum of the probabilities of all paths which observe $\tau$ is $\sfrac{11}{20}$. Thus, $\Prob(q_c,q_i,q_i\mid\tau)$ is $\sfrac{9}{22}$.
+    We consider the HMM from \cref{fig:centralhmm} and $\tau = \dry\cdot \icy\cdot \icy$. The conditional probability $\Prob(q_c,q_i,q_i\ |~\tau)$ is $\sfrac{\Prob(\tau\ |~q_c,q_i,q_i)\cdot \Prob(q_c,q_i,q_i)}{\Prob(\tau)}$. $\Prob(\tau \mid q_c,q_i,q_i)$ is 1, and $\Prob(q_c,q_i,q_i)$ is $\sfrac{9}{40}$. The sum of the probabilities of all paths which observe $\tau$ is $\sfrac{11}{20}$. Thus, $\Prob(q_c,q_i,q_i\mid\tau)$ is $\sfrac{9}{22}$.
 \end{example}
 
 
@@ -478,7 +478,7 @@ By picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe, als
 We write $\safetraces{\mc,\lambda_s}{\leq h}$ (and $\unsafetraces{\mc,\lambda_u}{\leq h}$) for the set of safe (and unsafe) traces of length at most $h$.
 %We often omit the sub/superscripts.
 \begin{example}
-    We consider the HMM from \cref{fig:centralhmm}, with the risk function assigning $1$ to $q_c$ and $0$ to all other states. Taking the trace $\dry, \icy, \icy$, there are three paths which could generate this trace. Two paths end in $q_c$, one ends in $q_i$. The paths ending in $q_c$ have a conditional probability of $\sfrac{13}{22}$. Since only these paths have a non-zero risk, the risk of the trace is $\sfrac{13}{22} \cdot r(q_c) = \sfrac{13}{22}$.
+    We consider the HMM from \cref{fig:centralhmm}, with the risk function assigning $1$ to $q_c$ and $0$ to all other states. Taking the trace $\dry \cdot \icy \cdot \icy$, there are three paths which could generate this trace. Two paths end in $q_c$, one ends in $q_i$. The paths ending in $q_c$ have a conditional probability of $\sfrac{13}{22}$. Since only these paths have a non-zero risk, the risk of the trace is $\sfrac{13}{22} \cdot r(q_c) = \sfrac{13}{22}$.
 \end{example}
 \begin{definition}[Missed/False alarms]
     Given a monitor $\dfa$ for HMM $\mc$, a horizon $h$, and thresholds $\lambda_s \leq \lambda_u \in \mathbb{R}$, the set of \emph{missed alarms} is $\missedalarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \unsafetraces{\mc,\lambda_u}{\leq h} \setminus \lang{\dfa}$. The set of \emph{false alarms} is $\falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa) \defeq \safetraces{\mc,\lambda_s}{\leq h} \cap \lang{\dfa}$.
@@ -533,7 +533,7 @@ Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finit
 
 \begin{example}
     We discuss monitor correctness for the example from \cref{fig:centralexample} using the correct monitor $\dfa$.
-    Given the risk function assigning $1$ to $q_c$ and $0$ to all other states, the traces $\tau_1 = \dry, \icy, \icy$ and $\tau_2 = \dry, \icy$ have risks $\sfrac{13}{22}, \sfrac{1}{10}$ respectively. If $\lambda_s$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not accepted by the monitor. Given that its risk is below $\lambda_s$, the monitor does not have any missed alarms. Similarly, monitor $\dfa$ does not have any false alarms for $\lambda_u = \sfrac{1}{4}$. Thus, $\dfa$ is a correct monitor for $\mc$ with $h$, $\lambda_s$, and $\lambda_u$.
+    Given the risk function assigning $1$ to $q_c$ and $0$ -to all other states, the traces $\tau_1 = \dry \cdot \icy \cdot \icy$ and $\tau_2 = \dry \cdot \icy$ have risks $\sfrac{13}{22}, \sfrac{1}{10}$ respectively. If $\lambda_s$ is $\sfrac{1}{4}$ and the horizon $h$ is 3, $\tau_2$ is the trace with maximum risk not accepted by the monitor. Given that its risk is below $\lambda_s$, the monitor does not have any missed alarms. Similarly, monitor $\dfa$ does not have any false alarms for $\lambda_u = \sfrac{1}{4}$. Thus, $\dfa$ is a correct monitor for $\mc$ with $h$, $\lambda_s$, and $\lambda_u$.
 \end{example}
 
 
@@ -679,7 +679,7 @@ The following lemma states the correctness of the transformation and follows dir
 \begin{restatable}{lemma}{toctp}
     \label{lem:toctp}
     Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
-    \[ \exists \tau \in \mathsf{CTR}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa).\]
+    \[ \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa). \quad\text{ iff }\quad \exists \tau \in \mathsf{CTR}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s)\]
 \end{restatable}
 %We provide a proof sketch in \cref{app:proofs}.
 
@@ -815,7 +815,7 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
     \label{fig:mdpex}
 \end{figure}
 
-For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachability probability exceeds a threshold. We reformulate this into a policy synthesis problem (\Cref{sec:overview}). The transformation combines two ideas: First, in every state, the policy can select the next observation, loosely inspired by~\cite{badingsCTMCsImpreciselyTimed2024}. Second, we reformulate conditional reachability probabilities into  reachability probabilities, as in~\cite{jungesRuntimeMonitorsMarkov2021,baierComputingConditionalProbabilities2014}.
+For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachability probability exceeds a threshold. We reformulate this into a policy synthesis problem (\Cref{sec:overview}). The transformation combines two ideas: First, in every state, the policy can select the next observation, loosely inspired by~\cite{DBLP:conf/tacas/BadingsVJSJ24}. Second, we reformulate conditional reachability probabilities into  reachability probabilities, as in~\cite{jungesRuntimeMonitorsMarkov2021,baierComputingConditionalProbabilities2014}.
 \begin{example}
     \label{ex:policysynthesis}
     We transform the HMM from \cref{fig:actp} to the colored MDP from \cref{fig:mdpex}. Consider $\actps{2}{i}{2}$ in the original HMM.
@@ -850,9 +850,9 @@ Using the coloring as described in \cref{def:polsyntrans}, the trace consistent 
     Given an HMM $\mc$, horizon $h$, and threshold $\lambda$, such that:
     \[
         \begin{array}{c}
-            \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge \{\alarms\}) \geq \lambda \\
-            \Updownarrow                                                                                       \\
-            \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda
+            \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^{\mc_{\blacktriangleright h}}}\Prob^{\mc_{\blacktriangleright h}}(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda \\
+            \Updownarrow                                                                                                                                                                              \\
+            \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge \{\alarms\}) \geq \lambda
         \end{array}
     \]
 \end{restatable}
@@ -1136,7 +1136,7 @@ Code, benchmarks, and logs will be publicly available via the artifact evaluatio
 \paragraph{Setup.}
 The \alg tool is implemented in Python and C++ on top of the model checker \textsc{Storm}~\cite{henselProbabilisticModelChecker2022} for data structures and for the MQs in \cref{sec:learning}~\cite{jungesRuntimeMonitorsMarkov2021}.
 We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify colored MDPs (\cref{def:colMDP}), using exact arithmetic to avoid numerical problems on these types of benchmarks~\cite{DBLP:conf/tacas/HartmannsJQW23}.
-The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.\sj{Maybe mention that for conformance queries, we sample traces in the HMM rather than using a test suite (test suites =  the things that Loes does)?}
+The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.\sj{Maybe mention that for conformance queries, we sample traces in the HMM rather than using a test suite (test suites =  the things that Loes does)?}\lm{This is already mentioned in sec 4.}
 All experiments are run  on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
 %We ran multiple benchmarks in parallel.
 
@@ -1323,7 +1323,7 @@ This work studies \emph{monitoring based on stochastic systems} and combines \em
 \sj{TODO Check of werk van Stefan Kiefer et al over labelled MCs relevant is}
 
 \paragraph{Model-based monitoring for stochastic systems.}
-Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{badingsCTMCsImpreciselyTimed2024}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?}
+Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{DBLP:conf/tacas/BadingsVJSJ24}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?}
 Related to runtime monitoring is related to runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is succesful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
 Finally, \cite{acetoProbabilisticMonitorability2022}, a more general notion of correct monitors via linear time $\mu$-calculus is investigated, while in \cite{DBLP:journals/corr/abs-2412-11754} a notion of correct \emph{predictors} is introduced.
 Both can be seen as generalizations of our definitions.
@@ -1337,51 +1337,7 @@ Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMoni
 %A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
 
 \paragraph{Probabilistic verification}
-The verification of our monitors applies model checking of conditional probabilities~\cite{baierComputingConditionalProbabilities2014}\sj{add Peter van Rossum, TACAS 2006} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,badingsCTMCsImpreciselyTimed2024}. Most related is recent work in~\cite{badingsCTMCsImpreciselyTimed2024}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{DBLP:journals/corr/abs-2405-13583}, which can also be tackled using synthesis approaches~\cite{DBLP:conf/cav/AndriushchenkoBCJKM23}. Finally, considering MDPs as distribution transfomers~\cite{}\sj{stuff by Akshay S} gives a distinct semantics\sj{can we say something useful here}
-%
-%Theoretical results used in transformation or learning
-%\begin{itemize}
-%    \item {\color{green}\citeauthor{baierComputingConditionalProbabilities2014} \cite{baierComputingConditionalProbabilities2014} Conditional probabilities, \citeauthor{badingsCTMCsImpreciselyTimed2024} \cite{badingsCTMCsImpreciselyTimed2024} also contains conditioning on evidence, same as \citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021}. However, they all condition on a specific set of evidence, they don't allow the model checker to choose which evidence to condition on.\lm{This is a novel idea? Letting the model checker choose which evidence to condition on?}}
-%    \item \citeauthor{andriushchenkoPAYNTToolInductive2021} \cite{andriushchenkoPAYNTToolInductive2021} PAYNT
-%\end{itemize}
-%
-%Monitoring on HMMs\lm{Denk dat dit relevante papers zijn uit de premise paper, maar mijn brein is wat op}
-%\begin{itemize}
-%    \item {\color{green}\citeauthor{sistlaMonitoringTemporalProperties2008} \cite{sistlaMonitoringTemporalProperties2008}}
-%    \item {\color{green}\citeauthor{stollerRuntimeVerificationState2012} \cite{stollerRuntimeVerificationState2012}}
-%    \item {\color{green}\citeauthor{wilcoxRuntimeVerificationStochastic2010} \cite{wilcoxRuntimeVerificationStochastic2010}}
-%    \item {\color{green}\citeauthor{sistlaRuntimeMonitoringStochastic2012} \cite{sistlaRuntimeMonitoringStochastic2012}}
-%    \item {\color{green}\citeauthor{cimattiAssumptionBasedRuntimeVerification2019} \cite{cimattiAssumptionBasedRuntimeVerification2019}}
-%    \item {\color{orange}\citeauthor{SelectiveMonitoringScienceDirect} \cite{SelectiveMonitoringScienceDirect}}
-%    \item {\color{orange}\citeauthor{wooRealTimeMonitoringUncertain2007} \cite{wooRealTimeMonitoringUncertain2007}}
-%\end{itemize}
-%
-%Learn a monitor using AL
-%\begin{itemize}
-%    \item {\color{green}\citeauthor{jungesActiveLearningRuntime2025} \cite{jungesActiveLearningRuntime2025} Use AL to learn decision trees. Verify them using conformance testing.}
-%    \item {\color{green}\citeauthor{cairoliNeuralPredictiveMonitoring2021} \cite{cairoliNeuralPredictiveMonitoring2021} Use AL to learn a neural network monitor.}
-%\end{itemize}
-
-%Learn a HMM, then do state estimation/simple reachability to find the probability of error
-%\begin{itemize}
-%    \item {\color{green}\citeauthor{jungesRuntimeMonitorsMarkov2021} \cite{jungesRuntimeMonitorsMarkov2021} Premise paper}
-%    \item {\color{green} \citeauthor{babaeeEmphPreventPredictiveRunTime2018} \cite{babaeeEmphPreventPredictiveRunTime2018} Learn an HMM and produce a lookup table which for each state calculates the probability to be in a bad state. Now monitoring consists of running the Viterbi state estimation algorith to get a state in the HMM and using the lookup table to check git the risk.}
-%    \item {\color{green}\citeauthor{babaeeAcceleratedLearningPredictive2019} \cite{babaeeAcceleratedLearningPredictive2019} Learn a HMM faster by focussing on rare events?}
-%    \item {\color{green}\citeauthor{cleavelandConservativeSafetyMonitors2023} \cite{cleavelandConservativeSafetyMonitors2023} Model a PA and store risk for each state in PA. Use state estimation at runtime to monitor.}
-%\end{itemize}
-
-%Correctness of monitors
-%\begin{itemize}
-%    \item {\color{green}\citeauthor{acetoProbabilisticMonitorability2022} \cite{acetoProbabilisticMonitorability2022} Defines soundness and completeness for monitors in terms of some property. Thus defines some correctness for monitors. Does not include a gray area. It does include a margin of error.}
-%\end{itemize}
-%
-%Questionable relevance
-%\begin{itemize}
-%    \item \citeauthor{sanchezSurveyChallengesRuntime2019} \cite{sanchezSurveyChallengesRuntime2019} Discusses challenges which can be solved using monitoring or RV. Focuses on examples outside typical software applications.
-%    \item \citeauthor{zolfagharianSMARLASafetyMonitoring2025} \cite{zolfagharianSMARLASafetyMonitoring2025} SMARLA: Machine learned monitor for RL algorithms.
-%    \item {\color{orange} \citeauthor{henzingerMonitoringAlgorithmicFairness2023} \cite{henzingerMonitoringAlgorithmicFairness2023} Monitor which evaluates fairness not safety. Uses Randomized register monitors (does not seem relevant).}
-%\end{itemize}
-%% Wie heeft premise geciteerd
+The verification of our monitors applies model checking of conditional probabilities~\cite{baierComputingConditionalProbabilities2014}\sj{add Peter van Rossum, TACAS 2006} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,DBLP:conf/tacas/BadingsVJSJ24}. Most related is recent work in~\cite{DBLP:conf/tacas/BadingsVJSJ24}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{DBLP:journals/corr/abs-2405-13583}, which can also be tackled using synthesis approaches~\cite{DBLP:conf/cav/AndriushchenkoBCJKM23}. Finally, considering MDPs as distribution transfomers~\cite{}\sj{stuff by Akshay S} gives a distinct semantics\sj{can we say something useful here}
 
 
 \section{Conclusion and Future Work}
@@ -1400,8 +1356,6 @@ This paper presented a first approach to verification of monitors with respect t
 % \section{Description of benchmarks}\label{sec:benchmarksdescr}
 
 \section{Proof Outlines for \Cref{sec:monver}}\label{app:proofs}
-\sj{The lemmas are not very consistent in what is on the left and what is on the right of the iff}
-
 \toctp*
 \begin{proofoutline}
     By the product construction, there exists a bijective mapping between paths in $M_{\times\overline{\dfa}}$ and paths in the monitor $\dfa$ and HMM $\mc$. If the final state of a path is in $F$, the mapped path is not accepted by the monitor. The risk of a path in $M_{\times\overline{\dfa}}$ has the same risk as the mapped path in $\mc$. Thus, if a trace is a witness for the CTR problem, it is a missed alarm for $\mc$ and $\dfa$.
@@ -1409,7 +1363,8 @@ This paper presented a first approach to verification of monitors with respect t
 
 \toactp*
 \begin{proofoutline}
-    We choose $\lambda = \sfrac{\lambda_s}{\max_{s\in S}r(s)}$. Both directions follow from applying \cref{def:CTPdecprob} and defining a bijective mapping $f$ between paths\sj{of lenght horizon?} in $\mc_{\times\overline{\dfa}}$ (From the CTR problem) and $\mc_{\blacktriangleright h}$ such that $\Prob^{\mc_{\times\overline{\dfa}}}(\pi) = \Prob^{\mc_{\blacktriangleright h}}(f(\pi))$. Now, for any path $\pi$ of length $h$ ending in a state in $F$, the transition of $f(\pi_\downarrow)$ to $\talrm$ is equal to the normalized risk on $\pi_\downarrow$. From this we can conclude that risk for a trace in CTR is equal to the risk for a trace in ACTR\sj{Where is ACTR formally defined? Maybe avoid using this terminology?}, and thus that they have the same witnesses.
+    We choose $\lambda = \sfrac{\lambda_s}{\max_{s\in S}r(s)}$. Both directions follow from applying \cref{def:CTPdecprob} and defining a bijective mapping $f$ between paths of length the horizon in $\mc_{\times\overline{\dfa}}$ (From the CTR problem) and $\mc_{\blacktriangleright h}$ such that $\Prob^{\mc_{\times\overline{\dfa}}}(\pi) = \Prob^{\mc_{\blacktriangleright h}}(f(\pi))$. Now, for any path $\pi$ of length $h$ ending in a state in $F$, the transition of $f(\pi_\downarrow)$ to $\talrm$ is equal to the normalized risk on $\pi_\downarrow$.
+    Thus, any trace which is a witness of CTR has a summed probability above $\lambda$ in $\mc_{\blacktriangleright h}$.
 \end{proofoutline}
 
 \tocoloredmdp*
