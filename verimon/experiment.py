@@ -711,7 +711,7 @@ class VerifyExperiment(Experiment):
                         "product_time": stats["product_time"],
                         "paynt_time": stats["paynt_time"],
                         "double_check_time": None,
-                        "pomdp_states": None,
+                        "pomdp_states": len(model.pomdp.states),
                     }
             except Exception as e:
                 logger.error(f"Error in verification: {traceback.format_exc()}")

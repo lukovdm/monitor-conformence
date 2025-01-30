@@ -283,7 +283,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["experiment"]["short_name"],
             d["experiment"]["threshold"]
             if d["experiment"]["threshold"] is not None
-            else "-",
+            else r"\checkmark",
             d["experiment"]["horizon"],
             "MA" if d["experiment"]["search"] == "fn" else "FA",
             d["mc"]["mc_states"],
@@ -293,30 +293,30 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["monitor"]["monitor_transitions"],
             f"$10^{{{int(math.log10(d['family_size']))}}}$"
             if d["family_size"] is not None
-            else "-",
+            else r"\checkmark",
             (d["result"]["time"] if d["result"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["result"]
-            else "-",
+            else r"\checkmark",
             (
                 d["result"]["product_time"]
                 if d["result"]["product_time"] >= 1
                 else r"$\leq 1s$"
             )
             if "fake" not in d["result"]
-            else "-",
+            else r"\checkmark",
             (
                 d["result"]["paynt_time"]
                 if d["result"]["paynt_time"] >= 1
                 else r"$\leq 1s$"
             )
             if "fake" not in d["result"]
-            else "-",
+            else r"\checkmark",
             d["result"]["pomdp_states"]
             if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
-            else "-",
+            else r"\checkmark",
             float(d["result"]["goal_threshold"])
             if "fake" not in d["result"] and d["result"]["goal_threshold"] is not None
-            else "-",
+            else r"\checkmark",
         ]
         for d in data
     ]
@@ -361,25 +361,31 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_observations"],
             (d["verimon"]["time"] if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["verimon"]
-            else "-",
-            len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else "-",
-            d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else "-",
+            else r"\checkmark",
+            len(d["verimon"]["monitors"])
+            if "fake" not in d["verimon"]
+            else r"\checkmark",
+            d["verimon"]["monitor_states"]
+            if "fake" not in d["verimon"]
+            else r"\checkmark",
             float(d["verimon"]["false_positive"])
             if "fake" not in d["verimon"]
-            else "-",
+            else r"\checkmark",
             float(d["verimon"]["false_negative"])
             if "fake" not in d["verimon"]
-            else "-",
+            else r"\checkmark",
             (d["sampling"]["time"] if d["sampling"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["sampling"]
-            else "-",
-            d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else "-",
+            else r"\checkmark",
+            d["sampling"]["monitor_states"]
+            if "fake" not in d["sampling"]
+            else r"\checkmark",
             float(d["sampling"]["false_positive"])
             if "fake" not in d["sampling"]
-            else "-",
+            else r"\checkmark",
             float(d["sampling"]["false_negative"])
             if "fake" not in d["sampling"]
-            else "-",
+            else r"\checkmark",
         ]
         for d in data
     ]
@@ -461,7 +467,7 @@ def compare_runtimes(
         rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
     )
 
-    plt.plot([0, max_lim], [0, max_lim], "-", color="0.5")
+    plt.plot([0, max_lim], [0, max_lim], r"-", color="0.5")
     plt.plot(
         [0, max_lim * 10],
         [0, max_lim],
@@ -508,14 +514,14 @@ def compare_runtimes(
         (0, 10**5),
         (10**5, 10**5),
         color="k",
-        linestyle="-",
+        linestyle=r"-",
         label="ToVer timeout",
     )
     plt.axline(
         (10**5, 0),
         (10**5, 10**5),
         color="k",
-        linestyle="-",
+        linestyle=r"-",
         label="Baseline timeout",
     )
 
@@ -823,8 +829,8 @@ def compare_thresholds_bar(
     )
 
     ax.axhline(y=threshold, color="grey", linestyle="--")
-    ax.axhline(y=threshold + fn_slack, color="grey", linestyle="-", linewidth=1)
-    ax.axhline(y=threshold - fp_slack, color="grey", linestyle="-", linewidth=1)
+    ax.axhline(y=threshold + fn_slack, color="grey", linestyle=r"-", linewidth=1)
+    ax.axhline(y=threshold - fp_slack, color="grey", linestyle=r"-", linewidth=1)
 
     found_thresholds = [
         (
