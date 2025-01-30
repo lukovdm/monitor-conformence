@@ -92,7 +92,7 @@
 \crefname{definition}{Def.}{Defs.}
 \Crefname{definition}{Definition}{Definitions}
 \crefname{theorem}{Thm.}{Thms.}
-\Crefname{theorem}{Theorems}{Theorems}
+\Crefname{theorem}{Theorem}{Theorems}
 \crefname{lemma}{Lem.}{Lems.}
 \Crefname{lemma}{Lemma}{Lemmas}
 \crefname{enumi}{Prob.}{Probs.}
@@ -157,7 +157,7 @@ The trace associated to a system execution describes the information received by
 
 \begin{figure}[t]
     \vspace{-3mm}
-    \begin{minipage}{.6\textwidth}
+    \begin{minipage}{.49\textwidth}
         \centering
 
 
@@ -179,7 +179,7 @@ The trace associated to a system execution describes the information received by
                         }
                 }
         }
-        \scalebox{0.8}{
+        \resizebox{\linewidth}{!}{
             \begin{tikzpicture}
                 \node (syscenter) {};
                 \node[rectangle, draw, below=0.3cm of syscenter] (env) {\scriptsize Env};
@@ -189,9 +189,9 @@ The trace associated to a system execution describes the information received by
 
                 \node[rectangle, draw, dotted, very thick, fit=(env)(controller)(act)(sensor)] (Sys) {};
                 \node[below=0.2cm of Sys] {\small \textcolor{green!50!black}{System}};
-                \node[rectangle, draw, right=3cm of syscenter, minimum height=2.4cm] (monitor) {\small\textcolor{green!50!black}{Monitor}};
-                \node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=0.7cm, align=center, minimum width=1.5cm] (model) {\textcolor{green!50!black}{HMM}};
-                \node[rectangle, draw, minimum height=1.1cm, right=1.8cm of monitor, yshift=-0.7cm, minimum width=1.5cm] (inference) {\scriptsize{inference}};
+                \node[rectangle, draw, right=.8cm of Sys, minimum height=2.4cm, minimum width=.8cm] (monitor) {\rotatebox{90}{\small\textcolor{green!50!black}{Monitor}}};
+                \node[rectangle, draw, minimum height=1.1cm, right=1cm of monitor, yshift=0.7cm, align=center, minimum width=1.4cm] (model) {\textcolor{green!50!black}{HMM}};
+                \node[rectangle, draw, minimum height=1.1cm, right=1cm of monitor, yshift=-0.7cm, minimum width=1.4cm] (inference) {\scriptsize{inference}};
 
 
                 \node[rectangle, below=0.2cm of monitor] (alarm) {\textcolor{green!50!black}{ok}/\textcolor{red!50!black}{alarm}};
@@ -202,42 +202,44 @@ The trace associated to a system execution describes the information received by
                 \draw[->] (controller) edge[bend right=45] (act);
                 \draw[->] (act) edge[bend right=45] (env);
 
-                \draw[->] (sensor) -- node[above] {\scriptsize{observation}} (monitor);
+                \draw[->] (sensor) -- node[above] {\scriptsize{obs}} (monitor);
                 \draw[->] (monitor) -- (alarm);
 
-                \draw[->] (monitor.317) -- node[above,align=center] {\scriptsize{observation}\\[-5pt] \scriptsize{trace}} (inference.west |- monitor.317);
-                \draw[<-] (monitor.305) -- node[below] {\scriptsize{risk level}} (inference.west |- monitor.305);
+                \draw[->] (monitor.317) -- node[above,align=center] {\scriptsize{obs}\\[-5pt] \scriptsize{trace}} (inference.west |- monitor.317);
+                \draw[<-] (monitor.305) -- node[below,align=center] {\scriptsize{risk}\\[-5pt] \scriptsize{level}} (inference.west |- monitor.305);
 
                 \draw[<-,dotted] (model) -- node[right] {\scriptsize{uses}} (inference);
                 \draw[->,dotted] (model) -- +(0,0.7) -| node[pos=0.25,above] {\scriptsize{models}} (Sys);
 
             \end{tikzpicture}
         }
-        \vspace{-3mm}
+        \vspace{-6mm}
         \caption{White-box monitoring of systems}
         \label{fig:monitors}
-    \end{minipage}\quad%
-    \begin{minipage}{.35\textwidth}
-        \begin{tikzpicture}
+    \end{minipage}\hfill
+    \begin{minipage}{.47\textwidth}
+        \resizebox{\linewidth}{!}{
+            \begin{tikzpicture}
 
-            \node[rectangle, minimum height=2.5cm, draw] (learner) {\rotatebox{90}{\scriptsize{learner}}};
-            \node[rectangle,right=1.7cm of learner, yshift=0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (mq) {\scriptsize{Membership?}\\[-3pt] \scriptsize{(the monitor)}};
-            \node[rectangle,right=1.7cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Acceptance?}};
-            \node[rectangle, right=0.7cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Inclusion}};
-            \node[rectangle, right=0.7cm of mq, draw, minimum width=1.4cm, minimum height=1cm,align=center] (model) {HMM};
-            \node[above=5mm of learner] (dummy)  {};
+                \node[rectangle, minimum height=2.5cm, draw] (learner) {\rotatebox{90}{\scriptsize{learner}}};
+                \node[rectangle,right=2cm of learner, yshift=0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (mq) {\scriptsize{Membership?}\\[-3pt] \scriptsize{(the monitor)}};
+                \node[rectangle,right=2cm of learner, yshift=-0.7cm,align=center, draw, minimum height=1cm, minimum width=1.9cm] (eq) {\scriptsize{Acceptance?}};
+                \node[rectangle, right=0.8cm of eq, draw, minimum width=1.4cm, minimum height=1cm] (inc) {\scriptsize{Inclusion}};
+                \node[rectangle, right=0.8cm of mq, draw, minimum width=1.4cm, minimum height=1cm,align=center] (model) {HMM};
+                \node[above=.2cm of model] (dummy) {};
 
-            \draw[->] (learner.75) -- node[above,align=center] {\scriptsize{observation}\\[-5pt]\scriptsize{trace}} (mq.west |- learner.75);
-            \draw[<-] (learner.72) -- node[below,align=center] {\scriptsize{ok/alarm}} (mq.west |- learner.72);
-            \draw[->] (learner.285) -- node[above,align=center] {\scriptsize{state machine/}\\[-5pt]\scriptsize{set o.~traces}} (eq.west |- learner.285);
-            \draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
-            \draw[->] (eq) --node[right] {\scriptsize sample} (mq);
+                \draw[->] (learner.75) -- node[above,align=center] {\scriptsize{observation}\\[-5pt]\scriptsize{trace}} (mq.west |- learner.75);
+                \draw[<-] (learner.72) -- node[below,align=center] {\scriptsize{ok/alarm}} (mq.west |- learner.72);
+                \draw[->] (learner.285) -- node[above,align=center] {\scriptsize{state machine/}\\[-5pt]\scriptsize{set o.~traces}} (eq.west |- learner.285);
+                \draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
+                \draw[->] (eq) --node[right] {\scriptsize sample} (mq);
 
-            \draw[->] (eq) --node[above] {\scriptsize verify} (inc);
-            \draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
-            \draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
+                \draw[->] (eq) --node[above] {\scriptsize verify} (inc);
+                \draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
+                \draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
 
-        \end{tikzpicture}
+            \end{tikzpicture}}
+        \vspace{-2.5mm}
         \caption{Learning monitors.}
         \label{fig:learning}
     \end{minipage}
@@ -319,15 +321,14 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
         }
         \label{fig:centralmon}
     \end{subfigure}
-    \caption{Running example: HMM (a) and two monitors (b).}
+    \caption{Running example: HMM (a) and two monitors (b). We consider a horizon of 3 when discussing (a) and (b).}
     \label{fig:centralexample}
 \end{figure}
-\sj{caption requires a hrizon?}\lm{I think we mention the horizon whenever it is relevant}\sj{Correctness is always wrt a horizon}
 
 
 
 \paragraph{Computational complexity results.}
-Deciding whether a monitor is correct is coNP-complete (\Cref{lem:complexity})\sj{Theorems? should be Theorem}, assuming that the horizon is unary encoded.  In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace as safe/unsafe.
+Deciding whether a monitor is correct is coNP-complete (\Cref{lem:complexity}), assuming that the horizon is unary encoded.  In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace as safe/unsafe.
 A simpler variant of this problem asks whether there is a bounded trace in the HMM that is unsafe.
 %\footnote{The results also apply to checking for safe traces.}
 %The problem is clearly in NP (assuming that the bound is unary encoded).
@@ -344,13 +345,11 @@ We formalise the adequate problem using colored MDPs and solve it using (exact) 
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our learning approach. }
-\sj{Mention Fig 2}
-\sj{Ensure Fig1/Fig 2 fit}
 Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors.
 Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
 We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor, as popularized in \emph{black-box checking}~\cite{DBLP:journals/jalc/PeledVY02}.
-Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, resolve traces that are not relevant for the monitor, and combine our equivalence oracle with a conformance oracle to boost performance.
+Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, resolve traces that are not relevant for the monitor, and combine our equivalence oracle with a conformance oracle to boost performance. Our approach is outlined in \cref{fig:learning}.\lm{Is this a good mention of fig 2?}
 %
 %\paragraph{Practical considerations in using active automata learning.}
 %Practically, some modifcations are important:
@@ -1262,7 +1261,7 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 
 \paragraph{How big are the monitors?}
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
-\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{sec:reslearn}. For the literature on AAL, these are large automata\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller). \sj{Why can they be smaller?}
+\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{sec:reslearn}. For the literature on AAL, these are large automata\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller)\footnote{The language of correct monitors without incoclusive traces for \alg and baseline are equivalent up to the horizon, but the monitors can differ on traces longer then the horizon.}.
 
 
 \begin{figure}[t]
@@ -1296,7 +1295,6 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
-\sj{How many EQs do we need to learn a monitor?}\lm{I added this to the table, but only for \alg, I don't know this for the baseline.}\sj{which table? Also make this explicit here}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
 We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. In particular, it tends to find counterexamples in the early stages much faster. This observation is independent of $\lambda_s = \lambda_u$ or $\lambda_s \neq \lambda_u$. In \Cref{sec:reslearn}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
 
@@ -1514,7 +1512,7 @@ The construction runs in polynomial time. The formal proof of its correctness fo
 
 
 \section{Results from \alg Verification Experiments} \label{sec:resverify}
-We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each. \Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states,transitions), the number of observations, and the size of the DFA (states,transtitions). Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.\lm{Update with added collumns}
+We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each. \Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the approximate size of the language of the HMM. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. We list the size of the created Colored MDP, and finally the found threshold. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Checkmarks in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.\lm{Update with added collumns}
 
 
 \begin{figure}[t]
