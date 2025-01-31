@@ -308,18 +308,18 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             f"$10^{{{int(math.log10(d['family_size']))}}}$"
             if d["family_size"] is not None
             else r"-",
-            (d["result"]["time"] if d["result"]["time"] >= 1 else r"$\leq 1s$")
+            (round(d["result"]["time"]) if d["result"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["result"]
             else r"-",
             (
-                d["result"]["product_time"]
+                round(d["result"]["product_time"])
                 if d["result"]["product_time"] >= 1
                 else r"$\leq 1s$"
             )
             if "fake" not in d["result"]
             else r"-",
             (
-                d["result"]["paynt_time"]
+                round(d["result"]["paynt_time"])
                 if d["result"]["paynt_time"] >= 1
                 else r"$\leq 1s$"
             )
@@ -373,7 +373,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
-            (d["verimon"]["time"] if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
+            (round(d["verimon"]["time"]) if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["verimon"]
             else r"-",
             len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
@@ -384,7 +384,11 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             float(d["verimon"]["false_negative"])
             if "fake" not in d["verimon"]
             else r"-",
-            (d["sampling"]["time"] if d["sampling"]["time"] >= 1 else r"$\leq 1s$")
+            (
+                round(d["sampling"]["time"])
+                if d["sampling"]["time"] >= 1
+                else r"$\leq 1s$"
+            )
             if "fake" not in d["sampling"]
             else r"-",
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
