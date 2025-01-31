@@ -117,7 +117,6 @@
 \end{abstract}
 
 \section{Introduction}
-\sj{Fix citations with xx}
 \noindent
 Runtime assurance is an essential ingredient in the deployment of safe autonomous systems~\cite{bartocciLecturesRuntimeVerification2018,sanchezSurveyChallengesRuntime2019}.
 Runtime monitors provide assurance by flagging potentially dangerous system behavior, based on a system execution.
@@ -244,9 +243,9 @@ The trace associated to a system execution describes the information received by
 Like in~\cite{acetoProbabilisticMonitorability2022}, we summarise the behavior of monitors by the    set of traces (i.e., formal languages) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
 
 \paragraph{Illustrative toy example.}
-As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \Cref{fig:centralexample} describes how a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$\sj{can we motivate this number} for this trace.
+As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \Cref{fig:centralexample} describes how a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$ for this trace (see \cref{ex:riskoftrace}).
 In \cref{fig:centralmon}, monitor $\dfa$ is a finite automaton that describes the set of traces that end with two consecutive icy patches.
-The verification question in this paper is now: \emph{Is this a correct monitor for threshold $0.8$?} That is, is an alarm raised iff the trace risk is above $0.8$?\sj{Isnt the answer no, as we have $\sfrac{13}{22}$ for the example above? But later, we say that the monitor is correct?}
+The verification question in this paper is now: \emph{Is this a correct monitor for threshold $0.25$?} That is, is an alarm raised iff the trace risk is above $0.25$?
 
 %A correct monitor behaves as follows: First, it does raise an alarm on each unsafe trace (no false negatives) and second, it does \emph{not} raise an alarm on each safe trace (no false positives). %In terms of a formal languages, these are two inclusion checks.
 
@@ -359,7 +358,9 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 \textbf{(1)}~We solve the verification problem by exhaustively searching for a counterexample using probabilistic system synthesis (\cref{sec:monver}).
 \textbf{(2)}~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning (\cref{sec:learning}).
 \textbf{(3)}~We prove the hardness of the verification problem (\cref{sec:compl}).
-\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}) Our prototype finds monitors that are provably correct on $10^18$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
+\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}) Our prototype finds monitors that are provably correct on $10^{18}$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
+
+We list proofs (sketches) for all lemmas and theorems in \Cref{app:proofs,app:complexity}.
 %
 %\begin{figure}[t]
 %    \centerline{
@@ -465,7 +466,7 @@ We deliberately do not require $\lambda_s = \lambda_u$.
 By picking $\lambda_s < \lambda_u$, some traces are neither safe nor unsafe, also called inconclusive.
 We write $\safetraces{\mc,\lambda_s}{\leq h}$ (and $\unsafetraces{\mc,\lambda_u}{\leq h}$) for the set of safe (and unsafe) traces of length at most $h$.
 %We often omit the sub/superscripts.
-\begin{example}
+\begin{example}\label{ex:riskoftrace}
     We consider the HMM from \cref{fig:centralhmm}, with the risk function assigning $1$ to $q_c$ and $0$ to all other states. Taking the trace $\dry \cdot \icy \cdot \icy$, there are three paths which could generate this trace. Two paths end in $q_c$, one ends in $q_i$. The paths ending in $q_c$ have a conditional probability of $\sfrac{13}{22}$. Since only these paths have a non-zero risk, the risk of the trace is $\sfrac{13}{22} \cdot r(q_c) = \sfrac{13}{22}$.
 \end{example}
 \begin{definition}[Missed/False alarms]
@@ -654,7 +655,6 @@ We build (a mild variation of) a standard product construction~\cite{baierPrinci
 \begin{definition}[HMM product]
     \label{def:product}
     Given a HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM} $\langle\mc_{\times \dfa}, F\rangle$ is the HMM  $\mc_{\times \dfa} \defeq (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', \obsf', r')$ with $\obsf'(\langle s, q\rangle) \defeq \obsf(s)$,  $r'(\langle s, q\rangle) \defeq r(s)$, $\ptrans'(\langle s, q\rangle, \langle s', \delta(q, \obsf(s'))\rangle) \defeq \ptrans(s, s')$ and $\ptrans'(x, x') \defeq 0$ otherwise, and finally the alarm states $F \defeq S\times F'$.
-    \sj{Do we really need the alarm states (later maybe?) or could we just set the risk to zero if it is not an alarm state?!}\lm{We need them very much for NFA, but I could add that as a footnote if the helps.}
 \end{definition}
 In the product, we can find a trace $\tau$ whose conditional trace risk exceeds a threshold iff $\tau$ is a missed alarm.
 We state the decision problem that needs to be solved: It is key to our computational complexity analysis in \Cref{sec:compl}.
@@ -811,7 +811,7 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
     The $\dry$ action transitions to the ensuing states with the $\dry$ observation.
     The remaining probability of $\sfrac{1}{2}$ for the $\dry$ action is directed to the initial state. This is similarly applied to the $\icy$ action.
     State $\actps{2}{c}{2}$ does not reach any $\dry$ states, we still add a $\dry$ action redirecting to the initial state, as \emph{all} states with the same step value must have the same actions.
-    State $\actps{3}{d}{1}$ in the HMM only has a transition to an $\ig$ state. We fully remove the $\ig$ state and the $\ig$ observation in the MDP. Finally, we make sure all states with step 3 have the same actions, thus we add the $\en$ action redirecting to the initial state.\sj{Last sentence is a bit vague?}\lm{Does this fix it?}
+    State $\actps{3}{d}{1}$ in the HMM only has a transition to an $\ig$ state. We fully remove the $\ig$ state and the $\ig$ observation in the MDP. Finally, we make sure all states with step 3 have the same actions, thus we add the $\en$ action redirecting to the initial state.
 \end{example}
 
 \begin{definition}\label{def:polsyntrans}
@@ -849,7 +849,7 @@ Using the coloring as described in \cref{def:polsyntrans}, the trace consistent 
 \subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}
 
 \paragraph{Traces of length at most horizon.}
-The approach for \cref{thm:maintheorem} only works for traces of length exactly the horizon. We generalize this approach to traces of length at most the horizon.\lm{Make sure this still matches \cref{thm:maintheorem}.}
+The approach for \cref{thm:maintheorem} only works for traces of length exactly the horizon. We generalize this approach to traces of length at most the horizon.
 \begin{restatable}{theorem}{leqhtheorem}
     \label{thm:leqhtheorem}
     Given a HMM $\mc$ with a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
@@ -1131,7 +1131,7 @@ While the benchmarks from the literature contain many observations, i.e., few st
 % We use benchmarks up to hundreds of states and thousands of transitions.
 
 \subsubsection{Efficiency of Monitor Verification}
-We investigate scalability along different dimensions and identify the bottlenecks of the method.\sj{This probably requires a few more rows in the table}
+We investigate scalability along different dimensions and identify the bottlenecks of the method.
 
 \paragraph{Setup.}
 %We run the \alg verifier on the benchmarks as described above. 
@@ -1199,7 +1199,6 @@ For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
     \caption{Subset of verification results found in \Cref{sec:resverify}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
     \label{tab:verifysubest}
 \end{table}
-\lm{I could add some Refuel to the table, they have a language size of $10^{23}$}
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
@@ -1519,7 +1518,7 @@ We present the complete results for the Learning experiments. \Cref{fig:runtimed
     \label{fig:legend}
 \end{figure}
 
-\Cref{tab:fulllearnexp} contains the full results of the learning experiments. The columns give the family name and ID. They also list the threshold parameters and the horizon. We report the size of the HMM (states, transitions, number of observations). Furthermore, we detail the results of \alg learning. We give the total runtime for the learning procedure. We also show the amount of EQs needed and the number of states in the learned monitor. Additionally, we present the found minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor. Lastly, we detail the results of the baseline learning method. We again list the amount of time spent, nr. of EQs, the number of states in the learned monitor, and the minimum and maximum threshold as before.
+\Cref{tab:fulllearnexp} contains the full results of the learning experiments. The columns give the family name and ID. They also list the threshold parameters and the horizon. We report the size of the HMM (states, transitions, number of observations). Furthermore, we detail the results of \alg learning. We give the total runtime for the learning procedure. We also show the amount of EQs needed and the number of states in the learned monitor. Additionally, we present the found minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor. Lastly, we detail the results of the baseline learning method. We again list the amount of time spent, number of EQs, the number of states in the learned monitor, and the minimum and maximum threshold as before.
 
 Whenever either the \alg columns of a row or the baseline columns of a row only contain dashes, this method either went over the 24-hour timeout, or used more than 15 GiB of memory.
 
