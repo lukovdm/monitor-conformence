@@ -1,15 +1,15 @@
-\documentclass[runningheads]{llncs}
+\documentclass[runningheads,final]{llncs}
 
 % \usepackage{natbib}
 \usepackage[style=lncs,backend=biber]{biblatex}
 \usepackage{microtype}
 \usepackage{preamble}
-\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 \usepackage{mdframed}
 \usepackage{tikz}
 \usepackage{cleveref}
 \usepackage{graphicx}
-\usepackage{todonotes}
+\usepackage[obeyFinal]{todonotes}
 \usepackage{xspace}
 \usepackage{subcaption}
 \usepackage{xcolor}
@@ -35,9 +35,9 @@
 \newcommand{\actps}[3]{\left\langle #1, \langle #2, #3\rangle \right\rangle}
 \newcommand{\actpas}[3]{\left\langle #1, \atop \langle #2, #3\rangle \right\rangle}
 
-\newcommand{\talrm}{t_{alrm}}
-\newcommand{\tsafe}{t_{safe}}
-\newcommand{\tig}{t_{ignr}}
+\newcommand{\talrm}{t_{\text{alrm}}}
+\newcommand{\tsafe}{t_{\text{safe}}}
+\newcommand{\tig}{t_{\text{ignr}}}
 
 \newcommand{\icy}{{\color{cyan} icy}\xspace}
 \newcommand{\dry}{{\color{brown} dry}\xspace}
@@ -329,7 +329,7 @@ First, for a single trace, computing the risk can be reduced to computing a reac
 Thus, inspired by~\cite{DBLP:conf/tacas/BadingsVJSJ24}, we reduce our problem to the question: \emph{Is there a DFA (accepting exactly one trace, accepted by our monitor)
     such that the probability in the product MC exceeds a threshold?}
 The answer is no iff the monitor has no missed alarms.
-We formalize the problem using colored MDPs and solve it using (exact) probabilistic model synthesis methods~\cite{DBLP:conf/uai/Andriushchenko022}, as implemented in the tool Paynt~\cite{andriushchenkoPAYNTToolInductive2021}. %\footnote{Alternatively, in \cref{sec:monver}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. 
+We formalize the problem using colored MDPs and solve it using (exact) probabilistic model synthesis methods~\cite{DBLP:conf/uai/Andriushchenko022}, as implemented in the tool PAYNT~\cite{andriushchenkoPAYNTToolInductive2021}. %\footnote{Alternatively, in \cref{sec:monver}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. 
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our Learning Approach.}
@@ -561,10 +561,10 @@ Our proof, outlined in this section, is constructive and we show that we can use
 \paragraph{Outline of the Proof.}
 The proof is a direct consequence of \Cref{lem:toctp,lem:toactp,lem:tocoloredmdp} below. We observe that on the left-hand side of \Cref{thm:maintheorem}, the monitor, horizon, observations, and risk do not occur, they must be encoded into the colored MDP.
 Furthermore, while missed alarms are defined using conditional probabilities,  the policy synthesis problem is over reachability probabilities.
-We describe our transformation in several steps. In \Cref{ssec:ctp} we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn} we resolve the conditioning and replace the observations from the HMM.
+We describe our transformation in several steps. In \Cref{ssec:ctp}, we encode the monitor into the HMM and transform the HMM to both include the horizon and the risk. In \Cref{ssec:polsyn}, we resolve the conditioning and replace the observations from the HMM.
 
 \begin{corollary}
-    There exists a map $t(\sigma) = \tau$ which, given a color consistent policy $\sigma$, finds its associated trace $\tau$.
+    There exists a map $t(\sigma) = \tau$, which, given a color consistent policy $\sigma$, finds its associated trace $\tau$.
 \end{corollary}
 
 \subsection{The (Acyclic) Conditional Trace Risk Problem}\label{ssec:ctp}
@@ -669,7 +669,7 @@ The following lemma states the correctness of the transformation and follows dir
 \begin{restatable}{lemma}{toctp}
     \label{lem:toctp}
     Using the notation from \Cref{thm:maintheorem}, \Cref{def:product} and \Cref{def:CTPdecprob}:
-    \[ \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa). \quad\text{ iff }\quad \exists \tau \in \mathsf{CTR}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s)\]
+    \[ \exists \tau \in \missedalarms{\mc,\lambda_s}{= h}\!(\dfa) \quad\text{ iff }\quad \exists \tau \in \mathsf{CTR}(\mc_{\times\overline{\dfa}}, h, F, \lambda_s)\]
 \end{restatable}
 %We provide a proof sketch in \cref{app:proofs}.
 
@@ -702,11 +702,11 @@ We further simplify the problem by unrolling the model along the horizon. We als
         \forall_{i\in\{1,\ldots,h-1\}}\quad \ptrans'(\langle i, s\rangle, \langle i+1, s'\rangle) & \defeq \ptrans(s,s'), \\
         \ptrans'(\langle h, s\rangle,\left\langle h+1, t\right\rangle)                            & \defeq
         \begin{cases}
-            \frac{r(s)}{\max_{s\in\Sts} r(s)}     & \text{if } s \in F \land t = \talrm,  \\
-            1 - \frac{r(s)}{\max_{s\in\Sts} r(s)} & \text{if } s \in F \land t = \tsafe,  \\
-            1                                     & \text{if } s \notin F \land t = \tig, \\
+            \frac{r(s)}{\max_{s\in\Sts} r(s)}     & \text{if } s \in F \text{ and } t = \talrm,  \\
+            1 - \frac{r(s)}{\max_{s\in\Sts} r(s)} & \text{if } s \in F \text{ and } t = \tsafe,  \\
+            1                                     & \text{if } s \notin F \text{ and } t = \tig, \\
             0                                     & \text{otherwise,}
-        \end{cases}                             \\
+        \end{cases}                      \\
         \ptrans'\left(\left\langle h+1, t\right\rangle, \left\langle h+1, t\right\rangle\right)   & \defeq 1.
     \end{align*}
 \end{definition}
@@ -714,8 +714,8 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 
 \begin{restatable}{lemma}{toactp}
     \label{lem:toactp}
-    Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_s$, there exists a $\lambda\in(0,1]$ such that, using $z_\mathsf{end}$ and $\talrm$ from \Cref{def:acyclichmm}:
-    \[ \exists \tau \in \mathsf{CTR}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot z_\mathsf{end}) \geq \lambda.\]
+    Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_s$, there exists a $\lambda\in(0,1]$ such that, using $\en$ and $\talrm$ from \Cref{def:acyclichmm}:
+    \[ \exists \tau \in \mathsf{CTR}(\mc, h, F, \lambda_s) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda.\]
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 \end{restatable}
 %We provide a proof in \cref{app:proofs}.
@@ -827,13 +827,13 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
         \end{cases}
     \end{align*}
 \end{definition}
-Thus, we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state\footnote{In the implementation, we can prune actions where from every state with the same color the action redirects to the initial state.}.
+Thus, we transition normally to a state if the action and observation of the target state are equal, otherwise we set the transition probability to zero. All the remaining probability mass is redirected towards the initial state\footnote{In the implementation, we can prune actions where, from every state with the same color, the action redirects to the initial state.}.
 
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
 \begin{definition}[Trace consistent policy]
     Given an MDP $\mdp_{\gtrdot h}$ as in \cref{def:polsyntrans} and a trace $\tau \in Z^\star$. A \emph{trace consistent policy} satisfies $\sigma_\tau(\langle i, s \rangle) \defeq \tau^{(i)}$, where $\tau^{(i)}$ is the $i$th observation in $\tau$, for $i \leq |\tau|$ and $\sigma_\tau(\langle i, s \rangle) \defeq \en$ otherwise.
 \end{definition}
-Using the coloring as described in \cref{def:polsyntrans}, the trace consistent policies coincide with color-consistent policies (\cref{def:colconsistent}). Finding a missed-alarm traces now reduces to solving the color-consistent policy synthesis problem on $\lozenge \{ \alarms \}$.
+Using the coloring as described in \cref{def:polsyntrans}, the trace consistent policies coincide with color-consistent policies (\cref{def:colconsistent}). Finding a missed-alarm trace now reduces to solving the color-consistent policy synthesis problem on $\lozenge \{ \alarms \}$.
 
 \begin{restatable}{lemma}{tocoloredmdp}
     \label{lem:tocoloredmdp}
@@ -918,7 +918,7 @@ The approach for \cref{thm:maintheorem} only works for traces of length exactly 
             \draw (init) --node[above, near end] {$h$} (iha);
             \draw[->] (iha) edge[bend left] (ih);
         \end{tikzpicture}
-        \caption{A bisimial colored to MDP to \cref{fig:leqstepa}, containing only $\mdp_{\gtrdot h}$. States $\langle \iota, 1\rangle$ through $\langle \iota, h\rangle$ from $\mdp_{\gtrdot h}$ are shown separate in order to show their relation to $\iota$.}
+        \caption{A bisimular colored MDP of \cref{fig:leqstepa}, containing only $\mdp_{\gtrdot h}$. States $\langle \iota, 1\rangle$ through $\langle \iota, h\rangle$ from $\mdp_{\gtrdot h}$ are shown separate in order to show their relation to $\iota$.}
         \label{fig:leqstepb}
     \end{subfigure}
     \caption{Transformation steps needed for \cref{thm:leqhtheorem}.}
@@ -969,7 +969,7 @@ The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Ea
 This means that our EQ does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}.
 
 \paragraph{Conformance Queries.}
-An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If all the monitor and the MQ don't agree on a trace, it is given as a counterexample. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring.
+An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If the monitor and the MQ don't agree on a trace, it is given as a counterexample. In our approach we use a hybrid of the two EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring.
 
 \section{Computational Complexity}\label{sec:compl}
 This section discusses the hardness of monitor verification (\cref{lem:complexity}) and the inapproximability of a related optimization problem (\cref{lem:ctpapxhard}).
@@ -1490,7 +1490,7 @@ We present the complete results of the monitor verification experiments. \Cref{f
 
 
 \begin{scriptsize}
-    \setlength\LTleft{-4cm}
+    \setlength\LTleft{-1.2cm}
     \input{images/plots/verify.tex}
 \end{scriptsize}
 
@@ -1562,6 +1562,7 @@ We present the complete results for the Learning experiments.
 Whenever either the \alg columns of a row or the baseline columns of a row only contain dashes, this method either went over the 24-hour timeout, or used more than 15 GiB of memory.
 
 \begin{scriptsize}
+    \setlength\LTleft{-.2cm}
     \input{images/plots/experiments.tex}
 \end{scriptsize}
 
