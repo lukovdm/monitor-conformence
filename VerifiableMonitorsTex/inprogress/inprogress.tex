@@ -304,14 +304,14 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
                 \draw[->] (q2) edge[dry, loop above] node[left] {$\dry$} ();
             \end{scope}
         \end{tikzpicture}
-        \caption{A correct monitor $\dfa$ and an incorrect monitor~$\dfaB$ (for $\lambda=0.8$ and $h=3$).
+        \caption{A correct monitor $\dfa$ and an incorrect monitor~$\dfaB$ (for $\lambda=0.25$ and $h=3$).
             %$\dfa$ raises an alarm as soon as two consecutive steps on an $\icy$ section have been observed. While $\dfaB$ raises an alarm if less than two consecutive steps on $\icy$ road has been observed.
         }
         \label{fig:centralmon}
     \end{subfigure}
     \caption{Running example: HMM (a) and two monitors (b). }
     \label{fig:centralexample}
-\end{figure}\sj{$\lambda$ in caption wrong?}
+\end{figure}
 
 
 
@@ -1164,7 +1164,7 @@ We verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
         \begin{scriptsize}
             \begin{tabular}{{@{}llrrrrrrrrrrrrr@{}}}
                 \toprule
-                                       &               & \multicolumn{7}{c}{Benchmark} & \multicolumn{5}{c}{\alg}                                                                                                                                                                                       \\
+                                       &               & \multicolumn{7}{c}{Benchmark} & \multicolumn{6}{c}{\alg}                                                                                                                                                                                       \\
                 \cmidrule(lr){3-10}\cmidrule(lr){11-15}
                                        &               & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\mathcal{L}^{\leq h}|$ & Time (s)  & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$ \\
                 \midrule
@@ -1199,10 +1199,9 @@ We verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
         \end{scriptsize}
     \end{adjustbox}
     \vspace{.2cm}
-    \caption{Subset of verification results found in \Cref{app:verrestable}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Dashes in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold.}
+    \caption{Subset of verification results found in \Cref{app:verrestable}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Lastly, we list the size of the colored MDP produced by the transformation and the risk of the found counterexample. If no trace was found with a risk above (or below, for FA) the indicated threshold was found, a checkmark is placed.}
     \label{tab:verifysubest}
 \end{table}
-\sj{size of MDP not mentioned}
 \sj{Do not provide that precise timings, round to seconds! You could write caption that all time is in seconds to shrink the row-width a bit.}
 
 %\paragraph{How scalable is verification?}
@@ -1291,8 +1290,7 @@ Using verification in the EQ, we always learn correct monitors. We validate this
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Runtime}
         \label{fig:runtime-ns-comp}
     \end{subfigure}
-    \caption{States in learned monitors and runtimes: \alg vs baseline.% A legend can be found in \Cref{app:learnlegend}.
-    }
+    \caption{States in learned monitors and runtimes: \alg vs baseline.}
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
@@ -1325,7 +1323,7 @@ This work studies \emph{monitoring based on stochastic systems} and combines \em
 
 \paragraph{Model-based monitoring for stochastic systems.}
 Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{DBLP:conf/tacas/BadingsVJSJ24}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?}
-Related to runtime monitoring is related to runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is succesful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
+Related to runtime monitoring is runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is succesful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
 Finally, \cite{acetoProbabilisticMonitorability2022}, a more general notion of correct monitors via linear time $\mu$-calculus is investigated, while in \cite{DBLP:journals/corr/abs-2412-11754} a notion of correct \emph{predictors} is introduced.
 Both can be seen as generalizations of our definitions.
 % The monitors are conservative if the model is\lm{Explain conservative?}.
@@ -1469,6 +1467,35 @@ Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and
 The construction runs in polynomial time. The formal proof of its correctness follows the explanation above precisely.
 
 
+\section{Results from Baseline Sampling Count Experiment}\label{sec:ressampling}
+We evaluate the impact of the learning threshold $\lambda_l$ and the amount of samples used during conformance testing for the baseline model. \Cref{fig:samplingn} contains the minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor for
+$\lambda_l \in \{0.05, 0.2, 0.4\}$ and sampling counts in $\{100,1000,10000,100000\}$. All combinations where evaluated on \textsc{AiportB-3} and \textsc{AirportB-7}.
+
+Using $10000$ samples and $100000$ samples both had the same number of missed alarms. However, $10000$ Samples had more false alarms then $100000$ samples. The learning threshold seemed to have no effect on the correctness of the learned monitors.
+\begin{figure}[h]
+    \begin{subfigure}{.5\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/sampling_thresholds_low.pgf}
+        }
+        \caption{Risk threshold of 0.1}
+    \end{subfigure}
+    \begin{subfigure}{.5\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/sampling_thresholds_mid.pgf}
+        }
+        \caption{Risk threshold of 0.2}
+    \end{subfigure}
+    \begin{subfigure}{.5\linewidth}
+        \resizebox{\linewidth}{!}{
+            \input{images/plots/sampling_thresholds_high.pgf}
+        }
+        \caption{Risk threshold of 0.4}
+    \end{subfigure}
+    \caption{Found risk thresholds when using baseline leaning with a different amount of samples in each EQ step. This experiment is done for three different risk thresholds.}
+    \label{fig:samplingn}
+\end{figure}
+
+
 \section{Results from \alg Verification Experiments} \label{sec:resverify}
 \subsection{Transformation Time Results}\label{app:transtimeres}
 We present the complete results of the monitor verification experiments. \Cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each.
@@ -1538,33 +1565,5 @@ Whenever either the \alg columns of a row or the baseline columns of a row only 
 \begin{scriptsize}
     \input{images/plots/experiments.tex}
 \end{scriptsize}
-
-\section{Results from Baseline Sampling Count Experiment}\label{sec:ressampling}
-We evaluate the impact of the learning threshold $\lambda_l$ and the amount of samples used during conformance testing for the baseline model. \Cref{fig:samplingn} contains the minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor for
-$\lambda_l \in \{0.05, 0.2, 0.4\}$ and sampling counts in $\{100,1000,10000,100000\}$. All combinations where evaluated on \textsc{AiportB-3} and \textsc{AirportB-7}.
-
-Using $10000$ samples and $100000$ samples both had the same number of missed alarms. However, $10000$ Samples had more false alarms then $100000$ samples. The learning threshold seemed to have no effect on the correctness of the learned monitors.
-\begin{figure}[h]
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/sampling_thresholds_low.pgf}
-        }
-        \caption{Risk threshold of 0.1}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/sampling_thresholds_mid.pgf}
-        }
-        \caption{Risk threshold of 0.2}
-    \end{subfigure}
-    \begin{subfigure}{.5\linewidth}
-        \resizebox{\linewidth}{!}{
-            \input{images/plots/sampling_thresholds_high.pgf}
-        }
-        \caption{Risk threshold of 0.4}
-    \end{subfigure}
-    \caption{Found risk thresholds when using baseline leaning with a different amount of samples in each EQ step. This experiment is done for three different risk thresholds.}
-    \label{fig:samplingn}
-\end{figure}
 
 \end{document}
