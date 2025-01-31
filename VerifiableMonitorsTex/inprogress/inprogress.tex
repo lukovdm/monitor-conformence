@@ -113,34 +113,11 @@
 \begin{document}
 \maketitle
 \begin{abstract}
-Runtime monitors assess whether a system is in a unsafe state based on a stream of observations. We study the problem where the system is subject to probabilistic uncertainty and described by a hidden Markov model.
- A stream of observations is then unsafe, if  it the probability of being in an unsafe state is above a threshold. 
- A correct monitor recognises the set of unsafe observations. 
-%
-%We study white-box monitoring, where the system is given by a hidden Markov model. 
-%The verification problem asks to decide whether a finite automaton is a correct monitor, i.e., whether it raises an alarm for observation
-%
-%
-%    Runtime monitors for hidden Markov models obtain a sequence of observations and must classify whether the system is currently deemed safe. 
-%    A system is deemed safe, if the probability of being in a dangerous state conditioned on these observations is below some threshold. 
-%    
-    The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite automata. The contribution combines four ingredients: First, we establish the coNP-hardness of checking whether an automaton is a correct monitor, i.e., a monitor without misclassifications. Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem. Third, we integrate the verification routine into an active automata learning routine to synthesize correct monitors. Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
-    %
-    % In particular, we provide a verification procedure that can establish the absence of mi
-    %This paper contributes the first correct-by-construction synthesis approach for  such monitors, represented as finite automata. We assume that the system is described by a known hidden Markov model.
-    %
-    %
-    %    Runtime monitors observe a running system via sensors and must predict whether the system is at risk of violating a specification, i.e., runtime monitors classify observed traces as being safe or unsafe. 
-    %    This paper presents a method to synthesise these classifiers represented as finite automata, if the model is given by a known hidden Markov model.
-    %    First, we develop the first method to verify such monitors: We reformulate the verification problem as a search for misclassifications. We then cast  the search fo misclassifications into a probabilistic model synthesis problem.
-    %    Second, we synthesise the monitors inductively by adopting ideas from active automata learning, thereby profiting from the ability to quickly classify individual behavior.
-    %    The outcome is a flexible synthesis loop that synthesises monitors which provably do not exhibit false negatives and have a controllable false positive rate.
-    %    Our experiments show the efficacy of a prototype for this loop to synthesise monitors with X states for an HMM with Y states.
+    Runtime monitors assess whether a system is in an unsafe state based on a stream of observations. We study the problem where the system is subject to probabilistic uncertainty and described by a hidden Markov model. A stream of observations is then unsafe, if the probability of being in an unsafe state is above a threshold. A correct monitor recognizes the set of unsafe observations. The key contribution of this paper is the first correct-by-construction synthesis method for such monitors, represented as finite automata. The contribution combines four ingredients: First, we establish the coNP-hardness of checking whether an automaton is a correct monitor, i.e., a monitor without misclassifications. Second, we provide a reduction that reformulates the search for misclassifications into a standard probabilistic system synthesis problem. Third, we integrate the verification routine into an active automata learning routine to synthesize correct monitors. Fourth, we provide a prototypical implementation that shows the feasibility and limitations of the approach on a series of benchmarks.
 \end{abstract}
 
 \section{Introduction}
 \sj{Fix citations with xx}
-\sj{new abstract, please read and sync with hotcrp}
 \noindent
 Runtime assurance is an essential ingredient in the deployment of safe autonomous systems~\cite{bartocciLecturesRuntimeVerification2018,sanchezSurveyChallengesRuntime2019}.
 Runtime monitors provide assurance by flagging potentially dangerous system behavior, based on a system execution.
@@ -156,7 +133,7 @@ Concretely, this paper focuses on the following question:
 This paper studies the complexity of this problem, provides a practical verification approach, and embeds it into a framework to learn monitors.
 
 \paragraph{What are HMMs?}
-In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM)~\cite{xx} and that we have full access to this HMM.
+In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM)~\cite{rabinerTutorialHiddenMarkov1989} and that we have full access to this HMM.
 Markov chains (MCs) describe system behavior subject to probabilistic uncertainty.
 Paths through an MC are sequences of states that describe system executions.
 % MCs can be seen as specifying a distribution over these paths. 
@@ -457,7 +434,7 @@ A reachability property on target states T is the set of paths which contain a s
 %    From~\cite{baierPrinciplesModelChecking2008}
 %\end{definition}
 %\footnote{HMMs can also be defined with a distribution over colours: This leads to more concise HMMs, however, there is a polynomial-time transformation to the simpler HMMs we use in this paper.}.
-Notions such as paths are lifted from MCs. Furthermore, a \emph{trace} $\tau$ is a sequence of observations. We lift $\obs$ from states to paths.
+Notions such as paths are lifted from MCs. Furthermore, a \emph{trace} $\tau$ is a sequence of observations. We lift $\obsf$ from states to paths.
 We define  $\Prob(\tau\mid\pi) \defeq 1$ if $\obsf(\pi) = \tau$ and zero otherwise. The probability of a trace $\tau$ is $\sum_{\pi\in\Pi^\mc} \Prob(\pi) \cdot \Prob(\tau\mid\pi)$.
 Finally, the conditional probability on a trace $\tau\in\lang{\mc}$ is defined using Bayes' rule
 $\Prob(\pi\mid\tau) \defeq \nicefrac{\Prob(\tau\mid\pi) \cdot \Prob(\pi)}{\Prob(\tau)}$.
@@ -982,13 +959,10 @@ For EQs, we simply use the notion of correctness from \cref{def:cormon}.
 \end{definition}
 The EQ requires checking both for no-missing-alarms, and for no-false-alarms. Each check follows the steps as described in \cref{sec:monver}.
 
-\begin{lemma}
+\begin{restatable}{lemma}{learncor}
     Given a MAT with a $\EQ_{\lambda_s, \lambda_u}$ and a $\MQ_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
-\end{lemma}\sj{Consider moving this proof to appendix and use space for experiments}
-\begin{proof}
-    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by $\MQ_{\lambda_l}$ it cannot be given as a counterexample by $\EQ_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, $\MQ_{\lambda_l}$ and $\EQ_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to $\EQ_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
-\end{proof}
-When $\lambda_s < \lambda_u$, the EQ has an inconclusive area given by the interval $(\lambda_s, \lambda_u)$.
+\end{restatable}
+\noindent When $\lambda_s < \lambda_u$, the EQ has an inconclusive area given by the interval $(\lambda_s, \lambda_u)$.
 This means that our EQ does not check for equivalence, but simply accepts any correct monitor. We investigate the effect of this inconclusive area in \cref{sec:experiments}.
 
 \paragraph{Conformance queries.}
@@ -1434,6 +1408,11 @@ This paper presented a first approach to verification of monitors with respect t
         \in \{0,1\}
     \end{align*}
 \end{proofoutline}
+
+\learncor*
+\begin{proof}
+    If, while learning a monitor $\dfa$ a trace $\tau$ is deemed \emph{safe} by $\MQ_{\lambda_l}$ it cannot be given as a counterexample by $\EQ_{\lambda_s, \lambda_u}$ on $\dfa$, since $\lambda_s \leq \lambda_l \leq \lambda_u$, and $\tau\notin\dfa$ by L$^\star$. Similarly, $\MQ_{\lambda_l}$ and $\EQ_{\lambda_s, \lambda_u}$ also agree on \emph{unsafe} traces. Now, by correctness of L$^\star$, a learned monitor $\dfa$ has to be correct according to $\EQ_{\lambda_s, \lambda_u}$, and thus correct in the sense of \cref{def:cormon}.
+\end{proof}
 
 \section{Construction for NP-hardness/APX-hardness}
 \label{app:complexity}
