@@ -1126,17 +1126,17 @@ All experiments are run  on a single thread of an AMD Ryzen TRP 5965WX and with 
 %We ran multiple benchmarks in parallel.
 
 \paragraph{Benchmarks.}
-We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the central example and \textsc{SnL} based on the game ``Snakes and Ladders''.
+We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the running example and \textsc{SnL} based on the game ``Snakes and Ladders''.
 While the benchmarks from the literature contain many observations, i.e., few states share an observation, the new benchmarks only have a few different observations. All benchmarks are scalable. The risk function is defined by a temporal property, e.g., the probability of reaching a bad state within a few steps.
 % We use benchmarks up to hundreds of states and thousands of transitions.
 
 \subsubsection{Efficiency of Monitor Verification}
-We investigate scalability along different dimensions and identify the bottlenecks of the method.
+We first investigate scalability along different dimensions and identify the bottlenecks of our verification method.
 
 \paragraph{Setup.}
 %We run the \alg verifier on the benchmarks as described above. 
-We obtain monitors from the \alg learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained halfway through the learning process, and the final correct monitor.
-For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
+We verify the HMMs with respect to three monitors obtained during the learning experiments (below, with $\lambda_s = \lambda_u = 0.3$). Every version of the benchmark is run on the first (incorrect) monitor that passed a limited conformance check, an (incorrect) monitor obtained halfway through the learning process, and the final correct monitor.
+We verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
 
 %(2)~find the minimum in monitor risk and maximum out of monitor risk\sj{vague}.\sj{I wonder whether we really want to present case (2) in the main text. It is not solving any of our problem statements, it is typically harder, and it makes the table harder to read. We could still have that in the appendix.}
 %We refer to benchmark runs with short IDs that consist of a reference to the benchmark family and a counter, e.g., A-10 for the tenth \textsc{Airport} run.
@@ -1202,21 +1202,21 @@ For each monitor we verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
-We present our results in \Cref{tab:verifysubest}, which is a subset of the 336 benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we verify HMMs with hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20},\textsc{E-22},\textsc{H-8},\textsc{H-10}.
+We present our results in \Cref{tab:verifysubest}, which is a subset of the 336 benchmarks shown in \Cref{sec:resverify}. Generally, we observe that we verify the correctness of monitors on at least billions of traces, which shows that enumerating the traces is not a feasible alternative. Our verification handles monitors and HMMs with both hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20},\textsc{E-22},\textsc{H-8},\textsc{H-10}.
 Benchmarks \textsc{A-36},\textsc{A-38} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, \textsc{A-40},\textsc{A-42},\textsc{S-40},\textsc{S-42} reflect a semi-correct monitor, and \textsc{A-44},\textsc{A-46},\textsc{S-44},\textsc{S-46} reflect verification of the same HMM with respect to a larger correct monitor.
 Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-34} compared to \textsc{I-10} and \textsc{I-14}.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
-In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see \Cref{sec:resverify}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck.
+In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see \Cref{sec:resverify})\sj{Can we refer to appendix C1, C2, etc}, whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the fast majority is spent on PAYNT. The transformation is never the bottleneck. \sj{Then also refer to appendix here}
 
 %\paragraph{What steps are most expensive?}
 %The time spent to verify a monitor can mostly be split up in time to apply the transformation from \cref{sec:monver}, and time spent to verify the created colored MDP using PAYNT. Verifying a colored MDP is an NP-complete problem, and its runtime is heavily dependent on the internal structures and thresholds used. From \cref{tab:verifysubest}, the \textsc{Evade} benchmarks are comparably large but take only around eight seconds to verify by PAYNT, where A-10 and A-11 are much smaller, but take around a thousand seconds to verify. The transformation step does seem to increase if the size of the HMM or the monitor increases as can be seen in \cref{fig:sizevsprod}. But this again does differ between benchmarks.
 
 
 \subsubsection{Efficiency of Monitor Learning}
-A key contribution of this paper is the ability to implement EQs for monitor learning.
-We consider the necessity of EQs, the size of the learned monitors, and the efficiency of learning them, both for $\lambda_s = \lambda_u$ and $\lambda_s \neq \lambda_u$.
+A key contribution of this paper is the ability to use verification for the EQs in monitor learning.
+We consider the necessity of these EQs, the size of the learned monitors, and the efficiency of learning them, both for $\lambda_s = \lambda_u$ and $\lambda_s \neq \lambda_u$.
 
-\paragraph{Setup.}
+\paragraph{Setup.}\sj{Order of appendices C,D,E}
 We use the MAT framework from \cref{sec:learning}.
 %The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
 Before every EQ, we run conformance checking (max.\ 100 samples using as threshold $\lambda_s$ and 100 samples with $\lambda_u$, see \cref{sec:learning}).
@@ -1226,8 +1226,8 @@ We compare against a baseline that does not use EQs, i.e., the baseline uses the
 %We only discuss the results of learning with $\lambda_s = \lambda_l = \lambda_u$ and with $\lambda_s \leq \lambda_l \leq \lambda_u$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.\sj{This makes things a bit complicated}
 
 \paragraph{Are the monitors correct?}
-Using a proper EQ, we always learn correct monitors. We validate this experimentally \emph{and} show that the baseline does not always yield correct monitors. For every monitor we determine the unsafe trace with the lowest risk (\emph{actual alarm threshold}, $\lambda_u^{\min}$) and the safe trace with the highest risk (\emph{actual no-alarm threshold}, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
-\Cref{fig:learnThrToverS,fig:learnThrToverNS,fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg and the baseline. Visually, a monitor is correct if its red bar never touches the green area, and the green bar never touches the red area. In 6 out of 38 benchmarks the baseline learns a monitor that misses alarms. No monitors had false alarms.
+Using verification in the EQ, we always learn correct monitors. We validate this experimentally \emph{and} show that the baseline does not always yield correct monitors. For every monitor we determine the unsafe trace with the lowest risk (\emph{actual alarm threshold}, $\lambda_u^{\min}$) and the safe trace with the highest risk (\emph{actual no-alarm threshold}, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
+\Cref{fig:learnThrToverS,fig:learnThrToverNS,fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg and for the baseline. Visually, a monitor is correct if its red bar never touches the green area and the green bar never touches the red area. In 6 out of 38 benchmarks the baseline learns a monitor that misses alarms. No monitors had false alarms.
 
 \begin{figure}[t]
     \begin{subfigure}{.34\linewidth}
@@ -1256,7 +1256,7 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
 
 \paragraph{How big are the monitors?}
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
-\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{sec:reslearn}. For the literature on AAL, these are large automata\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller)\footnote{The language of correct monitors without incoclusive traces for \alg and baseline are equivalent up to the horizon, but the monitors can differ on traces longer then the horizon.}.
+\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{sec:reslearn}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller)\footnote{The language of correct monitors without incoclusive traces for \alg and baseline are equivalent up to the horizon, but the monitors can differ on traces longer then the horizon.}.
 
 
 \begin{figure}[t]
@@ -1264,30 +1264,30 @@ Using a proper EQ, we always learn correct monitors. We validate this experiment
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
-        \caption{\alg with $\lambda_s < \lambda_l < \lambda_u$}
+        \caption{Size, $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:monsizes}
     \end{subfigure}\hfill
     \begin{subfigure}{.209\linewidth}
         \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
-        \caption{\alg with $\lambda_s=\lambda_l=\lambda_u$}
+        \caption{Size, $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:monsizens}
     \end{subfigure}\hfill
     \begin{subfigure}{.265\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_with_slack.pgf}}
-        \caption{Runtime comparison, $\lambda_s < \lambda_l < \lambda_u$}
+        \caption{Runtime, $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:runtime-ws-comp}
     \end{subfigure}\hfill
     \begin{subfigure}{.251\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_no_slack.pgf}}
-        \caption{Runtime comparison, $\lambda_s=\lambda_l=\lambda_u$}
+        \caption{Runtime, $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:runtime-ns-comp}
     \end{subfigure}
     \caption{States in learned monitors and runtimes: \alg vs baseline.}
-\end{figure}
+\end{figure}\sj{Subcaptions ugly breaks}
 
 \paragraph{How fast do we learn the monitors?}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
@@ -1303,7 +1303,7 @@ We remark that only \alg{} is guaranteed to be correct. Neither of the two learn
 
 %\subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
 \paragraph{The role of an inconclusive area.}
-We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = \lambda_u$, i.e., with and without an inconclusive area. The baseline does not actively support such an inconclusive area. With an inconclusive area, more monitors are correct. The learner indeed finds monitors that are 2-5 times\sj{check numbers} smaller (also compare \Cref{fig:monsizes,fig:monsizens}). For benchmarks \textsc{Icy-Driving}, \textsc{Evade}, and \textsc{Airport}, this also translates to faster runtimes, sometimes by orders of magnitudes.
+We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = \lambda_u$, i.e., with and without an inconclusive area. The baseline does not actively support such an inconclusive area. With an inconclusive area, more monitors are correct (i.e., strictly speaking, we do not test equivalence but acceptance). The learner indeed finds monitors that are 2-5 times\sj{check numbers} smaller (also compare \Cref{fig:monsizes,fig:monsizens}). For benchmarks \textsc{Icy-Driving}, \textsc{Evade}, and \textsc{Airport}, this also translates to faster runtimes than using conformance checking, sometimes by orders of magnitudes. \sj{If we have space, say something about number of EQs used during learning.}
 
 %contain the size of the monitors found using \alg learning and baseline learning. 
 %\cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. 
