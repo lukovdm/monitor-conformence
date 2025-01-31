@@ -974,7 +974,7 @@ This section discusses the hardness of monitor verification (\cref{lem:complexit
     \label{lem:complexity}
     \emph{Is a monitor correct?} (w.\ unary coded horizon) is coNP-complete.
 \end{theorem}
-In fact, we study the dual to this problem, i.e., checking the existence of a counterexample. We call this problem \emph{monitor co-verification}. For monitor co-verification, \emph{membership} in NP follows as  false alarms or a missed alarm (of length up to horizon, i.e., polynomially sized) are witnesses.
+In fact, we study the dual to this problem, i.e., checking the existence of a counterexample. We call this problem \emph{monitor co-verification}. For monitor co-verification, \emph{membership} in NP follows\lm{This sentence was hard to pass, maybe follows from false alarms and missed alarms being witnesses?} as  false alarms or a missed alarm (of length up to horizon, i.e., polynomially sized) are witnesses.
 Verifying whether a trace is a false or missed alarm can be done in polynomial time, by checking whether the automaton accepts it and computing the trace risk (see \cref{sec:learning}).
 
 To establish NP-hardness, we consider the CTR problem from~\Cref{def:CTPdecprob}. As a solution to the monitor co-verification problem solves the CTR problem (using a trivial monitor), this implies NP-hardness of the former problem.
@@ -983,7 +983,7 @@ To establish NP-hardness, we consider the CTR problem from~\Cref{def:CTPdecprob}
     The CTR Decision Problem is (strongly) NP-hard.
 \end{lemma}
 %The lemma holds even for acyclic HMMs. 
-The proof features a reduction from SAT, the problem of satisfiability of a propositional formula. We illustrate the reduction, details are in \cref{app:complexity}.
+The proof features a reduction from SAT\lm{CNF-SAT}, the problem of satisfiability of a propositional formula. We illustrate the reduction, details are in \cref{app:complexity}.
 
 \tikzset{
     %->, % makes the edges directed
@@ -1074,7 +1074,7 @@ The proof features a reduction from SAT, the problem of satisfiability of a prop
     \caption{Illustrations for Lemma~\ref{lem:ctpdecnphard}, with $m$ clauses and variables $x_1, x_2, x_3$.}
 \end{figure}
 
-We construct HMM $\mc_\varphi$ from CNF $\varphi$ over variables $X$ such that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In particular, that trace exists iff all thre is a trace $\tau$ s.t.\  all corresponding\sj{make sure that corresponding paths are the right formal notion} paths reach some state $t$.
+We construct HMM $\mc_\varphi$ from CNF $\varphi$ over variables $X$ such that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In particular, that trace exists iff all thre\lm{cannot find the meaning of this sentence.} is a trace $\tau$ s.t.\  all corresponding paths reach some state $t$.
 The traces are of the form $\#\# \cdot \{ \bot, \top \} \cdot \# \cdot \{ \bot, \top \} \dots \cdot \#$: Trace $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$ represents assignment  $\alpha\colon X \rightarrow \{\bot,\top \}$.
 We now construct $\mc_\varphi$ such that any trace that ensures reaching $t$ reflects a satisfying assignment.  We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}:
 That is, to ensure reaching $t$ along every path, we must reach $t$ in every gadget.
@@ -1102,7 +1102,7 @@ We now show that the construction above suffices to show that it is hard to appr
     \label{lem:ctpapxhard}
     The CTR Optimization Problem is APX-hard.
 \end{lemma}
-This follows from a strict reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{DBLP:journals/jacm/Hastad01}. The construction coincides with the reduction in \Cref{lem:ctpdecnphard} by observing that the conditional probability to reach a $t$ state is given by $\nicefrac{1}{m}$ times the number of satisfied clauses, i.e., we can compute the maximal number of satisfied clauses in $\varphi$ on the HMM $\mc_\varphi$.
+This follows from a strict reduction from MAX-3SAT, which is an inapproximable and APX-hard problem~\cite{DBLP:journals/jacm/Hastad01}. The construction coincides with the reduction in \Cref{lem:ctpdecnphard} by observing that the conditional probability to reach a $t$ state is given by $\sfrac{1}{m}$ times the number of satisfied clauses, i.e., we can compute the maximal number of satisfied clauses in $\varphi$ on the HMM $\mc_\varphi$.
 
 
 
@@ -1372,7 +1372,7 @@ This paper presented a first approach to verification of monitors with respect t
 \begin{proof}
     We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, which gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. Taking action $l$ leads to the state $\langle l, \iota\rangle$.
     \begin{align*}
-        \ptrans'(\iota', l, \langle l, \iota\rangle) & = 1
+        \ptrans'(\iota', l)(\langle l, \iota\rangle) & = 1
     \end{align*}
     We now show this transformation is correct.
 
@@ -1429,7 +1429,7 @@ This paper presented a first approach to verification of monitors with respect t
 
 
 
-Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTR instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding\sj{make sure that corresponding paths are the right formal notion} paths end in state $t$.
+Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTR instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$\lm{Add $t\in F$}. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding paths end in state $t$.
 
 Before we give a formal definition of $\mc_\varphi$, we give some intuition.
 We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. We create gadgets for every clause. The gadgets are connected as in \Cref{fig:gadgetsconnected}: That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$ defined below. Next, we show that the gadget reaches positive risk in every gadget only if the corresponding clause is satisfied by the assignment.
@@ -1440,7 +1440,7 @@ State $s_{i,j}$, $s_{i,j}^\top$ and $s_{i,j}^\bot$ have observations $\#, \top, 
 From there onwards,  if the literal $x_i$ (or $\neg x_i$) occurs in clause $c_j$, we transition from $s_{i,j}^\top$ (or $s_{i,j}^\bot$, resp.) to $s_{i+1,j}'$, otherwise, we transition to $s_{i+1,j}$. A path ends in $t$ only via a state $s'_{i,j}$, which is only possible if the path visits a state corresponding to a literal in the clause. Thus, (conditionally) reaching state $s'_{i,j}$ with positive conditional probability means that the partial assignment $\alpha(x_1),\dots,\alpha(x_i)$ satisfies clause $c_j$, while reaching $s_{i,j}$ with positive conditional probability means that the clause is either unresolved or unsatisfied given the partial assignment.
 
 
-Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and set $\lambda = 1$:
+Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and set $\lambda = 1$\lm{Should this be $\lambda_s$, it is used in def 10.}:
 \begin{itemize}
     \item
           $\Sts = \{ s_{i,j}, s_{i,j}^\bot, s_{i,j}^\top,
@@ -1451,7 +1451,7 @@ Formally, we construct the HMM $\mc = (\Sts,\init, \ptrans, \Obs, \obsf, r)$ and
               \item  $\ptrans(s_\init,s_{1,j}) = \frac{1}{m}$,
               \item  $\ptrans(s_{i,j},s_{i,j}^\top) = \ptrans(s_{i,j},s_{i,j}^\bot) = \frac{1}{2}= \ptrans(s'_{i,j},s_{i,j}'^\top) = \ptrans(s_{i,j}',s_{i,j}'^
                         \bot)$,
-              \item $\ptrans(s_{i,j}^\top,s'_{i+1,j}) = \indicator{x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\top,s_{i+1,j}) = \indicator{x_i \neq \ell_j^k \text{ for all k}}$,
+              \item $\ptrans(s_{i,j}^\top,s'_{i+1,j}) = \indicator{x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\top,s_{i+1,j}) = \indicator{x_i \neq \ell_j^k \text{ for all k}}$,\lm{Maybe explain the indicator func somewhere, I didn't know this notation yet.}
               \item $\ptrans(s_{i,j}^\bot,s'_{i+1,j}) = \indicator{\neg x_i = \ell_j^k \text{ for some k}}$, $\ptrans(s_{i,j}^\bot,s_{i+1,j}) = \indicator{\neg x_i \neq \ell_j^k \text{ for all k}}$
               \item $\ptrans(s'_{n+1,j}, t) = 1 = \ptrans(s_{n+1,j}, f)$
           \end{itemize}
