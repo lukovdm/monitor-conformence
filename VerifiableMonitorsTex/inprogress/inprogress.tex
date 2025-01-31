@@ -258,7 +258,7 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
         \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
             \node[state,initial, dry] (qd) {$q_d$};
             \node[state, icy] (qi) [right of=qd] {$q_i$};
-            \node[state, icy] (qc) [below of=qi] {$q_c$};
+            \node[state, icy] (qc) [below=0.8cm of qi] {$q_c$};
 
             \draw[->] (qd) edge[bend left] node[above] {$\frac{9}{10}$} (qi);
             \draw[->] (qd) edge node[below left] {$\frac{1}{10}$} (qc);
@@ -304,14 +304,14 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
                 \draw[->] (q2) edge[dry, loop above] node[left] {$\dry$} ();
             \end{scope}
         \end{tikzpicture}
-        \caption{A correct monitor $\dfa$ and an incorrect monitor~$\dfaB$ (for $\lambda=0.8$).
+        \caption{A correct monitor $\dfa$ and an incorrect monitor~$\dfaB$ (for $\lambda=0.8$ and $h=3$).
             %$\dfa$ raises an alarm as soon as two consecutive steps on an $\icy$ section have been observed. While $\dfaB$ raises an alarm if less than two consecutive steps on $\icy$ road has been observed.
         }
         \label{fig:centralmon}
     \end{subfigure}
-    \caption{Running example: HMM (a) and two monitors (b). We consider a horizon of 3 when discussing (a) and (b).}
+    \caption{Running example: HMM (a) and two monitors (b). }
     \label{fig:centralexample}
-\end{figure}
+\end{figure}\sj{$\lambda$ in caption wrong?}
 
 
 
@@ -360,7 +360,9 @@ In summary, this paper provides a first framework to learn runtime monitors --- 
 \textbf{(3)}~We prove the hardness of the verification problem (\cref{sec:compl}).
 \textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}) Our prototype finds monitors that are provably correct on $10^{18}$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
 
-We list proofs (sketches) for all lemmas and theorems in \Cref{app:proofs,app:complexity}.
+\smallskip
+\noindent
+\Cref{app:proofs,app:complexity} contain proof (sketches) for all lemmas and theorems.
 %
 %\begin{figure}[t]
 %    \centerline{
