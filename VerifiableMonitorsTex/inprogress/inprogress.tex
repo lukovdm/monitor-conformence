@@ -1226,8 +1226,8 @@ We use the MAT framework from \cref{sec:learning}.
 %The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
 Before every EQ, we run conformance checking (max.\ 100 samples using as threshold $\lambda_s$ and 100 samples with $\lambda_u$, see \cref{sec:learning}).
 As hyper-parameters, we investigate (1) $\lambda_l = 0.3, \lambda_s = 0.35, \lambda_u = 0.1$ and (2) $\lambda_s = \lambda_l = \lambda_u = 0.3$
-\footnote{We evaluate the role of $\lambda_l$ on the correctness of monitors learned by the baseline   in \Cref{sec:ressampling}.}.
-We compare against a baseline that does not use EQs, i.e., the baseline uses the MAT framework with only conformance checking (max.\ 100000 samples,  different numbers of samples are tested in \Cref{sec:ressampling}).
+\footnote{We study correctness of monitors learned by the baseline w.r.t.\ different $\lambda_l$  in \cref{sec:ressampling}.}.
+We compare against a baseline that does not use EQs, i.e., the baseline uses the MAT framework with only conformance checking (max.\ 100000 samples,  different numbers of samples are tested in \cref{sec:ressampling}).
 %We only discuss the results of learning with $\lambda_s = \lambda_l = \lambda_u$ and with $\lambda_s \leq \lambda_l \leq \lambda_u$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.\sj{This makes things a bit complicated}
 
 \paragraph{Are the monitors correct?}
@@ -1261,7 +1261,7 @@ Using verification in the EQ, we always learn correct monitors. We validate this
 
 \paragraph{How big are the monitors?}
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
-\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{app:learnrestable}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller)\footnote{The language of correct monitors without inconclusive traces for \alg and baseline are equivalent up to the horizon, but the monitors can differ on traces longer then the horizon.}.
+\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{app:learnrestable}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller)\footnote{For $\lambda_s = \lambda_u$, the language of correct monitors learned with \alg and baseline are equivalent up to the horizon, but the monitors respond differently on longer traces.}.
 
 
 \begin{figure}[t]
@@ -1291,7 +1291,8 @@ Using verification in the EQ, we always learn correct monitors. We validate this
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Runtime}
         \label{fig:runtime-ns-comp}
     \end{subfigure}
-    \caption{States in learned monitors and runtimes: \alg vs baseline. A legend can be found in \Cref{app:learnlegend}.}
+    \caption{States in learned monitors and runtimes: \alg vs baseline.% A legend can be found in \Cref{app:learnlegend}.
+    }
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
