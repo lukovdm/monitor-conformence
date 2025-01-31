@@ -240,10 +240,10 @@ The trace associated to a system execution describes the information received by
 \paragraph{Monitoring with HMMs.} Monitoring with HMMs assumes that a monitor receives a trace from the system and uses inference on the HMM modelling the system (see \cref{fig:monitors}). In the inference step, the key task is to estimate whether the current system state is dangerous, based on the available information in the form of a trace. Intuitively, the \emph{risk of a trace}~\cite{jungesRuntimeMonitorsMarkov2021} quantifies how likely it is that the system state is dangerous. Formally, this can be defined as the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace. For a given trace, we may compute this risk, e.g., either via model checking~\cite{baierComputingConditionalProbabilities2014} or by a (forward) filtering that tracks a distribution over the current states~\cite{jungesRuntimeMonitorsMarkov2021,rabinerTutorialHiddenMarkov1989}. We call a trace \emph{unsafe} if its risk exceeds an acceptable threshold. Monitors should raise alarms only for unsafe traces.
 
 \paragraph{What are Correct Monitors?}
-Like in~\cite{acetoProbabilisticMonitorability2022}, we summarise the behavior of monitors by the    set of traces (i.e., formal languages) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
+Like in~\cite{acetoProbabilisticMonitorability2022}, we summarise the behavior of monitors by the    set of traces (i.e., formal languages) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm on) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
 
 \paragraph{Illustrative Toy Example.}
-As an running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \Cref{fig:centralexample} describes how a car alternates between dry and icy road segments, and where being on a icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$ for this trace (see \Cref{ex:riskoftrace}).
+As a running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \Cref{fig:centralhmm} describes how a car alternates between dry and icy road segments, and where being on an icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$ for this trace (see \Cref{ex:riskoftrace}).
 In \cref{fig:centralmon}, monitor $\dfa$ is a finite automaton that describes the set of traces that end with two consecutive icy patches.
 The verification question in this paper is now: \emph{Is this a correct monitor for threshold $0.25$?} That is, is an alarm raised iff the trace risk is above $0.25$?
 
@@ -267,7 +267,7 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
             \draw[->] (qi) edge node[right] {$\frac{1}{4}$} (qc);
             \draw[->] (qc) edge[loop right] node {$1$} ();
         \end{tikzpicture}
-        \caption{HMM. States $q_i, q_c$ have the observation $\icy$, state $q_d$ has $\dry$.}
+        \caption{HMM. States $q_i, q_c$ have the observation $\icy$, state $q_d$ has $\dry$. In state $q_c$ the vehicle is of the road.}
         \label{fig:centralhmm}
     \end{subfigure}
     \hfill
@@ -354,7 +354,7 @@ Practically, some minor modifications are necessary to embed our approach in an 
 
 
 \paragraph{Contributions.}
-In summary, this paper provides a first framework to learn runtime monitors --- encoded as finite automata --- that are verified to be correct with respect to a given HMM. The main contributions are:
+In summary, this paper provides a first framework to learn runtime monitors---encoded as finite automata---that are verified to be correct with respect to a given HMM. The main contributions are:
 \textbf{(1)}~We solve the verification problem by exhaustively searching for a counterexample using probabilistic system synthesis (\cref{sec:monver}).
 \textbf{(2)}~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning (\cref{sec:learning}).
 \textbf{(3)}~We prove the hardness of the verification problem (\cref{sec:compl}).
@@ -402,7 +402,7 @@ We introduce MDPs and HMMs: The former are integral to our approach, and the lat
 
 
 \begin{definition}[MDP]
-    A \emph{Markov decision process} (MDP) is a tuple $\left(\Sts, \init, \Act, \ptrans \right)$ with a  countable nonempty set  $\Sts$ of \emph{states},  the \emph{initial state} $\init \in \Sts$, and the \emph{partial transition function} $\ptrans\colon \Sts \times \Act \rightharpoonup \Distr(\Sts)$.
+    A \emph{Markov decision process} (MDP) is a tuple $\left(\Sts, \init, \Act, \ptrans \right)$ with a countable nonempty set  $\Sts$ of \emph{states},  the \emph{initial state} $\init \in \Sts$, and the \emph{partial transition function} $\ptrans\colon \Sts \times \Act \rightharpoonup \Distr(\Sts)$.
 \end{definition}
 We use $\Act(s) \defeq \{ \act \mid \ptrans(s, \act) \neq \bot \}$ as the set of \emph{enabled actions}. We assume no deadlocks, i.e., for every $s \in \Sts$, $\Act(s) \neq \emptyset$.
 A path $\pi$ is a (possibly infinite) sequence $s_0\cdot\act_0\cdots_1\hdots \in (\Sts \times \Act)^{*} \times \Sts$, such that $a_i \in \Act(s_i)$ and $P(s_i, a_i)(s_{i+1}) > 0$ for every $i \geq 0$. The last state of a finite path is denoted by $\pi_\downarrow$.
@@ -410,7 +410,7 @@ The set of paths in MDP $\mdp$ is denoted as $\Pi^\mdp$, the set of finite paths
 
 A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs as a tuple $\left(\Sts, \init,  \ptrans \right)$, $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$ and $\ptrans(s,s')$ for $\ptrans(s)(s')$. Paths in an MC are sequences of (only) states.
 The probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $\mc$.
-A reachability property on target states T is the set of paths which contain a state $t \in T$. The reachability probability $\Prob(\lozenge T)$ for $\lozenge T$ is defined using the standard cylinder set construction.
+A reachability property on target states $T$ is the set of paths which contain a state $t \in T$. The reachability probability $\Prob(\lozenge T)$ for $\lozenge T$ is defined using the standard cylinder set construction.
 \begin{definition}[HMMs]
     A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is an MC, $\Obs$ is a finite set of \emph{observations}, $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) \emph{observation function}\footnote{We use determinstic observation functions for concise definitions. Stochastic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{jungesRuntimeMonitorsMarkov2021}.}, and $r\colon \Sts \to \RR_{\geq 0}$ is the \emph{risk function}.
 \end{definition}
