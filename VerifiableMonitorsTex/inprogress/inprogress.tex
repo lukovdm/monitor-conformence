@@ -222,7 +222,7 @@ The trace associated to a system execution describes the information received by
                 \draw[<-] (learner.283) -- node[below,align=center] {\scriptsize{accept/reject}} (eq.west |- learner.283);
                 \draw[->] (eq) --node[right] {\scriptsize sample} (mq);
 
-                \draw[->] (eq) --node[above] {invoke} (inc);
+                \draw[->] (eq) --node[above] {\scriptsize invoke} (inc);
                 \draw[->, dotted] (mq) --node[above] {\scriptsize{uses}} (model);
                 \draw[->, dotted] (inc) --node[right] {\scriptsize{uses}} (model);
 
@@ -635,7 +635,7 @@ We describe our transformation in several steps. In \Cref{ssec:ctp} we encode th
                 \draw[->] (alarm) edge[loop right] node[right] {$1$} ();
                 \draw[->] (ignore) edge[loop right] node[right] {$1$} ();
             \end{tikzpicture}}
-        \caption{The HMM for \cref{ex:actp}, brown and cyan are \dry and \icy observations. Black is the new $\en$ observation, and gray is the new $\ig$ observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \langle s,j\rangle \right\rangle$.}
+        \caption{The HMM for \Cref{ex:actp}, brown and cyan are \dry and \icy observations. Black is the new $\en$ observation, and gray is the new $\ig$ observation. All states are named with the step $i$, model state $s$ and monitor state $j$ as $\left\langle i, \langle s,j\rangle \right\rangle$.}
         \label{fig:actp}
     \end{minipage}
 \end{figure}
