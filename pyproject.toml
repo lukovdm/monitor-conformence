@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-aalpy = "^1.4.2"
+aalpy = { git = "https://github.com/DES-Lab/AALpy.git" }
 graphviz = "^0.20.3"
 matplotlib = "^3.9.2"
 stormpy = { path = "../stormpy", develop = true }

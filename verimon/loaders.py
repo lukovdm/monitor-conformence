@@ -343,6 +343,7 @@ def _define_snl_constants(
         else:
             continue
         mapping[const.expression_variable] = value
+    print(", ".join([f"{var.name}={val}" for var, val in mapping.items()]))
     return snl_prism.define_constants(mapping)
 
 
@@ -376,13 +377,13 @@ def _get_sl_prism_consts(model) -> tuple[int, dict[int, int], dict[int, int]]:
 
     for c in model.constants:
         if c.name.startswith("l"):
-            ladders_list[int(c.name[1])][
-                0 if c.name[2] == "s" else 1
-            ] = c.definition.evaluate_as_int()
+            ladders_list[int(c.name[1])][0 if c.name[2] == "s" else 1] = (
+                c.definition.evaluate_as_int()
+            )
         elif c.name.startswith("s"):
-            snakes_list[int(c.name[1])][
-                0 if c.name[2] == "s" else 1
-            ] = c.definition.evaluate_as_int()
+            snakes_list[int(c.name[1])][0 if c.name[2] == "s" else 1] = (
+                c.definition.evaluate_as_int()
+            )
 
     return n, dict(ladders_list), dict(snakes_list)
 
