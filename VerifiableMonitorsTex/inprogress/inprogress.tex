@@ -1,4 +1,5 @@
-\documentclass[runningheads,final]{llncs}
+\documentclass[runningheads]{llncs}
+\pdfoutput=1
 
 % \usepackage{natbib}
 \usepackage[style=lncs,backend=biber]{biblatex}
@@ -20,6 +21,7 @@
 \usepackage{xfrac}
 \usepackage{adjustbox}
 \usepackage{thmtools}
+\usepackage{orcidlink}
 
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
@@ -103,10 +105,14 @@
 \Crefname{appendix}{Appendix}{Appendices}
 
 \title{Learning Verified Monitors for Hidden~Markov~Models}
-\author{}
-\institute{}
-%\author{Luko van der Maas \and Sebastian Junges }
-%\institute{Radboud University, Nijmegen, the Netherlands}
+% \author{}
+% \institute{}
+% \author{Luko van der Maas \and Sebastian Junges }
+% \institute{Radboud University, Nijmegen, the Netherlands}
+\author{%
+  Luko~van~der~Maas\orcidlink{0009-0007-3915-6191} \and Sebastian~Junges\orcidlink{0000-0003-0978-8466}
+}
+\institute{Radboud University, Nijmegen, the Netherlands\\ \email{\{luko.vandermaas,sebastian.junges\}@ru.nl}}
 
 \newcommand{\alg}{ToVer\xspace}
 
@@ -131,8 +137,12 @@ Concretely, this paper focuses on the following question:
 \emph{Is a given finite automaton a correct monitor for a given and known HMM?}
 This paper studies the complexity of this problem, provides a practical verification approach, and embeds it into a framework to learn monitors.
 
+\paragraph{Model based approach.}
+We take a white-box approach to learning a monitor, i.e., we assume we are given a \emph{useful} model of the system. Other approaches also exist, such as black-box monitor learning~\cite{?} and model-free monitor learning~\cite{?}. While white-box methods can be efficient and explainable, they require a model of the system, which is not always realistic. Model-free approaches require no such assumptions, but they have weaker guarantees. Black-box models fit inbetween, they assume only sample access to the system, but learn a model of the system. Then they use a white-box algorithm to provide the monitor. In this paper we study the white-box approach, but we believe that its practical usefulness can be as part of a black-box learning method.
+\lm{What do you think of this paragraph, I based it on the rebuttal.}
+
 \paragraph{What are HMMs?}
-In this paper, we assume that the system including its sensors is adequately described as a discrete Hidden Markov Model (HMM)~\cite{rabinerTutorialHiddenMarkov1989} and that we have full access to this HMM.
+In this paper, we assume that the system including its sensors is adequately modeled as a discrete Hidden Markov Model (HMM)~\cite{rabinerTutorialHiddenMarkov1989} and that we have full access to this HMM.
 Markov chains (MCs) describe system behavior subject to probabilistic uncertainty.
 Paths through an MC are sequences of states that describe system executions.
 % MCs can be seen as specifying a distribution over these paths. 
@@ -325,7 +335,7 @@ This problem is already strongly NP-hard (\Cref{lem:ctpdecnphard}) and the optim
 \paragraph{Our Verification Approach.}
 While deciding whether a monitor is correct is in general not tractable, we suggest utilizing recent advances in the synthesis of probabilistic systems~\cite{andriushchenkoPAYNTToolInductive2021}.
 Our presentation focusses on proving the absence of \emph{missed alarms}, i.e., we concentrate on showing that the monitor correctly identifies every unsafe trace, but we show that a similar reduction can be used to show that a monitor correctly identifies the safe traces.
-First, for a single trace, computing the risk can be reduced to computing a reachability probability in an MC that is some kind of product between a DFA that accepts exactly the trace and the HMM~\cite{jungesRuntimeMonitorsMarkov2021}.
+First, for a single trace, computing the risk can be reduced to computing a reachability probability in an MC that is some kind of product between a deterministic finite automata (DFA) that accepts exactly the trace and the HMM~\cite{jungesRuntimeMonitorsMarkov2021}.
 Thus, inspired by~\cite{DBLP:conf/tacas/BadingsVJSJ24}, we reduce our problem to the question: \emph{Is there a DFA (accepting exactly one trace, accepted by our monitor)
     such that the probability in the product MC exceeds a threshold?}
 The answer is no iff the monitor has no missed alarms.
@@ -409,10 +419,10 @@ A path $\pi$ is a (possibly infinite) sequence $s_0\cdot\act_0\cdots_1\hdots \in
 The set of paths in MDP $\mdp$ is denoted as $\Pi^\mdp$, the set of finite paths is $\Pi_{fin}^\mdp$, the set of paths of at most length $h$ are $\Pi_h^\mdp$, and the set of paths of exactly length $h$ are $\Pi_{=h}^\mdp$. We write $\ptrans(s,a,s')$ for $\ptrans(s,a)(s')$.
 
 A \emph{Markov chain} (MC) is an MDP where $|\Act(s)| = 1$ for every state $s \in \Sts$. We simplify notation and write MCs as a tuple $\left(\Sts, \init,  \ptrans \right)$, $\ptrans(s)$ to refer to the unique distribution $\ptrans(s, \act)$, and $\ptrans(s,s')$ for $\ptrans(s)(s')$. Paths in an MC are sequences of (only) states.
-As in~\cite{baierPrinciplesModelChecking2008}, 
+As in~\cite{baierPrinciplesModelChecking2008},
 the probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability measure following from the canonical $\sigma$-algebra associate with $\mc$.
 A reachability property on target states $T$ is the set of paths which contain a state $t \in T$.
- The reachability probability $\Prob(\lozenge T)$ for $\lozenge T$ is defined using the standard cylinder set construction.
+The reachability probability $\Prob(\lozenge T)$ for $\lozenge T$ is defined using the standard cylinder set construction.
 \begin{definition}[HMMs]
     A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is an MC, $\Obs$ is a finite set of \emph{observations}, $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) \emph{observation function}\footnote{We use determinstic observation functions for concise definitions. Stochastic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{jungesRuntimeMonitorsMarkov2021}.}, and $r\colon \Sts \to \RR_{\geq 0}$ is the \emph{risk function}.
 \end{definition}
@@ -532,7 +542,7 @@ Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finit
 
 \section{Monitor Verification}
 \label{sec:monver}
-We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to the well-studied policy synthesis problem on colored MDPs, defined below. We first formalize this  policy synthesis problem and then present the step-wise transformation. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of \Cref{prob:MA}). At the end of the section, we  generalize our construction o traces of length \emph{at most} the horizon (\Cref{prob:MA}) and to 
+We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to the well-studied policy synthesis problem on colored MDPs, defined below. We first formalize this  policy synthesis problem and then present the step-wise transformation. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of \Cref{prob:MA}). At the end of the section, we  generalize our construction o traces of length \emph{at most} the horizon (\Cref{prob:MA}) and to
 finding false alarms (\Cref{prob:FA}).
 
 \subsection{Relating Missed Alarms to Color-Consistent Policies}
@@ -547,7 +557,7 @@ An MDP and a policy induce an MC by only keeping the state-action pairs in the t
     A memoryless policy $\sigma$ for a colored MDP $\mdpc$ is \emph{color consistent}\footnote{Colored MDPs with color-consistent policies coincide with memoryless policies for partially observable MDPs. However, POMDPs often consider history-dependent (belief-based) policies. We use \emph{colored MDPs} to avoid any confusion.} if for states $s, s'$,
     $c(s) = c(s')$ implies $\sigma(s) = \sigma(s')$.
 \end{definition}
-The set of all color-consistent policies is denoted $\ccSched$. Policy synthesis for colored MDPs\sj{above we have policy synthesis for MDPs, now for colored MDPs. Maybe we only need it for colored MDPs?} asks to find a color-consistent policy such that the reachability probability to a set of target states is above a certain threshold, or to report that no such policy exists. This problem is NP-hard~\cite{DBLP:conf/aaai/ChatterjeeCD16}, but efficient heuristics exist in the tool PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
+The set of all color-consistent policies is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color-consistent policy such that the reachability probability to a set of target states is above a certain threshold, or to report that no such policy exists. This problem is NP-hard~\cite{DBLP:conf/aaai/ChatterjeeCD16}, but efficient heuristics exist in the tool PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
 Policy synthesis for colored MDPs can prove the absence of missed alarms:
 \begin{theorem}
     \label{thm:maintheorem}
@@ -692,13 +702,13 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 \begin{example}
     \label{ex:actp}
     Unrolling the HMM from \cref{fig:ctphmm} with $h=3$ can be seen in \cref{fig:actp}. The initial state becomes the tuple of step $1$ and the initial state from the CTR HMM, i.e., the state$\actps{1}{d}{1}$, which transitions to, e.g., $\actps{2}{c}{2}$.
-    Consider $\actps{3}{i}{3}$, it is at the horizon and $\langle i, 3\rangle$ is an alarm state. From states at the horizon, we transition to either of three states that help classify the trace. 
+    Consider $\actps{3}{i}{3}$, it is at the horizon and $\langle i, 3\rangle$ is an alarm state. From states at the horizon, we transition to either of three states that help classify the trace.
     The (normalized) risk for this state is $0$, since $r(\langle d, 1\rangle) = 0$. Thus, $\actps{3}{i}{3}$ transitions with probability $1$ to $\safes[4]$ and probability $0$ to  $\alarms[4]$. Consider $\actps{3}{d}{1}$, where $\langle d, 1\rangle$ is not in $F$, but the state is at the horizon, it transitions to the ignore state, $\igs[4]$.
 \end{example}
 
 \begin{definition}[Unrolling with risk]
     \label{def:acyclichmm}
-    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of an HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm states $F$ and horizon $h$ is the HMM \[ \mc_{\blacktriangleright h} \defeq (\{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf', r'),\] with $\Sts_{\mathsf{end}} \defeq  \{ \alarms, \safes, \igs \}$, $r'(\cdot) = 0$, 
+    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of an HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm states $F$ and horizon $h$ is the HMM \[ \mc_{\blacktriangleright h} \defeq (\{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf', r'),\] with $\Sts_{\mathsf{end}} \defeq  \{ \alarms, \safes, \igs \}$, $r'(\cdot) = 0$,
     $\obsf'$ given by (1) $\obsf'(\langle i, s\rangle) \defeq \obsf(s)$, \quad(2) $\obsf'(\igs) \defeq \ig$, \quad and (3) $\obsf'(\alarms) = \obsf'(\safes) \defeq \en$,
     and $\ptrans'$ given by:
     \begin{align*}
@@ -813,7 +823,7 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
     We transform the HMM from \cref{fig:actp} to the colored MDP from \cref{fig:mdpex}. Consider $\actps{2}{i}{2}$ in the  HMM.
     The next observation is either $\dry$ or $\icy$, which corresponds to the two actions from $\actps{2}{i}{2}$ in the colored MDP.
     The $\dry$ action transitions to the ensuing states with the $\dry$ observation.
-    The remaining probability of $\sfrac{1}{2}$ for the $\dry$ action is directed to the initial state. 
+    The remaining probability of $\sfrac{1}{2}$ for the $\dry$ action is directed to the initial state.
     This is similarly applied to the $\icy$ action.
     State $\actps{2}{c}{2}$ does not reach any $\dry$ states, we still add a $\dry$ action redirecting to the initial state, as \emph{all} states with the same step value must have the same actions.
     State $\actps{3}{d}{1}$ in the HMM only has a transition to an $\ig$ state. We fully remove the $\ig$ state and the $\ig$ observation in the MDP. Finally, we make sure all states with step 3 have the same actions, which explains the $\en$ action from state $\actps{3}{d}{1}$.
@@ -1307,7 +1317,8 @@ We remark that only \alg{} is guaranteed to be correct. Neither of the two learn
 
 %\subsubsection{Q4: The role of $\lambda_l$, $\lambda_u$ and $\lambda_s$}
 \paragraph{The Role of an Inconclusive Area.}
-We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = \lambda_u$, i.e., with and without an inconclusive area. The baseline does not actively support such an inconclusive area. With an inconclusive area, more monitors are correct (i.e., strictly speaking, we do not test equivalence but acceptance). The learner indeed finds monitors that are 2-5 times smaller (also compare \Cref{fig:monsizes,fig:monsizens}). For benchmarks \textsc{Icy-Driving}, \textsc{Evade}, and \textsc{Airport}, this also translates to faster runtimes than using conformance checking, sometimes by orders of magnitudes. \sj{If we have space, say something about number of EQs used during learning.}
+We compare between $\lambda_u<\lambda_l<\lambda_s$ and $\lambda_s = \lambda_l = \lambda_u$, i.e., with and without an inconclusive area. The baseline does not actively support such an inconclusive area. With an inconclusive area, more monitors are correct (i.e., strictly speaking, we do not test equivalence but acceptance). The learner indeed finds monitors that are 2-5 times smaller (also compare \Cref{fig:monsizes,fig:monsizens}). For benchmarks \textsc{Icy-Driving}, \textsc{Evade}, and \textsc{Airport}, this also translates to faster runtimes than using conformance checking, sometimes by orders of magnitudes.
+%\sj{If we have space, say something about number of EQs used during learning.}
 
 %contain the size of the monitors found using \alg learning and baseline learning. 
 %\cref{fig:monsizes} contains a comparison of monitors learned with a gray area, while \cref{fig:monsizens} compares \alg learning without a gray area. Both axes are on a logarithmic scale. 
@@ -1322,14 +1333,14 @@ This work studies \emph{monitoring based on stochastic systems} and combines \em
 % \sj{TODO Check of werk van Stefan Kiefer et al over labelled MCs relevant is}
 
 \paragraph{Model-Based Monitoring for Stochastic Systems.}
-Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{DBLP:conf/tacas/BadingsVJSJ24}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification.\sj{This sounds very close to what we do? Can we clarify the difference?}
+Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{DBLP:conf/tacas/BadingsVJSJ24}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification. %\sj{This sounds very close to what we do? Can we clarify the difference?}
 Related to runtime monitoring is runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is succesful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
 Finally, in \cite{acetoProbabilisticMonitorability2022}, a more general notion of correct monitors via linear time $\mu$-calculus is investigated, while in \cite{DBLP:journals/corr/abs-2412-11754} a notion of correct \emph{predictors} is introduced.
 Both can be seen as generalizations of our definitions.
 % The monitors are conservative if the model is\lm{Explain conservative?}.
 
 \paragraph{Learning Monitors}
-Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMonitoring2021,DBLP:conf/nfm/PhanG0PSS20,DBLP:conf/atva/TorfahXJVS22,zolfagharianSMARLASafetyMonitoring2025}\sj{more? maybe also something by Anna Lukina?}. Closest to our setting is recent work in \cite{jungesActiveLearningRuntime2025}, which also uses state estimation for membership queries, but combines this with conformance queries and learns decision trees rather than automata. Crucially, by using conformance queries, the guarantees are significantly weaker, see also our experiments. \sj{Unsure whether we should say something about automata learning in general. Maybe better to have that only in section 4}
+Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMonitoring2021,DBLP:conf/nfm/PhanG0PSS20,DBLP:conf/atva/TorfahXJVS22,zolfagharianSMARLASafetyMonitoring2025}. Closest to our setting is recent work in \cite{jungesActiveLearningRuntime2025}, which also uses state estimation for membership queries, but combines this with conformance queries and learns decision trees rather than automata. Crucially, by using conformance queries, the guarantees are significantly weaker, see also our experiments. %\sj{Unsure whether we should say something about automata learning in general. Maybe better to have that only in section 4}
 
 
 %\paragraph{Probabilistic verification and correctness of monitors}
@@ -1387,7 +1398,7 @@ This paper presented a first approach to verification of monitors with respect t
     We combine these $h$ colored MDPs into one colored MDP in the following way.
     We add a new initial state, and give it $h$ actions $\{1,\ldots,h\}$. Action $l\in\{1,\ldots,h\}$ points, with probability $1$, to the initial state of colored MDP $\mdp_{\gtrdot l}$. This is equivalent to solving policy synthesis on the $h$ individual MDPs.
 
-    \lm{Maybe note that the $\mdp_{\gtrdot l}$ only differed when they where in the CTR stage by the horizon, nothing else.}
+    % \lm{Maybe note that the $\mdp_{\gtrdot l}$ only differed when they where in the CTR stage by the horizon, nothing else.}
     We now note that for any $l<l'\leq h$ the initial state $\langle 1, \iota^{CTR}\rangle$ of $\mdp_{\gtrdot l}$ is bisimilar to the state $\langle l' - l + 1, \iota^CTR \rangle$ in $\mdp_{\gtrdot l'}$. We now claim that the result of bisimulation minimization on this combined colored MDP is described by the transformation described at the start of the proof.
 \end{proof}
 

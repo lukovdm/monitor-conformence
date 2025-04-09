@@ -478,3 +478,5 @@ tests/*/*.pdf
 **/*.txt
 notebooks/*.yaml
 stats/
+
+**/arxiv.tar.gz
