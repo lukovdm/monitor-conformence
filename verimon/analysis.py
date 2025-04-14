@@ -378,10 +378,18 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             else r"-",
             len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
             d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else r"-",
-            float(d["verimon"]["false_positive"])
+            (
+                float(d["verimon"]["false_positive"]),
+                d["verimon"]["false_positive"]
+                < d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
+            )
             if "fake" not in d["verimon"]
             else r"-",
-            float(d["verimon"]["false_negative"])
+            (
+                float(d["verimon"]["false_negative"]),
+                d["verimon"]["false_negative"]
+                > d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
+            )
             if "fake" not in d["verimon"]
             else r"-",
             (
@@ -393,10 +401,16 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             else r"-",
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
             d["sampling"]["learning_rounds"] if "fake" not in d["sampling"] else r"-",
-            float(d["sampling"]["false_positive"])
+            (
+                float(d["sampling"]["false_positive"]),
+                d["sampling"]["false_positive"] < d["experiment"]["threshold"],
+            )
             if "fake" not in d["sampling"]
             else r"-",
-            float(d["sampling"]["false_negative"])
+            (
+                float(d["sampling"]["false_negative"]),
+                d["sampling"]["false_negative"] > d["experiment"]["threshold"],
+            )
             if "fake" not in d["sampling"]
             else r"-",
         ]
@@ -421,10 +435,20 @@ def generate_table(preamble, data, save_path="./", file_name="runtime"):
             else:
                 str_line = []
                 for e in line:
+                    prefix = ""
+                    postfix = ""
+                    if isinstance(e, tuple):
+                        if e[1]:
+                            prefix = r"{\color{red} "
+                            postfix = r"}"
+                        e = e[0]
+
                     if isinstance(e, float):
-                        str_line.append(f"{e:.2f}")
+                        str_line.append(f"{prefix}{e:.2f}{postfix}")
                     elif isinstance(e, Fraction):
-                        str_line.append(f"\\sfrac{{{e.numerator}}}{{{e.denominator}}}")
+                        str_line.append(
+                            f"{prefix}\\sfrac{{{e.numerator}}}{{{e.denominator}}}{postfix}"
+                        )
                     else:
                         str_line.append(str(e))
                 f.write(" & ".join(e for e in str_line) + r"\\" + "\n")
