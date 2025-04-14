@@ -24,10 +24,13 @@
       49: 11
       47: 26
       16: 6
-  spec: Pmax=? [F<3 "good"]
+  spec: Pmax=? [F<5 "good"]
   good_label: good
   loader: snakes_ladders
   horizon:
+    - 7
+    - 8
+    - 9
     - 10
     - 11
     - 12

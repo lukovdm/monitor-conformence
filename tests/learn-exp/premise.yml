@@ -44,10 +44,12 @@
   file: tests/premise/evade-monitoring.nm
   parameters:
     constants: "N=4,RADIUS=2"
-  spec: Pmax=? [F<=3 "crash"]
+  spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   loader: pomdp
   horizon:
+    - 6
+    - 7
     - 8
     - 9
   learning_algs: 
@@ -62,11 +64,16 @@
   file: tests/premise/hidden-incentive.nm
   parameters:
     constants: "N=3"
-  spec: Pmax=? [F<=3 "crash"]
+  spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]
+  horizon:
+    - 8
+    - 9
+    - 10
+    - 11
   slack: 
     - [0, 0]
     - [0.2, 0.05]
@@ -83,11 +90,16 @@
     - constants: "DMAX=3,PMAX=3"
     - constants: "DMAX=4,PMAX=4"
     - constants: "DMAX=5,PMAX=5"
-  spec: Pmax=? [F<=2 "crash"]
+  spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]
+  horizon:
+    - 8
+    - 9
+    - 10
+    - 11
   slack: 
     - [0, 0]
     - [0.2, 0.05]

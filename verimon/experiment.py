@@ -842,6 +842,8 @@ if __name__ == "__main__":
 
     if args.concurrent:
         from multiprocessing import Pool
+        import signal
+        import os
 
         shuffle(experiments)
 
@@ -850,10 +852,28 @@ if __name__ == "__main__":
         else:
             cores = os.cpu_count() - args.cores
 
-        with Pool(cores) as pool:
+        def run_experiment_with_timeout(exp, timestamp, base_dir):
+            # Set a 12-hour timeout (43200 seconds)
+
+            def timeout_handler(signum, frame):
+                print(f"Experiment {exp.name} ({exp.variant}) timed out after 12 hours")
+                os._exit(1)  # Force terminate the process
+
+            # Set up the timeout handler inside the worker process
+            signal.signal(signal.SIGALRM, timeout_handler)
+            signal.alarm(43200)  # 12 hours = 43200 seconds
+
+            try:
+                exp.run(timestamp, base_dir)
+            finally:
+                signal.alarm(0)  # Cancel the alarm if completed normally
+
+        with Pool(cores, maxtasksperchild=1) as pool:
             for group in experiments:
                 for exp in group.get_objects():
-                    pool.apply_async(exp.run, (timestamp, base_dir))
+                    pool.apply_async(
+                        run_experiment_with_timeout, (exp, timestamp, base_dir)
+                    )
 
             try:
                 pool.close()

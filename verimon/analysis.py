@@ -14,7 +14,7 @@ import numpy as np
 
 
 VERIFY_EXPERIMENTS = 336
-LEARN_EXPERIMENTS = 146
+LEARN_EXPERIMENTS = 275
 
 
 def clean_dict(d):
@@ -401,6 +401,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             else r"-",
         ]
         for d in data
+        if "sampling" in d
     ]
     tab_with_lines: list[Any] = [tab_data[0]]
     for line in tab_data[1:]:
@@ -847,8 +848,8 @@ def compare_thresholds_bar(
 
     found_thresholds = [
         (
-            [data[key]["false_positive"] for data in exp_data],
-            [data[key]["false_negative"] for data in exp_data],
+            [data[key]["false_positive"] if key in data else 0 for data in exp_data],
+            [data[key]["false_negative"] if key in data else 1 for data in exp_data],
         )
         for key in keys
     ]
@@ -1012,22 +1013,25 @@ def runtime_by_params(
 
 def runtime_from_logs(logpath: str):
     entries: dict[str, float] = {}
+    example_msg: dict[str, str] = {}
+    time_pattern = re.compile(r"\((\d+(?:\.\d+))s\)")
+
     with open(logpath, "r") as f:
         for line in f:
-            time_pattern = re.compile(r"\((\d+(?:\.\d+))s\)")
+            if "(s)" in line:
+                continue
+            match = time_pattern.search(line)
+            if match:
+                try:
+                    elapsed = float(match.group(1))
+                    _, _, loc, msg = [s.strip() for s in line.split(" - ", 4)]
 
-            for line in f:
-                if "(s)" in line:
-                    continue
-                match = time_pattern.search(line)
-                if match:
-                    try:
-                        elapsed = float(match.group(1))
-                        message = line.split(" - ", 2)[-1].strip()
-                        if message not in entries:
-                            entries[message] = 0
+                    if loc not in entries:
+                        entries[loc] = 0
+                    entries[loc] += elapsed
 
-                        entries[message] += elapsed
-                    except ValueError:
-                        pass
-        return entries
+                    if loc not in example_msg:
+                        example_msg[loc] = msg
+                except ValueError:
+                    pass
+        return entries, example_msg
