@@ -105,14 +105,14 @@
 \Crefname{appendix}{Appendix}{Appendices}
 
 \title{Learning Verified Monitors for Hidden~Markov~Models}
-% \author{}
-% \institute{}
+ \author{}
+ \institute{}
 % \author{Luko van der Maas \and Sebastian Junges }
 % \institute{Radboud University, Nijmegen, the Netherlands}
-\author{%
-  Luko~van~der~Maas\orcidlink{0009-0007-3915-6191} \and Sebastian~Junges\orcidlink{0000-0003-0978-8466}
-}
-\institute{Radboud University, Nijmegen, the Netherlands\\ \email{\{luko.vandermaas,sebastian.junges\}@ru.nl}}
+%\author{%
+ % Luko~van~der~Maas\orcidlink{0009-0007-3915-6191} \and Sebastian~Junges\orcidlink{0000-0003-0978-8466}
+%}
+%\institute{Radboud University, Nijmegen, the Netherlands\\ \email{\{luko.vandermaas,sebastian.junges\}@ru.nl}}
 
 \newcommand{\alg}{ToVer\xspace}
 
@@ -136,10 +136,6 @@ Challenges (1,2) can be addressed  by modelling the system as a hidden Markov mo
 Concretely, this paper focuses on the following question:
 \emph{Is a given finite automaton a correct monitor for a given and known HMM?}
 This paper studies the complexity of this problem, provides a practical verification approach, and embeds it into a framework to learn monitors.
-
-\paragraph{Model based approach.}
-We take a white-box approach to learning a monitor, i.e., we assume we are given a \emph{useful} model of the system. Other approaches also exist, such as black-box monitor learning~\cite{?} and model-free monitor learning~\cite{?}. While white-box methods can be efficient and explainable, they require a model of the system, which is not always realistic. Model-free approaches require no such assumptions, but they have weaker guarantees. Black-box models fit inbetween, they assume only sample access to the system, but learn a model of the system. Then they use a white-box algorithm to provide the monitor. In this paper we study the white-box approach, but we believe that its practical usefulness can be as part of a black-box learning method.
-\lm{What do you think of this paragraph, I based it on the rebuttal.}
 
 \paragraph{What are HMMs?}
 In this paper, we assume that the system including its sensors is adequately modeled as a discrete Hidden Markov Model (HMM)~\cite{rabinerTutorialHiddenMarkov1989} and that we have full access to this HMM.
@@ -252,7 +248,7 @@ The trace associated to a system execution describes the information received by
 \paragraph{What are Correct Monitors?}
 Like in~\cite{acetoProbabilisticMonitorability2022}, we summarise the behavior of monitors by the    set of traces (i.e., a formal language) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm on) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
 
-\paragraph{Illustrative Toy Example.}
+\paragraph{Illustrative Toy Example.}\sj{I would not capitalize paragrpah titles (consisntely)}
 As a running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \Cref{fig:centralhmm} describes how a car alternates between dry and icy road segments, and where being on an icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$ for this trace (see \Cref{ex:riskoftrace}).
 In \cref{fig:centralmon}, monitor $\dfa$ is a finite automaton that describes the set of traces that end with two consecutive icy patches.
 The verification question in this paper is now: \emph{Is this a correct monitor for threshold $0.25$?} That is, is an alarm raised iff the trace risk is above $0.25$?
@@ -263,6 +259,13 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
 %We study whether monitor makes correct verdicts on \emph{every} (bounded) trace, and show that we can effectively synthesise such monitors.
 
 
+\paragraph{Model-based approach.}
+In this paper, we assume we are given a \emph{useful} model of the system.  While such white-box methods can be efficient and explainable, they require a model of the system, which is not always realistic. Alternative, model-free approaches~\cite{?}\sj{missing} require no such assumptions, but they have weaker guarantees. Black-box methods~\cite{?}\sj{missing} fit inbetween, they learn a model of the system and then use a white-box algorithm to provide the monitor. While we focus the white-box approach, the results thus contribute towards black-box settings.
+\lm{What do you think of this paragraph, I based it on the rebuttal.}
+\sj{I moved it here because I dont want to open so defensively. I also shortened it}
+
+
+
 \begin{figure}[t]
     \begin{subfigure}{0.4\textwidth}
         \begin{tikzpicture}[node distance=1.8cm,every node/.style={font=\scriptsize}]
@@ -270,9 +273,9 @@ The verification question in this paper is now: \emph{Is this a correct monitor 
             \node[state, icy] (qi) [right of=qd] {$q_i$};
             \node[state, icy] (qc) [below=0.8cm of qi] {$q_c$};
 
-            \draw[->] (qd) edge[bend left] node[above] {$\frac{9}{10}$} (qi);
+            \draw[->] (qd) edge[bend left=10] node[above] {$\frac{9}{10}$} (qi);
             \draw[->] (qd) edge node[below left] {$\frac{1}{10}$} (qc);
-            \draw[->] (qi) edge[bend left] node[above] {$\frac{1}{2}$} (qd);
+            \draw[->] (qi) edge[bend left=10] node[below] {$\frac{1}{2}$} (qd);
             \draw[->] (qi) edge[loop right] node {$\frac{1}{4}$} ();
             \draw[->] (qi) edge node[right] {$\frac{1}{4}$} (qc);
             \draw[->] (qc) edge[loop right] node {$1$} ();
@@ -343,12 +346,14 @@ We formalize the problem using colored MDPs and solve it using (exact) probabili
 %We discuss our verification approach in \Cref{sec:monver}.
 
 \paragraph{Our Learning Approach.}
-Ultimately, we do not only want to verify the correctness of a monitor, but we want to \emph{synthesise} such monitors.
-Above, we already mentioned that the monitors are formal languages. When considering bounded traces, these monitors are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
-We choose to do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
+Ultimately, we do not only want to verify monitors, but we want to \emph{synthesise} correct monitors.
+We already mentioned that the monitors are formal languages. When considering bounded traces, these are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
+We do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
 Consider \cref{fig:learning}:
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor, as popularized in \emph{black-box checking}~\cite{DBLP:journals/jalc/PeledVY02}.
-Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, resolve traces that are not relevant for the monitor, and combine our equivalence oracle with a conformance oracle to boost performance. %
+Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon\sj{Now that I am thinking about this, didnt we have a simple idea to improve this further?}, ignore traces that cannot occur, and combine our equivalence oracle with a conformance oracle to boost performance. %
+
+\sj{mention limitaiton with horizon somwhere? (but where?)}
 %\paragraph{Practical considerations in using active automata learning.}
 %Practically, some modifcations are important:
 %\begin{itemize}
@@ -368,7 +373,7 @@ In summary, this paper provides a first framework to learn runtime monitors---en
 \textbf{(1)}~We solve the verification problem by exhaustively searching for a counterexample using probabilistic system synthesis (\cref{sec:monver}).
 \textbf{(2)}~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning (\cref{sec:learning}).
 \textbf{(3)}~We prove the hardness of the verification problem (\cref{sec:compl}).
-\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}). Our prototype finds monitors that are provably correct on $10^{22}$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
+\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}). Our prototype finds monitors that are provably correct on $10^{22}$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states. 
 
 \smallskip
 \noindent
@@ -466,7 +471,7 @@ We define $\lang{\mc} \defeq \{ \obsf(\pi) \mid \pi \in \Pi^\mc\}$.
 %The monitor verification problem consists of two sub-problems: the no-false-alarms problem, and the no-missed-alarms problem. Both of these sub problems entail finding the trace with either the minimum or maximum risk. We will discuss the no-missed-alarms problem in the following sections. In \cref{ssec:nfa} we will adapt to the no-false-alarms problem.
 
 %The no-missed-alarms problem entails ensuring that all traces from the HMM, which are not in the monitor, have at most a risk of $\lambda$.
-\noindent Monitors should accept unsafe traces, which we define via their risk~\cite{jungesRuntimeMonitorsMarkov2021}:
+\noindent Monitors should accept unsafe traces, which we define via their risk (level)~\cite{jungesRuntimeMonitorsMarkov2021}:
 \begin{definition}[Trace risk, safe/unsafe traces]\label{def:safeunsafe}
     Given HMM $\mc$, the \emph{risk} of $\tau \in \lang{\mc}$ is: \[\textstyle R(\tau) \defeq \sum\nolimits_{\pi\in\Pi_{|\tau|}^\mc}\Prob(\pi \ |\ \tau) \cdot r(\pi_{\downarrow}).\]
     %\end{definition}
@@ -542,13 +547,13 @@ Furthermore, a correct monitor must exist, as $\unsafetraces{}{\leq h}$ is finit
 
 \section{Monitor Verification}
 \label{sec:monver}
-We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to the well-studied policy synthesis problem on colored MDPs, defined below. We first formalize this  policy synthesis problem and then present the step-wise transformation. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of \Cref{prob:MA}). At the end of the section, we  generalize our construction o traces of length \emph{at most} the horizon (\Cref{prob:MA}) and to
+We present our approach to the monitor correctness problem, which reduces checking the existence of missed alarms to the well-studied policy synthesis problem on colored MDPs, defined below. We first formalize this  policy synthesis problem and then present the step-wise transformation. Here, we focus on showing that there are no missed alarms  of exactly the length of the horizon (an adaption of \Cref{prob:MA}). At the end of the section, we  generalize our construction of traces of length \emph{at most} the horizon (\Cref{prob:MA}) and to
 finding false alarms (\Cref{prob:FA}).
 
 \subsection{Relating Missed Alarms to Color-Consistent Policies}
 \label{sec:overview}\label{ssec:maintheorem}
 A (memoryless) \emph{policy} for an MDP $\mc$ is a function $\sigma\colon S \to \Act$, which selects actions for every state.
-An MDP and a policy induce an MC by only keeping the state-action pairs in the transition function selected by the policy. Policy synthesis for an MDP of a (reachability) property $\phi$ entails finding a policy for an MDP such that the induced MC entails $\phi$. Colored (aka: labelled) MDPs are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition suffices for our needs:
+An MDP and a policy induce an MC by only keeping the state-action pairs in the transition function selected by the policy. Policy synthesis for an MDP of a (reachability) property $\phi$ entails finding a policy for an MDP such that the induced MC entails $\phi$. Colored (aka: labelled) MDPs~\cite{DBLP:journals/jair/AndriushchenkoCMJK25} are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition suffices for our needs:
 \begin{definition}[Colored MDP]\label{def:colMDP}
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc \defeq (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$. % maps states to colors.
 \end{definition}
@@ -557,7 +562,7 @@ An MDP and a policy induce an MC by only keeping the state-action pairs in the t
     A memoryless policy $\sigma$ for a colored MDP $\mdpc$ is \emph{color consistent}\footnote{Colored MDPs with color-consistent policies coincide with memoryless policies for partially observable MDPs. However, POMDPs often consider history-dependent (belief-based) policies. We use \emph{colored MDPs} to avoid any confusion.} if for states $s, s'$,
     $c(s) = c(s')$ implies $\sigma(s) = \sigma(s')$.
 \end{definition}
-The set of all color-consistent policies is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color-consistent policy such that the reachability probability to a set of target states is above a certain threshold, or to report that no such policy exists. This problem is NP-hard~\cite{DBLP:conf/aaai/ChatterjeeCD16}, but efficient heuristics exist in the tool PAYNT \cite{andriushchenkoPAYNTToolInductive2021}.
+The set of all color-consistent policies is denoted $\ccSched$. Policy synthesis for colored MDPs asks to find a color-consistent policy such that the reachability probability to a set of target states is above a certain threshold, or to report that no such policy exists. This problem is NP-hard~\cite{DBLP:conf/aaai/ChatterjeeCD16}, but efficient heuristics exist~\cite{andriushchenkoPAYNTToolInductive2021}.
 Policy synthesis for colored MDPs can prove the absence of missed alarms:
 \begin{theorem}
     \label{thm:maintheorem}
@@ -1339,20 +1344,20 @@ Finally, in \cite{acetoProbabilisticMonitorability2022}, a more general notion o
 Both can be seen as generalizations of our definitions.
 % The monitors are conservative if the model is\lm{Explain conservative?}.
 
-\paragraph{Learning Monitors}
+\paragraph{Learning Monitors.}
 Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMonitoring2021,DBLP:conf/nfm/PhanG0PSS20,DBLP:conf/atva/TorfahXJVS22,zolfagharianSMARLASafetyMonitoring2025}. Closest to our setting is recent work in \cite{jungesActiveLearningRuntime2025}, which also uses state estimation for membership queries, but combines this with conformance queries and learns decision trees rather than automata. Crucially, by using conformance queries, the guarantees are significantly weaker, see also our experiments. %\sj{Unsure whether we should say something about automata learning in general. Maybe better to have that only in section 4}
 
 
 %\paragraph{Probabilistic verification and correctness of monitors}
 %A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
 
-\paragraph{Probabilistic Verification}
+\paragraph{Probabilistic Verification.}
 The verification of our monitors applies model checking of conditional probabilities~\cite{DBLP:conf/tacas/AndresR08,baierComputingConditionalProbabilities2014} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,DBLP:conf/tacas/BadingsVJSJ24}. Most related is recent work in~\cite{DBLP:conf/tacas/BadingsVJSJ24}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{DBLP:journals/corr/abs-2405-13583}, which can also be tackled using synthesis approaches~\cite{DBLP:conf/cav/AndriushchenkoBCJKM23}. Finally, considering MDPs as \emph{distribution transfomers} yields related but semantically different computationally hard problems that have been solved using (different) inductive synthesis approaches~\cite{DBLP:conf/cav/AkshayCMZ23,DBLP:conf/ijcai/0001CMZ24}.
 
 
 \section{Conclusion and Future Work}
 This paper presented a first approach to verification of monitors with respect to hidden Markov models. It embeds this verification procedure in an automata learning framework. The empirical evaluation is encouraging but also shows the limitations of the off-the-shelf frameworks. We see three avenues for future work: (1)~Dedicated synthesis methods for conditional probabilities and the specific structure of our colored MDPs. (2)~Automata learning for acyclic models and don't-care results.
-(3)~Verification over unbounded (or very long) traces.
+(3)~Faster verification for longer (or even unbounded) traces.
 
 
 \clearpage
