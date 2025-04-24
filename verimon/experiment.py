@@ -518,7 +518,7 @@ class VerifyExperiment(Experiment):
         if results_file:
             exp = json.load(open(results_file, "r"))
             self.results_file = results_file
-            if not exp["finished"]:
+            if not exp["finished"] or "monitors" not in exp["verimon"]:
                 logger.warning(f"Experiment not finished: {results_file}")
                 self.stop = True
                 return
