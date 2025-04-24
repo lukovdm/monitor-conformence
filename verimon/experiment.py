@@ -514,11 +514,14 @@ class VerifyExperiment(Experiment):
     ):
         super().__init__(name, variant)
 
+        self.stop = False
         if results_file:
             exp = json.load(open(results_file, "r"))
             self.results_file = results_file
             if not exp["finished"]:
-                raise ValueError(f"Experiment not finished: {results_file}")
+                logger.warning(f"Experiment not finished: {results_file}")
+                self.stop = True
+                return
 
             if intermediate_monitor is not None:
                 mon_idx = int(
@@ -575,6 +578,9 @@ class VerifyExperiment(Experiment):
         self.paynt_strategy = paynt_strategy
 
     def run(self, timestamp: str, base_dir: str):
+        if self.stop:
+            return
+
         super().run(timestamp, base_dir)
 
         if self.threshold is not None:

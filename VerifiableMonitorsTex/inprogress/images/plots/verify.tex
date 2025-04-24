@@ -7,143 +7,333 @@
 \cmidrule(lr){3-11}\cmidrule(lr){12-16}
  & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\lang^{\leq h}|$ & Time (s) & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$  \\
 \midrule
-\endhead\textsc{AirportA-3} & \textsc{A-0} & \sfrac{3}{10} & 10 & MA & 45 & 113 & 18 & 21 & 378 & $10^{13}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 372 & 0.67\\
-\textsc{AirportA-3} & \textsc{A-1} & \checkmark & 10 & MA & 45 & 113 & 18 & 21 & 378 & $10^{13}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 372 & 1.00\\
-\textsc{AirportA-3} & \textsc{A-2} & \sfrac{3}{10} & 10 & FA & 45 & 113 & 18 & 21 & 378 & $10^{13}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 372 & 0.23\\
-\textsc{AirportA-3} & \textsc{A-3} & \checkmark & 10 & FA & 45 & 113 & 18 & 21 & 378 & $10^{13}$ & 181 & $\leq 1s$ & 181 & 372 & 0.01\\
-\textsc{AirportA-3} & \textsc{A-4} & \sfrac{3}{10} & 10 & MA & 45 & 113 & 18 & 62 & 1116 & $10^{12}$ & 25 & $\leq 1s$ & 25 & 424 & 0.37\\
-\textsc{AirportA-3} & \textsc{A-5} & \checkmark & 10 & MA & 45 & 113 & 18 & 62 & 1116 & $10^{12}$ & 136 & $\leq 1s$ & 136 & 424 & 0.74\\
-\textsc{AirportA-3} & \textsc{A-6} & \sfrac{3}{10} & 10 & FA & 45 & 113 & 18 & 62 & 1116 & $10^{12}$ & 3 & $\leq 1s$ & 2 & 424 & 0.14\\
-\textsc{AirportA-3} & \textsc{A-7} & \checkmark & 10 & FA & 45 & 113 & 18 & 62 & 1116 & $10^{12}$ & 211 & $\leq 1s$ & 211 & 424 & 0.01\\
-\textsc{AirportA-3} & \textsc{A-8} & \sfrac{3}{10} & 10 & MA & 45 & 113 & 18 & 92 & 1656 & $10^{12}$ & 293 & $\leq 1s$ & 292 & 569 & \checkmark\\
-\textsc{AirportA-3} & \textsc{A-9} & \checkmark & 10 & MA & 45 & 113 & 18 & 92 & 1656 & $10^{12}$ & 284 & $\leq 1s$ & 284 & 569 & 0.30\\
-\textsc{AirportA-3} & \textsc{A-10} & \sfrac{3}{10} & 10 & FA & 45 & 113 & 18 & 92 & 1656 & $10^{13}$ & 380 & $\leq 1s$ & 380 & 569 & \checkmark\\
-\textsc{AirportA-3} & \textsc{A-11} & \checkmark & 10 & FA & 45 & 113 & 18 & 92 & 1656 & $10^{13}$ & 367 & $\leq 1s$ & 367 & 569 & 0.30\\
-\textsc{AirportA-3} & \textsc{A-12} & \sfrac{3}{10} & 10 & MA & 145 & 423 & 50 & 42 & 2100 & $10^{14}$ & 2 & $\leq 1s$ & 1 & 690 & 1.00\\
-\textsc{AirportA-3} & \textsc{A-13} & \checkmark & 10 & MA & 145 & 423 & 50 & 42 & 2100 & $10^{14}$ & 2 & $\leq 1s$ & 1 & 690 & 1.00\\
-\textsc{AirportA-3} & \textsc{A-14} & \sfrac{3}{10} & 10 & FA & 145 & 423 & 50 & 42 & 2100 & $10^{13}$ & 3 & $\leq 1s$ & 2 & 690 & 0.02\\
-\textsc{AirportA-3} & \textsc{A-15} & \checkmark & 10 & FA & 145 & 423 & 50 & 42 & 2100 & $10^{13}$ & 284 & $\leq 1s$ & 284 & 690 & 0.00\\
-\textsc{AirportA-3} & \textsc{A-16} & \sfrac{3}{10} & 10 & MA & 145 & 423 & 50 & 120 & 6000 & $10^{14}$ & 3 & $\leq 1s$ & 2 & 1024 & 1.00\\
-\textsc{AirportA-3} & \textsc{A-17} & \checkmark & 10 & MA & 145 & 423 & 50 & 120 & 6000 & $10^{14}$ & 3 & $\leq 1s$ & 2 & 1024 & 1.00\\
-\textsc{AirportA-3} & \textsc{A-18} & \sfrac{3}{10} & 10 & FA & 145 & 423 & 50 & 120 & 6000 & $10^{13}$ & 5 & $\leq 1s$ & 4 & 1024 & 0.29\\
-\textsc{AirportA-3} & \textsc{A-19} & \checkmark & 10 & FA & 145 & 423 & 50 & 120 & 6000 & $10^{13}$ & 277 & $\leq 1s$ & 276 & 1024 & 0.01\\
-\textsc{AirportA-3} & \textsc{A-20} & \sfrac{3}{10} & 10 & MA & 145 & 423 & 50 & 202 & 10100 & $10^{14}$ & 235 & 1 & 234 & 1330 & \checkmark\\
-\textsc{AirportA-3} & \textsc{A-21} & \checkmark & 10 & MA & 145 & 423 & 50 & 202 & 10100 & $10^{14}$ & 228 & 1 & 226 & 1330 & 0.30\\
-\textsc{AirportA-3} & \textsc{A-22} & \sfrac{3}{10} & 10 & FA & 145 & 423 & 50 & 202 & 10100 & $10^{13}$ & 553 & 1 & 552 & 1330 & \checkmark\\
-\textsc{AirportA-3} & \textsc{A-23} & \checkmark & 10 & FA & 145 & 423 & 50 & 202 & 10100 & $10^{13}$ & 536 & 1 & 535 & 1330 & 0.30\\
+\endhead\textsc{AirportA-3} & \textsc{A-0} & \sfrac{3}{10} & 10 & MA & 45 & 113 & 18 & 44 & 792 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 506 & 0.67\\
+\textsc{AirportA-3} & \textsc{A-1} & \checkmark & 10 & MA & 45 & 113 & 18 & 44 & 792 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 506 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-2} & \sfrac{3}{10} & 10 & FA & 45 & 113 & 18 & 44 & 792 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 506 & 0.07\\
+\textsc{AirportA-3} & \textsc{A-3} & \checkmark & 10 & FA & 45 & 113 & 18 & 44 & 792 & $10^{14}$ & 416 & $\leq 1s$ & 416 & 506 & 0.07\\
+\textsc{AirportA-3} & \textsc{A-4} & \sfrac{3}{10} & 10 & MA & 45 & 113 & 18 & 55 & 990 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 524 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-5} & \checkmark & 10 & MA & 45 & 113 & 18 & 55 & 990 & $10^{14}$ & 1 & $\leq 1s$ & 1 & 524 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-6} & \sfrac{3}{10} & 10 & FA & 45 & 113 & 18 & 55 & 990 & $10^{14}$ & 1 & $\leq 1s$ & 1 & 524 & 0.10\\
+\textsc{AirportA-3} & \textsc{A-7} & \checkmark & 10 & FA & 45 & 113 & 18 & 55 & 990 & $10^{14}$ & 642 & $\leq 1s$ & 642 & 524 & 0.07\\
+\textsc{AirportA-3} & \textsc{A-8} & \sfrac{3}{10} & 10 & MA & 45 & 113 & 18 & 101 & 1818 & $10^{14}$ & 2399 & $\leq 1s$ & 2398 & 719 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-9} & \checkmark & 10 & MA & 45 & 113 & 18 & 101 & 1818 & $10^{14}$ & 2615 & $\leq 1s$ & 2615 & 719 & 0.32\\
+\textsc{AirportA-3} & \textsc{A-10} & \sfrac{3}{10} & 10 & FA & 45 & 113 & 18 & 101 & 1818 & $10^{14}$ & 3 & $\leq 1s$ & 3 & 719 & 0.17\\
+\textsc{AirportA-3} & \textsc{A-11} & \checkmark & 10 & FA & 45 & 113 & 18 & 101 & 1818 & $10^{14}$ & 813 & $\leq 1s$ & 813 & 719 & 0.12\\
+\textsc{AirportA-3} & \textsc{A-12} & \sfrac{3}{10} & 8 & MA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 242 & 0.45\\
+\textsc{AirportA-3} & \textsc{A-13} & \checkmark & 8 & MA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 242 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-14} & \sfrac{3}{10} & 8 & FA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 242 & 0.21\\
+\textsc{AirportA-3} & \textsc{A-15} & \checkmark & 8 & FA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & 76 & $\leq 1s$ & 76 & 242 & 0.06\\
+\textsc{AirportA-3} & \textsc{A-16} & \sfrac{3}{10} & 8 & MA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 242 & 0.45\\
+\textsc{AirportA-3} & \textsc{A-17} & \checkmark & 8 & MA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 242 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-18} & \sfrac{3}{10} & 8 & FA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 242 & 0.21\\
+\textsc{AirportA-3} & \textsc{A-19} & \checkmark & 8 & FA & 45 & 113 & 18 & 16 & 288 & $10^{10}$ & 76 & $\leq 1s$ & 76 & 242 & 0.06\\
+\textsc{AirportA-3} & \textsc{A-20} & \sfrac{3}{10} & 8 & MA & 45 & 113 & 18 & 45 & 810 & $10^{10}$ & 10 & $\leq 1s$ & 10 & 265 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-21} & \checkmark & 8 & MA & 45 & 113 & 18 & 45 & 810 & $10^{10}$ & 75 & $\leq 1s$ & 75 & 265 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-22} & \sfrac{3}{10} & 8 & FA & 45 & 113 & 18 & 45 & 810 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 265 & 0.19\\
+\textsc{AirportA-3} & \textsc{A-23} & \checkmark & 8 & FA & 45 & 113 & 18 & 45 & 810 & $10^{10}$ & 48 & $\leq 1s$ & 48 & 265 & 0.10\\
+\textsc{AirportA-3} & \textsc{A-24} & \sfrac{3}{10} & 9 & MA & 45 & 113 & 18 & 13 & 234 & $10^{11}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 240 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-25} & \checkmark & 9 & MA & 45 & 113 & 18 & 13 & 234 & $10^{11}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 240 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-26} & \sfrac{3}{10} & 9 & FA & 45 & 113 & 18 & 13 & 234 & $10^{11}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 240 & 0.13\\
+\textsc{AirportA-3} & \textsc{A-27} & \checkmark & 9 & FA & 45 & 113 & 18 & 13 & 234 & $10^{11}$ & 16 & $\leq 1s$ & 16 & 240 & 0.09\\
+\textsc{AirportA-3} & \textsc{A-28} & \sfrac{3}{10} & 9 & MA & 45 & 113 & 18 & 48 & 864 & $10^{12}$ & 3 & $\leq 1s$ & 2 & 370 & 0.67\\
+\textsc{AirportA-3} & \textsc{A-29} & \checkmark & 9 & MA & 45 & 113 & 18 & 48 & 864 & $10^{12}$ & 3 & $\leq 1s$ & 2 & 370 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-30} & \sfrac{3}{10} & 9 & FA & 45 & 113 & 18 & 48 & 864 & $10^{12}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 370 & 0.13\\
+\textsc{AirportA-3} & \textsc{A-31} & \checkmark & 9 & FA & 45 & 113 & 18 & 48 & 864 & $10^{12}$ & 686 & $\leq 1s$ & 686 & 370 & 0.02\\
+\textsc{AirportA-3} & \textsc{A-32} & \sfrac{3}{10} & 9 & MA & 45 & 113 & 18 & 66 & 1188 & $10^{12}$ & 140 & $\leq 1s$ & 140 & 431 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-33} & \checkmark & 9 & MA & 45 & 113 & 18 & 66 & 1188 & $10^{12}$ & 267 & $\leq 1s$ & 267 & 431 & 0.34\\
+\textsc{AirportA-3} & \textsc{A-34} & \sfrac{3}{10} & 9 & FA & 45 & 113 & 18 & 66 & 1188 & $10^{12}$ & 20 & $\leq 1s$ & 20 & 431 & 0.13\\
+\textsc{AirportA-3} & \textsc{A-35} & \checkmark & 9 & FA & 45 & 113 & 18 & 66 & 1188 & $10^{12}$ & 201 & $\leq 1s$ & 200 & 431 & 0.13\\
+\textsc{AirportA-3} & \textsc{A-36} & \sfrac{3}{10} & 10 & MA & 88 & 244 & 32 & 47 & 1504 & $10^{15}$ & 1 & $\leq 1s$ & $\leq 1s$ & 632 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-37} & \checkmark & 10 & MA & 88 & 244 & 32 & 47 & 1504 & $10^{15}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 632 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-38} & \sfrac{3}{10} & 10 & FA & 88 & 244 & 32 & 47 & 1504 & $10^{14}$ & 2 & $\leq 1s$ & 2 & 632 & 0.05\\
+\textsc{AirportA-3} & \textsc{A-39} & \checkmark & 10 & FA & 88 & 244 & 32 & 47 & 1504 & $10^{14}$ & 1260 & $\leq 1s$ & 1260 & 632 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-40} & \sfrac{3}{10} & 10 & MA & 88 & 244 & 32 & 83 & 2656 & $10^{15}$ & 65 & $\leq 1s$ & 65 & 758 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-41} & \checkmark & 10 & MA & 88 & 244 & 32 & 83 & 2656 & $10^{15}$ & 496 & $\leq 1s$ & 495 & 758 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-42} & \sfrac{3}{10} & 10 & FA & 88 & 244 & 32 & 83 & 2656 & $10^{14}$ & 2 & $\leq 1s$ & 1 & 758 & 0.00\\
+\textsc{AirportA-3} & \textsc{A-43} & \checkmark & 10 & FA & 88 & 244 & 32 & 83 & 2656 & $10^{14}$ & 128 & $\leq 1s$ & 128 & 758 & 0.00\\
+\textsc{AirportA-3} & \textsc{A-44} & \sfrac{3}{10} & 10 & MA & 88 & 244 & 32 & 131 & 4192 & $10^{15}$ & 64 & $\leq 1s$ & 63 & 981 & 0.33\\
+\textsc{AirportA-3} & \textsc{A-45} & \checkmark & 10 & MA & 88 & 244 & 32 & 131 & 4192 & $10^{15}$ & 1450 & $\leq 1s$ & 1449 & 981 & 0.33\\
+\textsc{AirportA-3} & \textsc{A-46} & \sfrac{3}{10} & 10 & FA & 88 & 244 & 32 & 131 & 4192 & $10^{14}$ & 492 & $\leq 1s$ & 491 & 981 & 0.30\\
+\textsc{AirportA-3} & \textsc{A-47} & \checkmark & 10 & FA & 88 & 244 & 32 & 131 & 4192 & $10^{14}$ & 1952 & $\leq 1s$ & 1951 & 981 & 0.15\\
+\textsc{AirportA-3} & \textsc{A-48} & \sfrac{3}{10} & 8 & MA & 88 & 244 & 32 & 23 & 736 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 355 & 0.42\\
+\textsc{AirportA-3} & \textsc{A-49} & \checkmark & 8 & MA & 88 & 244 & 32 & 23 & 736 & $10^{10}$ & 1 & $\leq 1s$ & $\leq 1s$ & 355 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-50} & \sfrac{3}{10} & 8 & FA & 88 & 244 & 32 & 23 & 736 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 355 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-51} & \checkmark & 8 & FA & 88 & 244 & 32 & 23 & 736 & $10^{10}$ & 16 & $\leq 1s$ & 16 & 355 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-52} & \sfrac{3}{10} & 8 & MA & 88 & 244 & 32 & 55 & 1760 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 459 & 0.94\\
+\textsc{AirportA-3} & \textsc{A-53} & \checkmark & 8 & MA & 88 & 244 & 32 & 55 & 1760 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 459 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-54} & \sfrac{3}{10} & 8 & FA & 88 & 244 & 32 & 55 & 1760 & $10^{10}$ & 1 & $\leq 1s$ & $\leq 1s$ & 459 & 0.26\\
+\textsc{AirportA-3} & \textsc{A-55} & \checkmark & 8 & FA & 88 & 244 & 32 & 55 & 1760 & $10^{10}$ & 51 & $\leq 1s$ & 51 & 459 & 0.02\\
+\textsc{AirportA-3} & \textsc{A-56} & \sfrac{3}{10} & 8 & MA & 88 & 244 & 32 & 80 & 2560 & $10^{10}$ & 15 & $\leq 1s$ & 14 & 492 & 0.34\\
+\textsc{AirportA-3} & \textsc{A-57} & \checkmark & 8 & MA & 88 & 244 & 32 & 80 & 2560 & $10^{10}$ & 43 & $\leq 1s$ & 43 & 492 & 0.34\\
+\textsc{AirportA-3} & \textsc{A-58} & \sfrac{3}{10} & 8 & FA & 88 & 244 & 32 & 80 & 2560 & $10^{10}$ & 18 & $\leq 1s$ & 18 & 492 & 0.12\\
+\textsc{AirportA-3} & \textsc{A-59} & \checkmark & 8 & FA & 88 & 244 & 32 & 80 & 2560 & $10^{10}$ & 53 & $\leq 1s$ & 52 & 492 & 0.10\\
+\textsc{AirportA-3} & \textsc{A-60} & \sfrac{3}{10} & 9 & MA & 88 & 244 & 32 & 25 & 800 & $10^{12}$ & 1 & $\leq 1s$ & $\leq 1s$ & 418 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-61} & \checkmark & 9 & MA & 88 & 244 & 32 & 25 & 800 & $10^{12}$ & 1 & $\leq 1s$ & $\leq 1s$ & 418 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-62} & \sfrac{3}{10} & 9 & FA & 88 & 244 & 32 & 25 & 800 & $10^{11}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 418 & 0.28\\
+\textsc{AirportA-3} & \textsc{A-63} & \checkmark & 9 & FA & 88 & 244 & 32 & 25 & 800 & $10^{11}$ & 24 & $\leq 1s$ & 23 & 418 & 0.12\\
+\textsc{AirportA-3} & \textsc{A-64} & \sfrac{3}{10} & 9 & MA & 88 & 244 & 32 & 65 & 2080 & $10^{12}$ & 2 & $\leq 1s$ & 2 & 586 & 0.97\\
+\textsc{AirportA-3} & \textsc{A-65} & \checkmark & 9 & MA & 88 & 244 & 32 & 65 & 2080 & $10^{12}$ & 2 & $\leq 1s$ & 2 & 586 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-66} & \sfrac{3}{10} & 9 & FA & 88 & 244 & 32 & 65 & 2080 & $10^{11}$ & 6 & $\leq 1s$ & 6 & 586 & 0.28\\
+\textsc{AirportA-3} & \textsc{A-67} & \checkmark & 9 & FA & 88 & 244 & 32 & 65 & 2080 & $10^{11}$ & 40 & $\leq 1s$ & 40 & 586 & 0.14\\
+\textsc{AirportA-3} & \textsc{A-68} & \sfrac{3}{10} & 9 & MA & 88 & 244 & 32 & 122 & 3904 & $10^{12}$ & 11 & $\leq 1s$ & 10 & 768 & 0.33\\
+\textsc{AirportA-3} & \textsc{A-69} & \checkmark & 9 & MA & 88 & 244 & 32 & 122 & 3904 & $10^{12}$ & 222 & $\leq 1s$ & 221 & 768 & 0.33\\
+\textsc{AirportA-3} & \textsc{A-70} & \sfrac{3}{10} & 9 & FA & 88 & 244 & 32 & 122 & 3904 & $10^{12}$ & 318 & $\leq 1s$ & 318 & 768 & 0.23\\
+\textsc{AirportA-3} & \textsc{A-71} & \checkmark & 9 & FA & 88 & 244 & 32 & 122 & 3904 & $10^{12}$ & 286 & $\leq 1s$ & 286 & 768 & 0.23\\
+\textsc{AirportA-3} & \textsc{A-72} & \sfrac{3}{10} & 10 & MA & 145 & 423 & 50 & 45 & 2250 & $10^{13}$ & 1 & $\leq 1s$ & $\leq 1s$ & 758 & 0.58\\
+\textsc{AirportA-3} & \textsc{A-73} & \checkmark & 10 & MA & 145 & 423 & 50 & 45 & 2250 & $10^{13}$ & 2 & $\leq 1s$ & 1 & 758 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-74} & \sfrac{3}{10} & 10 & FA & 145 & 423 & 50 & 45 & 2250 & $10^{13}$ & 1 & $\leq 1s$ & 1 & 758 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-75} & \checkmark & 10 & FA & 145 & 423 & 50 & 45 & 2250 & $10^{13}$ & 27 & $\leq 1s$ & 27 & 758 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-76} & \sfrac{3}{10} & 10 & MA & 145 & 423 & 50 & 92 & 4600 & $10^{14}$ & 3 & $\leq 1s$ & 2 & 1013 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-77} & \checkmark & 10 & MA & 145 & 423 & 50 & 92 & 4600 & $10^{14}$ & 4 & 1 & 3 & 1013 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-78} & \sfrac{3}{10} & 10 & FA & 145 & 423 & 50 & 92 & 4600 & $10^{13}$ & 2 & $\leq 1s$ & 1 & 1013 & 0.11\\
+\textsc{AirportA-3} & \textsc{A-79} & \checkmark & 10 & FA & 145 & 423 & 50 & 92 & 4600 & $10^{13}$ & 260 & 1 & 259 & 1013 & 0.03\\
+\textsc{AirportA-3} & \textsc{A-80} & \sfrac{3}{10} & 10 & MA & 145 & 423 & 50 & 168 & 8400 & $10^{14}$ & 2 & $\leq 1s$ & 1 & 1286 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-81} & \checkmark & 10 & MA & 145 & 423 & 50 & 168 & 8400 & $10^{14}$ & 197 & 2 & 195 & 1286 & 0.31\\
+\textsc{AirportA-3} & \textsc{A-82} & \sfrac{3}{10} & 10 & FA & 145 & 423 & 50 & 168 & 8400 & $10^{13}$ & 5 & 2 & 3 & 1286 & 0.11\\
+\textsc{AirportA-3} & \textsc{A-83} & \checkmark & 10 & FA & 145 & 423 & 50 & 168 & 8400 & $10^{13}$ & 534 & 1 & 533 & 1286 & 0.11\\
+\textsc{AirportA-3} & \textsc{A-84} & \sfrac{3}{10} & 11 & MA & 145 & 423 & 50 & 28 & 1400 & $10^{16}$ & 2 & $\leq 1s$ & 2 & 715 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-85} & \checkmark & 11 & MA & 145 & 423 & 50 & 28 & 1400 & $10^{16}$ & 2 & $\leq 1s$ & 2 & 715 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-86} & \sfrac{3}{10} & 11 & FA & 145 & 423 & 50 & 28 & 1400 & $10^{16}$ & 3 & $\leq 1s$ & 3 & 715 & 0.30\\
+\textsc{AirportA-3} & \textsc{A-87} & \checkmark & 11 & FA & 145 & 423 & 50 & 28 & 1400 & $10^{16}$ & 2113 & $\leq 1s$ & 2112 & 715 & 0.18\\
+\textsc{AirportA-3} & \textsc{A-88} & \sfrac{3}{10} & 11 & MA & 145 & 423 & 50 & 128 & 6400 & $10^{16}$ & 20 & 1 & 18 & 1195 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-89} & \checkmark & 11 & MA & 145 & 423 & 50 & 128 & 6400 & $10^{16}$ & 12 & $\leq 1s$ & 11 & 1195 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-90} & \sfrac{3}{10} & 11 & FA & 145 & 423 & 50 & 128 & 6400 & $10^{16}$ & 4 & 1 & 2 & 1195 & 0.15\\
+\textsc{AirportA-3} & \textsc{A-91} & \checkmark & 11 & FA & 145 & 423 & 50 & 128 & 6400 & $10^{16}$ & 138 & 1 & 136 & 1195 & 0.00\\
+\textsc{AirportA-3} & \textsc{A-92} & \sfrac{3}{10} & 11 & MA & 145 & 423 & 50 & 271 & 13550 & $10^{16}$ & 53 & $\leq 1s$ & 52 & 1704 & 0.32\\
+\textsc{AirportA-3} & \textsc{A-93} & \checkmark & 11 & MA & 145 & 423 & 50 & 271 & 13550 & $10^{16}$ & 1308 & 2 & 1306 & 1704 & 0.32\\
+\textsc{AirportA-3} & \textsc{A-94} & \sfrac{3}{10} & 11 & FA & 145 & 423 & 50 & 271 & 13550 & $10^{16}$ & 5 & $\leq 1s$ & 4 & 1704 & 0.15\\
+\textsc{AirportA-3} & \textsc{A-95} & \checkmark & 11 & FA & 145 & 423 & 50 & 271 & 13550 & $10^{16}$ & 945 & 2 & 943 & 1704 & 0.15\\
+\textsc{AirportA-3} & \textsc{A-96} & \sfrac{3}{10} & 8 & MA & 145 & 423 & 50 & 16 & 800 & $10^{9}$ & 1 & $\leq 1s$ & $\leq 1s$ & 335 & 0.75\\
+\textsc{AirportA-3} & \textsc{A-97} & \checkmark & 8 & MA & 145 & 423 & 50 & 16 & 800 & $10^{9}$ & 2 & $\leq 1s$ & 1 & 335 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-98} & \sfrac{3}{10} & 8 & FA & 145 & 423 & 50 & 16 & 800 & $10^{8}$ & 5 & $\leq 1s$ & 5 & 335 & 0.22\\
+\textsc{AirportA-3} & \textsc{A-99} & \checkmark & 8 & FA & 145 & 423 & 50 & 16 & 800 & $10^{8}$ & 7 & $\leq 1s$ & 6 & 335 & 0.22\\
+\textsc{AirportA-3} & \textsc{A-100} & \sfrac{3}{10} & 8 & MA & 145 & 423 & 50 & 32 & 1600 & $10^{9}$ & 1 & $\leq 1s$ & 1 & 376 & 0.52\\
+\textsc{AirportA-3} & \textsc{A-101} & \checkmark & 8 & MA & 145 & 423 & 50 & 32 & 1600 & $10^{9}$ & 4 & $\leq 1s$ & 4 & 376 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-102} & \sfrac{3}{10} & 8 & FA & 145 & 423 & 50 & 32 & 1600 & $10^{9}$ & 5 & $\leq 1s$ & 5 & 376 & 0.28\\
+\textsc{AirportA-3} & \textsc{A-103} & \checkmark & 8 & FA & 145 & 423 & 50 & 32 & 1600 & $10^{9}$ & 8 & $\leq 1s$ & 7 & 376 & 0.22\\
+\textsc{AirportA-3} & \textsc{A-104} & \sfrac{3}{10} & 8 & MA & 145 & 423 & 50 & 66 & 3300 & $10^{9}$ & 5 & $\leq 1s$ & 5 & 465 & 0.34\\
+\textsc{AirportA-3} & \textsc{A-105} & \checkmark & 8 & MA & 145 & 423 & 50 & 66 & 3300 & $10^{9}$ & 14 & $\leq 1s$ & 13 & 465 & 0.34\\
+\textsc{AirportA-3} & \textsc{A-106} & \sfrac{3}{10} & 8 & FA & 145 & 423 & 50 & 66 & 3300 & $10^{9}$ & 6 & $\leq 1s$ & 6 & 465 & 0.28\\
+\textsc{AirportA-3} & \textsc{A-107} & \checkmark & 8 & FA & 145 & 423 & 50 & 66 & 3300 & $10^{9}$ & 14 & $\leq 1s$ & 14 & 465 & 0.28\\
+\textsc{AirportA-3} & \textsc{A-108} & \sfrac{3}{10} & 9 & MA & 145 & 423 & 50 & 12 & 600 & $10^{11}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 408 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-109} & \checkmark & 9 & MA & 145 & 423 & 50 & 12 & 600 & $10^{11}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 408 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-110} & \sfrac{3}{10} & 9 & FA & 145 & 423 & 50 & 12 & 600 & $10^{11}$ & 1 & $\leq 1s$ & $\leq 1s$ & 408 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-111} & \checkmark & 9 & FA & 145 & 423 & 50 & 12 & 600 & $10^{11}$ & 4 & $\leq 1s$ & 3 & 408 & 0.01\\
+\textsc{AirportA-3} & \textsc{A-112} & \sfrac{3}{10} & 9 & MA & 145 & 423 & 50 & 57 & 2850 & $10^{11}$ & 14 & $\leq 1s$ & 13 & 580 & 0.39\\
+\textsc{AirportA-3} & \textsc{A-113} & \checkmark & 9 & MA & 145 & 423 & 50 & 57 & 2850 & $10^{11}$ & 23 & $\leq 1s$ & 22 & 580 & 1.00\\
+\textsc{AirportA-3} & \textsc{A-114} & \sfrac{3}{10} & 9 & FA & 145 & 423 & 50 & 57 & 2850 & $10^{11}$ & 1 & $\leq 1s$ & $\leq 1s$ & 580 & 0.11\\
+\textsc{AirportA-3} & \textsc{A-115} & \checkmark & 9 & FA & 145 & 423 & 50 & 57 & 2850 & $10^{11}$ & 21 & $\leq 1s$ & 21 & 580 & 0.03\\
+\textsc{AirportA-3} & \textsc{A-116} & \sfrac{3}{10} & 9 & MA & 145 & 423 & 50 & 105 & 5250 & $10^{11}$ & 2 & $\leq 1s$ & 1 & 740 & 0.32\\
+\textsc{AirportA-3} & \textsc{A-117} & \checkmark & 9 & MA & 145 & 423 & 50 & 105 & 5250 & $10^{11}$ & 45 & $\leq 1s$ & 45 & 740 & 0.32\\
+\textsc{AirportA-3} & \textsc{A-118} & \sfrac{3}{10} & 9 & FA & 145 & 423 & 50 & 105 & 5250 & $10^{11}$ & 1 & $\leq 1s$ & $\leq 1s$ & 740 & 0.15\\
+\textsc{AirportA-3} & \textsc{A-119} & \checkmark & 9 & FA & 145 & 423 & 50 & 105 & 5250 & $10^{11}$ & 34 & $\leq 1s$ & 33 & 740 & 0.13\\
 \midrule
-\textsc{AirportA-7} & \textsc{A-24} & \sfrac{3}{10} & 10 & MA & 54 & 150 & 18 & 31 & 558 & $10^{10}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 412 & 0.37\\
-\textsc{AirportA-7} & \textsc{A-25} & \checkmark & 10 & MA & 54 & 150 & 18 & 31 & 558 & $10^{10}$ & 141 & $\leq 1s$ & 140 & 412 & 0.96\\
-\textsc{AirportA-7} & \textsc{A-26} & \sfrac{3}{10} & 10 & FA & 54 & 150 & 18 & 31 & 558 & $10^{11}$ & 2 & $\leq 1s$ & 2 & 412 & 0.26\\
-\textsc{AirportA-7} & \textsc{A-27} & \checkmark & 10 & FA & 54 & 150 & 18 & 31 & 558 & $10^{11}$ & 89 & $\leq 1s$ & 89 & 412 & 0.25\\
-\textsc{AirportA-7} & \textsc{A-28} & \sfrac{3}{10} & 10 & MA & 54 & 150 & 18 & 96 & 1728 & $10^{11}$ & 13 & $\leq 1s$ & 12 & 916 & 0.32\\
-\textsc{AirportA-7} & \textsc{A-29} & \checkmark & 10 & MA & 54 & 150 & 18 & 96 & 1728 & $10^{11}$ & 347 & $\leq 1s$ & 347 & 916 & 0.88\\
-\textsc{AirportA-7} & \textsc{A-30} & \sfrac{3}{10} & 10 & FA & 54 & 150 & 18 & 96 & 1728 & $10^{11}$ & 22 & $\leq 1s$ & 21 & 916 & 0.30\\
-\textsc{AirportA-7} & \textsc{A-31} & \checkmark & 10 & FA & 54 & 150 & 18 & 96 & 1728 & $10^{11}$ & 460 & $\leq 1s$ & 460 & 916 & 0.28\\
-\textsc{AirportA-7} & \textsc{A-32} & \sfrac{3}{10} & 10 & MA & 54 & 150 & 18 & 159 & 2862 & $10^{11}$ & 895 & $\leq 1s$ & 894 & 1157 & \checkmark\\
-\textsc{AirportA-7} & \textsc{A-33} & \checkmark & 10 & MA & 54 & 150 & 18 & 159 & 2862 & $10^{11}$ & 859 & $\leq 1s$ & 859 & 1157 & 0.30\\
-\textsc{AirportA-7} & \textsc{A-34} & \sfrac{3}{10} & 10 & FA & 54 & 150 & 18 & 159 & 2862 & $10^{11}$ & 227 & $\leq 1s$ & 227 & 1157 & \checkmark\\
-\textsc{AirportA-7} & \textsc{A-35} & \checkmark & 10 & FA & 54 & 150 & 18 & 159 & 2862 & $10^{11}$ & 219 & $\leq 1s$ & 219 & 1157 & 0.30\\
-\textsc{AirportA-7} & \textsc{A-36} & \sfrac{3}{10} & 10 & MA & 128 & 440 & 32 & 84 & 2688 & $10^{13}$ & 3 & $\leq 1s$ & 2 & 1285 & 0.62\\
-\textsc{AirportA-7} & \textsc{A-37} & \checkmark & 10 & MA & 128 & 440 & 32 & 84 & 2688 & $10^{13}$ & 348 & $\leq 1s$ & 347 & 1285 & 0.99\\
-\textsc{AirportA-7} & \textsc{A-38} & \sfrac{3}{10} & 10 & FA & 128 & 440 & 32 & 84 & 2688 & $10^{13}$ & 4 & $\leq 1s$ & 4 & 1285 & 0.05\\
-\textsc{AirportA-7} & \textsc{A-39} & \checkmark & 10 & FA & 128 & 440 & 32 & 84 & 2688 & $10^{13}$ & 1266 & $\leq 1s$ & 1265 & 1285 & 0.01\\
-\textsc{AirportA-7} & \textsc{A-40} & \sfrac{3}{10} & 10 & MA & 128 & 440 & 32 & 236 & 7552 & $10^{13}$ & 206 & $\leq 1s$ & 205 & 1985 & 0.32\\
-\textsc{AirportA-7} & \textsc{A-41} & \checkmark & 10 & MA & 128 & 440 & 32 & 236 & 7552 & $10^{13}$ & 627 & $\leq 1s$ & 626 & 1985 & 0.48\\
-\textsc{AirportA-7} & \textsc{A-42} & \sfrac{3}{10} & 10 & FA & 128 & 440 & 32 & 236 & 7552 & $10^{13}$ & 5 & $\leq 1s$ & 4 & 1985 & 0.24\\
-\textsc{AirportA-7} & \textsc{A-43} & \checkmark & 10 & FA & 128 & 440 & 32 & 236 & 7552 & $10^{13}$ & 1506 & $\leq 1s$ & 1505 & 1985 & 0.10\\
-\textsc{AirportA-7} & \textsc{A-44} & \sfrac{3}{10} & 10 & MA & 128 & 440 & 32 & 409 & 13088 & $10^{13}$ & 805 & 2 & 803 & 2991 & \checkmark\\
-\textsc{AirportA-7} & \textsc{A-45} & \checkmark & 10 & MA & 128 & 440 & 32 & 409 & 13088 & $10^{13}$ & 781 & 2 & 779 & 2991 & 0.30\\
-\textsc{AirportA-7} & \textsc{A-46} & \sfrac{3}{10} & 10 & FA & 128 & 440 & 32 & 409 & 13088 & $10^{13}$ & 452 & 2 & 450 & 2991 & \checkmark\\
-\textsc{AirportA-7} & \textsc{A-47} & \checkmark & 10 & FA & 128 & 440 & 32 & 409 & 13088 & $10^{13}$ & 438 & 2 & 436 & 2991 & 0.30\\
+\textsc{AirportB-7} & \textsc{A-120} & \sfrac{3}{10} & 10 & MA & 108 & 432 & 18 & 31 & 558 & $10^{11}$ & 2 & $\leq 1s$ & 2 & 1085 & 0.64\\
+\textsc{AirportB-7} & \textsc{A-121} & \checkmark & 10 & MA & 108 & 432 & 18 & 31 & 558 & $10^{11}$ & 1011 & $\leq 1s$ & 1011 & 1085 & 0.97\\
+\textsc{AirportB-7} & \textsc{A-122} & \sfrac{3}{10} & 10 & FA & 108 & 432 & 18 & 31 & 558 & $10^{11}$ & 1 & $\leq 1s$ & 1 & 1085 & 0.28\\
+\textsc{AirportB-7} & \textsc{A-123} & \checkmark & 10 & FA & 108 & 432 & 18 & 31 & 558 & $10^{11}$ & 403 & $\leq 1s$ & 403 & 1085 & 0.20\\
+\textsc{AirportB-7} & \textsc{A-124} & \sfrac{3}{10} & 10 & MA & 108 & 432 & 18 & 65 & 1170 & $10^{11}$ & 3 & $\leq 1s$ & 2 & 1361 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-125} & \checkmark & 10 & MA & 108 & 432 & 18 & 65 & 1170 & $10^{11}$ & 1424 & $\leq 1s$ & 1424 & 1361 & 0.70\\
+\textsc{AirportB-7} & \textsc{A-126} & \sfrac{3}{10} & 10 & FA & 108 & 432 & 18 & 65 & 1170 & $10^{11}$ & 1 & $\leq 1s$ & 1 & 1361 & 0.28\\
+\textsc{AirportB-7} & \textsc{A-127} & \checkmark & 10 & FA & 108 & 432 & 18 & 65 & 1170 & $10^{11}$ & 363 & $\leq 1s$ & 363 & 1361 & 0.14\\
+\textsc{AirportB-7} & \textsc{A-128} & \sfrac{3}{10} & 10 & MA & 108 & 432 & 18 & 107 & 1926 & $10^{11}$ & 30 & $\leq 1s$ & 29 & 1791 & 0.31\\
+\textsc{AirportB-7} & \textsc{A-129} & \checkmark & 10 & MA & 108 & 432 & 18 & 107 & 1926 & $10^{11}$ & 3874 & $\leq 1s$ & 3873 & 1791 & 0.33\\
+\textsc{AirportB-7} & \textsc{A-130} & \sfrac{3}{10} & 10 & FA & 108 & 432 & 18 & 107 & 1926 & $10^{11}$ & 3 & $\leq 1s$ & 3 & 1791 & 0.24\\
+\textsc{AirportB-7} & \textsc{A-131} & \checkmark & 10 & FA & 108 & 432 & 18 & 107 & 1926 & $10^{11}$ & 173 & $\leq 1s$ & 173 & 1791 & 0.20\\
+\textsc{AirportB-7} & \textsc{A-132} & \sfrac{3}{10} & 8 & MA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & 4 & $\leq 1s$ & 3 & 659 & 0.57\\
+\textsc{AirportB-7} & \textsc{A-133} & \checkmark & 8 & MA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & 53 & $\leq 1s$ & 53 & 659 & 0.92\\
+\textsc{AirportB-7} & \textsc{A-134} & \sfrac{3}{10} & 8 & FA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 659 & 0.26\\
+\textsc{AirportB-7} & \textsc{A-135} & \checkmark & 8 & FA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & 23 & $\leq 1s$ & 23 & 659 & 0.22\\
+\textsc{AirportB-7} & \textsc{A-136} & \sfrac{3}{10} & 8 & MA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & 4 & $\leq 1s$ & 3 & 659 & 0.57\\
+\textsc{AirportB-7} & \textsc{A-137} & \checkmark & 8 & MA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & 38 & $\leq 1s$ & 38 & 659 & 0.92\\
+\textsc{AirportB-7} & \textsc{A-138} & \sfrac{3}{10} & 8 & FA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 659 & 0.26\\
+\textsc{AirportB-7} & \textsc{A-139} & \checkmark & 8 & FA & 108 & 432 & 18 & 30 & 540 & $10^{8}$ & 23 & $\leq 1s$ & 23 & 659 & 0.22\\
+\textsc{AirportB-7} & \textsc{A-140} & \sfrac{3}{10} & 8 & MA & 108 & 432 & 18 & 34 & 612 & $10^{8}$ & 20 & $\leq 1s$ & 20 & 609 & 0.30\\
+\textsc{AirportB-7} & \textsc{A-141} & \checkmark & 8 & MA & 108 & 432 & 18 & 34 & 612 & $10^{8}$ & 190 & $\leq 1s$ & 190 & 609 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-142} & \sfrac{3}{10} & 8 & FA & 108 & 432 & 18 & 34 & 612 & $10^{8}$ & 4 & $\leq 1s$ & 3 & 609 & 0.25\\
+\textsc{AirportB-7} & \textsc{A-143} & \checkmark & 8 & FA & 108 & 432 & 18 & 34 & 612 & $10^{8}$ & 22 & $\leq 1s$ & 21 & 609 & 0.22\\
+\textsc{AirportB-7} & \textsc{A-144} & \sfrac{3}{10} & 9 & MA & 108 & 432 & 18 & 17 & 306 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 623 & 0.78\\
+\textsc{AirportB-7} & \textsc{A-145} & \checkmark & 9 & MA & 108 & 432 & 18 & 17 & 306 & $10^{9}$ & 773 & $\leq 1s$ & 773 & 623 & 0.96\\
+\textsc{AirportB-7} & \textsc{A-146} & \sfrac{3}{10} & 9 & FA & 108 & 432 & 18 & 17 & 306 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 623 & 0.26\\
+\textsc{AirportB-7} & \textsc{A-147} & \checkmark & 9 & FA & 108 & 432 & 18 & 17 & 306 & $10^{9}$ & 50 & $\leq 1s$ & 50 & 623 & 0.23\\
+\textsc{AirportB-7} & \textsc{A-148} & \sfrac{3}{10} & 9 & MA & 108 & 432 & 18 & 31 & 558 & $10^{9}$ & 5 & $\leq 1s$ & 5 & 599 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-149} & \checkmark & 9 & MA & 108 & 432 & 18 & 31 & 558 & $10^{9}$ & 322 & $\leq 1s$ & 321 & 599 & 0.67\\
+\textsc{AirportB-7} & \textsc{A-150} & \sfrac{3}{10} & 9 & FA & 108 & 432 & 18 & 31 & 558 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 599 & 0.26\\
+\textsc{AirportB-7} & \textsc{A-151} & \checkmark & 9 & FA & 108 & 432 & 18 & 31 & 558 & $10^{9}$ & 46 & $\leq 1s$ & 46 & 599 & 0.17\\
+\textsc{AirportB-7} & \textsc{A-152} & \sfrac{3}{10} & 9 & MA & 108 & 432 & 18 & 57 & 1026 & $10^{9}$ & 187 & $\leq 1s$ & 187 & 923 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-153} & \checkmark & 9 & MA & 108 & 432 & 18 & 57 & 1026 & $10^{9}$ & 2568 & $\leq 1s$ & 2568 & 923 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-154} & \sfrac{3}{10} & 9 & FA & 108 & 432 & 18 & 57 & 1026 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 923 & 0.28\\
+\textsc{AirportB-7} & \textsc{A-155} & \checkmark & 9 & FA & 108 & 432 & 18 & 57 & 1026 & $10^{9}$ & 84 & $\leq 1s$ & 84 & 923 & 0.19\\
+\textsc{AirportB-7} & \textsc{A-156} & \sfrac{3}{10} & 10 & MA & 256 & 1240 & 32 & 44 & 1408 & $10^{14}$ & 3 & $\leq 1s$ & 3 & 1965 & 0.65\\
+\textsc{AirportB-7} & \textsc{A-157} & \checkmark & 10 & MA & 256 & 1240 & 32 & 44 & 1408 & $10^{14}$ & 499 & $\leq 1s$ & 499 & 1965 & 0.99\\
+\textsc{AirportB-7} & \textsc{A-158} & \sfrac{3}{10} & 10 & FA & 256 & 1240 & 32 & 44 & 1408 & $10^{14}$ & 3 & $\leq 1s$ & 3 & 1965 & 0.04\\
+\textsc{AirportB-7} & \textsc{A-159} & \checkmark & 10 & FA & 256 & 1240 & 32 & 44 & 1408 & $10^{14}$ & 1359 & $\leq 1s$ & 1358 & 1965 & 0.00\\
+\textsc{AirportB-7} & \textsc{A-160} & \sfrac{3}{10} & 10 & MA & 256 & 1240 & 32 & 68 & 2176 & $10^{14}$ & 94 & $\leq 1s$ & 94 & 1943 & 0.30\\
+\textsc{AirportB-7} & \textsc{A-161} & \checkmark & 10 & MA & 256 & 1240 & 32 & 68 & 2176 & $10^{14}$ & 730 & $\leq 1s$ & 729 & 1943 & 0.71\\
+\textsc{AirportB-7} & \textsc{A-162} & \sfrac{3}{10} & 10 & FA & 256 & 1240 & 32 & 68 & 2176 & $10^{14}$ & 6 & $\leq 1s$ & 5 & 1943 & 0.12\\
+\textsc{AirportB-7} & \textsc{A-163} & \checkmark & 10 & FA & 256 & 1240 & 32 & 68 & 2176 & $10^{14}$ & 2975 & $\leq 1s$ & 2974 & 1943 & 0.00\\
+\textsc{AirportB-7} & \textsc{A-164} & \sfrac{3}{10} & 10 & MA & 256 & 1240 & 32 & 117 & 3744 & $10^{14}$ & 85 & 1 & 84 & 2629 & 0.31\\
+\textsc{AirportB-7} & \textsc{A-165} & \checkmark & 10 & MA & 256 & 1240 & 32 & 117 & 3744 & $10^{14}$ & 811 & 1 & 810 & 2629 & 0.34\\
+\textsc{AirportB-7} & \textsc{A-166} & \sfrac{3}{10} & 10 & FA & 256 & 1240 & 32 & 117 & 3744 & $10^{14}$ & 3 & $\leq 1s$ & 3 & 2629 & 0.25\\
+\textsc{AirportB-7} & \textsc{A-167} & \checkmark & 10 & FA & 256 & 1240 & 32 & 117 & 3744 & $10^{14}$ & 723 & 1 & 722 & 2629 & 0.11\\
+\textsc{AirportB-7} & \textsc{A-168} & \sfrac{3}{10} & 11 & MA & 256 & 1240 & 32 & 34 & 1088 & $10^{15}$ & 2 & $\leq 1s$ & 2 & 1883 & 0.67\\
+\textsc{AirportB-7} & \textsc{A-169} & \checkmark & 11 & MA & 256 & 1240 & 32 & 34 & 1088 & $10^{15}$ & 1685 & $\leq 1s$ & 1685 & 1883 & 1.00\\
+\textsc{AirportB-7} & \textsc{A-170} & \sfrac{3}{10} & 11 & FA & 256 & 1240 & 32 & 34 & 1088 & $10^{15}$ & 6 & $\leq 1s$ & 5 & 1883 & 0.12\\
+\textsc{AirportB-7} & \textsc{A-171} & \checkmark & 11 & FA & 256 & 1240 & 32 & 34 & 1088 & $10^{15}$ & 77 & $\leq 1s$ & 77 & 1883 & 0.00\\
+\textsc{AirportB-7} & \textsc{A-172} & \sfrac{3}{10} & 11 & MA & 256 & 1240 & 32 & 164 & 5248 & $10^{16}$ & 12 & 2 & 11 & 4255 & 0.40\\
+\textsc{AirportB-7} & \textsc{A-173} & \checkmark & 11 & MA & 256 & 1240 & 32 & 164 & 5248 & $10^{16}$ & 1605 & 2 & 1603 & 4255 & 0.55\\
+\textsc{AirportB-7} & \textsc{A-174} & \sfrac{3}{10} & 11 & FA & 256 & 1240 & 32 & 164 & 5248 & $10^{16}$ & 7 & 2 & 5 & 4255 & 0.27\\
+\textsc{AirportB-7} & \textsc{A-175} & \checkmark & 11 & FA & 256 & 1240 & 32 & 164 & 5248 & $10^{16}$ & 4038 & 2 & 4037 & 4255 & 0.01\\
+\textsc{AirportB-7} & \textsc{A-176} & \sfrac{3}{10} & 11 & MA & 256 & 1240 & 32 & 375 & 12000 & $10^{16}$ & 18 & 2 & 16 & 7687 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-177} & \checkmark & 11 & MA & 256 & 1240 & 32 & 375 & 12000 & $10^{16}$ & 2014 & 3 & 2011 & 7687 & 0.35\\
+\textsc{AirportB-7} & \textsc{A-178} & \sfrac{3}{10} & 11 & FA & 256 & 1240 & 32 & 375 & 12000 & $10^{16}$ & 7 & 2 & 5 & 7687 & 0.27\\
+\textsc{AirportB-7} & \textsc{A-179} & \checkmark & 11 & FA & 256 & 1240 & 32 & 375 & 12000 & $10^{16}$ & 2352 & 3 & 2349 & 7687 & 0.10\\
+\textsc{AirportB-7} & \textsc{A-180} & \sfrac{3}{10} & 8 & MA & 256 & 1240 & 32 & 9 & 288 & $10^{9}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 745 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-181} & \checkmark & 8 & MA & 256 & 1240 & 32 & 9 & 288 & $10^{9}$ & 39 & $\leq 1s$ & 38 & 745 & 0.95\\
+\textsc{AirportB-7} & \textsc{A-182} & \sfrac{3}{10} & 8 & FA & 256 & 1240 & 32 & 9 & 288 & $10^{9}$ & 1 & $\leq 1s$ & 1 & 745 & 0.27\\
+\textsc{AirportB-7} & \textsc{A-183} & \checkmark & 8 & FA & 256 & 1240 & 32 & 9 & 288 & $10^{9}$ & 18 & $\leq 1s$ & 18 & 745 & 0.00\\
+\textsc{AirportB-7} & \textsc{A-184} & \sfrac{3}{10} & 8 & MA & 256 & 1240 & 32 & 51 & 1632 & $10^{9}$ & 48 & $\leq 1s$ & 47 & 1289 & 0.30\\
+\textsc{AirportB-7} & \textsc{A-185} & \checkmark & 8 & MA & 256 & 1240 & 32 & 51 & 1632 & $10^{9}$ & 59 & $\leq 1s$ & 59 & 1289 & 0.82\\
+\textsc{AirportB-7} & \textsc{A-186} & \sfrac{3}{10} & 8 & FA & 256 & 1240 & 32 & 51 & 1632 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 1289 & 0.18\\
+\textsc{AirportB-7} & \textsc{A-187} & \checkmark & 8 & FA & 256 & 1240 & 32 & 51 & 1632 & $10^{9}$ & 30 & $\leq 1s$ & 30 & 1289 & 0.02\\
+\textsc{AirportB-7} & \textsc{A-188} & \sfrac{3}{10} & 8 & MA & 256 & 1240 & 32 & 73 & 2336 & $10^{9}$ & 41 & $\leq 1s$ & 40 & 1455 & 0.33\\
+\textsc{AirportB-7} & \textsc{A-189} & \checkmark & 8 & MA & 256 & 1240 & 32 & 73 & 2336 & $10^{9}$ & 96 & $\leq 1s$ & 95 & 1455 & 0.35\\
+\textsc{AirportB-7} & \textsc{A-190} & \sfrac{3}{10} & 8 & FA & 256 & 1240 & 32 & 73 & 2336 & $10^{9}$ & 5 & $\leq 1s$ & 5 & 1455 & 0.30\\
+\textsc{AirportB-7} & \textsc{A-191} & \checkmark & 8 & FA & 256 & 1240 & 32 & 73 & 2336 & $10^{9}$ & 106 & $\leq 1s$ & 105 & 1455 & 0.23\\
+\textsc{AirportB-7} & \textsc{A-192} & \sfrac{3}{10} & 9 & MA & 256 & 1240 & 32 & 19 & 608 & $10^{11}$ & 2 & $\leq 1s$ & 2 & 1139 & 0.53\\
+\textsc{AirportB-7} & \textsc{A-193} & \checkmark & 9 & MA & 256 & 1240 & 32 & 19 & 608 & $10^{11}$ & 94 & $\leq 1s$ & 94 & 1139 & 1.00\\
+\textsc{AirportB-7} & \textsc{A-194} & \sfrac{3}{10} & 9 & FA & 256 & 1240 & 32 & 19 & 608 & $10^{11}$ & 1 & $\leq 1s$ & 1 & 1139 & 0.30\\
+\textsc{AirportB-7} & \textsc{A-195} & \checkmark & 9 & FA & 256 & 1240 & 32 & 19 & 608 & $10^{11}$ & 56 & $\leq 1s$ & 56 & 1139 & 0.04\\
+\textsc{AirportB-7} & \textsc{A-196} & \sfrac{3}{10} & 9 & MA & 256 & 1240 & 32 & 45 & 1440 & $10^{11}$ & 11 & $\leq 1s$ & 10 & 1547 & 0.33\\
+\textsc{AirportB-7} & \textsc{A-197} & \checkmark & 9 & MA & 256 & 1240 & 32 & 45 & 1440 & $10^{11}$ & 122 & $\leq 1s$ & 122 & 1547 & 0.99\\
+\textsc{AirportB-7} & \textsc{A-198} & \sfrac{3}{10} & 9 & FA & 256 & 1240 & 32 & 45 & 1440 & $10^{11}$ & 2 & $\leq 1s$ & 2 & 1547 & 0.25\\
+\textsc{AirportB-7} & \textsc{A-199} & \checkmark & 9 & FA & 256 & 1240 & 32 & 45 & 1440 & $10^{11}$ & 86 & $\leq 1s$ & 86 & 1547 & 0.00\\
+\textsc{AirportB-7} & \textsc{A-200} & \sfrac{3}{10} & 9 & MA & 256 & 1240 & 32 & 102 & 3264 & $10^{11}$ & 3 & $\leq 1s$ & 2 & 2167 & 0.34\\
+\textsc{AirportB-7} & \textsc{A-201} & \checkmark & 9 & MA & 256 & 1240 & 32 & 102 & 3264 & $10^{11}$ & 236 & $\leq 1s$ & 235 & 2167 & 0.34\\
+\textsc{AirportB-7} & \textsc{A-202} & \sfrac{3}{10} & 9 & FA & 256 & 1240 & 32 & 102 & 3264 & $10^{11}$ & 3 & $\leq 1s$ & 2 & 2167 & 0.25\\
+\textsc{AirportB-7} & \textsc{A-203} & \checkmark & 9 & FA & 256 & 1240 & 32 & 102 & 3264 & $10^{11}$ & 173 & $\leq 1s$ & 172 & 2167 & 0.14\\
+\textsc{AirportB-7} & \textsc{A-204} & \sfrac{3}{10} & 8 & MA & 470 & 2550 & 50 & 34 & 1700 & $10^{9}$ & 3 & $\leq 1s$ & 3 & 1285 & 0.35\\
+\textsc{AirportB-7} & \textsc{A-205} & \checkmark & 8 & MA & 470 & 2550 & 50 & 34 & 1700 & $10^{9}$ & 28 & $\leq 1s$ & 28 & 1285 & 0.99\\
+\textsc{AirportB-7} & \textsc{A-206} & \sfrac{3}{10} & 8 & FA & 470 & 2550 & 50 & 34 & 1700 & $10^{9}$ & 2 & $\leq 1s$ & 1 & 1285 & 0.22\\
+\textsc{AirportB-7} & \textsc{A-207} & \checkmark & 8 & FA & 470 & 2550 & 50 & 34 & 1700 & $10^{9}$ & 12 & $\leq 1s$ & 12 & 1285 & 0.14\\
+\textsc{AirportB-7} & \textsc{A-208} & \sfrac{3}{10} & 8 & MA & 470 & 2550 & 50 & 70 & 3500 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 1803 & 0.34\\
+\textsc{AirportB-7} & \textsc{A-209} & \checkmark & 8 & MA & 470 & 2550 & 50 & 70 & 3500 & $10^{9}$ & 44 & $\leq 1s$ & 44 & 1803 & 0.87\\
+\textsc{AirportB-7} & \textsc{A-210} & \sfrac{3}{10} & 8 & FA & 470 & 2550 & 50 & 70 & 3500 & $10^{9}$ & 2 & $\leq 1s$ & 2 & 1803 & 0.22\\
+\textsc{AirportB-7} & \textsc{A-211} & \checkmark & 8 & FA & 470 & 2550 & 50 & 70 & 3500 & $10^{9}$ & 39 & $\leq 1s$ & 39 & 1803 & 0.04\\
+\textsc{AirportB-7} & \textsc{A-212} & \sfrac{3}{10} & 8 & MA & 470 & 2550 & 50 & 116 & 5800 & $10^{9}$ & 67 & $\leq 1s$ & 66 & 2405 & 0.33\\
+\textsc{AirportB-7} & \textsc{A-213} & \checkmark & 8 & MA & 470 & 2550 & 50 & 116 & 5800 & $10^{9}$ & 109 & $\leq 1s$ & 109 & 2405 & 0.33\\
+\textsc{AirportB-7} & \textsc{A-214} & \sfrac{3}{10} & 8 & FA & 470 & 2550 & 50 & 116 & 5800 & $10^{9}$ & 7 & $\leq 1s$ & 6 & 2405 & 0.23\\
+\textsc{AirportB-7} & \textsc{A-215} & \checkmark & 8 & FA & 470 & 2550 & 50 & 116 & 5800 & $10^{9}$ & 115 & $\leq 1s$ & 114 & 2405 & 0.12\\
+\textsc{AirportB-7} & \textsc{A-216} & \sfrac{3}{10} & 9 & MA & 470 & 2550 & 50 & 28 & 1400 & $10^{12}$ & 4 & $\leq 1s$ & 3 & 1667 & 0.97\\
+\textsc{AirportB-7} & \textsc{A-217} & \checkmark & 9 & MA & 470 & 2550 & 50 & 28 & 1400 & $10^{12}$ & 6 & $\leq 1s$ & 5 & 1667 & 1.00\\
+\textsc{AirportB-7} & \textsc{A-218} & \sfrac{3}{10} & 9 & FA & 470 & 2550 & 50 & 28 & 1400 & $10^{12}$ & 4 & $\leq 1s$ & 3 & 1667 & 0.06\\
+\textsc{AirportB-7} & \textsc{A-219} & \checkmark & 9 & FA & 470 & 2550 & 50 & 28 & 1400 & $10^{12}$ & 56 & $\leq 1s$ & 55 & 1667 & 0.06\\
+\textsc{AirportB-7} & \textsc{A-220} & \sfrac{3}{10} & 9 & MA & 470 & 2550 & 50 & 138 & 6900 & $10^{12}$ & 9 & 1 & 8 & 3359 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-221} & \checkmark & 9 & MA & 470 & 2550 & 50 & 138 & 6900 & $10^{12}$ & 32 & 1 & 30 & 3359 & 1.00\\
+\textsc{AirportB-7} & \textsc{A-222} & \sfrac{3}{10} & 9 & FA & 470 & 2550 & 50 & 138 & 6900 & $10^{12}$ & 6 & 1 & 5 & 3359 & 0.18\\
+\textsc{AirportB-7} & \textsc{A-223} & \checkmark & 9 & FA & 470 & 2550 & 50 & 138 & 6900 & $10^{12}$ & 341 & 1 & 340 & 3359 & 0.07\\
+\textsc{AirportB-7} & \textsc{A-224} & \sfrac{3}{10} & 9 & MA & 470 & 2550 & 50 & 310 & 15500 & $10^{12}$ & 9 & 2 & 6 & 4669 & 0.32\\
+\textsc{AirportB-7} & \textsc{A-225} & \checkmark & 9 & MA & 470 & 2550 & 50 & 310 & 15500 & $10^{12}$ & 417 & 1 & 416 & 4669 & 0.34\\
+\textsc{AirportB-7} & \textsc{A-226} & \sfrac{3}{10} & 9 & FA & 470 & 2550 & 50 & 310 & 15500 & $10^{12}$ & 17 & 2 & 15 & 4669 & 0.28\\
+\textsc{AirportB-7} & \textsc{A-227} & \checkmark & 9 & FA & 470 & 2550 & 50 & 310 & 15500 & $10^{12}$ & 429 & 2 & 427 & 4669 & 0.17\\
 \midrule
-\textsc{AirportB-3} & \textsc{A-48} & \sfrac{3}{10} & 10 & MA & 90 & 334 & 18 & 38 & 684 & $10^{13}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 789 & 0.67\\
-\textsc{AirportB-3} & \textsc{A-49} & \checkmark & 10 & MA & 90 & 334 & 18 & 38 & 684 & $10^{13}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 789 & 1.00\\
-\textsc{AirportB-3} & \textsc{A-50} & \sfrac{3}{10} & 10 & FA & 90 & 334 & 18 & 38 & 684 & $10^{13}$ & 1 & $\leq 1s$ & 1 & 789 & 0.09\\
-\textsc{AirportB-3} & \textsc{A-51} & \checkmark & 10 & FA & 90 & 334 & 18 & 38 & 684 & $10^{13}$ & 370 & $\leq 1s$ & 370 & 789 & 0.08\\
-\textsc{AirportB-3} & \textsc{A-52} & \sfrac{3}{10} & 10 & MA & 90 & 334 & 18 & 50 & 900 & $10^{12}$ & 2 & $\leq 1s$ & 1 & 933 & 0.31\\
-\textsc{AirportB-3} & \textsc{A-53} & \checkmark & 10 & MA & 90 & 334 & 18 & 50 & 900 & $10^{12}$ & 3 & $\leq 1s$ & 3 & 933 & 1.00\\
-\textsc{AirportB-3} & \textsc{A-54} & \sfrac{3}{10} & 10 & FA & 90 & 334 & 18 & 50 & 900 & $10^{12}$ & 2 & $\leq 1s$ & 2 & 933 & 0.17\\
-\textsc{AirportB-3} & \textsc{A-55} & \checkmark & 10 & FA & 90 & 334 & 18 & 50 & 900 & $10^{12}$ & 1309 & $\leq 1s$ & 1309 & 933 & 0.13\\
-\textsc{AirportB-3} & \textsc{A-56} & \sfrac{3}{10} & 10 & MA & 90 & 334 & 18 & 144 & 2592 & $10^{12}$ & 674 & $\leq 1s$ & 673 & 1477 & \checkmark\\
-\textsc{AirportB-3} & \textsc{A-57} & \checkmark & 10 & MA & 90 & 334 & 18 & 144 & 2592 & $10^{12}$ & 658 & $\leq 1s$ & 658 & 1477 & 0.30\\
-\textsc{AirportB-3} & \textsc{A-58} & \sfrac{3}{10} & 10 & FA & 90 & 334 & 18 & 144 & 2592 & $10^{13}$ & 2986 & $\leq 1s$ & 2985 & 1477 & \checkmark\\
-\textsc{AirportB-3} & \textsc{A-59} & \checkmark & 10 & FA & 90 & 334 & 18 & 144 & 2592 & $10^{13}$ & 2904 & $\leq 1s$ & 2904 & 1477 & 0.30\\
-\textsc{AirportB-3} & \textsc{A-60} & \sfrac{3}{10} & 10 & MA & 290 & 1258 & 50 & 35 & 1750 & $10^{14}$ & 4 & $\leq 1s$ & 3 & 1423 & 0.50\\
-\textsc{AirportB-3} & \textsc{A-61} & \checkmark & 10 & MA & 290 & 1258 & 50 & 35 & 1750 & $10^{14}$ & 5 & $\leq 1s$ & 4 & 1423 & 1.00\\
-\textsc{AirportB-3} & \textsc{A-62} & \sfrac{3}{10} & 10 & FA & 290 & 1258 & 50 & 35 & 1750 & $10^{13}$ & 7 & $\leq 1s$ & 6 & 1423 & 0.02\\
-\textsc{AirportB-3} & \textsc{A-63} & \checkmark & 10 & FA & 290 & 1258 & 50 & 35 & 1750 & $10^{13}$ & 573 & $\leq 1s$ & 572 & 1423 & 0.02\\
-\textsc{AirportB-3} & \textsc{A-64} & \sfrac{3}{10} & 10 & MA & 290 & 1258 & 50 & 167 & 8350 & $10^{14}$ & 10 & 2 & 8 & 2487 & 0.41\\
-\textsc{AirportB-3} & \textsc{A-65} & \checkmark & 10 & MA & 290 & 1258 & 50 & 167 & 8350 & $10^{14}$ & 10 & 2 & 8 & 2487 & 1.00\\
-\textsc{AirportB-3} & \textsc{A-66} & \sfrac{3}{10} & 10 & FA & 290 & 1258 & 50 & 167 & 8350 & $10^{13}$ & 6 & 2 & 4 & 2487 & 0.12\\
-\textsc{AirportB-3} & \textsc{A-67} & \checkmark & 10 & FA & 290 & 1258 & 50 & 167 & 8350 & $10^{13}$ & 323 & 2 & 321 & 2487 & 0.01\\
-\textsc{AirportB-3} & \textsc{A-68} & \sfrac{3}{10} & 10 & MA & 290 & 1258 & 50 & 265 & 13250 & $10^{14}$ & 547 & 3 & 545 & 2931 & \checkmark\\
-\textsc{AirportB-3} & \textsc{A-69} & \checkmark & 10 & MA & 290 & 1258 & 50 & 265 & 13250 & $10^{14}$ & 535 & 3 & 532 & 2931 & 0.30\\
-\textsc{AirportB-3} & \textsc{A-70} & \sfrac{3}{10} & 10 & FA & 290 & 1258 & 50 & 265 & 13250 & $10^{13}$ & 1226 & 3 & 1224 & 2931 & \checkmark\\
-\textsc{AirportB-3} & \textsc{A-71} & \checkmark & 10 & FA & 290 & 1258 & 50 & 265 & 13250 & $10^{13}$ & 1096 & 3 & 1094 & 2931 & 0.30\\
+\textsc{Evade} & \textsc{E-0} & \sfrac{3}{10} & 6 & MA & 385 & 1473 & 325 & 26 & 8450 & $10^{5}$ & 3 & 2 & $\leq 1s$ & 104 & 0.38\\
+\textsc{Evade} & \textsc{E-1} & \checkmark & 6 & MA & 385 & 1473 & 325 & 26 & 8450 & $10^{5}$ & 3 & 2 & $\leq 1s$ & 104 & 0.38\\
+\textsc{Evade} & \textsc{E-2} & \sfrac{3}{10} & 6 & FA & 385 & 1473 & 325 & 26 & 8450 & $10^{4}$ & 2 & 2 & $\leq 1s$ & 104 & \checkmark\\
+\textsc{Evade} & \textsc{E-3} & \checkmark & 6 & FA & 385 & 1473 & 325 & 26 & 8450 & $10^{4}$ & 3 & 2 & $\leq 1s$ & 104 & 0.33\\
+\textsc{Evade} & \textsc{E-4} & \sfrac{3}{10} & 6 & MA & 385 & 1473 & 325 & 26 & 8450 & $10^{5}$ & 2 & 1 & $\leq 1s$ & 104 & 0.38\\
+\textsc{Evade} & \textsc{E-5} & \checkmark & 6 & MA & 385 & 1473 & 325 & 26 & 8450 & $10^{5}$ & 3 & 2 & $\leq 1s$ & 104 & 0.38\\
+\textsc{Evade} & \textsc{E-6} & \sfrac{3}{10} & 6 & FA & 385 & 1473 & 325 & 26 & 8450 & $10^{4}$ & 2 & 2 & $\leq 1s$ & 104 & \checkmark\\
+\textsc{Evade} & \textsc{E-7} & \checkmark & 6 & FA & 385 & 1473 & 325 & 26 & 8450 & $10^{4}$ & 3 & 2 & $\leq 1s$ & 104 & 0.33\\
+\textsc{Evade} & \textsc{E-8} & \sfrac{3}{10} & 6 & MA & 385 & 1473 & 325 & 27 & 8775 & $10^{5}$ & 2 & 1 & $\leq 1s$ & 105 & 0.33\\
+\textsc{Evade} & \textsc{E-9} & \checkmark & 6 & MA & 385 & 1473 & 325 & 27 & 8775 & $10^{5}$ & 3 & 2 & $\leq 1s$ & 105 & 0.33\\
+\textsc{Evade} & \textsc{E-10} & \sfrac{3}{10} & 6 & FA & 385 & 1473 & 325 & 27 & 8775 & $10^{4}$ & 2 & 2 & $\leq 1s$ & 105 & \checkmark\\
+\textsc{Evade} & \textsc{E-11} & \checkmark & 6 & FA & 385 & 1473 & 325 & 27 & 8775 & $10^{4}$ & 3 & 2 & $\leq 1s$ & 105 & 0.33\\
+\textsc{Evade} & \textsc{E-12} & \sfrac{3}{10} & 7 & MA & 385 & 1473 & 325 & 11 & 3575 & $10^{7}$ & 2 & 1 & $\leq 1s$ & 180 & 1.00\\
+\textsc{Evade} & \textsc{E-13} & \checkmark & 7 & MA & 385 & 1473 & 325 & 11 & 3575 & $10^{7}$ & 3 & 2 & $\leq 1s$ & 180 & 1.00\\
+\textsc{Evade} & \textsc{E-14} & \sfrac{3}{10} & 7 & FA & 385 & 1473 & 325 & 11 & 3575 & $10^{6}$ & 1 & 1 & $\leq 1s$ & 180 & \checkmark\\
+\textsc{Evade} & \textsc{E-15} & \checkmark & 7 & FA & 385 & 1473 & 325 & 11 & 3575 & $10^{6}$ & 3 & 2 & $\leq 1s$ & 180 & 0.39\\
+\textsc{Evade} & \textsc{E-16} & \sfrac{3}{10} & 7 & MA & 385 & 1473 & 325 & 31 & 10075 & $10^{7}$ & 5 & 4 & $\leq 1s$ & 190 & 0.42\\
+\textsc{Evade} & \textsc{E-17} & \checkmark & 7 & MA & 385 & 1473 & 325 & 31 & 10075 & $10^{7}$ & 5 & 4 & $\leq 1s$ & 190 & 0.42\\
+\textsc{Evade} & \textsc{E-18} & \sfrac{3}{10} & 7 & FA & 385 & 1473 & 325 & 31 & 10075 & $10^{7}$ & 3 & 3 & $\leq 1s$ & 190 & \checkmark\\
+\textsc{Evade} & \textsc{E-19} & \checkmark & 7 & FA & 385 & 1473 & 325 & 31 & 10075 & $10^{7}$ & 6 & 4 & $\leq 1s$ & 190 & 0.33\\
+\textsc{Evade} & \textsc{E-20} & \sfrac{3}{10} & 7 & MA & 385 & 1473 & 325 & 59 & 19175 & $10^{7}$ & 7 & 5 & $\leq 1s$ & 194 & 0.33\\
+\textsc{Evade} & \textsc{E-21} & \checkmark & 7 & MA & 385 & 1473 & 325 & 59 & 19175 & $10^{7}$ & 6 & 5 & $\leq 1s$ & 194 & 0.33\\
+\textsc{Evade} & \textsc{E-22} & \sfrac{3}{10} & 7 & FA & 385 & 1473 & 325 & 59 & 19175 & $10^{7}$ & 3 & 3 & $\leq 1s$ & 194 & \checkmark\\
+\textsc{Evade} & \textsc{E-23} & \checkmark & 7 & FA & 385 & 1473 & 325 & 59 & 19175 & $10^{7}$ & 6 & 4 & $\leq 1s$ & 194 & 0.33\\
+\textsc{Evade} & \textsc{E-24} & \sfrac{3}{10} & 8 & MA & 385 & 1473 & 325 & 74 & 24050 & $10^{11}$ & 12 & 8 & 2 & 377 & 1.00\\
+\textsc{Evade} & \textsc{E-25} & \checkmark & 8 & MA & 385 & 1473 & 325 & 74 & 24050 & $10^{11}$ & 13 & 9 & 2 & 377 & 1.00\\
+\textsc{Evade} & \textsc{E-26} & \sfrac{3}{10} & 8 & FA & 385 & 1473 & 325 & 74 & 24050 & $10^{10}$ & 10 & 8 & 2 & 377 & \checkmark\\
+\textsc{Evade} & \textsc{E-27} & \checkmark & 8 & FA & 385 & 1473 & 325 & 74 & 24050 & $10^{10}$ & 12 & 9 & 2 & 377 & 0.33\\
+\textsc{Evade} & \textsc{E-28} & \sfrac{3}{10} & 8 & MA & 385 & 1473 & 325 & 84 & 27300 & $10^{11}$ & 11 & 9 & 1 & 396 & 1.00\\
+\textsc{Evade} & \textsc{E-29} & \checkmark & 8 & MA & 385 & 1473 & 325 & 84 & 27300 & $10^{11}$ & 14 & 11 & 2 & 396 & 1.00\\
+\textsc{Evade} & \textsc{E-30} & \sfrac{3}{10} & 8 & FA & 385 & 1473 & 325 & 84 & 27300 & $10^{10}$ & 12 & 11 & 2 & 396 & \checkmark\\
+\textsc{Evade} & \textsc{E-31} & \checkmark & 8 & FA & 385 & 1473 & 325 & 84 & 27300 & $10^{10}$ & 8 & 6 & $\leq 1s$ & 396 & 0.33\\
+\textsc{Evade} & \textsc{E-32} & \sfrac{3}{10} & 8 & MA & 385 & 1473 & 325 & 131 & 42575 & $10^{11}$ & 15 & 14 & 2 & 391 & \checkmark\\
+\textsc{Evade} & \textsc{E-33} & \checkmark & 8 & MA & 385 & 1473 & 325 & 131 & 42575 & $10^{11}$ & 10 & 8 & $\leq 1s$ & 391 & 0.26\\
+\textsc{Evade} & \textsc{E-34} & \sfrac{3}{10} & 8 & FA & 385 & 1473 & 325 & 131 & 42575 & $10^{10}$ & 12 & 11 & 1 & 391 & \checkmark\\
+\textsc{Evade} & \textsc{E-35} & \checkmark & 8 & FA & 385 & 1473 & 325 & 131 & 42575 & $10^{10}$ & 19 & 14 & 2 & 391 & 0.33\\
+\textsc{Evade} & \textsc{E-36} & \sfrac{3}{10} & 9 & MA & 385 & 1473 & 325 & 76 & 24700 & $10^{14}$ & 16 & 12 & 2 & 605 & 1.00\\
+\textsc{Evade} & \textsc{E-37} & \checkmark & 9 & MA & 385 & 1473 & 325 & 76 & 24700 & $10^{14}$ & 19 & 13 & 3 & 605 & 1.00\\
+\textsc{Evade} & \textsc{E-38} & \sfrac{3}{10} & 9 & FA & 385 & 1473 & 325 & 76 & 24700 & $10^{13}$ & 17 & 13 & 4 & 605 & \checkmark\\
+\textsc{Evade} & \textsc{E-39} & \checkmark & 9 & FA & 385 & 1473 & 325 & 76 & 24700 & $10^{13}$ & 12 & 8 & 3 & 605 & 0.33\\
+\textsc{Evade} & \textsc{E-40} & \sfrac{3}{10} & 9 & MA & 385 & 1473 & 325 & 143 & 46475 & $10^{14}$ & 25 & 18 & 3 & 663 & 1.00\\
+\textsc{Evade} & \textsc{E-41} & \checkmark & 9 & MA & 385 & 1473 & 325 & 143 & 46475 & $10^{14}$ & 26 & 20 & 3 & 663 & 1.00\\
+\textsc{Evade} & \textsc{E-42} & \sfrac{3}{10} & 9 & FA & 385 & 1473 & 325 & 143 & 46475 & $10^{14}$ & 18 & 16 & 2 & 663 & \checkmark\\
+\textsc{Evade} & \textsc{E-43} & \checkmark & 9 & FA & 385 & 1473 & 325 & 143 & 46475 & $10^{14}$ & 24 & 18 & 3 & 663 & 0.33\\
+\textsc{Evade} & \textsc{E-44} & \sfrac{3}{10} & 9 & MA & 385 & 1473 & 325 & 229 & 74425 & $10^{14}$ & 23 & 17 & 2 & 687 & 0.35\\
+\textsc{Evade} & \textsc{E-45} & \checkmark & 9 & MA & 385 & 1473 & 325 & 229 & 74425 & $10^{14}$ & 37 & 29 & 4 & 687 & 0.35\\
+\textsc{Evade} & \textsc{E-46} & \sfrac{3}{10} & 9 & FA & 385 & 1473 & 325 & 229 & 74425 & $10^{14}$ & 33 & 29 & 3 & 687 & \checkmark\\
+\textsc{Evade} & \textsc{E-47} & \checkmark & 9 & FA & 385 & 1473 & 325 & 229 & 74425 & $10^{14}$ & 33 & 27 & 3 & 687 & 0.33\\
 \midrule
-\textsc{AirportB-7} & \textsc{A-72} & \sfrac{3}{10} & 10 & MA & 108 & 432 & 18 & 39 & 702 & $10^{10}$ & 2 & $\leq 1s$ & 2 & 777 & 0.67\\
-\textsc{AirportB-7} & \textsc{A-73} & \checkmark & 10 & MA & 108 & 432 & 18 & 39 & 702 & $10^{10}$ & 1008 & $\leq 1s$ & 1008 & 777 & 0.67\\
-\textsc{AirportB-7} & \textsc{A-74} & \sfrac{3}{10} & 10 & FA & 108 & 432 & 18 & 39 & 702 & $10^{11}$ & 3 & $\leq 1s$ & 3 & 777 & 0.25\\
-\textsc{AirportB-7} & \textsc{A-75} & \checkmark & 10 & FA & 108 & 432 & 18 & 39 & 702 & $10^{11}$ & 1201 & $\leq 1s$ & 1201 & 777 & 0.13\\
-\textsc{AirportB-7} & \textsc{A-76} & \sfrac{3}{10} & 10 & MA & 108 & 432 & 18 & 94 & 1692 & $10^{11}$ & 480 & $\leq 1s$ & 480 & 1533 & 0.32\\
-\textsc{AirportB-7} & \textsc{A-77} & \checkmark & 10 & MA & 108 & 432 & 18 & 94 & 1692 & $10^{11}$ & 870 & $\leq 1s$ & 869 & 1533 & 0.33\\
-\textsc{AirportB-7} & \textsc{A-78} & \sfrac{3}{10} & 10 & FA & 108 & 432 & 18 & 94 & 1692 & $10^{11}$ & 3 & $\leq 1s$ & 2 & 1533 & 0.25\\
-\textsc{AirportB-7} & \textsc{A-79} & \checkmark & 10 & FA & 108 & 432 & 18 & 94 & 1692 & $10^{11}$ & 491 & $\leq 1s$ & 490 & 1533 & 0.19\\
-\textsc{AirportB-7} & \textsc{A-80} & \sfrac{3}{10} & 10 & MA & 108 & 432 & 18 & 162 & 2916 & $10^{11}$ & 2706 & $\leq 1s$ & 2706 & 2337 & \checkmark\\
-\textsc{AirportB-7} & \textsc{A-81} & \checkmark & 10 & MA & 108 & 432 & 18 & 162 & 2916 & $10^{11}$ & 2583 & $\leq 1s$ & 2583 & 2337 & 0.30\\
-\textsc{AirportB-7} & \textsc{A-82} & \sfrac{3}{10} & 10 & FA & 108 & 432 & 18 & 162 & 2916 & $10^{11}$ & 927 & $\leq 1s$ & 926 & 2337 & \checkmark\\
-\textsc{AirportB-7} & \textsc{A-83} & \checkmark & 10 & FA & 108 & 432 & 18 & 162 & 2916 & $10^{11}$ & 886 & $\leq 1s$ & 886 & 2337 & 0.30\\
-\textsc{AirportB-7} & \textsc{A-84} & \sfrac{3}{10} & 10 & MA & 256 & 1240 & 32 & 47 & 1504 & $10^{13}$ & 18 & $\leq 1s$ & 17 & 1979 & 0.42\\
-\textsc{AirportB-7} & \textsc{A-85} & \checkmark & 10 & MA & 256 & 1240 & 32 & 47 & 1504 & $10^{13}$ & 782 & $\leq 1s$ & 782 & 1979 & 0.99\\
-\textsc{AirportB-7} & \textsc{A-86} & \sfrac{3}{10} & 10 & FA & 256 & 1240 & 32 & 47 & 1504 & $10^{13}$ & 5 & $\leq 1s$ & 4 & 1979 & 0.16\\
-\textsc{AirportB-7} & \textsc{A-87} & \checkmark & 10 & FA & 256 & 1240 & 32 & 47 & 1504 & $10^{13}$ & 1169 & $\leq 1s$ & 1168 & 1979 & 0.02\\
-\textsc{AirportB-7} & \textsc{A-88} & \sfrac{3}{10} & 10 & MA & 256 & 1240 & 32 & 226 & 7232 & $10^{13}$ & 76 & 1 & 74 & 4449 & 0.54\\
-\textsc{AirportB-7} & \textsc{A-89} & \checkmark & 10 & MA & 256 & 1240 & 32 & 226 & 7232 & $10^{13}$ & 987 & 1 & 986 & 4449 & 0.54\\
-\textsc{AirportB-7} & \textsc{A-90} & \sfrac{3}{10} & 10 & FA & 256 & 1240 & 32 & 226 & 7232 & $10^{13}$ & 120 & 1 & 118 & 4449 & 0.24\\
-\textsc{AirportB-7} & \textsc{A-91} & \checkmark & 10 & FA & 256 & 1240 & 32 & 226 & 7232 & $10^{13}$ & 644 & 1 & 643 & 4449 & 0.15\\
-\textsc{AirportB-7} & \textsc{A-92} & \sfrac{3}{10} & 10 & MA & 256 & 1240 & 32 & 413 & 13216 & $10^{13}$ & 1370 & 2 & 1368 & 5985 & \checkmark\\
-\textsc{AirportB-7} & \textsc{A-93} & \checkmark & 10 & MA & 256 & 1240 & 32 & 413 & 13216 & $10^{13}$ & 1282 & 2 & 1280 & 5985 & 0.30\\
-\textsc{AirportB-7} & \textsc{A-94} & \sfrac{3}{10} & 10 & FA & 256 & 1240 & 32 & 413 & 13216 & $10^{13}$ & 675 & 2 & 672 & 5985 & \checkmark\\
-\textsc{AirportB-7} & \textsc{A-95} & \checkmark & 10 & FA & 256 & 1240 & 32 & 413 & 13216 & $10^{13}$ & 687 & 2 & 685 & 5985 & 0.30\\
-\midrule
-\textsc{Evade} & \textsc{E-0} & \sfrac{3}{10} & 8 & MA & 385 & 1473 & 325 & 85 & 27625 & $10^{11}$ & 14 & 11 & 2 & 393 & 1.00\\
-\textsc{Evade} & \textsc{E-1} & \checkmark & 8 & MA & 385 & 1473 & 325 & 85 & 27625 & $10^{11}$ & 14 & 11 & 2 & 393 & 1.00\\
-\textsc{Evade} & \textsc{E-2} & \sfrac{3}{10} & 8 & FA & 385 & 1473 & 325 & 85 & 27625 & $10^{10}$ & 13 & 11 & 2 & 393 & \checkmark\\
-\textsc{Evade} & \textsc{E-3} & \checkmark & 8 & FA & 385 & 1473 & 325 & 85 & 27625 & $10^{10}$ & 14 & 11 & 2 & 393 & 0.30\\
-\textsc{Evade} & \textsc{E-4} & \sfrac{3}{10} & 8 & MA & 385 & 1473 & 325 & 110 & 35750 & $10^{11}$ & 16 & 13 & 2 & 412 & 0.40\\
-\textsc{Evade} & \textsc{E-5} & \checkmark & 8 & MA & 385 & 1473 & 325 & 110 & 35750 & $10^{11}$ & 17 & 13 & 2 & 412 & 0.40\\
-\textsc{Evade} & \textsc{E-6} & \sfrac{3}{10} & 8 & FA & 385 & 1473 & 325 & 110 & 35750 & $10^{10}$ & 15 & 13 & 2 & 412 & \checkmark\\
-\textsc{Evade} & \textsc{E-7} & \checkmark & 8 & FA & 385 & 1473 & 325 & 110 & 35750 & $10^{10}$ & 17 & 13 & 2 & 412 & 0.30\\
-\textsc{Evade} & \textsc{E-8} & \sfrac{3}{10} & 8 & MA & 385 & 1473 & 325 & 179 & 58175 & $10^{11}$ & 19 & 17 & 2 & 400 & \checkmark\\
-\textsc{Evade} & \textsc{E-9} & \checkmark & 8 & MA & 385 & 1473 & 325 & 179 & 58175 & $10^{11}$ & 21 & 17 & 1 & 400 & 0.24\\
-\textsc{Evade} & \textsc{E-10} & \sfrac{3}{10} & 8 & FA & 385 & 1473 & 325 & 179 & 58175 & $10^{10}$ & 19 & 17 & 2 & 400 & \checkmark\\
-\textsc{Evade} & \textsc{E-11} & \checkmark & 8 & FA & 385 & 1473 & 325 & 179 & 58175 & $10^{10}$ & 22 & 17 & 2 & 400 & 0.30\\
-\textsc{Evade} & \textsc{E-12} & \sfrac{3}{10} & 9 & MA & 385 & 1473 & 325 & 121 & 39325 & $10^{14}$ & 25 & 19 & 4 & 646 & 1.00\\
-\textsc{Evade} & \textsc{E-13} & \checkmark & 9 & MA & 385 & 1473 & 325 & 121 & 39325 & $10^{14}$ & 25 & 19 & 4 & 646 & 1.00\\
-\textsc{Evade} & \textsc{E-14} & \sfrac{3}{10} & 9 & FA & 385 & 1473 & 325 & 121 & 39325 & $10^{14}$ & 22 & 19 & 4 & 646 & \checkmark\\
-\textsc{Evade} & \textsc{E-15} & \checkmark & 9 & FA & 385 & 1473 & 325 & 121 & 39325 & $10^{14}$ & 25 & 19 & 4 & 646 & 0.30\\
-\textsc{Evade} & \textsc{E-16} & \sfrac{3}{10} & 9 & MA & 385 & 1473 & 325 & 205 & 66625 & $10^{14}$ & 35 & 26 & 4 & 717 & 1.00\\
-\textsc{Evade} & \textsc{E-17} & \checkmark & 9 & MA & 385 & 1473 & 325 & 205 & 66625 & $10^{14}$ & 34 & 26 & 4 & 717 & 1.00\\
-\textsc{Evade} & \textsc{E-18} & \sfrac{3}{10} & 9 & FA & 385 & 1473 & 325 & 205 & 66625 & $10^{14}$ & 31 & 28 & 4 & 717 & \checkmark\\
-\textsc{Evade} & \textsc{E-19} & \checkmark & 9 & FA & 385 & 1473 & 325 & 205 & 66625 & $10^{14}$ & 36 & 28 & 4 & 717 & 0.30\\
-\textsc{Evade} & \textsc{E-20} & \sfrac{3}{10} & 9 & MA & 385 & 1473 & 325 & 277 & 90025 & $10^{14}$ & 35 & 32 & 3 & 653 & \checkmark\\
-\textsc{Evade} & \textsc{E-21} & \checkmark & 9 & MA & 385 & 1473 & 325 & 277 & 90025 & $10^{14}$ & 40 & 31 & 4 & 653 & 0.30\\
-\textsc{Evade} & \textsc{E-22} & \sfrac{3}{10} & 9 & FA & 385 & 1473 & 325 & 277 & 90025 & $10^{14}$ & 35 & 32 & 3 & 653 & \checkmark\\
-\textsc{Evade} & \textsc{E-23} & \checkmark & 9 & FA & 385 & 1473 & 325 & 277 & 90025 & $10^{14}$ & 39 & 31 & 3 & 653 & 0.30\\
-\midrule
-\textsc{Hidden-Incen.} & \textsc{H-0} & \sfrac{3}{10} & 10 & MA & 397 & 1649 & 100 & 100 & 10000 & $10^{18}$ & 8 & 3 & 4 & 1393 & 1.00\\
-\textsc{Hidden-Incen.} & \textsc{H-1} & \checkmark & 10 & MA & 397 & 1649 & 100 & 100 & 10000 & $10^{18}$ & 7 & 3 & 4 & 1393 & 1.00\\
-\textsc{Hidden-Incen.} & \textsc{H-2} & \sfrac{3}{10} & 10 & FA & 397 & 1649 & 100 & 100 & 10000 & $10^{18}$ & 10 & 3 & 6 & 1393 & 0.25\\
-\textsc{Hidden-Incen.} & \textsc{H-3} & \checkmark & 10 & FA & 397 & 1649 & 100 & 100 & 10000 & $10^{18}$ & 2481 & 3 & 2478 & 1393 & 0.24\\
-\textsc{Hidden-Incen.} & \textsc{H-4} & \sfrac{3}{10} & 10 & MA & 397 & 1649 & 100 & 190 & 19000 & $10^{18}$ & 6 & 5 & 1 & 1400 & 1.00\\
-\textsc{Hidden-Incen.} & \textsc{H-5} & \checkmark & 10 & MA & 397 & 1649 & 100 & 190 & 19000 & $10^{18}$ & 6 & 5 & 1 & 1400 & 1.00\\
-\textsc{Hidden-Incen.} & \textsc{H-6} & \sfrac{3}{10} & 10 & FA & 397 & 1649 & 100 & 190 & 19000 & $10^{18}$ & 16 & 4 & 11 & 1400 & 0.28\\
-\textsc{Hidden-Incen.} & \textsc{H-7} & \checkmark & 10 & FA & 397 & 1649 & 100 & 190 & 19000 & $10^{18}$ & 2981 & 5 & 2977 & 1400 & 0.21\\
-\textsc{Hidden-Incen.} & \textsc{H-8} & \sfrac{3}{10} & 10 & MA & 397 & 1649 & 100 & 307 & 30700 & $10^{18}$ & 1220 & 3 & 1217 & 1319 & \checkmark\\
-\textsc{Hidden-Incen.} & \textsc{H-9} & \checkmark & 10 & MA & 397 & 1649 & 100 & 307 & 30700 & $10^{18}$ & 1204 & 3 & 1200 & 1319 & 0.28\\
-\textsc{Hidden-Incen.} & \textsc{H-10} & \sfrac{3}{10} & 10 & FA & 397 & 1649 & 100 & 307 & 30700 & $10^{18}$ & 6570 & 3 & 6566 & 1319 & \checkmark\\
-\textsc{Hidden-Incen.} & \textsc{H-11} & \checkmark & 10 & FA & 397 & 1649 & 100 & 307 & 30700 & $10^{18}$ & 8543 & 3 & 8539 & 1319 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-0} & \sfrac{3}{10} & 10 & MA & 397 & 1649 & 100 & 38 & 3800 & $10^{18}$ & 3 & 2 & 1 & 1105 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-1} & \checkmark & 10 & MA & 397 & 1649 & 100 & 38 & 3800 & $10^{18}$ & 3 & 2 & 1 & 1105 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-2} & \sfrac{3}{10} & 10 & FA & 397 & 1649 & 100 & 38 & 3800 & $10^{18}$ & 255 & 1 & 254 & 1105 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-3} & \checkmark & 10 & FA & 397 & 1649 & 100 & 38 & 3800 & $10^{18}$ & 1585 & 2 & 1583 & 1105 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-4} & \sfrac{3}{10} & 10 & MA & 397 & 1649 & 100 & 137 & 13700 & $10^{18}$ & 7 & 4 & 3 & 1348 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-5} & \checkmark & 10 & MA & 397 & 1649 & 100 & 137 & 13700 & $10^{18}$ & 8 & 4 & 4 & 1348 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-6} & \sfrac{3}{10} & 10 & FA & 397 & 1649 & 100 & 137 & 13700 & $10^{18}$ & 10 & 4 & 6 & 1348 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-7} & \checkmark & 10 & FA & 397 & 1649 & 100 & 137 & 13700 & $10^{18}$ & 2496 & 4 & 2492 & 1348 & 0.27\\
+\textsc{Hidden-Incen.} & \textsc{H-8} & \sfrac{3}{10} & 10 & MA & 397 & 1649 & 100 & 232 & 23200 & $10^{18}$ & 12 & 5 & 7 & 1190 & 0.33\\
+\textsc{Hidden-Incen.} & \textsc{H-9} & \checkmark & 10 & MA & 397 & 1649 & 100 & 232 & 23200 & $10^{18}$ & 307 & 5 & 303 & 1190 & 0.35\\
+\textsc{Hidden-Incen.} & \textsc{H-10} & \sfrac{3}{10} & 10 & FA & 397 & 1649 & 100 & 232 & 23200 & $10^{18}$ & 10 & 5 & 5 & 1190 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-11} & \checkmark & 10 & FA & 397 & 1649 & 100 & 232 & 23200 & $10^{18}$ & 3000 & 5 & 2994 & 1190 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-12} & \sfrac{3}{10} & 11 & MA & 397 & 1649 & 100 & 123 & 12300 & $10^{21}$ & 7 & 3 & 4 & 1924 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-13} & \checkmark & 11 & MA & 397 & 1649 & 100 & 123 & 12300 & $10^{21}$ & 8 & 3 & 5 & 1924 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-14} & \sfrac{3}{10} & 11 & FA & 397 & 1649 & 100 & 123 & 12300 & $10^{21}$ & 13 & 6 & 7 & 1924 & 0.10\\
+\textsc{Hidden-Incen.} & \textsc{H-15} & \checkmark & 11 & FA & 397 & 1649 & 100 & 123 & 12300 & $10^{21}$ & 55 & 5 & 50 & 1924 & 0.07\\
+\textsc{Hidden-Incen.} & \textsc{H-16} & \sfrac{3}{10} & 11 & MA & 397 & 1649 & 100 & 200 & 20000 & $10^{21}$ & 9 & 6 & 3 & 2011 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-17} & \checkmark & 11 & MA & 397 & 1649 & 100 & 200 & 20000 & $10^{21}$ & 8 & 4 & 3 & 2011 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-18} & \sfrac{3}{10} & 11 & FA & 397 & 1649 & 100 & 200 & 20000 & $10^{21}$ & 14 & 6 & 8 & 2011 & 0.11\\
+\textsc{Hidden-Incen.} & \textsc{H-19} & \checkmark & 11 & FA & 397 & 1649 & 100 & 200 & 20000 & $10^{21}$ & 18 & 7 & 11 & 2011 & 0.11\\
+\textsc{Hidden-Incen.} & \textsc{H-20} & \sfrac{3}{10} & 11 & MA & 397 & 1649 & 100 & 332 & 33200 & $10^{21}$ & 22 & 5 & 17 & 2091 & 0.31\\
+\textsc{Hidden-Incen.} & \textsc{H-21} & \checkmark & 11 & MA & 397 & 1649 & 100 & 332 & 33200 & $10^{21}$ & 11477 & 9 & 11468 & 2091 & 0.35\\
+\textsc{Hidden-Incen.} & \textsc{H-22} & \sfrac{3}{10} & 11 & FA & 397 & 1649 & 100 & 332 & 33200 & $10^{21}$ & 15 & 9 & 6 & 2091 & 0.11\\
+\textsc{Hidden-Incen.} & \textsc{H-23} & \checkmark & 11 & FA & 397 & 1649 & 100 & 332 & 33200 & $10^{21}$ & 28 & 9 & 18 & 2091 & 0.11\\
+\textsc{Hidden-Incen.} & \textsc{H-24} & \sfrac{3}{10} & 8 & MA & 397 & 1649 & 100 & 27 & 2700 & $10^{11}$ & 1 & $\leq 1s$ & $\leq 1s$ & 535 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-25} & \checkmark & 8 & MA & 397 & 1649 & 100 & 27 & 2700 & $10^{11}$ & 1 & $\leq 1s$ & $\leq 1s$ & 535 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-26} & \sfrac{3}{10} & 8 & FA & 397 & 1649 & 100 & 27 & 2700 & $10^{11}$ & 9 & $\leq 1s$ & 8 & 535 & \checkmark\\
+\textsc{Hidden-Incen.} & \textsc{H-27} & \checkmark & 8 & FA & 397 & 1649 & 100 & 27 & 2700 & $10^{11}$ & 22 & $\leq 1s$ & 22 & 535 & 0.31\\
+\textsc{Hidden-Incen.} & \textsc{H-28} & \sfrac{3}{10} & 8 & MA & 397 & 1649 & 100 & 58 & 5800 & $10^{12}$ & 2 & 1 & $\leq 1s$ & 558 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-29} & \checkmark & 8 & MA & 397 & 1649 & 100 & 58 & 5800 & $10^{12}$ & 1 & $\leq 1s$ & $\leq 1s$ & 558 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-30} & \sfrac{3}{10} & 8 & FA & 397 & 1649 & 100 & 58 & 5800 & $10^{11}$ & 15 & 1 & 13 & 558 & \checkmark\\
+\textsc{Hidden-Incen.} & \textsc{H-31} & \checkmark & 8 & FA & 397 & 1649 & 100 & 58 & 5800 & $10^{11}$ & 22 & $\leq 1s$ & 21 & 558 & 0.31\\
+\textsc{Hidden-Incen.} & \textsc{H-32} & \sfrac{3}{10} & 8 & MA & 397 & 1649 & 100 & 113 & 11300 & $10^{12}$ & 3 & 2 & 1 & 623 & 0.34\\
+\textsc{Hidden-Incen.} & \textsc{H-33} & \checkmark & 8 & MA & 397 & 1649 & 100 & 113 & 11300 & $10^{12}$ & 4 & 1 & 2 & 623 & 0.34\\
+\textsc{Hidden-Incen.} & \textsc{H-34} & \sfrac{3}{10} & 8 & FA & 397 & 1649 & 100 & 113 & 11300 & $10^{11}$ & 16 & 2 & 15 & 623 & \checkmark\\
+\textsc{Hidden-Incen.} & \textsc{H-35} & \checkmark & 8 & FA & 397 & 1649 & 100 & 113 & 11300 & $10^{11}$ & 36 & 1 & 35 & 623 & 0.31\\
+\textsc{Hidden-Incen.} & \textsc{H-36} & \sfrac{3}{10} & 9 & MA & 397 & 1649 & 100 & 15 & 1500 & $10^{14}$ & 2 & $\leq 1s$ & 1 & 671 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-37} & \checkmark & 9 & MA & 397 & 1649 & 100 & 15 & 1500 & $10^{14}$ & 1 & $\leq 1s$ & $\leq 1s$ & 671 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-38} & \sfrac{3}{10} & 9 & FA & 397 & 1649 & 100 & 15 & 1500 & $10^{14}$ & 31 & $\leq 1s$ & 30 & 671 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-39} & \checkmark & 9 & FA & 397 & 1649 & 100 & 15 & 1500 & $10^{14}$ & 170 & $\leq 1s$ & 170 & 671 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-40} & \sfrac{3}{10} & 9 & MA & 397 & 1649 & 100 & 112 & 11200 & $10^{15}$ & 2 & 1 & $\leq 1s$ & 947 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-41} & \checkmark & 9 & MA & 397 & 1649 & 100 & 112 & 11200 & $10^{15}$ & 3 & 2 & $\leq 1s$ & 947 & 1.00\\
+\textsc{Hidden-Incen.} & \textsc{H-42} & \sfrac{3}{10} & 9 & FA & 397 & 1649 & 100 & 112 & 11200 & $10^{15}$ & 81 & 3 & 78 & 947 & 0.27\\
+\textsc{Hidden-Incen.} & \textsc{H-43} & \checkmark & 9 & FA & 397 & 1649 & 100 & 112 & 11200 & $10^{15}$ & 1373 & 3 & 1371 & 947 & 0.27\\
+\textsc{Hidden-Incen.} & \textsc{H-44} & \sfrac{3}{10} & 9 & MA & 397 & 1649 & 100 & 180 & 18000 & $10^{15}$ & 227 & 2 & 225 & 1006 & \checkmark\\
+\textsc{Hidden-Incen.} & \textsc{H-45} & \checkmark & 9 & MA & 397 & 1649 & 100 & 180 & 18000 & $10^{15}$ & 200 & 4 & 196 & 1006 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-46} & \sfrac{3}{10} & 9 & FA & 397 & 1649 & 100 & 180 & 18000 & $10^{15}$ & 282 & 3 & 279 & 1006 & 0.30\\
+\textsc{Hidden-Incen.} & \textsc{H-47} & \checkmark & 9 & FA & 397 & 1649 & 100 & 180 & 18000 & $10^{15}$ & 2113 & 4 & 2109 & 1006 & 0.30\\
 \midrule
 \textsc{Icy-Driving} & \textsc{I-0} & \sfrac{3}{10} & 10 & MA & 3 & 6 & 2 & 2 & 4 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 29 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-1} & \checkmark & 10 & MA & 3 & 6 & 2 & 2 & 4 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 29 & 0.10\\
@@ -159,199 +349,222 @@
 \textsc{Icy-Driving} & \textsc{I-11} & \checkmark & 10 & FA & 3 & 6 & 2 & 2 & 4 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 29 & 0.33\\
 \textsc{Icy-Driving} & \textsc{I-12} & \sfrac{3}{10} & 25 & MA & 3 & 6 & 2 & 2 & 4 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 74 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-13} & \checkmark & 25 & MA & 3 & 6 & 2 & 2 & 4 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 74 & 0.10\\
-\textsc{Icy-Driving} & \textsc{I-14} & \sfrac{3}{10} & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1001 & $\leq 1s$ & 1001 & 74 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-15} & \checkmark & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1057 & $\leq 1s$ & 1057 & 74 & 0.33\\
+\textsc{Icy-Driving} & \textsc{I-14} & \sfrac{3}{10} & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1164 & $\leq 1s$ & 1164 & 74 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-15} & \checkmark & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1081 & $\leq 1s$ & 1081 & 74 & 0.33\\
 \textsc{Icy-Driving} & \textsc{I-16} & \sfrac{3}{10} & 25 & MA & 3 & 6 & 2 & 2 & 4 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 74 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-17} & \checkmark & 25 & MA & 3 & 6 & 2 & 2 & 4 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 74 & 0.10\\
-\textsc{Icy-Driving} & \textsc{I-18} & \sfrac{3}{10} & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1066 & $\leq 1s$ & 1066 & 74 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-19} & \checkmark & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1032 & $\leq 1s$ & 1032 & 74 & 0.33\\
+\textsc{Icy-Driving} & \textsc{I-18} & \sfrac{3}{10} & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1191 & $\leq 1s$ & 1191 & 74 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-19} & \checkmark & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 840 & $\leq 1s$ & 840 & 74 & 0.33\\
 \textsc{Icy-Driving} & \textsc{I-20} & \sfrac{3}{10} & 25 & MA & 3 & 6 & 2 & 2 & 4 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 74 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-21} & \checkmark & 25 & MA & 3 & 6 & 2 & 2 & 4 & $10^{14}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 74 & 0.10\\
-\textsc{Icy-Driving} & \textsc{I-22} & \sfrac{3}{10} & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 932 & $\leq 1s$ & 932 & 74 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-23} & \checkmark & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 952 & $\leq 1s$ & 952 & 74 & 0.33\\
-\textsc{Icy-Driving} & \textsc{I-24} & \sfrac{3}{10} & 3 & MA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-25} & \checkmark & 3 & MA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.10\\
-\textsc{Icy-Driving} & \textsc{I-26} & \sfrac{3}{10} & 3 & FA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-27} & \checkmark & 3 & FA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.33\\
-\textsc{Icy-Driving} & \textsc{I-28} & \sfrac{3}{10} & 3 & MA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-29} & \checkmark & 3 & MA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.10\\
-\textsc{Icy-Driving} & \textsc{I-30} & \sfrac{3}{10} & 3 & FA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-31} & \checkmark & 3 & FA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.33\\
-\textsc{Icy-Driving} & \textsc{I-32} & \sfrac{3}{10} & 3 & MA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-33} & \checkmark & 3 & MA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.10\\
-\textsc{Icy-Driving} & \textsc{I-34} & \sfrac{3}{10} & 3 & FA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-35} & \checkmark & 3 & FA & 3 & 6 & 2 & 8 & 16 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.33\\
+\textsc{Icy-Driving} & \textsc{I-22} & \sfrac{3}{10} & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 1071 & $\leq 1s$ & 1071 & 74 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-23} & \checkmark & 25 & FA & 3 & 6 & 2 & 2 & 4 & $10^{11}$ & 923 & $\leq 1s$ & 923 & 74 & 0.33\\
+\textsc{Icy-Driving} & \textsc{I-24} & \sfrac{3}{10} & 3 & MA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-25} & \checkmark & 3 & MA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.10\\
+\textsc{Icy-Driving} & \textsc{I-26} & \sfrac{3}{10} & 3 & FA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-27} & \checkmark & 3 & FA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.33\\
+\textsc{Icy-Driving} & \textsc{I-28} & \sfrac{3}{10} & 3 & MA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-29} & \checkmark & 3 & MA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.10\\
+\textsc{Icy-Driving} & \textsc{I-30} & \sfrac{3}{10} & 3 & FA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-31} & \checkmark & 3 & FA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.33\\
+\textsc{Icy-Driving} & \textsc{I-32} & \sfrac{3}{10} & 3 & MA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-33} & \checkmark & 3 & MA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.10\\
+\textsc{Icy-Driving} & \textsc{I-34} & \sfrac{3}{10} & 3 & FA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-35} & \checkmark & 3 & FA & 3 & 6 & 2 & 2 & 4 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8 & 0.33\\
 \textsc{Icy-Driving} & \textsc{I-36} & \sfrac{3}{10} & 10 & MA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-37} & \checkmark & 10 & MA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & 0.30\\
-\textsc{Icy-Driving} & \textsc{I-38} & \sfrac{3}{10} & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 65 & $\leq 1s$ & 65 & 117 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-39} & \checkmark & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 62 & $\leq 1s$ & 62 & 117 & 0.42\\
+\textsc{Icy-Driving} & \textsc{I-38} & \sfrac{3}{10} & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 58 & $\leq 1s$ & 58 & 117 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-39} & \checkmark & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 45 & $\leq 1s$ & 45 & 117 & 0.42\\
 \textsc{Icy-Driving} & \textsc{I-40} & \sfrac{3}{10} & 10 & MA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-41} & \checkmark & 10 & MA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & 0.30\\
-\textsc{Icy-Driving} & \textsc{I-42} & \sfrac{3}{10} & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 64 & $\leq 1s$ & 64 & 117 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-43} & \checkmark & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 61 & $\leq 1s$ & 61 & 117 & 0.42\\
+\textsc{Icy-Driving} & \textsc{I-42} & \sfrac{3}{10} & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 56 & $\leq 1s$ & 56 & 117 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-43} & \checkmark & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 68 & $\leq 1s$ & 68 & 117 & 0.42\\
 \textsc{Icy-Driving} & \textsc{I-44} & \sfrac{3}{10} & 10 & MA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-45} & \checkmark & 10 & MA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & 0.30\\
-\textsc{Icy-Driving} & \textsc{I-46} & \sfrac{3}{10} & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 66 & $\leq 1s$ & 66 & 117 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-47} & \checkmark & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 62 & $\leq 1s$ & 62 & 117 & 0.42\\
-\textsc{Icy-Driving} & \textsc{I-48} & \sfrac{3}{10} & 3 & MA & 27 & 125 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-49} & \checkmark & 3 & MA & 27 & 125 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
-\textsc{Icy-Driving} & \textsc{I-50} & \sfrac{3}{10} & 3 & FA & 27 & 125 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-51} & \checkmark & 3 & FA & 27 & 125 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
-\textsc{Icy-Driving} & \textsc{I-52} & \sfrac{3}{10} & 3 & MA & 27 & 125 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-53} & \checkmark & 3 & MA & 27 & 125 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
-\textsc{Icy-Driving} & \textsc{I-54} & \sfrac{3}{10} & 3 & FA & 27 & 125 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-55} & \checkmark & 3 & FA & 27 & 125 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
-\textsc{Icy-Driving} & \textsc{I-56} & \sfrac{3}{10} & 3 & MA & 27 & 125 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-57} & \checkmark & 3 & MA & 27 & 125 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
-\textsc{Icy-Driving} & \textsc{I-58} & \sfrac{3}{10} & 3 & FA & 27 & 125 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-59} & \checkmark & 3 & FA & 27 & 125 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
+\textsc{Icy-Driving} & \textsc{I-46} & \sfrac{3}{10} & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 72 & $\leq 1s$ & 72 & 117 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-47} & \checkmark & 10 & FA & 27 & 125 & 2 & 5 & 10 & $10^{5}$ & 65 & $\leq 1s$ & 65 & 117 & 0.42\\
+\textsc{Icy-Driving} & \textsc{I-48} & \sfrac{3}{10} & 3 & MA & 27 & 125 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-49} & \checkmark & 3 & MA & 27 & 125 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
+\textsc{Icy-Driving} & \textsc{I-50} & \sfrac{3}{10} & 3 & FA & 27 & 125 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-51} & \checkmark & 3 & FA & 27 & 125 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
+\textsc{Icy-Driving} & \textsc{I-52} & \sfrac{3}{10} & 3 & MA & 27 & 125 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-53} & \checkmark & 3 & MA & 27 & 125 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
+\textsc{Icy-Driving} & \textsc{I-54} & \sfrac{3}{10} & 3 & FA & 27 & 125 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-55} & \checkmark & 3 & FA & 27 & 125 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
+\textsc{Icy-Driving} & \textsc{I-56} & \sfrac{3}{10} & 3 & MA & 27 & 125 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-57} & \checkmark & 3 & MA & 27 & 125 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
+\textsc{Icy-Driving} & \textsc{I-58} & \sfrac{3}{10} & 3 & FA & 27 & 125 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-59} & \checkmark & 3 & FA & 27 & 125 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
 \textsc{Icy-Driving} & \textsc{I-60} & \sfrac{3}{10} & 10 & MA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-61} & \checkmark & 10 & MA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & 0.28\\
-\textsc{Icy-Driving} & \textsc{I-62} & \sfrac{3}{10} & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 67 & $\leq 1s$ & 67 & 117 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-63} & \checkmark & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 64 & $\leq 1s$ & 64 & 117 & 0.39\\
+\textsc{Icy-Driving} & \textsc{I-62} & \sfrac{3}{10} & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 56 & $\leq 1s$ & 56 & 117 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-63} & \checkmark & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 68 & $\leq 1s$ & 68 & 117 & 0.39\\
 \textsc{Icy-Driving} & \textsc{I-64} & \sfrac{3}{10} & 10 & MA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-65} & \checkmark & 10 & MA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & 0.28\\
-\textsc{Icy-Driving} & \textsc{I-66} & \sfrac{3}{10} & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 67 & $\leq 1s$ & 67 & 117 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-67} & \checkmark & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 63 & $\leq 1s$ & 63 & 117 & 0.39\\
+\textsc{Icy-Driving} & \textsc{I-66} & \sfrac{3}{10} & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 75 & $\leq 1s$ & 75 & 117 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-67} & \checkmark & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 66 & $\leq 1s$ & 66 & 117 & 0.39\\
 \textsc{Icy-Driving} & \textsc{I-68} & \sfrac{3}{10} & 10 & MA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & \checkmark\\
 \textsc{Icy-Driving} & \textsc{I-69} & \checkmark & 10 & MA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 117 & 0.28\\
-\textsc{Icy-Driving} & \textsc{I-70} & \sfrac{3}{10} & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 68 & $\leq 1s$ & 67 & 117 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-71} & \checkmark & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 63 & $\leq 1s$ & 63 & 117 & 0.39\\
-\textsc{Icy-Driving} & \textsc{I-72} & \sfrac{3}{10} & 3 & MA & 52 & 250 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-73} & \checkmark & 3 & MA & 52 & 250 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
-\textsc{Icy-Driving} & \textsc{I-74} & \sfrac{3}{10} & 3 & FA & 52 & 250 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-75} & \checkmark & 3 & FA & 52 & 250 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
-\textsc{Icy-Driving} & \textsc{I-76} & \sfrac{3}{10} & 3 & MA & 52 & 250 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-77} & \checkmark & 3 & MA & 52 & 250 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
-\textsc{Icy-Driving} & \textsc{I-78} & \sfrac{3}{10} & 3 & FA & 52 & 250 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-79} & \checkmark & 3 & FA & 52 & 250 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
-\textsc{Icy-Driving} & \textsc{I-80} & \sfrac{3}{10} & 3 & MA & 52 & 250 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-81} & \checkmark & 3 & MA & 52 & 250 & 2 & 6 & 12 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
-\textsc{Icy-Driving} & \textsc{I-82} & \sfrac{3}{10} & 3 & FA & 52 & 250 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
-\textsc{Icy-Driving} & \textsc{I-83} & \checkmark & 3 & FA & 52 & 250 & 2 & 6 & 12 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
+\textsc{Icy-Driving} & \textsc{I-70} & \sfrac{3}{10} & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 75 & $\leq 1s$ & 75 & 117 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-71} & \checkmark & 10 & FA & 52 & 250 & 2 & 5 & 10 & $10^{5}$ & 61 & $\leq 1s$ & 61 & 117 & 0.39\\
+\textsc{Icy-Driving} & \textsc{I-72} & \sfrac{3}{10} & 3 & MA & 52 & 250 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-73} & \checkmark & 3 & MA & 52 & 250 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
+\textsc{Icy-Driving} & \textsc{I-74} & \sfrac{3}{10} & 3 & FA & 52 & 250 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-75} & \checkmark & 3 & FA & 52 & 250 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
+\textsc{Icy-Driving} & \textsc{I-76} & \sfrac{3}{10} & 3 & MA & 52 & 250 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-77} & \checkmark & 3 & MA & 52 & 250 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
+\textsc{Icy-Driving} & \textsc{I-78} & \sfrac{3}{10} & 3 & FA & 52 & 250 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-79} & \checkmark & 3 & FA & 52 & 250 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
+\textsc{Icy-Driving} & \textsc{I-80} & \sfrac{3}{10} & 3 & MA & 52 & 250 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-81} & \checkmark & 3 & MA & 52 & 250 & 2 & 5 & 10 & $10^{1}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 0.19\\
+\textsc{Icy-Driving} & \textsc{I-82} & \sfrac{3}{10} & 3 & FA & 52 & 250 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & \checkmark\\
+\textsc{Icy-Driving} & \textsc{I-83} & \checkmark & 3 & FA & 52 & 250 & 2 & 5 & 10 & $10^{0}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 9 & 1.00\\
 \midrule
-\textsc{Refuel} & \textsc{R-0} & \sfrac{3}{10} & 10 & MA & 87 & 871 & 63 & 25 & 1575 & $10^{18}$ & 2 & $\leq 1s$ & 1 & 508 & 1.00\\
-\textsc{Refuel} & \textsc{R-1} & \checkmark & 10 & MA & 87 & 871 & 63 & 25 & 1575 & $10^{18}$ & 2 & $\leq 1s$ & 1 & 508 & 1.00\\
-\textsc{Refuel} & \textsc{R-2} & \sfrac{3}{10} & 10 & FA & 87 & 871 & 63 & 25 & 1575 & $10^{17}$ & 1 & $\leq 1s$ & $\leq 1s$ & 508 & \checkmark\\
-\textsc{Refuel} & \textsc{R-3} & \checkmark & 10 & FA & 87 & 871 & 63 & 25 & 1575 & $10^{17}$ & 10 & $\leq 1s$ & 9 & 508 & 0.54\\
-\textsc{Refuel} & \textsc{R-4} & \sfrac{3}{10} & 10 & MA & 87 & 871 & 63 & 25 & 1575 & $10^{18}$ & 2 & $\leq 1s$ & 1 & 508 & 1.00\\
-\textsc{Refuel} & \textsc{R-5} & \checkmark & 10 & MA & 87 & 871 & 63 & 25 & 1575 & $10^{18}$ & 2 & $\leq 1s$ & 1 & 508 & 1.00\\
-\textsc{Refuel} & \textsc{R-6} & \sfrac{3}{10} & 10 & FA & 87 & 871 & 63 & 25 & 1575 & $10^{17}$ & 1 & $\leq 1s$ & $\leq 1s$ & 508 & \checkmark\\
-\textsc{Refuel} & \textsc{R-7} & \checkmark & 10 & FA & 87 & 871 & 63 & 25 & 1575 & $10^{17}$ & 10 & $\leq 1s$ & 9 & 508 & 0.54\\
-\textsc{Refuel} & \textsc{R-8} & \sfrac{3}{10} & 10 & MA & 87 & 871 & 63 & 26 & 1638 & $10^{17}$ & 1 & $\leq 1s$ & $\leq 1s$ & 498 & \checkmark\\
-\textsc{Refuel} & \textsc{R-9} & \checkmark & 10 & MA & 87 & 871 & 63 & 26 & 1638 & $10^{17}$ & 1 & $\leq 1s$ & $\leq 1s$ & 498 & 0.19\\
-\textsc{Refuel} & \textsc{R-10} & \sfrac{3}{10} & 10 & FA & 87 & 871 & 63 & 26 & 1638 & $10^{16}$ & 1 & $\leq 1s$ & $\leq 1s$ & 498 & \checkmark\\
-\textsc{Refuel} & \textsc{R-11} & \checkmark & 10 & FA & 87 & 871 & 63 & 26 & 1638 & $10^{16}$ & 10 & $\leq 1s$ & 9 & 498 & 0.54\\
-\textsc{Refuel} & \textsc{R-12} & \sfrac{3}{10} & 10 & MA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 5 & 1 & 4 & 915 & 1.00\\
-\textsc{Refuel} & \textsc{R-13} & \checkmark & 10 & MA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 5 & 1 & 4 & 915 & 1.00\\
-\textsc{Refuel} & \textsc{R-14} & \sfrac{3}{10} & 10 & FA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 3 & 1 & 1 & 915 & \checkmark\\
-\textsc{Refuel} & \textsc{R-15} & \checkmark & 10 & FA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 65 & 1 & 64 & 915 & 0.32\\
-\textsc{Refuel} & \textsc{R-16} & \sfrac{3}{10} & 10 & MA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 5 & 1 & 4 & 915 & 1.00\\
-\textsc{Refuel} & \textsc{R-17} & \checkmark & 10 & MA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 5 & 1 & 4 & 915 & 1.00\\
-\textsc{Refuel} & \textsc{R-18} & \sfrac{3}{10} & 10 & FA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 3 & 1 & 1 & 915 & \checkmark\\
-\textsc{Refuel} & \textsc{R-19} & \checkmark & 10 & FA & 132 & 1798 & 72 & 29 & 2088 & $10^{22}$ & 64 & 1 & 63 & 915 & 0.32\\
-\textsc{Refuel} & \textsc{R-20} & \sfrac{3}{10} & 10 & MA & 132 & 1798 & 72 & 31 & 2232 & $10^{22}$ & 3 & 1 & 1 & 899 & \checkmark\\
-\textsc{Refuel} & \textsc{R-21} & \checkmark & 10 & MA & 132 & 1798 & 72 & 31 & 2232 & $10^{22}$ & 3 & 1 & 1 & 899 & 0.14\\
-\textsc{Refuel} & \textsc{R-22} & \sfrac{3}{10} & 10 & FA & 132 & 1798 & 72 & 31 & 2232 & $10^{21}$ & 3 & 1 & 1 & 899 & \checkmark\\
-\textsc{Refuel} & \textsc{R-23} & \checkmark & 10 & FA & 132 & 1798 & 72 & 31 & 2232 & $10^{21}$ & 62 & 1 & 61 & 899 & 0.32\\
-\textsc{Refuel} & \textsc{R-24} & \sfrac{3}{10} & 10 & MA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 6 & 2 & 3 & 742 & 1.00\\
-\textsc{Refuel} & \textsc{R-25} & \checkmark & 10 & MA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 5 & 2 & 3 & 742 & 1.00\\
-\textsc{Refuel} & \textsc{R-26} & \sfrac{3}{10} & 10 & FA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 4 & 2 & 2 & 742 & \checkmark\\
-\textsc{Refuel} & \textsc{R-27} & \checkmark & 10 & FA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 26 & 2 & 24 & 742 & 0.54\\
-\textsc{Refuel} & \textsc{R-28} & \sfrac{3}{10} & 10 & MA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 6 & 2 & 3 & 742 & 1.00\\
-\textsc{Refuel} & \textsc{R-29} & \checkmark & 10 & MA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 6 & 2 & 3 & 742 & 1.00\\
-\textsc{Refuel} & \textsc{R-30} & \sfrac{3}{10} & 10 & FA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 4 & 2 & 2 & 742 & \checkmark\\
-\textsc{Refuel} & \textsc{R-31} & \checkmark & 10 & FA & 139 & 1628 & 107 & 42 & 4494 & $10^{17}$ & 26 & 2 & 24 & 742 & 0.54\\
-\textsc{Refuel} & \textsc{R-32} & \sfrac{3}{10} & 10 & MA & 139 & 1628 & 107 & 44 & 4708 & $10^{17}$ & 4 & 2 & 2 & 735 & \checkmark\\
-\textsc{Refuel} & \textsc{R-33} & \checkmark & 10 & MA & 139 & 1628 & 107 & 44 & 4708 & $10^{17}$ & 4 & 2 & 2 & 735 & 0.19\\
-\textsc{Refuel} & \textsc{R-34} & \sfrac{3}{10} & 10 & FA & 139 & 1628 & 107 & 44 & 4708 & $10^{16}$ & 4 & 2 & 2 & 735 & \checkmark\\
-\textsc{Refuel} & \textsc{R-35} & \checkmark & 10 & FA & 139 & 1628 & 107 & 44 & 4708 & $10^{16}$ & 27 & 2 & 24 & 735 & 0.54\\
+\textsc{RefuelB} & \textsc{R-0} & \sfrac{3}{10} & 10 & MA & 173 & 3429 & 63 & 25 & 1575 & $10^{18}$ & 4 & 1 & 3 & 1020 & 1.00\\
+\textsc{RefuelB} & \textsc{R-1} & \checkmark & 10 & MA & 173 & 3429 & 63 & 25 & 1575 & $10^{18}$ & 4 & $\leq 1s$ & 3 & 1020 & 1.00\\
+\textsc{RefuelB} & \textsc{R-2} & \sfrac{3}{10} & 10 & FA & 173 & 3429 & 63 & 25 & 1575 & $10^{17}$ & 2 & $\leq 1s$ & 1 & 1020 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-3} & \checkmark & 10 & FA & 173 & 3429 & 63 & 25 & 1575 & $10^{17}$ & 22 & 1 & 21 & 1020 & 0.54\\
+\textsc{RefuelB} & \textsc{R-4} & \sfrac{3}{10} & 10 & MA & 173 & 3429 & 63 & 25 & 1575 & $10^{18}$ & 4 & $\leq 1s$ & 3 & 1020 & 1.00\\
+\textsc{RefuelB} & \textsc{R-5} & \checkmark & 10 & MA & 173 & 3429 & 63 & 25 & 1575 & $10^{18}$ & 4 & 1 & 3 & 1020 & 1.00\\
+\textsc{RefuelB} & \textsc{R-6} & \sfrac{3}{10} & 10 & FA & 173 & 3429 & 63 & 25 & 1575 & $10^{17}$ & 2 & 1 & 1 & 1020 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-7} & \checkmark & 10 & FA & 173 & 3429 & 63 & 25 & 1575 & $10^{17}$ & 22 & 1 & 21 & 1020 & 0.54\\
+\textsc{RefuelB} & \textsc{R-8} & \sfrac{3}{10} & 10 & MA & 173 & 3429 & 63 & 27 & 1701 & $10^{17}$ & 2 & $\leq 1s$ & 1 & 1016 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-9} & \checkmark & 10 & MA & 173 & 3429 & 63 & 27 & 1701 & $10^{17}$ & 2 & $\leq 1s$ & 1 & 1016 & 0.19\\
+\textsc{RefuelB} & \textsc{R-10} & \sfrac{3}{10} & 10 & FA & 173 & 3429 & 63 & 27 & 1701 & $10^{16}$ & 2 & 1 & 1 & 1016 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-11} & \checkmark & 10 & FA & 173 & 3429 & 63 & 27 & 1701 & $10^{16}$ & 19 & $\leq 1s$ & 18 & 1016 & 0.54\\
+\textsc{RefuelB} & \textsc{R-12} & \sfrac{3}{10} & 10 & MA & 263 & 7127 & 72 & 5 & 360 & $10^{24}$ & 15 & 2 & 13 & 2474 & 1.00\\
+\textsc{RefuelB} & \textsc{R-13} & \checkmark & 10 & MA & 263 & 7127 & 72 & 5 & 360 & $10^{24}$ & 15 & 2 & 13 & 2474 & 1.00\\
+\textsc{RefuelB} & \textsc{R-14} & \sfrac{3}{10} & 10 & FA & 263 & 7127 & 72 & 5 & 360 & $10^{24}$ & 6 & 2 & 5 & 2474 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-15} & \checkmark & 10 & FA & 263 & 7127 & 72 & 5 & 360 & $10^{24}$ & 510 & 2 & 508 & 2474 & 0.32\\
+\textsc{RefuelB} & \textsc{R-16} & \sfrac{3}{10} & 10 & MA & 263 & 7127 & 72 & 16 & 1152 & $10^{23}$ & 11 & 1 & 10 & 2556 & 1.00\\
+\textsc{RefuelB} & \textsc{R-17} & \checkmark & 10 & MA & 263 & 7127 & 72 & 16 & 1152 & $10^{23}$ & 14 & 2 & 12 & 2556 & 1.00\\
+\textsc{RefuelB} & \textsc{R-18} & \sfrac{3}{10} & 10 & FA & 263 & 7127 & 72 & 16 & 1152 & $10^{23}$ & 7 & 2 & 4 & 2556 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-19} & \checkmark & 10 & FA & 263 & 7127 & 72 & 16 & 1152 & $10^{23}$ & 177 & 2 & 175 & 2556 & 0.32\\
+\textsc{RefuelB} & \textsc{R-20} & \sfrac{3}{10} & 10 & MA & 263 & 7127 & 72 & 32 & 2304 & $10^{22}$ & 5 & 2 & 3 & 1818 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-21} & \checkmark & 10 & MA & 263 & 7127 & 72 & 32 & 2304 & $10^{22}$ & 5 & 2 & 3 & 1818 & 0.14\\
+\textsc{RefuelB} & \textsc{R-22} & \sfrac{3}{10} & 10 & FA & 263 & 7127 & 72 & 32 & 2304 & $10^{21}$ & 5 & 2 & 3 & 1818 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-23} & \checkmark & 10 & FA & 263 & 7127 & 72 & 32 & 2304 & $10^{21}$ & 113 & 2 & 110 & 1818 & 0.32\\
+\textsc{RefuelB} & \textsc{R-24} & \sfrac{3}{10} & 10 & MA & 277 & 6415 & 107 & 42 & 4494 & $10^{17}$ & 11 & 3 & 8 & 1476 & 1.00\\
+\textsc{RefuelB} & \textsc{R-25} & \checkmark & 10 & MA & 277 & 6415 & 107 & 42 & 4494 & $10^{17}$ & 11 & 3 & 8 & 1476 & 1.00\\
+\textsc{RefuelB} & \textsc{R-26} & \sfrac{3}{10} & 10 & FA & 277 & 6415 & 107 & 42 & 4494 & $10^{16}$ & 5 & 2 & 3 & 1476 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-27} & \checkmark & 10 & FA & 277 & 6415 & 107 & 42 & 4494 & $10^{16}$ & 48 & 3 & 45 & 1476 & 0.54\\
+\textsc{RefuelB} & \textsc{R-28} & \sfrac{3}{10} & 10 & MA & 277 & 6415 & 107 & 42 & 4494 & $10^{17}$ & 11 & 3 & 8 & 1476 & 1.00\\
+\textsc{RefuelB} & \textsc{R-29} & \checkmark & 10 & MA & 277 & 6415 & 107 & 42 & 4494 & $10^{17}$ & 10 & 2 & 8 & 1476 & 1.00\\
+\textsc{RefuelB} & \textsc{R-30} & \sfrac{3}{10} & 10 & FA & 277 & 6415 & 107 & 42 & 4494 & $10^{16}$ & 7 & 3 & 4 & 1476 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-31} & \checkmark & 10 & FA & 277 & 6415 & 107 & 42 & 4494 & $10^{16}$ & 45 & 3 & 42 & 1476 & 0.54\\
+\textsc{RefuelB} & \textsc{R-32} & \sfrac{3}{10} & 10 & MA & 277 & 6415 & 107 & 43 & 4601 & $10^{17}$ & 6 & 3 & 4 & 1466 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-33} & \checkmark & 10 & MA & 277 & 6415 & 107 & 43 & 4601 & $10^{17}$ & 4 & 2 & 2 & 1466 & 0.19\\
+\textsc{RefuelB} & \textsc{R-34} & \sfrac{3}{10} & 10 & FA & 277 & 6415 & 107 & 43 & 4601 & $10^{16}$ & 7 & 3 & 4 & 1466 & \checkmark\\
+\textsc{RefuelB} & \textsc{R-35} & \checkmark & 10 & FA & 277 & 6415 & 107 & 43 & 4601 & $10^{16}$ & 47 & 3 & 45 & 1466 & 0.54\\
 \midrule
-\textsc{RefuelB} & \textsc{R-36} & \sfrac{3}{10} & 10 & MA & 173 & 3429 & 63 & 26 & 1638 & $10^{18}$ & 5 & 1 & 3 & 1024 & 1.00\\
-\textsc{RefuelB} & \textsc{R-37} & \checkmark & 10 & MA & 173 & 3429 & 63 & 26 & 1638 & $10^{18}$ & 5 & 1 & 4 & 1024 & 1.00\\
-\textsc{RefuelB} & \textsc{R-38} & \sfrac{3}{10} & 10 & FA & 173 & 3429 & 63 & 26 & 1638 & $10^{17}$ & 2 & $\leq 1s$ & 1 & 1024 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-39} & \checkmark & 10 & FA & 173 & 3429 & 63 & 26 & 1638 & $10^{17}$ & 25 & 1 & 24 & 1024 & 0.54\\
-\textsc{RefuelB} & \textsc{R-40} & \sfrac{3}{10} & 10 & MA & 173 & 3429 & 63 & 26 & 1638 & $10^{18}$ & 4 & 1 & 3 & 1024 & 1.00\\
-\textsc{RefuelB} & \textsc{R-41} & \checkmark & 10 & MA & 173 & 3429 & 63 & 26 & 1638 & $10^{18}$ & 4 & 1 & 3 & 1024 & 1.00\\
-\textsc{RefuelB} & \textsc{R-42} & \sfrac{3}{10} & 10 & FA & 173 & 3429 & 63 & 26 & 1638 & $10^{17}$ & 2 & 1 & 1 & 1024 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-43} & \checkmark & 10 & FA & 173 & 3429 & 63 & 26 & 1638 & $10^{17}$ & 25 & 1 & 23 & 1024 & 0.54\\
-\textsc{RefuelB} & \textsc{R-44} & \sfrac{3}{10} & 10 & MA & 173 & 3429 & 63 & 27 & 1701 & $10^{17}$ & 2 & 1 & 1 & 1004 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-45} & \checkmark & 10 & MA & 173 & 3429 & 63 & 27 & 1701 & $10^{17}$ & 2 & 1 & 1 & 1004 & 0.19\\
-\textsc{RefuelB} & \textsc{R-46} & \sfrac{3}{10} & 10 & FA & 173 & 3429 & 63 & 27 & 1701 & $10^{16}$ & 3 & 1 & 1 & 1004 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-47} & \checkmark & 10 & FA & 173 & 3429 & 63 & 27 & 1701 & $10^{16}$ & 25 & 1 & 24 & 1004 & 0.54\\
-\textsc{RefuelB} & \textsc{R-48} & \sfrac{3}{10} & 10 & MA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 10 & 2 & 8 & 1850 & 1.00\\
-\textsc{RefuelB} & \textsc{R-49} & \checkmark & 10 & MA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 11 & 2 & 9 & 1850 & 1.00\\
-\textsc{RefuelB} & \textsc{R-50} & \sfrac{3}{10} & 10 & FA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 5 & 2 & 3 & 1850 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-51} & \checkmark & 10 & FA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 139 & 2 & 137 & 1850 & 0.32\\
-\textsc{RefuelB} & \textsc{R-52} & \sfrac{3}{10} & 10 & MA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 10 & 2 & 8 & 1850 & 1.00\\
-\textsc{RefuelB} & \textsc{R-53} & \checkmark & 10 & MA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 11 & 2 & 9 & 1850 & 1.00\\
-\textsc{RefuelB} & \textsc{R-54} & \sfrac{3}{10} & 10 & FA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 5 & 2 & 3 & 1850 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-55} & \checkmark & 10 & FA & 263 & 7127 & 72 & 30 & 2160 & $10^{22}$ & 140 & 2 & 138 & 1850 & 0.32\\
-\textsc{RefuelB} & \textsc{R-56} & \sfrac{3}{10} & 10 & MA & 263 & 7127 & 72 & 32 & 2304 & $10^{22}$ & 5 & 2 & 3 & 1818 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-57} & \checkmark & 10 & MA & 263 & 7127 & 72 & 32 & 2304 & $10^{22}$ & 5 & 2 & 3 & 1818 & 0.14\\
-\textsc{RefuelB} & \textsc{R-58} & \sfrac{3}{10} & 10 & FA & 263 & 7127 & 72 & 32 & 2304 & $10^{21}$ & 5 & 2 & 3 & 1818 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-59} & \checkmark & 10 & FA & 263 & 7127 & 72 & 32 & 2304 & $10^{21}$ & 135 & 2 & 133 & 1818 & 0.32\\
-\textsc{RefuelB} & \textsc{R-60} & \sfrac{3}{10} & 10 & MA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 11 & 3 & 8 & 1482 & 1.00\\
-\textsc{RefuelB} & \textsc{R-61} & \checkmark & 10 & MA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 11 & 2 & 8 & 1482 & 1.00\\
-\textsc{RefuelB} & \textsc{R-62} & \sfrac{3}{10} & 10 & FA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 7 & 3 & 4 & 1482 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-63} & \checkmark & 10 & FA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 52 & 3 & 50 & 1482 & 0.54\\
-\textsc{RefuelB} & \textsc{R-64} & \sfrac{3}{10} & 10 & MA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 11 & 3 & 8 & 1482 & 1.00\\
-\textsc{RefuelB} & \textsc{R-65} & \checkmark & 10 & MA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 11 & 3 & 8 & 1482 & 1.00\\
-\textsc{RefuelB} & \textsc{R-66} & \sfrac{3}{10} & 10 & FA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 7 & 3 & 4 & 1482 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-67} & \checkmark & 10 & FA & 277 & 6415 & 107 & 41 & 4387 & $10^{17}$ & 53 & 3 & 50 & 1482 & 0.54\\
-\textsc{RefuelB} & \textsc{R-68} & \sfrac{3}{10} & 10 & MA & 277 & 6415 & 107 & 44 & 4708 & $10^{17}$ & 6 & 3 & 4 & 1466 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-69} & \checkmark & 10 & MA & 277 & 6415 & 107 & 44 & 4708 & $10^{17}$ & 7 & 3 & 4 & 1466 & 0.19\\
-\textsc{RefuelB} & \textsc{R-70} & \sfrac{3}{10} & 10 & FA & 277 & 6415 & 107 & 44 & 4708 & $10^{16}$ & 7 & 3 & 4 & 1466 & \checkmark\\
-\textsc{RefuelB} & \textsc{R-71} & \checkmark & 10 & FA & 277 & 6415 & 107 & 44 & 4708 & $10^{16}$ & 53 & 3 & 50 & 1466 & 0.54\\
-\midrule
-\textsc{SnL} & \textsc{S-0} & \sfrac{3}{10} & 10 & MA & 101 & 502 & 4 & 23 & 92 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & \checkmark\\
-\textsc{SnL} & \textsc{S-1} & \checkmark & 10 & MA & 101 & 502 & 4 & 23 & 92 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 809 & 0.21\\
-\textsc{SnL} & \textsc{S-2} & \sfrac{3}{10} & 10 & FA & 101 & 502 & 4 & 23 & 92 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & \checkmark\\
-\textsc{SnL} & \textsc{S-3} & \checkmark & 10 & FA & 101 & 502 & 4 & 23 & 92 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & 0.85\\
-\textsc{SnL} & \textsc{S-4} & \sfrac{3}{10} & 10 & MA & 101 & 502 & 4 & 23 & 92 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & \checkmark\\
-\textsc{SnL} & \textsc{S-5} & \checkmark & 10 & MA & 101 & 502 & 4 & 23 & 92 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 809 & 0.21\\
-\textsc{SnL} & \textsc{S-6} & \sfrac{3}{10} & 10 & FA & 101 & 502 & 4 & 23 & 92 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & \checkmark\\
-\textsc{SnL} & \textsc{S-7} & \checkmark & 10 & FA & 101 & 502 & 4 & 23 & 92 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & 0.85\\
-\textsc{SnL} & \textsc{S-8} & \sfrac{3}{10} & 10 & MA & 101 & 502 & 4 & 23 & 92 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & \checkmark\\
-\textsc{SnL} & \textsc{S-9} & \checkmark & 10 & MA & 101 & 502 & 4 & 23 & 92 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 809 & 0.21\\
-\textsc{SnL} & \textsc{S-10} & \sfrac{3}{10} & 10 & FA & 101 & 502 & 4 & 23 & 92 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & \checkmark\\
-\textsc{SnL} & \textsc{S-11} & \checkmark & 10 & FA & 101 & 502 & 4 & 23 & 92 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 809 & 0.85\\
-\textsc{SnL} & \textsc{S-12} & \sfrac{3}{10} & 12 & MA & 101 & 502 & 4 & 37 & 148 & $10^{7}$ & 1 & $\leq 1s$ & 1 & 1593 & 0.85\\
-\textsc{SnL} & \textsc{S-13} & \checkmark & 12 & MA & 101 & 502 & 4 & 37 & 148 & $10^{7}$ & 12 & $\leq 1s$ & 12 & 1593 & 0.92\\
-\textsc{SnL} & \textsc{S-14} & \sfrac{3}{10} & 12 & FA & 101 & 502 & 4 & 37 & 148 & $10^{6}$ & 4 & $\leq 1s$ & 4 & 1593 & 0.29\\
-\textsc{SnL} & \textsc{S-15} & \checkmark & 12 & FA & 101 & 502 & 4 & 37 & 148 & $10^{6}$ & 4 & $\leq 1s$ & 4 & 1593 & 0.00\\
-\textsc{SnL} & \textsc{S-16} & \sfrac{3}{10} & 12 & MA & 101 & 502 & 4 & 47 & 188 & $10^{7}$ & 1 & $\leq 1s$ & $\leq 1s$ & 1001 & 0.85\\
-\textsc{SnL} & \textsc{S-17} & \checkmark & 12 & MA & 101 & 502 & 4 & 47 & 188 & $10^{7}$ & 5 & $\leq 1s$ & 5 & 1001 & 0.99\\
-\textsc{SnL} & \textsc{S-18} & \sfrac{3}{10} & 12 & FA & 101 & 502 & 4 & 47 & 188 & $10^{6}$ & 2 & $\leq 1s$ & 2 & 1001 & \checkmark\\
-\textsc{SnL} & \textsc{S-19} & \checkmark & 12 & FA & 101 & 502 & 4 & 47 & 188 & $10^{6}$ & 2 & $\leq 1s$ & 2 & 1001 & 0.39\\
-\textsc{SnL} & \textsc{S-20} & \sfrac{3}{10} & 12 & MA & 101 & 502 & 4 & 69 & 276 & $10^{7}$ & 14 & $\leq 1s$ & 14 & 2189 & \checkmark\\
-\textsc{SnL} & \textsc{S-21} & \checkmark & 12 & MA & 101 & 502 & 4 & 69 & 276 & $10^{7}$ & 20 & $\leq 1s$ & 20 & 2189 & 0.29\\
-\textsc{SnL} & \textsc{S-22} & \sfrac{3}{10} & 12 & FA & 101 & 502 & 4 & 69 & 276 & $10^{6}$ & 3 & $\leq 1s$ & 3 & 2189 & \checkmark\\
-\textsc{SnL} & \textsc{S-23} & \checkmark & 12 & FA & 101 & 502 & 4 & 69 & 276 & $10^{6}$ & 4 & $\leq 1s$ & 3 & 2189 & 0.39\\
-\textsc{SnL} & \textsc{S-24} & \sfrac{3}{10} & 14 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
-\textsc{SnL} & \textsc{S-25} & \checkmark & 14 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
-\textsc{SnL} & \textsc{S-26} & \sfrac{3}{10} & 14 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
-\textsc{SnL} & \textsc{S-27} & \checkmark & 14 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
-\textsc{SnL} & \textsc{S-28} & \sfrac{3}{10} & 14 & MA & 101 & 502 & 4 & 139 & 556 & $10^{9}$ & 10 & $\leq 1s$ & 9 & 6900 & 0.82\\
-\textsc{SnL} & \textsc{S-29} & \checkmark & 14 & MA & 101 & 502 & 4 & 139 & 556 & $10^{9}$ & 118 & $\leq 1s$ & 118 & 6900 & 1.00\\
-\textsc{SnL} & \textsc{S-30} & \sfrac{3}{10} & 14 & FA & 101 & 502 & 4 & 139 & 556 & $10^{8}$ & 32 & $\leq 1s$ & 31 & 6900 & 0.29\\
-\textsc{SnL} & \textsc{S-31} & \checkmark & 14 & FA & 101 & 502 & 4 & 139 & 556 & $10^{8}$ & 103 & $\leq 1s$ & 103 & 6900 & 0.14\\
-\textsc{SnL} & \textsc{S-32} & \sfrac{3}{10} & 14 & MA & 101 & 502 & 4 & 214 & 856 & $10^{9}$ & 106 & $\leq 1s$ & 105 & 4842 & \checkmark\\
-\textsc{SnL} & \textsc{S-33} & \checkmark & 14 & MA & 101 & 502 & 4 & 214 & 856 & $10^{9}$ & 105 & $\leq 1s$ & 105 & 4842 & 0.29\\
-\textsc{SnL} & \textsc{S-34} & \sfrac{3}{10} & 14 & FA & 101 & 502 & 4 & 214 & 856 & $10^{8}$ & 202 & $\leq 1s$ & 201 & 4842 & \checkmark\\
-\textsc{SnL} & \textsc{S-35} & \checkmark & 14 & FA & 101 & 502 & 4 & 214 & 856 & $10^{8}$ & 174 & $\leq 1s$ & 174 & 4842 & 0.31\\
-\textsc{SnL} & \textsc{S-36} & \sfrac{3}{10} & 16 & MA & 101 & 502 & 4 & 169 & 676 & $10^{11}$ & 13 & $\leq 1s$ & 12 & 9568 & 1.00\\
-\textsc{SnL} & \textsc{S-37} & \checkmark & 16 & MA & 101 & 502 & 4 & 169 & 676 & $10^{11}$ & 20 & $\leq 1s$ & 19 & 9568 & 1.00\\
-\textsc{SnL} & \textsc{S-38} & \sfrac{3}{10} & 16 & FA & 101 & 502 & 4 & 169 & 676 & $10^{10}$ & 12 & $\leq 1s$ & 12 & 9568 & 0.11\\
-\textsc{SnL} & \textsc{S-39} & \checkmark & 16 & FA & 101 & 502 & 4 & 169 & 676 & $10^{10}$ & 43 & $\leq 1s$ & 43 & 9568 & 0.00\\
-\textsc{SnL} & \textsc{S-40} & \sfrac{3}{10} & 16 & MA & 101 & 502 & 4 & 271 & 1084 & $10^{11}$ & 21 & $\leq 1s$ & 21 & 13070 & 0.31\\
-\textsc{SnL} & \textsc{S-41} & \checkmark & 16 & MA & 101 & 502 & 4 & 271 & 1084 & $10^{11}$ & 414 & 1 & 413 & 13070 & 1.00\\
-\textsc{SnL} & \textsc{S-42} & \sfrac{3}{10} & 16 & FA & 101 & 502 & 4 & 271 & 1084 & $10^{10}$ & 6 & $\leq 1s$ & 5 & 13070 & 0.15\\
-\textsc{SnL} & \textsc{S-43} & \checkmark & 16 & FA & 101 & 502 & 4 & 271 & 1084 & $10^{10}$ & 22 & $\leq 1s$ & 22 & 13070 & 0.00\\
-\textsc{SnL} & \textsc{S-44} & \sfrac{3}{10} & 16 & MA & 101 & 502 & 4 & 481 & 1924 & $10^{11}$ & 1072 & 3 & 1069 & 16180 & \checkmark\\
-\textsc{SnL} & \textsc{S-45} & \checkmark & 16 & MA & 101 & 502 & 4 & 481 & 1924 & $10^{11}$ & 1042 & 3 & 1040 & 16180 & 0.29\\
-\textsc{SnL} & \textsc{S-46} & \sfrac{3}{10} & 16 & FA & 101 & 502 & 4 & 481 & 1924 & $10^{10}$ & 4754 & 3 & 4751 & 16180 & \checkmark\\
-\textsc{SnL} & \textsc{S-47} & \checkmark & 16 & FA & 101 & 502 & 4 & 481 & 1924 & $10^{10}$ & 4742 & 2 & 4740 & 16180 & 0.30\\
+\textsc{SnL} & \textsc{S-0} & \sfrac{3}{10} & 10 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-1} & \checkmark & 10 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-2} & \sfrac{3}{10} & 10 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-3} & \checkmark & 10 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-4} & \sfrac{3}{10} & 10 & MA & 101 & 502 & 4 & 30 & 120 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 583 & \checkmark\\
+\textsc{SnL} & \textsc{S-5} & \checkmark & 10 & MA & 101 & 502 & 4 & 30 & 120 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 583 & 0.26\\
+\textsc{SnL} & \textsc{S-6} & \sfrac{3}{10} & 10 & FA & 101 & 502 & 4 & 30 & 120 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 583 & \checkmark\\
+\textsc{SnL} & \textsc{S-7} & \checkmark & 10 & FA & 101 & 502 & 4 & 30 & 120 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 583 & 0.33\\
+\textsc{SnL} & \textsc{S-8} & \sfrac{3}{10} & 10 & MA & 101 & 502 & 4 & 30 & 120 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 583 & \checkmark\\
+\textsc{SnL} & \textsc{S-9} & \checkmark & 10 & MA & 101 & 502 & 4 & 30 & 120 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 583 & 0.26\\
+\textsc{SnL} & \textsc{S-10} & \sfrac{3}{10} & 10 & FA & 101 & 502 & 4 & 30 & 120 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 583 & \checkmark\\
+\textsc{SnL} & \textsc{S-11} & \checkmark & 10 & FA & 101 & 502 & 4 & 30 & 120 & $10^{4}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 583 & 0.33\\
+\textsc{SnL} & \textsc{S-12} & \sfrac{3}{10} & 11 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-13} & \checkmark & 11 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-14} & \sfrac{3}{10} & 11 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-15} & \checkmark & 11 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-16} & \sfrac{3}{10} & 11 & MA & 101 & 502 & 4 & 33 & 132 & $10^{6}$ & 8 & $\leq 1s$ & 8 & 1157 & \checkmark\\
+\textsc{SnL} & \textsc{S-17} & \checkmark & 11 & MA & 101 & 502 & 4 & 33 & 132 & $10^{6}$ & 8 & $\leq 1s$ & 8 & 1157 & 0.27\\
+\textsc{SnL} & \textsc{S-18} & \sfrac{3}{10} & 11 & FA & 101 & 502 & 4 & 33 & 132 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 1157 & 0.00\\
+\textsc{SnL} & \textsc{S-19} & \checkmark & 11 & FA & 101 & 502 & 4 & 33 & 132 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 1157 & 0.00\\
+\textsc{SnL} & \textsc{S-20} & \sfrac{3}{10} & 11 & MA & 101 & 502 & 4 & 48 & 192 & $10^{6}$ & 7 & $\leq 1s$ & 7 & 854 & \checkmark\\
+\textsc{SnL} & \textsc{S-21} & \checkmark & 11 & MA & 101 & 502 & 4 & 48 & 192 & $10^{6}$ & 7 & $\leq 1s$ & 7 & 854 & 0.27\\
+\textsc{SnL} & \textsc{S-22} & \sfrac{3}{10} & 11 & FA & 101 & 502 & 4 & 48 & 192 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 854 & \checkmark\\
+\textsc{SnL} & \textsc{S-23} & \checkmark & 11 & FA & 101 & 502 & 4 & 48 & 192 & $10^{5}$ & 2 & $\leq 1s$ & 2 & 854 & 0.33\\
+\textsc{SnL} & \textsc{S-24} & \sfrac{3}{10} & 12 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-25} & \checkmark & 12 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-26} & \sfrac{3}{10} & 12 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-27} & \checkmark & 12 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-28} & \sfrac{3}{10} & 12 & MA & 101 & 502 & 4 & 40 & 160 & $10^{7}$ & 17 & $\leq 1s$ & 17 & 1549 & 0.40\\
+\textsc{SnL} & \textsc{S-29} & \checkmark & 12 & MA & 101 & 502 & 4 & 40 & 160 & $10^{7}$ & 26 & $\leq 1s$ & 26 & 1549 & 0.40\\
+\textsc{SnL} & \textsc{S-30} & \sfrac{3}{10} & 12 & FA & 101 & 502 & 4 & 40 & 160 & $10^{6}$ & 2 & $\leq 1s$ & 2 & 1549 & 0.00\\
+\textsc{SnL} & \textsc{S-31} & \checkmark & 12 & FA & 101 & 502 & 4 & 40 & 160 & $10^{6}$ & 2 & $\leq 1s$ & 2 & 1549 & 0.00\\
+\textsc{SnL} & \textsc{S-32} & \sfrac{3}{10} & 12 & MA & 101 & 502 & 4 & 86 & 344 & $10^{7}$ & 40 & $\leq 1s$ & 40 & 2530 & \checkmark\\
+\textsc{SnL} & \textsc{S-33} & \checkmark & 12 & MA & 101 & 502 & 4 & 86 & 344 & $10^{7}$ & 51 & $\leq 1s$ & 51 & 2530 & 0.30\\
+\textsc{SnL} & \textsc{S-34} & \sfrac{3}{10} & 12 & FA & 101 & 502 & 4 & 86 & 344 & $10^{6}$ & 9 & $\leq 1s$ & 9 & 2530 & \checkmark\\
+\textsc{SnL} & \textsc{S-35} & \checkmark & 12 & FA & 101 & 502 & 4 & 86 & 344 & $10^{6}$ & 9 & $\leq 1s$ & 9 & 2530 & 0.33\\
+\textsc{SnL} & \textsc{S-36} & \sfrac{3}{10} & 13 & MA & 101 & 502 & 4 & 48 & 192 & $10^{8}$ & 5 & $\leq 1s$ & 5 & 3097 & 0.99\\
+\textsc{SnL} & \textsc{S-37} & \checkmark & 13 & MA & 101 & 502 & 4 & 48 & 192 & $10^{8}$ & 22 & $\leq 1s$ & 22 & 3097 & 1.00\\
+\textsc{SnL} & \textsc{S-38} & \sfrac{3}{10} & 13 & FA & 101 & 502 & 4 & 48 & 192 & $10^{7}$ & 19 & $\leq 1s$ & 19 & 3097 & \checkmark\\
+\textsc{SnL} & \textsc{S-39} & \checkmark & 13 & FA & 101 & 502 & 4 & 48 & 192 & $10^{7}$ & 13 & $\leq 1s$ & 13 & 3097 & 0.32\\
+\textsc{SnL} & \textsc{S-40} & \sfrac{3}{10} & 13 & MA & 101 & 502 & 4 & 54 & 216 & $10^{8}$ & 5 & $\leq 1s$ & 5 & 3217 & 0.87\\
+\textsc{SnL} & \textsc{S-41} & \checkmark & 13 & MA & 101 & 502 & 4 & 54 & 216 & $10^{8}$ & 22 & $\leq 1s$ & 22 & 3217 & 1.00\\
+\textsc{SnL} & \textsc{S-42} & \sfrac{3}{10} & 13 & FA & 101 & 502 & 4 & 54 & 216 & $10^{7}$ & 5 & $\leq 1s$ & 5 & 3217 & 0.30\\
+\textsc{SnL} & \textsc{S-43} & \checkmark & 13 & FA & 101 & 502 & 4 & 54 & 216 & $10^{7}$ & 21 & $\leq 1s$ & 21 & 3217 & 0.22\\
+\textsc{SnL} & \textsc{S-44} & \sfrac{3}{10} & 13 & MA & 101 & 502 & 4 & 101 & 404 & $10^{8}$ & 86 & $\leq 1s$ & 85 & 3681 & 0.32\\
+\textsc{SnL} & \textsc{S-45} & \checkmark & 13 & MA & 101 & 502 & 4 & 101 & 404 & $10^{8}$ & 98 & $\leq 1s$ & 98 & 3681 & 0.33\\
+\textsc{SnL} & \textsc{S-46} & \sfrac{3}{10} & 13 & FA & 101 & 502 & 4 & 101 & 404 & $10^{7}$ & 24 & $\leq 1s$ & 24 & 3681 & \checkmark\\
+\textsc{SnL} & \textsc{S-47} & \checkmark & 13 & FA & 101 & 502 & 4 & 101 & 404 & $10^{7}$ & 24 & $\leq 1s$ & 24 & 3681 & 0.32\\
+\textsc{SnL} & \textsc{S-48} & \sfrac{3}{10} & 14 & MA & 101 & 502 & 4 & 50 & 200 & $10^{9}$ & 7 & $\leq 1s$ & 7 & 2776 & 0.87\\
+\textsc{SnL} & \textsc{S-49} & \checkmark & 14 & MA & 101 & 502 & 4 & 50 & 200 & $10^{9}$ & 88 & $\leq 1s$ & 88 & 2776 & 1.00\\
+\textsc{SnL} & \textsc{S-50} & \sfrac{3}{10} & 14 & FA & 101 & 502 & 4 & 50 & 200 & $10^{8}$ & 7 & $\leq 1s$ & 7 & 2776 & 0.12\\
+\textsc{SnL} & \textsc{S-51} & \checkmark & 14 & FA & 101 & 502 & 4 & 50 & 200 & $10^{8}$ & 8 & $\leq 1s$ & 7 & 2776 & 0.00\\
+\textsc{SnL} & \textsc{S-52} & \sfrac{3}{10} & 14 & MA & 101 & 502 & 4 & 158 & 632 & $10^{9}$ & 13 & $\leq 1s$ & 13 & 6318 & 0.32\\
+\textsc{SnL} & \textsc{S-53} & \checkmark & 14 & MA & 101 & 502 & 4 & 158 & 632 & $10^{9}$ & 149 & $\leq 1s$ & 148 & 6318 & 1.00\\
+\textsc{SnL} & \textsc{S-54} & \sfrac{3}{10} & 14 & FA & 101 & 502 & 4 & 158 & 632 & $10^{8}$ & 76 & $\leq 1s$ & 76 & 6318 & \checkmark\\
+\textsc{SnL} & \textsc{S-55} & \checkmark & 14 & FA & 101 & 502 & 4 & 158 & 632 & $10^{8}$ & 75 & $\leq 1s$ & 74 & 6318 & 0.32\\
+\textsc{SnL} & \textsc{S-56} & \sfrac{3}{10} & 14 & MA & 101 & 502 & 4 & 211 & 844 & $10^{9}$ & 236 & $\leq 1s$ & 235 & 5253 & 0.33\\
+\textsc{SnL} & \textsc{S-57} & \checkmark & 14 & MA & 101 & 502 & 4 & 211 & 844 & $10^{9}$ & 279 & $\leq 1s$ & 279 & 5253 & 0.33\\
+\textsc{SnL} & \textsc{S-58} & \sfrac{3}{10} & 14 & FA & 101 & 502 & 4 & 211 & 844 & $10^{8}$ & 27 & $\leq 1s$ & 26 & 5253 & 0.27\\
+\textsc{SnL} & \textsc{S-59} & \checkmark & 14 & FA & 101 & 502 & 4 & 211 & 844 & $10^{8}$ & 48 & $\leq 1s$ & 47 & 5253 & 0.24\\
+\textsc{SnL} & \textsc{S-60} & \sfrac{3}{10} & 15 & MA & 101 & 502 & 4 & 89 & 356 & $10^{10}$ & 21 & $\leq 1s$ & 21 & 4115 & 1.00\\
+\textsc{SnL} & \textsc{S-61} & \checkmark & 15 & MA & 101 & 502 & 4 & 89 & 356 & $10^{10}$ & 26 & $\leq 1s$ & 26 & 4115 & 1.00\\
+\textsc{SnL} & \textsc{S-62} & \sfrac{3}{10} & 15 & FA & 101 & 502 & 4 & 89 & 356 & $10^{9}$ & 6 & $\leq 1s$ & 6 & 4115 & 0.29\\
+\textsc{SnL} & \textsc{S-63} & \checkmark & 15 & FA & 101 & 502 & 4 & 89 & 356 & $10^{9}$ & 36 & $\leq 1s$ & 36 & 4115 & 0.12\\
+\textsc{SnL} & \textsc{S-64} & \sfrac{3}{10} & 15 & MA & 101 & 502 & 4 & 198 & 792 & $10^{10}$ & 29 & $\leq 1s$ & 28 & 8220 & 0.32\\
+\textsc{SnL} & \textsc{S-65} & \checkmark & 15 & MA & 101 & 502 & 4 & 198 & 792 & $10^{10}$ & 398 & $\leq 1s$ & 397 & 8220 & 1.00\\
+\textsc{SnL} & \textsc{S-66} & \sfrac{3}{10} & 15 & FA & 101 & 502 & 4 & 198 & 792 & $10^{9}$ & 4 & $\leq 1s$ & 3 & 8220 & 0.12\\
+\textsc{SnL} & \textsc{S-67} & \checkmark & 15 & FA & 101 & 502 & 4 & 198 & 792 & $10^{9}$ & 54 & $\leq 1s$ & 53 & 8220 & 0.08\\
+\textsc{SnL} & \textsc{S-68} & \sfrac{3}{10} & 15 & MA & 101 & 502 & 4 & 345 & 1380 & $10^{10}$ & 52 & 1 & 51 & 10090 & 0.32\\
+\textsc{SnL} & \textsc{S-69} & \checkmark & 15 & MA & 101 & 502 & 4 & 345 & 1380 & $10^{10}$ & 1408 & 1 & 1407 & 10090 & 0.32\\
+\textsc{SnL} & \textsc{S-70} & \sfrac{3}{10} & 15 & FA & 101 & 502 & 4 & 345 & 1380 & $10^{9}$ & 44 & 1 & 43 & 10090 & 0.29\\
+\textsc{SnL} & \textsc{S-71} & \checkmark & 15 & FA & 101 & 502 & 4 & 345 & 1380 & $10^{9}$ & 169 & $\leq 1s$ & 168 & 10090 & 0.24\\
+\textsc{SnL} & \textsc{S-72} & \sfrac{3}{10} & 7 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-73} & \checkmark & 7 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-74} & \sfrac{3}{10} & 7 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-75} & \checkmark & 7 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-76} & \sfrac{3}{10} & 7 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-77} & \checkmark & 7 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-78} & \sfrac{3}{10} & 7 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-79} & \checkmark & 7 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-80} & \sfrac{3}{10} & 7 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-81} & \checkmark & 7 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-82} & \sfrac{3}{10} & 7 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-83} & \checkmark & 7 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-84} & \sfrac{3}{10} & 8 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-85} & \checkmark & 8 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-86} & \sfrac{3}{10} & 8 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-87} & \checkmark & 8 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-88} & \sfrac{3}{10} & 8 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-89} & \checkmark & 8 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-90} & \sfrac{3}{10} & 8 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-91} & \checkmark & 8 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-92} & \sfrac{3}{10} & 8 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-93} & \checkmark & 8 & MA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-94} & \sfrac{3}{10} & 8 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-95} & \checkmark & 8 & FA & 101 & 502 & 4 & 1 & 4 & - & - & - & - & - & -\\
+\textsc{SnL} & \textsc{S-96} & \sfrac{3}{10} & 9 & MA & 101 & 502 & 4 & 22 & 88 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & \checkmark\\
+\textsc{SnL} & \textsc{S-97} & \checkmark & 9 & MA & 101 & 502 & 4 & 22 & 88 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 568 & 0.26\\
+\textsc{SnL} & \textsc{S-98} & \sfrac{3}{10} & 9 & FA & 101 & 502 & 4 & 22 & 88 & $10^{3}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & \checkmark\\
+\textsc{SnL} & \textsc{S-99} & \checkmark & 9 & FA & 101 & 502 & 4 & 22 & 88 & $10^{3}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & 1.00\\
+\textsc{SnL} & \textsc{S-100} & \sfrac{3}{10} & 9 & MA & 101 & 502 & 4 & 22 & 88 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & \checkmark\\
+\textsc{SnL} & \textsc{S-101} & \checkmark & 9 & MA & 101 & 502 & 4 & 22 & 88 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 568 & 0.26\\
+\textsc{SnL} & \textsc{S-102} & \sfrac{3}{10} & 9 & FA & 101 & 502 & 4 & 22 & 88 & $10^{3}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & \checkmark\\
+\textsc{SnL} & \textsc{S-103} & \checkmark & 9 & FA & 101 & 502 & 4 & 22 & 88 & $10^{3}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & 1.00\\
+\textsc{SnL} & \textsc{S-104} & \sfrac{3}{10} & 9 & MA & 101 & 502 & 4 & 22 & 88 & $10^{5}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & \checkmark\\
+\textsc{SnL} & \textsc{S-105} & \checkmark & 9 & MA & 101 & 502 & 4 & 22 & 88 & $10^{5}$ & 1 & $\leq 1s$ & 1 & 568 & 0.26\\
+\textsc{SnL} & \textsc{S-106} & \sfrac{3}{10} & 9 & FA & 101 & 502 & 4 & 22 & 88 & $10^{3}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & \checkmark\\
+\textsc{SnL} & \textsc{S-107} & \checkmark & 9 & FA & 101 & 502 & 4 & 22 & 88 & $10^{3}$ & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 568 & 1.00\\
 
 \bottomrule
 \end{longtable}

@@ -4,13 +4,16 @@ import json
 from math import ceil
 import math
 import os
-from random import seed, shuffle
+from random import seed
+import time
 import traceback
 from typing import Any
 import re
 import matplotlib.pyplot as plt
-from tabulate import SEPARATING_LINE, tabulate
 import numpy as np
+from scipy.optimize import curve_fit
+
+from verimon.verify import false_positive
 
 
 VERIFY_EXPERIMENTS = 336
@@ -202,16 +205,20 @@ def load_experiment_data(path: str):
                 if (
                     "learning_algs" in data["experiment"]
                 ):  # Fill in gaps of Learning experiment
+                    with open(data["log_path"], "r") as f:
+                        log = f.read()
+                        timed_out = "timed out after 12 hours" in log
+                        val = "timeout" if timed_out else "out of memory"
                     if (
                         "verimon" in data["experiment"]["learning_algs"]
                         and "verimon" not in data
                     ):
                         data["verimon"] = {
                             "fake": True,
-                            "time": 10**5,
-                            "monitor_states": 0,
-                            "false_positive": 1,
-                            "false_negative": 0,
+                            "time": val,
+                            "monitor_states": val,
+                            "false_positive": val,
+                            "false_negative": val,
                         }
                     if (
                         "sampling" in data["experiment"]["learning_algs"]
@@ -219,10 +226,10 @@ def load_experiment_data(path: str):
                     ):
                         data["sampling"] = {
                             "fake": True,
-                            "time": 10**5,
-                            "monitor_states": 0,
-                            "false_positive": 1,
-                            "false_negative": 0,
+                            "time": val,
+                            "monitor_states": val,
+                            "false_positive": val,
+                            "false_negative": val,
                         }
                 elif "learn_experiment" in data["experiment"]:
                     if "result" not in data:
@@ -337,7 +344,7 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
     tab_with_lines: list[Any] = [tab_data[0]]
     for line in tab_data[1:]:
         if line[0] != tab_with_lines[-1][0]:
-            tab_with_lines.append(SEPARATING_LINE)
+            tab_with_lines.append("SEPERATING LINE")
         tab_with_lines.append(line)
 
     generate_table(preamble, tab_with_lines, save_path, file_name)
@@ -406,12 +413,14 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
                 d["sampling"]["false_positive"] < d["experiment"]["threshold"],
             )
             if "fake" not in d["sampling"]
+            and d["sampling"]["false_positive"] is not None
             else r"-",
             (
                 float(d["sampling"]["false_negative"]),
                 d["sampling"]["false_negative"] > d["experiment"]["threshold"],
             )
             if "fake" not in d["sampling"]
+            and d["sampling"]["false_negative"] is not None
             else r"-",
         ]
         for d in data
@@ -420,7 +429,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
     tab_with_lines: list[Any] = [tab_data[0]]
     for line in tab_data[1:]:
         if line[0] != tab_with_lines[-1][0]:
-            tab_with_lines.append(SEPARATING_LINE)
+            tab_with_lines.append("SEPERATING LINE")
         tab_with_lines.append(line)
 
     generate_table(preamble, tab_with_lines, save_path, file_name)
@@ -430,7 +439,7 @@ def generate_table(preamble, data, save_path="./", file_name="runtime"):
     with open(f"{save_path}/{file_name}.tex", "w") as f:
         f.write(preamble)
         for line in data:
-            if line == SEPARATING_LINE:
+            if line == "SEPERATING LINE":
                 f.write(r"\midrule" + "\n")
             else:
                 str_line = []
@@ -475,35 +484,32 @@ def compare_runtimes(
     save_path="./",
     file_name="runtime",
     show_y_axis: bool = True,
+    plot_kwargs={},
+    timeout=10**5,
+    out_of_memory=10**5 * 4,
+    incorrect=10**5 * 16,
+    min_value=1,
 ):
-    max_runtime = max(
-        max(
-            data[key1]["time"] if key1 in data else 0,
-            data[key2]["time"] if key2 in data else 0,
-        )
-        for data in exp_data
-    )
-
-    max_lim = max_runtime * 1.5
-    offset = 1.3
-    plt.text(
-        max_lim * (1 / offset),
-        offset * 0.01,
-        "Baseline is faster",
-        color="gray",
-        ha="right",
-        va="bottom",
-        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    )
-    plt.text(
-        offset * 0.01,
-        max_lim * (1 / offset),
-        "ToVer is faster",
-        color="gray",
-        ha="left",
-        va="top",
-        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    )
+    max_lim = incorrect * 2
+    # offset = 1.3
+    # plt.text(
+    #     timeout * (1 / offset),
+    #     offset * min_value,
+    #     "Baseline is faster",
+    #     color="gray",
+    #     ha="right",
+    #     va="bottom",
+    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    # )
+    # plt.text(
+    #     offset * min_value,
+    #     timeout * (1 / offset),
+    #     "ToVer is faster",
+    #     color="gray",
+    #     ha="left",
+    #     va="top",
+    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    # )
 
     plt.plot([0, max_lim], [0, max_lim], r"-", color="0.5")
     plt.plot(
@@ -537,7 +543,7 @@ def compare_runtimes(
         [0, max_lim],
         max_lim,
         color="lightgreen",
-        alpha=0.3,
+        alpha=0.1,
         label=f"{key1.capitalize()} is faster",
     )
     plt.fill_between(
@@ -545,22 +551,50 @@ def compare_runtimes(
         0,
         [0, max_lim],
         color="lightcoral",
-        alpha=0.3,
+        alpha=0.1,
         label=f"{key2.capitalize()} is faster",
     )
     plt.axline(
-        (0, 10**5),
-        (10**5, 10**5),
-        color="k",
-        linestyle=r"-",
+        (0, timeout),
+        (timeout, timeout),
+        color="gray",
+        linestyle=r"--",
         label="ToVer timeout",
     )
     plt.axline(
-        (10**5, 0),
-        (10**5, 10**5),
-        color="k",
-        linestyle=r"-",
+        (timeout, 0),
+        (timeout, timeout),
+        color="gray",
+        linestyle=r"--",
         label="Baseline timeout",
+    )
+    plt.axline(
+        (0, out_of_memory),
+        (out_of_memory, out_of_memory),
+        color="gray",
+        linestyle=r"--",
+        label="ToVer out of memory",
+    )
+    plt.axline(
+        (out_of_memory, 0),
+        (out_of_memory, out_of_memory),
+        color="gray",
+        linestyle=r"--",
+        label="Baseline out of memory",
+    )
+    plt.axline(
+        (0, incorrect),
+        (incorrect, incorrect),
+        color="gray",
+        linestyle=r"--",
+        label="ToVer incorrect",
+    )
+    plt.axline(
+        (incorrect, 0),
+        (incorrect, incorrect),
+        color="gray",
+        linestyle=r"--",
+        label="Baseline incorrect",
     )
 
     for data in exp_data:
@@ -568,18 +602,44 @@ def compare_runtimes(
             continue
         time1 = data[key1]["time"]
         time2 = data[key2]["time"]
-        if time1 is None or time2 is None:
-            continue
+
+        if time1 == "timeout":
+            time1 = timeout
+        elif time1 == "out of memory":
+            time1 = out_of_memory
+        elif (
+            data[key1]["false_positive"] is None
+            or data[key1]["false_negative"] is None
+            or data[key1]["false_positive"]
+            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
+            or data[key1]["false_negative"]
+            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+        ):
+            time1 = incorrect
+
+        if time2 == "timeout":
+            time2 = timeout
+        elif time2 == "out of memory":
+            time2 = out_of_memory
+        elif (
+            data[key2]["false_positive"] is None
+            or data[key2]["false_negative"] is None
+            or data[key2]["false_positive"]
+            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
+            or data[key2]["false_negative"]
+            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+        ):
+            time2 = incorrect
+
         plt.plot(
-            time1,
-            time2,
+            max(time1, min_value),
+            max(time2, min_value),
             data["symbol"],
             color=data["color"],
             label=name_func(data) if experiments_in_legends else None,
+            **plot_kwargs,
         )
 
-    plt.xlim(0.01, max_lim)
-    plt.ylim(0.01, max_lim)
     plt.grid()
     if log_scale:
         plt.xscale("log")
@@ -592,13 +652,29 @@ def compare_runtimes(
         plt.ylabel(ylabel if ylabel else "Baseline (s log)")
 
     plt.yticks(
-        [10**i for i in range(-1, 6)],
-        [f"$10^{{{i}}}$" for i in range(-1, 5)] + ["$\\infty$"],
+        [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
+        [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
     )
     plt.xticks(
-        [10**i for i in range(-1, 6)],
-        [f"$10^{{{i}}}$" for i in range(-1, 5)] + ["$\\infty$"],
+        [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
+        [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
     )
+    ax = plt.gca()
+    # xticks = ax.get_xticklabels()
+    # for i in range(len(xticks) - 3, len(xticks)):
+    #     xticks[i].set_rotation(90)
+    #     xticks[i].set_ha("right")
+
+    plt.xlim(min_value, max_lim)
+    plt.ylim(min_value, max_lim)
+
+    # Hide minor ticks between the last 3 major ticks (≥ 10^5)
+    if log_scale:
+        for axis in [ax.xaxis, ax.yaxis]:
+            for tick in axis.get_minor_ticks():
+                if tick.get_loc() >= 10**4:
+                    tick.tick1line.set_visible(False)
+                    tick.tick2line.set_visible(False)
 
     # plt.legend(loc="upper left")
     fig = plt.gcf()
@@ -623,34 +699,39 @@ def compare_monitor_sizes(
     save_path="./",
     file_name="monitor_sizes",
     show_y_axis: bool = True,
+    plot_kwargs={},
 ):
     max_mon_states = max(
         max(
-            data[key1]["monitor_states"] if key1 in data else 0,
-            data[key2]["monitor_states"] if key2 in data else 0,
+            data[key1]["monitor_states"]
+            if key1 in data and isinstance(data[key1]["monitor_states"], int)
+            else 0,
+            data[key2]["monitor_states"]
+            if key2 in data and isinstance(data[key2]["monitor_states"], int)
+            else 0,
         )
         for data in exp_data
     )
     max_lim = max_mon_states * 1.5
-    offset = 1.5
-    plt.text(
-        max_lim * (1 / offset),
-        offset,
-        "Baseline is smaller",
-        color="gray",
-        ha="right",
-        va="bottom",
-        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    )
-    plt.text(
-        offset,
-        max_lim * (1 / offset),
-        "ToVer is smaller",
-        color="gray",
-        ha="left",
-        va="top",
-        rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    )
+    # offset = 1.5
+    # plt.text(
+    #     max_lim * (1 / offset),
+    #     offset,
+    #     "Baseline is smaller",
+    #     color="gray",
+    #     ha="right",
+    #     va="bottom",
+    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    # )
+    # plt.text(
+    #     offset,
+    #     max_lim * (1 / offset),
+    #     "ToVer is smaller",
+    #     color="gray",
+    #     ha="left",
+    #     va="top",
+    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
+    # )
 
     plt.plot(
         [0, max_lim],
@@ -680,36 +761,56 @@ def compare_monitor_sizes(
         [0, max_lim * 100],
         "k:",
     )
-    plt.fill_between(
-        [0, max_lim],
-        [0, max_lim],
-        max_lim,
-        color="lightgreen",
-        alpha=0.3,
-        label=f"{key1.capitalize()} is smaller",
-    )
-    plt.fill_between(
-        [0, max_lim],
-        0,
-        [0, max_lim],
-        color="lightcoral",
-        alpha=0.3,
-        label=f"{key2.capitalize()} is smaller",
-    )
+    # plt.fill_between(
+    #     [0, max_lim],
+    #     [0, max_lim],
+    #     max_lim,
+    #     color="lightgreen",
+    #     alpha=0.3,
+    #     label=f"{key1.capitalize()} is smaller",
+    # )
+    # plt.fill_between(
+    #     [0, max_lim],
+    #     0,
+    #     [0, max_lim],
+    #     color="lightcoral",
+    #     alpha=0.3,
+    #     label=f"{key2.capitalize()} is smaller",
+    # )
 
     for data in exp_data:
         if key1 not in data or key2 not in data:
             continue
+
         monitor_states1 = data[key1]["monitor_states"]
         monitor_states2 = data[key2]["monitor_states"]
         if monitor_states1 is None or monitor_states2 is None:
             continue
+        if isinstance(monitor_states1, str) or isinstance(monitor_states2, str):
+            continue
+        if (
+            data[key1]["false_positive"] is None
+            or data[key1]["false_negative"] is None
+            or data[key1]["false_positive"]
+            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
+            or data[key1]["false_negative"]
+            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+            or data[key2]["false_positive"] is None
+            or data[key2]["false_negative"] is None
+            or data[key2]["false_positive"]
+            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
+            or data[key2]["false_negative"]
+            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+        ):
+            continue
+
         plt.plot(
             monitor_states1,
             monitor_states2,
             data["symbol"],
             color=data["color"],
             label=name_func(data) if experiments_in_legends else None,
+            **plot_kwargs,
         )
 
     plt.xlim(1, max_lim)
@@ -872,8 +973,18 @@ def compare_thresholds_bar(
 
     found_thresholds = [
         (
-            [data[key]["false_positive"] if key in data else 0 for data in exp_data],
-            [data[key]["false_negative"] if key in data else 1 for data in exp_data],
+            [
+                data[key]["false_positive"]
+                if key in data and not isinstance(data[key]["false_positive"], str)
+                else 1
+                for data in exp_data
+            ],
+            [
+                data[key]["false_negative"]
+                if key in data and not isinstance(data[key]["false_negative"], str)
+                else 0
+                for data in exp_data
+            ],
         )
         for key in keys
     ]
@@ -965,6 +1076,7 @@ def runtime_by_params(
     name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
     experiments_in_legends=True,
     show_y_axis: bool = True,
+    plot_kwargs={},
 ):
     fig, axes = plt.subplots(nrows=ceil(len(params) / 2), ncols=2, figsize=figsize)
     axes = axes.flatten()
@@ -973,19 +1085,59 @@ def runtime_by_params(
         ax = axes[i]
 
         if fit_line:
-            valid_points = [
-                (xv, yv)
-                for xv, yv in zip(
-                    [d[param[0]][param[1]] for d in exp_data],
-                    [d[key][time_key] for d in exp_data],
-                )
-                if yv is not None and xv is not None
-            ]
-            if valid_points:
-                xs, ys = zip(*valid_points)
-                fit = np.polyfit(xs, ys, 1)
+            symbol_points = {}
+            for d in exp_data:
+                if "fake" in d[key]:
+                    continue
+                val = d[param[0]][param[1]]
+                t = d[key][time_key]
+                if (
+                    t is None
+                    or val is None
+                    or isinstance(val, str)
+                    or isinstance(t, str)
+                ):
+                    continue
+
+                if d["symbol"] not in symbol_points:
+                    symbol_points[d["symbol"]] = []
+
+                symbol_points[d["symbol"]].append((val, t))
+
+            for symbol, points in symbol_points.items():
+                xs, ys = zip(*points)
+                # Linear fit
+                # fit = np.polyfit(xs, ys, 1)
                 x_line = np.linspace(min(xs), max(xs), 100)
-                ax.plot(x_line, np.polyval(fit, x_line), "k-", label="Fitted line")
+                # ax.plot(
+                #     x_line,
+                #     np.polyval(fit, x_line),
+                #     "-",
+                #     color="green",
+                #     marker=symbol,
+                #     markevery=0.1,  # Show marker every 20 points
+                #     label="Linear fit",
+                # )
+
+                # Exponential fit using scipy's curve_fit
+
+                def exp_func(x, a, b):
+                    return a * np.exp(b * x)
+
+                try:
+                    popt, pcov = curve_fit(exp_func, xs, ys, p0=(1, 0.1))
+                    ax.plot(
+                        x_line,
+                        exp_func(x_line, *popt),
+                        "--",
+                        marker=symbol,
+                        markevery=0.1,
+                        color="gray",
+                        label=f"Exp fit: {popt[0]:.2f}*e^({popt[1]:.4f}x)",
+                    )
+                except RuntimeError:
+                    # Curve fitting might fail in some cases
+                    pass
 
         if param[2] == "box":
             groups = {}
@@ -1004,13 +1156,16 @@ def runtime_by_params(
             ax.boxplot(data_list, labels=labels, showmeans=True, showfliers=False)
         else:
             for data in exp_data:
+                if "fake" in data[key]:
+                    continue
                 val = data[param[0]][param[1]]
-                ax.scatter(
+                ax.plot(
                     val,
                     data[key][time_key],
-                    marker=data["symbol"],
+                    data["symbol"],
                     color=data["color"],
                     label=name_func(data),
+                    **plot_kwargs,
                 )
             if param[2] == "log":
                 ax.set_yscale("log")
