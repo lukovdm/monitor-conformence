@@ -373,7 +373,7 @@ In summary, this paper provides a first framework to learn runtime monitors---en
 \textbf{(1)}~We solve the verification problem by exhaustively searching for a counterexample using probabilistic system synthesis (\cref{sec:monver}).
 \textbf{(2)}~We learn monitors by using the verifier above to answer equivalence queries in conjunction with active automata learning (\cref{sec:learning}).
 \textbf{(3)}~We prove the hardness of the verification problem (\cref{sec:compl}).
-\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}). Our prototype finds monitors that are provably correct on $10^{22}$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states. 
+\textbf{(4)}~We demonstrate the feasibility and limitations of both the verifier and the learner on a series of benchmarks (\cref{sec:experiments}). Our prototype finds monitors that are provably correct on $10^{22}$ traces by verifying HMMs with thousands of states, up to a hundred observations, and monitors with over 100 states.
 
 \smallskip
 \noindent
@@ -1143,11 +1143,11 @@ Code, benchmarks, and logs will be publicly available via the artifact evaluatio
 The \alg tool is implemented in Python and C++ on top of the model checker \textsc{Storm}~\cite{henselProbabilisticModelChecker2022} for data structures and for the MQs in \cref{sec:learning}~\cite{jungesRuntimeMonitorsMarkov2021}.
 We use PAYNT~\cite{andriushchenkoPAYNTToolInductive2021} to verify colored MDPs (\cref{def:colMDP}), using exact arithmetic to avoid numerical problems on these types of benchmarks~\cite{DBLP:conf/tacas/HartmannsJQW23}.
 The learner uses the AAlpy framework~\cite{muskardinAALpyActiveAutomata2022}.
-All experiments are run  on a single thread of an AMD Ryzen TRP 5965WX and with a memory limit of 15 GiB.
+All experiments are run  on a single thread of an AMD Ryzen TRP 5965WX, with a memory limit of 15 GiB, and a time-out of 12 hours.
 %We ran multiple benchmarks in parallel.
 
 \paragraph{Benchmarks.}
-We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive}  from \cite{jungesRuntimeMonitorsMarkov2021}. We add \textsc{Icy-Driving}, a scaled-up version of the running example and \textsc{SnL} based on the game ``Snakes and Ladders''.
+We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} from \cite{jungesRuntimeMonitorsMarkov2021}, adapted to HMMs. We add \textsc{Icy-Driving}, a scaled-up version of the running example and \textsc{SnL} based on the game ``Snakes and Ladders''.
 While the benchmarks from the literature contain many observations, i.e., few states share an observation, the new benchmarks only have a few different observations. All benchmarks are scalable. The risk function is defined by a temporal property, e.g., the probability of reaching a bad state within a few steps.
 % We use benchmarks up to hundreds of states and thousands of transitions.
 
@@ -1182,34 +1182,34 @@ We verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
         \begin{scriptsize}
             \begin{tabular}{{@{}llrrrrrrrrrrrrr@{}}}
                 \toprule
-                                       &               & \multicolumn{7}{c}{Benchmark} & \multicolumn{6}{c}{\alg}                                                                                                                                                                                       \\
+                                       &                & \multicolumn{7}{c}{Benchmark} & \multicolumn{6}{c}{\alg}                                                                                                                                                                                       \\
                 \cmidrule(lr){3-10}\cmidrule(lr){11-15}
-                                       &               & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\mathcal{L}^{\leq h}|$ & Time (s)  & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$ \\
+                                       &                & $h$                           & MA/FA                    & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\mathcal{L}^{\leq h}|$ & Time (s)  & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$ \\
                 \midrule
-                \textsc{AirportA-7}    & \textsc{A-36} & 10                            & MA                       & 128          & 440             & 32    & 23            & 736              & $10^{13}$                & 2         & $\leq 1s$ & 1         & 749                  & 0.32              \\
-                \textsc{AirportA-7}    & \textsc{A-38} & 10                            & FA                       & 128          & 440             & 32    & 23            & 736              & $10^{13}$                & 2         & $\leq 1s$ & 2         & 749                  & 0.07              \\
-                \textsc{AirportA-7}    & \textsc{A-40} & 10                            & MA                       & 128          & 440             & 32    & 203           & 6496             & $10^{13}$                & 59        & 1         & 57        & 2019                 & 0.33              \\
-                \textsc{AirportA-7}    & \textsc{A-42} & 10                            & FA                       & 128          & 440             & 32    & 203           & 6496             & $10^{13}$                & 8         & 1         & 7         & 2019                 & 0.08              \\
-                \textsc{AirportA-7}    & \textsc{A-44} & 10                            & MA                       & 128          & 440             & 32    & 394           & 12608            & $10^{13}$                & 1257      & 3         & 1254      & 3054                 & \checkmark        \\
-                \textsc{AirportA-7}    & \textsc{A-46} & 10                            & FA                       & 128          & 440             & 32    & 394           & 12608            & $10^{13}$                & 470       & 3         & 468       & 3054                 & \checkmark        \\
+                \textsc{AirportB-7}    & \textsc{A-180} & 9                             & MA                       & 470          & 2550            & 50    & 66            & 3300             & $10^{12}$                & 5         & 1         & 4         & 2275                 & 0.69              \\
+                \textsc{AirportB-7}    & \textsc{A-182} & 9                             & FA                       & 470          & 2550            & 50    & 66            & 3300             & $10^{12}$                & 3         & $\leq 1s$ & 3         & 2275                 & 0.10              \\
+                \textsc{AirportB-7}    & \textsc{A-184} & 9                             & MA                       & 470          & 2550            & 50    & 319           & 15950            & $10^{12}$                & 23        & 1         & 22        & 3503                 & 0.41              \\
+                \textsc{AirportB-7}    & \textsc{A-186} & 9                             & FA                       & 470          & 2550            & 50    & 319           & 15950            & $10^{12}$                & 17        & 1         & 15        & 3503                 & 0.24              \\
+                \textsc{AirportB-7}    & \textsc{A-188} & 9                             & MA                       & 470          & 2550            & 50    & 569           & 28450            & $10^{12}$                & 367       & 2         & 365       & 5111                 & \checkmark        \\
+                \textsc{AirportB-7}    & \textsc{A-190} & 9                             & FA                       & 470          & 2550            & 50    & 569           & 28450            & $10^{12}$                & 340       & 3         & 338       & 5111                 & \checkmark        \\
                 \midrule
-                \textsc{Evade}         & \textsc{E-20} & 9                             & MA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 80        & 71        & 9         & 683                  & \checkmark        \\
-                \textsc{Evade}         & \textsc{E-22} & 9                             & FA                       & 385          & 1473            & 325   & 288           & 93600            & $10^{14}$                & 79        & 70        & 9         & 683                  & \checkmark        \\
+                \textsc{Evade}         & \textsc{E-40}  & 9                             & MA                       & 385          & 1473            & 325   & 197           & 64025            & $10^{14}$                & 34        & 26        & 4         & 680                  & 1.00              \\
+                \textsc{Evade}         & \textsc{E-42}  & 9                             & FA                       & 385          & 1473            & 325   & 197           & 64025            & $10^{14}$                & 25        & 23        & 2         & 680                  & \checkmark        \\
                 \midrule
-                \textsc{Hidden-Incen.} & \textsc{H-2}  & 10                            & FA                       & 397          & 1649            & 100   & 110           & 11000            & $10^{18}$                & 14        & 6         & 8         & 1284                 & 0.22              \\
-                \textsc{Hidden-Incen.} & \textsc{H-10} & 10                            & FA                       & 397          & 1649            & 100   & 257           & 25700            & $10^{18}$                & 4930      & 10.       & 4920      & 1307                 & \checkmark        \\
+                \textsc{Hidden-Incen.} & \textsc{H-2}   & 10                            & FA                       & 397          & 1649            & 100   & 106           & 10600            & $10^{18}$                & 10        & 3         & 6         & 1261                 & 0.30              \\
+                \textsc{Hidden-Incen.} & \textsc{H-10}  & 10                            & FA                       & 397          & 1649            & 100   & 298           & 29800            & $10^{18}$                & 2972      & 4         & 2968      & 1411                 & \checkmark        \\
                 \midrule
-                \textsc{Icy-Driving}   & \textsc{I-34} & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & $10^{0}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8                    & \checkmark        \\
-                \textsc{Icy-Driving}   & \textsc{I-10} & 10                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{4}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 29                   & \checkmark        \\
-                \textsc{Icy-Driving}   & \textsc{I-14} & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{11}$                & 1246      & $\leq 1s$ & 1246      & 74                   & \checkmark        \\
+                \textsc{Icy-Driving}   & \textsc{I-34}  & 3                             & FA                       & 3            & 6               & 2     & 8             & 16               & $10^{0}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 8                    & \checkmark        \\
+                \textsc{Icy-Driving}   & \textsc{I-10}  & 10                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{4}$                 & $\leq 1s$ & $\leq 1s$ & $\leq 1s$ & 29                   & \checkmark        \\
+                \textsc{Icy-Driving}   & \textsc{I-22}  & 25                            & FA                       & 3            & 6               & 2     & 2             & 4                & $10^{11}$                & 1126      & $\leq 1s$ & 1126      & 74                   & \checkmark        \\
                 \midrule
-                \textsc{Refuel}        & \textsc{R-20} & 10                            & MA                       & 132          & 1798            & 72    & 31            & 2232             & $10^{22}$                & 6         & 2         & 3         & 905                  & \checkmark        \\
-                \textsc{Refuel}        & \textsc{R-22} & 10                            & FA                       & 132          & 1798            & 72    & 31            & 2232             & $10^{21}$                & 6         & 2         & 3         & 905                  & \checkmark        \\
+                \textsc{RefuelB}       & \textsc{R-20}  & 10                            & MA                       & 263          & 7127            & 72    & 31            & 2232             & $10^{22}$                & 3         & 1         & 2         & 1812                 & \checkmark        \\
+                \textsc{RefuelB}       & \textsc{R-22}  & 10                            & FA                       & 263          & 7127            & 72    & 31            & 2232             & $10^{21}$                & 5         & 2         & 3         & 1812                 & \checkmark        \\
                 \midrule
-                \textsc{SnL}           & \textsc{S-40} & 16                            & MA                       & 101          & 502             & 4     & 336           & 1344             & $10^{11}$                & 66        & 2         & 64        & 13704                & 0.38              \\
-                \textsc{SnL}           & \textsc{S-42} & 16                            & FA                       & 101          & 502             & 4     & 336           & 1344             & $10^{10}$                & 246       & 2         & 244       & 13704                & 0.27              \\
-                \textsc{SnL}           & \textsc{S-44} & 16                            & MA                       & 101          & 502             & 4     & 489           & 1956             & $10^{11}$                & 1439      & 8         & 1431      & 14710                & \checkmark        \\
-                \textsc{SnL}           & \textsc{S-46} & 16                            & FA                       & 101          & 502             & 4     & 489           & 1956             & $10^{10}$                & 4854      & 8         & 4846      & 14710                & \checkmark        \\
+                \textsc{SnL}           & \textsc{S-76}  & 16                            & MA                       & 101          & 502             & 4     & 427           & 1708             & $10^{11}$                & 393       & $\leq 1s$ & 392       & 13547                & 0.54              \\
+                \textsc{SnL}           & \textsc{S-78}  & 16                            & FA                       & 101          & 502             & 4     & 427           & 1708             & $10^{10}$                & 1418      & $\leq 1s$ & 1417      & 13547                & 0.00              \\
+                \textsc{SnL}           & \textsc{S-80}  & 16                            & MA                       & 101          & 502             & 4     & 588           & 2352             & $10^{11}$                & 4601      & 2         & 4600      & 14381                & \checkmark        \\
+                \textsc{SnL}           & \textsc{S-82}  & 16                            & FA                       & 101          & 502             & 4     & 588           & 2352             & $10^{10}$                & 2414      & 1         & 2413      & 14381                & \checkmark        \\
                 \bottomrule
             \end{tabular}
         \end{scriptsize}
@@ -1221,10 +1221,10 @@ We verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
-We present our results in \Cref{tab:verifysubest}, which is a subset of the 336 benchmarks shown in \Cref{app:verrestable}. Generally, we observe that we verify the correctness of monitors on at least billions of traces, which shows that enumerating the traces is not a feasible alternative. Our verification handles monitors and HMMs with both hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-20},\textsc{E-22},\textsc{H-10}.
-Benchmarks \textsc{A-36},\textsc{A-38} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, \textsc{A-40},\textsc{A-42},\textsc{S-40},\textsc{S-42} reflect a semi-correct monitor, and \textsc{A-44},\textsc{A-46},\textsc{S-44},\textsc{S-46} reflect verification of the same HMM with respect to a larger correct monitor.
-Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-34} compared to \textsc{I-10} and \textsc{I-14}.
-%Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-20 to E-23 of \textsc{Evade}.
+We present our results in \Cref{tab:verifysubest}, which is a subset of the 516 benchmarks shown in \Cref{app:verrestable}. Generally, we observe that we verify the correctness of monitors on at least billions of traces, which shows that enumerating the traces is not a feasible alternative. Our verification handles monitors and HMMs with both hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-40},\textsc{E-42},\textsc{H-10}.
+Benchmarks \textsc{A-180},\textsc{A-182} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, \textsc{A-184},\textsc{A-186},\textsc{S-76},\textsc{S-78} reflect a semi-correct monitor, and \textsc{A-188},\textsc{A-190},\textsc{S-80},\textsc{S-82} reflect verification of the same HMM with respect to a larger correct monitor.
+Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-34} compared to \textsc{I-10} and \textsc{I-22}.
+%Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-44 to E-46 of \textsc{Evade}.
 In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see \Cref{app:transtimeres}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the vast majority of time is spent on PAYNT. The transformation is never the bottleneck (see \Cref{app:verrestable}).
 
 %\paragraph{What steps are most expensive?}
@@ -1246,7 +1246,7 @@ We compare against a baseline that does not use EQs, i.e., the baseline uses the
 
 \paragraph{Are the Monitors Correct?}
 Using verification in the EQ, we always learn correct monitors. We validate this experimentally \emph{and} show that the baseline does not always yield correct monitors. For every monitor we determine the unsafe trace with the lowest risk (\emph{actual alarm threshold}, $\lambda_u^{\min}$) and the safe trace with the highest risk (\emph{actual no-alarm threshold}, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
-\Cref{fig:learnThrToverS,fig:learnThrToverNS,fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg and for the baseline. Visually, a monitor is correct if its red bar never touches the green area and the green bar never touches the red area. In 6 out of 38 benchmarks the baseline learns a monitor that misses alarms. No monitors had false alarms.
+\Cref{fig:learnThrToverS,fig:learnThrToverNS,fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg and for the baseline. Visually, a monitor is correct if its red bar never touches the green area and the green bar never touches the red area. In 14 out of 87 benchmarks the baseline learns a monitor that misses alarms. One baseline learned monitor has a false alarms.
 
 \begin{figure}[t]
     \begin{subfigure}{.34\linewidth}
@@ -1270,12 +1270,12 @@ Using verification in the EQ, we always learn correct monitors. We validate this
         \caption{Baseline}
         \label{fig:learnThrSampling}
     \end{subfigure}
-    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg and baseline. The line between the green/gray is $\lambda_u$, the line between red/gray area is $\lambda_s$. The dotted line is $\lambda_l$. Missing bars reflect time-outs.}
+    \caption{Actual alarm and actual no-alarm thresholds from monitors learned with \alg and baseline. The line between the green/gray is $\lambda_u$, the line between red/gray area is $\lambda_s$. The dotted line is $\lambda_l$. Missing bars reflect either time-outs or out-of-5memory.}
 \end{figure}
 
 \paragraph{How Big Are the Monitors?}
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
-\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{app:learnrestable}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 5 times, mostly at least 1.5 times smaller)\footnote{For $\lambda_s = \lambda_u$, the language of correct monitors learned with \alg and baseline are equivalent up to the horizon, but the monitors respond differently on longer traces.}.
+\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \Cref{app:learnrestable}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 8 times, mostly at least 1.5 times smaller)\footnote{For $\lambda_s = \lambda_u$, the language of correct monitors learned with \alg and baseline are equivalent up to the horizon, but the monitors respond differently on longer traces.}.
 
 
 \begin{figure}[t]
@@ -1305,12 +1305,12 @@ Using verification in the EQ, we always learn correct monitors. We validate this
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Runtime}
         \label{fig:runtime-ns-comp}
     \end{subfigure}
-    \caption{States in learned monitors and runtimes: \alg vs baseline.}
+    \caption{States in learned monitors and runtimes: \alg vs baseline. The runtime includes labels for time-outs ($\infty$), out-of-memory (MO), and incorrect ($\times$).}
 \end{figure}
 
 \paragraph{How Fast Do We Learn the Monitors?}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
-We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. One reason could be that \alg needs half or fewer EQ to learn a monitor as can be seen in \Cref{app:learnrestable}. In \Cref{app:runtimediv}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
+We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. One reason could be that \alg needs half or fewer EQs to learn a monitor as can be seen in \Cref{app:learnrestable}. In \Cref{app:runtimediv}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
 
 
 %
@@ -1404,7 +1404,7 @@ This paper presented a first approach to verification of monitors with respect t
     We add a new initial state, and give it $h$ actions $\{1,\ldots,h\}$. Action $l\in\{1,\ldots,h\}$ points, with probability $1$, to the initial state of colored MDP $\mdp_{\gtrdot l}$. This is equivalent to solving policy synthesis on the $h$ individual MDPs.
 
     % \lm{Maybe note that the $\mdp_{\gtrdot l}$ only differed when they where in the CTR stage by the horizon, nothing else.}
-    We now note that for any $l<l'\leq h$ the initial state $\langle 1, \iota^{CTR}\rangle$ of $\mdp_{\gtrdot l}$ is bisimilar to the state $\langle l' - l + 1, \iota^CTR \rangle$ in $\mdp_{\gtrdot l'}$. We now claim that the result of bisimulation minimization on this combined colored MDP is described by the transformation described at the start of the proof.
+    We now note that for any $l<l'\leq h$ the initial state $\langle 1, \iota^{CTR}\rangle$ of $\mdp_{\gtrdot l}$ is bisimilar to the state $\langle l' - l + 1, \iota^{CTR} \rangle$ in $\mdp_{\gtrdot l'}$. We now claim that the result of bisimulation minimization on this combined colored MDP is described by the transformation described at the start of the proof.
 \end{proof}
 
 \nfa*
@@ -1578,7 +1578,7 @@ We present the complete results for the Learning experiments.
 \subsection{Results Table of Learning Experiment}\label{app:learnrestable}
 \Cref{tab:fulllearnexp} contains the full results of the learning experiments. The columns give the family name and ID. They also list the threshold parameters and the horizon. We report the size of the HMM (states, transitions, number of observations). Furthermore, we detail the results of \alg learning. We give the total runtime for the learning procedure. We also show the amount of EQs needed and the number of states in the learned monitor. Additionally, we present the found minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor. Lastly, we detail the results of the baseline learning method. We again list the amount of time spent, number of EQs, the number of states in the learned monitor, and the minimum and maximum threshold as before.
 
-Whenever either the \alg columns of a row or the baseline columns of a row only contain dashes, this method either went over the 24-hour timeout, or used more than 15 GiB of memory.
+Whenever either the \alg columns of a row or the baseline columns of a row only contain dashes, this method either went over the 12-hour timeout, or used more than 15 GiB of memory.
 
 \begin{scriptsize}
     \setlength\LTleft{-.2cm}
