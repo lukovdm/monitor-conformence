@@ -83,11 +83,11 @@
 \pgfsetroundjoin%
 \definecolor{currentfill}{rgb}{0.564706,0.933333,0.564706}%
 \pgfsetfillcolor{currentfill}%
-\pgfsetfillopacity{0.100000}%
+\pgfsetfillopacity{0.200000}%
 \pgfsetlinewidth{1.003750pt}%
 \definecolor{currentstroke}{rgb}{0.564706,0.933333,0.564706}%
 \pgfsetstrokecolor{currentstroke}%
-\pgfsetstrokeopacity{0.100000}%
+\pgfsetstrokeopacity{0.200000}%
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{-226.701573in}{-112.309700in}}%
 \pgfpathlineto{\pgfqpoint{2.751375in}{1.676603in}}%
@@ -103,11 +103,11 @@
 \pgfsetroundjoin%
 \definecolor{currentfill}{rgb}{0.941176,0.501961,0.501961}%
 \pgfsetfillcolor{currentfill}%
-\pgfsetfillopacity{0.100000}%
+\pgfsetfillopacity{0.200000}%
 \pgfsetlinewidth{1.003750pt}%
 \definecolor{currentstroke}{rgb}{0.941176,0.501961,0.501961}%
 \pgfsetstrokecolor{currentstroke}%
-\pgfsetstrokeopacity{0.100000}%
+\pgfsetstrokeopacity{0.200000}%
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{-226.701573in}{-177.030029in}}%
 \pgfpathlineto{\pgfqpoint{2.751375in}{-177.030029in}}%

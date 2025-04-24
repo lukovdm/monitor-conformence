@@ -543,7 +543,7 @@ def compare_runtimes(
         [0, max_lim],
         max_lim,
         color="lightgreen",
-        alpha=0.1,
+        alpha=0.2,
         label=f"{key1.capitalize()} is faster",
     )
     plt.fill_between(
@@ -551,7 +551,7 @@ def compare_runtimes(
         0,
         [0, max_lim],
         color="lightcoral",
-        alpha=0.1,
+        alpha=0.2,
         label=f"{key2.capitalize()} is faster",
     )
     plt.axline(
@@ -761,22 +761,22 @@ def compare_monitor_sizes(
         [0, max_lim * 100],
         "k:",
     )
-    # plt.fill_between(
-    #     [0, max_lim],
-    #     [0, max_lim],
-    #     max_lim,
-    #     color="lightgreen",
-    #     alpha=0.3,
-    #     label=f"{key1.capitalize()} is smaller",
-    # )
-    # plt.fill_between(
-    #     [0, max_lim],
-    #     0,
-    #     [0, max_lim],
-    #     color="lightcoral",
-    #     alpha=0.3,
-    #     label=f"{key2.capitalize()} is smaller",
-    # )
+    plt.fill_between(
+        [0, max_lim],
+        [0, max_lim],
+        max_lim,
+        color="lightgreen",
+        alpha=0.2,
+        label=f"{key1.capitalize()} is smaller",
+    )
+    plt.fill_between(
+        [0, max_lim],
+        0,
+        [0, max_lim],
+        color="lightcoral",
+        alpha=0.2,
+        label=f"{key2.capitalize()} is smaller",
+    )
 
     for data in exp_data:
         if key1 not in data or key2 not in data:
