@@ -1490,7 +1490,7 @@ The construction runs in polynomial time. The formal proof of its correctness fo
 \subsection{Transformation Time Results}\label{app:transtimeres}
 We present the complete results of the monitor verification experiments. \cref{fig:sizevsprod} (log scale!) shows how transforming the HMM with the monitor into a colored MDP scales with the number of states in each.
 \subsection{Verification Results Table}\label{app:verrestable}
-\cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the approximate size of the language of the HMM. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy sythesis in PAYNT. We list the size of the created Colored MDP, and finally the found threshold. Dashes in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Checkmarks in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, the memory limit was reached during verification.
+\Cref{tab:fullverifyres} contains the full results of the monitor verification experiments. The columns give the family name, an ID, learning threshold, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the approximate size of the language of the HMM. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. We list the size of the created Colored MDP, and finally the found threshold. Checkmarks in $\lambda_l$ indicate that, instead of verifying a bound, we are verifying an extremum. Checkmarks in $\lambda^{found}$ indicate no trace was found with a risk above (or below, for FA) the indicated threshold. If all values in the \alg section of a row contain dashes, either a time-out or out-of-memory occurred, or the target state was not reachable because of the horizon.
 
 
 \begin{figure}[t]
@@ -1548,7 +1548,7 @@ Using $10000$ samples and $100000$ samples both had the same number of missed al
 
 
 \section{Results from Learning Experiments}\label{sec:reslearn}
-\begin{figure}[t]
+\begin{figure}[h]
     \resizebox{\linewidth}{!}{
         \input{images/plots/verimon_times.pgf}}
     \caption{Runtime division over steps in \alg learning. Empty bars are HMMs for which learning did not finish.}
@@ -1579,9 +1579,9 @@ We present the complete results for the Learning experiments.
 \end{figure}
 
 \subsection{Results Table of Learning Experiment}\label{app:learnrestable}
-\cref{tab:fulllearnexp} contains the full results of the learning experiments. The columns give the family name and ID. They also list the threshold parameters and the horizon. We report the size of the HMM (states, transitions, number of observations). Furthermore, we detail the results of \alg learning. We give the total runtime for the learning procedure. We also show the amount of EQs needed and the number of states in the learned monitor. Additionally, we present the found minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor. Lastly, we detail the results of the baseline learning method. We again list the amount of time spent, number of EQs, the number of states in the learned monitor, and the minimum and maximum threshold as before.
+\Cref{tab:fulllearnexp} contains the full results of the learning experiments. The columns give the family name and ID. They also list the threshold parameters and the horizon. We report the size of the HMM (states, transitions, number of observations). Furthermore, we detail the results of \alg learning. We give the total runtime for the learning procedure. We also show the amount of EQs needed and the number of states in the learned monitor. Additionally, we present the found minimum risk of a trace accepted by the monitor and the maximum risk of a trace not accepted by the monitor. Lastly, we detail the results of the baseline learning method. We again list the amount of time spent, number of EQs, the number of states in the learned monitor, and the minimum and maximum threshold as before. Any red bounds on lambda indicate incorrect monitors.
 
-Whenever either the \alg columns of a row or the baseline columns of a row only contain dashes, this method either went over the 12-hour timeout, or used more than 15 GiB of memory.
+Whenever either the \alg columns of a row or the baseline columns of a row contain dashes, its time column gives the reason for not learning a monitor. $\infty$ means the 12 hour time-out was exceeded. OM means the 15 GiB memory limit was exceeded.
 
 \begin{scriptsize}
     \setlength\LTleft{-.2cm}
