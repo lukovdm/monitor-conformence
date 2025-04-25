@@ -370,6 +370,10 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
         "hidden_incentive": r"\textsc{Hidden-Incen.}",
         "snakes_ladders": r"\textsc{SnL}",
     }
+    fake_map = {
+        "timeout": r"$\infty$",
+        "out of memory": r"OM",
+    }
     tab_data = [
         [
             name_map[d["experiment"]["name"]],
@@ -382,7 +386,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_observations"],
             (round(d["verimon"]["time"]) if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
             if "fake" not in d["verimon"]
-            else r"-",
+            else fake_map[d["verimon"]["time"]],
             len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
             d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else r"-",
             (
@@ -405,7 +409,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
                 else r"$\leq 1s$"
             )
             if "fake" not in d["sampling"]
-            else r"-",
+            else fake_map[d["sampling"]["time"]],
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
             d["sampling"]["learning_rounds"] if "fake" not in d["sampling"] else r"-",
             (
