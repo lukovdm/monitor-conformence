@@ -1,10 +1,12 @@
 from datetime import datetime
 import logging
 import os
+import stat
 from time import time
 from typing import Any
 
 from aalpy import SUL, run_Lstar, Dfa, RandomWMethodEqOracle, Oracle
+from aalpy.learning_algs.deterministic.LSharp import run_Lsharp
 from stormpy import (
     SparseDtmc,
     SparsePomdp,
@@ -291,16 +293,16 @@ class VerimonEqOracle(Oracle):
             )
             self.filter_sul.threshold = self.threshold + self.fn_slack
             cex = self.eq_orcale.find_cex(hypothesis)
-            if (
-                cex is None or self._check_hyp_on_trace(hypothesis, cex)
+            if cex is None or self._check_hyp_on_trace(
+                hypothesis, cex
             ):  # We found a counter example but it is not a false negative, thus we ignore it
                 logger.debug(
                     f"Finding fp using eq oracle, threshold: {self.threshold - self.fp_slack}"
                 )
                 self.filter_sul.threshold = self.threshold - self.fp_slack
                 cex = self.eq_orcale.find_cex(hypothesis)
-                if (
-                    cex is None or not self._check_hyp_on_trace(hypothesis, cex)
+                if cex is None or not self._check_hyp_on_trace(
+                    hypothesis, cex
                 ):  # We found a counter example but it is not a false positive, thus we ignore it
                     logger.debug("No counter example found using eq oracle")
                     cex = None
@@ -449,6 +451,7 @@ def run_verimon(
     walks_per_state: int,
     walk_len: int,
     use_horizon_in_filtering: bool,
+    learning_alg: str,
     base_dir: str | None = None,
 ) -> tuple[tuple[Dfa, dict], dict]:
     sul = FilteringSUL(
@@ -480,17 +483,34 @@ def run_verimon(
         base_dir,
     )
 
-    return (
-        run_Lstar(
-            alphabet,
-            sul,
-            eq_oracle,
-            automaton_type="dfa",
-            print_level=2,
-            return_data=True,
-        ),  # type: ignore
-        eq_oracle.stats,
-    )
+    if learning_alg == "L#":
+        return (
+            run_Lsharp(
+                alphabet,
+                sul,
+                eq_oracle,
+                "dfa",
+                extension_rule="SepSeq",
+                separation_rule="ADS",
+                return_data=True,
+                print_level=2,
+            ),  # type: ignore
+            eq_oracle.stats,
+        )
+    elif learning_alg == "L*":
+        return (
+            run_Lstar(
+                alphabet,
+                sul,
+                eq_oracle,
+                automaton_type="dfa",
+                print_level=2,
+                return_data=True,
+            ),  # type: ignore
+            eq_oracle.stats,
+        )
+    else:
+        raise ValueError(f"Unknown learning algorithm: {learning_alg}")
 
 
 def run_trad_learning(
@@ -504,6 +524,7 @@ def run_trad_learning(
     walk_len: int,
     use_risk: bool,
     use_horizon_in_filtering: bool,
+    learning_alg: str,
 ) -> tuple[Dfa, dict]:
     sul = FilteringSUL(
         mc,
@@ -515,9 +536,22 @@ def run_trad_learning(
         use_risk,
     )
     eq_oracle = RandomWMethodEqOracle(alphabet, sul, walks_per_state, walk_len)
-    return run_Lstar(
-        alphabet, sul, eq_oracle, automaton_type="dfa", print_level=2, return_data=True
-    )  # type: ignore
+
+    if learning_alg == "L#":
+        return run_Lsharp(
+            alphabet, sul, eq_oracle, "dfa", return_data=True, print_level=2
+        )  # type: ignore
+    elif learning_alg == "L*":
+        return run_Lstar(
+            alphabet,
+            sul,
+            eq_oracle,
+            automaton_type="dfa",
+            print_level=2,
+            return_data=True,
+        )  # type: ignore
+    else:
+        raise ValueError(f"Unknown learning algorithm: {learning_alg}")
 
 
 def run_sampling_learning(
@@ -531,6 +565,7 @@ def run_sampling_learning(
     walk_len: int,
     use_risk: bool,
     use_horizon_in_filtering: bool,
+    learning_alg: str,
 ) -> tuple[Dfa, dict]:
     sul = FilteringSUL(
         mc,
@@ -542,6 +577,19 @@ def run_sampling_learning(
         use_risk,
     )
     eq_oracle = SamplingEqOracle(alphabet, sul, mc, num_walks, walk_len)
-    return run_Lstar(
-        alphabet, sul, eq_oracle, automaton_type="dfa", print_level=2, return_data=True
-    )  # type: ignore
+
+    if learning_alg == "L#":
+        return run_Lsharp(
+            alphabet, sul, eq_oracle, "dfa", return_data=True, print_level=2
+        )  # type: ignore
+    elif learning_alg == "L*":
+        return run_Lstar(
+            alphabet,
+            sul,
+            eq_oracle,
+            automaton_type="dfa",
+            print_level=2,
+            return_data=True,
+        )  # type: ignore
+    else:
+        raise ValueError(f"Unknown learning algorithm: {learning_alg}")

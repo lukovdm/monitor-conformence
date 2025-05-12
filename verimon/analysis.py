@@ -1,4 +1,5 @@
 from collections import Counter
+from copy import deepcopy
 from fractions import Fraction
 import json
 from math import ceil
@@ -14,7 +15,7 @@ import numpy as np
 
 
 VERIFY_EXPERIMENTS = 336
-LEARN_EXPERIMENTS = 146
+LEARN_EXPERIMENTS = 39  # 146
 
 
 def clean_dict(d):
@@ -57,6 +58,31 @@ def combine_sampling_and_verimon(data, equal_fields):
     return [d for d in data if "ignore" not in d]
 
 
+def combine_two_experiments(
+    data: list[dict], identifier: str, res_key: str, equal_fields: list[str]
+):
+    new_data = []
+    for d in data:
+        found_new_d = None
+        for new_d in new_data:
+            if all(
+                d["experiment"][field] == new_d["experiment"][field]
+                for field in equal_fields
+            ):
+                found_new_d = new_d
+                break
+
+        if found_new_d is None:
+            found_new_d = deepcopy(d)
+            del found_new_d["experiment"][identifier]
+            del found_new_d[res_key]
+            new_data.append(found_new_d)
+
+        found_new_d[d["experiment"][identifier]] = d[res_key]
+
+    return new_data
+
+
 def add_family_size(data):
     # Use regex on log file to find family size
     for d in data:
@@ -74,15 +100,22 @@ def add_family_size(data):
 def add_learning_rounds(data):
     # Use regex on log file to find learning rounds
     for d in data:
-        if "verimon" in d:
-            continue
         with open(d["log_path"], "r") as f:
             log = f.read()
-        match = re.search(r"Learning Rounds:  (\d+)", log)
-        if match:
-            d["sampling"]["learning_rounds"] = int(match.group(1))
-        else:
-            d["sampling"]["learning_rounds"] = None
+
+        if "sampling" in d:
+            match = re.search(r"Learning Rounds:  (\d+)", log)
+            if match:
+                d["sampling"]["learning_rounds"] = int(match.group(1))
+            else:
+                d["sampling"]["learning_rounds"] = None
+
+        if "verimon" in d:
+            membership_queries = re.search(r"Membership Queries  : (\d+)", log)
+            if membership_queries:
+                d["verimon"]["membership_queries"] = int(membership_queries.group(1))
+            else:
+                d["verimon"]["membership_queries"] = 0
 
 
 def prep_data_for_latex(data):
@@ -102,9 +135,9 @@ def add_short_names(data, verify=False):
 
         if name not in variant_indexes:
             variant_indexes[name] = 0
-        d["experiment"]["short_name"] = (
-            f"\\textsc{{{name[0].capitalize()}-{variant_indexes[name]}}}"
-        )
+        d["experiment"][
+            "short_name"
+        ] = f"\\textsc{{{name[0].capitalize()}-{variant_indexes[name]}}}"
         variant_indexes[name] += 1
 
 
@@ -291,13 +324,17 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 
     tab_data = [
         [
-            file_map[d["experiment"]["mc"]]
-            if d["experiment"]["mc"] in file_map
-            else name_map[d["experiment"]["learn_experiment"]["name"]],
+            (
+                file_map[d["experiment"]["mc"]]
+                if d["experiment"]["mc"] in file_map
+                else name_map[d["experiment"]["learn_experiment"]["name"]]
+            ),
             d["experiment"]["short_name"],
-            d["experiment"]["threshold"]
-            if d["experiment"]["threshold"] is not None
-            else r"\checkmark",
+            (
+                d["experiment"]["threshold"]
+                if d["experiment"]["threshold"] is not None
+                else r"\checkmark"
+            ),
             d["experiment"]["horizon"],
             "MA" if d["experiment"]["search"] == "fn" else "FA",
             d["mc"]["mc_states"],
@@ -305,32 +342,49 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["mc"]["mc_observations"],
             d["monitor"]["monitor_states"],
             d["monitor"]["monitor_transitions"],
-            f"$10^{{{int(math.log10(d['family_size']))}}}$"
-            if d["family_size"] is not None
-            else r"-",
-            (round(d["result"]["time"]) if d["result"]["time"] >= 1 else r"$\leq 1s$")
-            if "fake" not in d["result"]
-            else r"-",
             (
-                round(d["result"]["product_time"])
-                if d["result"]["product_time"] >= 1
-                else r"$\leq 1s$"
-            )
-            if "fake" not in d["result"]
-            else r"-",
+                f"$10^{{{int(math.log10(d['family_size']))}}}$"
+                if d["family_size"] is not None
+                else r"-"
+            ),
             (
-                round(d["result"]["paynt_time"])
-                if d["result"]["paynt_time"] >= 1
-                else r"$\leq 1s$"
-            )
-            if "fake" not in d["result"]
-            else r"-",
-            d["result"]["pomdp_states"]
-            if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
-            else r"-",
-            float(d["result"]["goal_threshold"])
-            if d["result"]["goal_threshold"] is not None and "fake" not in d["result"]
-            else (r"\checkmark" if "fake" not in d["result"] else r"-"),
+                (
+                    round(d["result"]["time"])
+                    if d["result"]["time"] >= 1
+                    else r"$\leq 1s$"
+                )
+                if "fake" not in d["result"]
+                else r"-"
+            ),
+            (
+                (
+                    round(d["result"]["product_time"])
+                    if d["result"]["product_time"] >= 1
+                    else r"$\leq 1s$"
+                )
+                if "fake" not in d["result"]
+                else r"-"
+            ),
+            (
+                (
+                    round(d["result"]["paynt_time"])
+                    if d["result"]["paynt_time"] >= 1
+                    else r"$\leq 1s$"
+                )
+                if "fake" not in d["result"]
+                else r"-"
+            ),
+            (
+                d["result"]["pomdp_states"]
+                if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
+                else r"-"
+            ),
+            (
+                float(d["result"]["goal_threshold"])
+                if d["result"]["goal_threshold"] is not None
+                and "fake" not in d["result"]
+                else (r"\checkmark" if "fake" not in d["result"] else r"-")
+            ),
         ]
         for d in data
     ]
@@ -373,32 +427,48 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
-            (round(d["verimon"]["time"]) if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
-            if "fake" not in d["verimon"]
-            else r"-",
+            (
+                (
+                    round(d["verimon"]["time"])
+                    if d["verimon"]["time"] >= 1
+                    else r"$\leq 1s$"
+                )
+                if "fake" not in d["verimon"]
+                else r"-"
+            ),
             len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
             d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else r"-",
-            float(d["verimon"]["false_positive"])
-            if "fake" not in d["verimon"]
-            else r"-",
-            float(d["verimon"]["false_negative"])
-            if "fake" not in d["verimon"]
-            else r"-",
             (
-                round(d["sampling"]["time"])
-                if d["sampling"]["time"] >= 1
-                else r"$\leq 1s$"
-            )
-            if "fake" not in d["sampling"]
-            else r"-",
+                float(d["verimon"]["false_positive"])
+                if "fake" not in d["verimon"]
+                else r"-"
+            ),
+            (
+                float(d["verimon"]["false_negative"])
+                if "fake" not in d["verimon"]
+                else r"-"
+            ),
+            (
+                (
+                    round(d["sampling"]["time"])
+                    if d["sampling"]["time"] >= 1
+                    else r"$\leq 1s$"
+                )
+                if "fake" not in d["sampling"]
+                else r"-"
+            ),
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
             d["sampling"]["learning_rounds"] if "fake" not in d["sampling"] else r"-",
-            float(d["sampling"]["false_positive"])
-            if "fake" not in d["sampling"]
-            else r"-",
-            float(d["sampling"]["false_negative"])
-            if "fake" not in d["sampling"]
-            else r"-",
+            (
+                float(d["sampling"]["false_positive"])
+                if "fake" not in d["sampling"]
+                else r"-"
+            ),
+            (
+                float(d["sampling"]["false_negative"])
+                if "fake" not in d["sampling"]
+                else r"-"
+            ),
         ]
         for d in data
     ]
@@ -439,6 +509,7 @@ def compare_runtimes(
     exp_data: list[dict[str, Any]],
     key1: str,
     key2: str,
+    data_key="time",
     title: str | None = None,
     figsize: tuple = (10, 6),
     xlabel: str | None = None,
@@ -453,8 +524,8 @@ def compare_runtimes(
 ):
     max_runtime = max(
         max(
-            data[key1]["time"] if key1 in data else 0,
-            data[key2]["time"] if key2 in data else 0,
+            data[key1][data_key] if key1 in data else 0,
+            data[key2][data_key] if key2 in data else 0,
         )
         for data in exp_data
     )
@@ -541,8 +612,8 @@ def compare_runtimes(
     for data in exp_data:
         if key1 not in data or key2 not in data:
             continue
-        time1 = data[key1]["time"]
-        time2 = data[key2]["time"]
+        time1 = data[key1][data_key]
+        time2 = data[key2][data_key]
         if time1 is None or time2 is None:
             continue
         plt.plot(

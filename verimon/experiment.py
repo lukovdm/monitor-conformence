@@ -56,7 +56,7 @@ class Experiment(ABC):
     def run(self, timestamp: str, base_dir: str):
         resource.setrlimit(
             resource.RLIMIT_AS,
-            (1024 * 1024 * 1024 * 15, resource.RLIM_INFINITY),  # 15GiB limit
+            (1024 * 1024 * 1024 * 8, resource.RLIM_INFINITY),  # 8GiB limit
         )
         proc_title = getproctitle()
         proc_title = proc_title.split("<")[0]
@@ -130,6 +130,7 @@ class LearningExperiment(Experiment):
         verimon_walks_per_state: int = 100,
         verimon_walk_length: int = 11,
         learning_algs: list[str] = ["verimon", "sampling"],
+        l_variant: str = "L#",
         use_horizon_in_filtering: bool = True,
         old_walks_per_state: int = 100000,
         old_walk_length: int | None = None,
@@ -163,6 +164,7 @@ class LearningExperiment(Experiment):
         self.verimon_walks_per_state = verimon_walks_per_state
         self.verimon_walk_length = verimon_walk_length
         self.learning_algs = learning_algs
+        self.l_variant = l_variant
         self.use_horizon_in_filtering = use_horizon_in_filtering
         self.old_walks_per_state = old_walks_per_state
         self.old_walk_length = old_walk_length
@@ -190,7 +192,8 @@ class LearningExperiment(Experiment):
                 self.verimon_walks_per_state,
                 self.verimon_walk_length,
                 self.use_horizon_in_filtering,
-                base_dir,
+                self.l_variant,
+                base_dir=base_dir,
             )
             verimon_time = time() - verimon_start_time
 
@@ -215,7 +218,7 @@ class LearningExperiment(Experiment):
                 f"-----------------------------------"
             )
             verimon_learned_monitor.visualize(
-                path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon",
+                path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.dot",
                 file_type="dot",
             )
             mon = aalpy_dfa_to_stormvogel(verimon_learned_monitor)
@@ -280,6 +283,7 @@ class LearningExperiment(Experiment):
                 self.old_walk_length,
                 self.use_risk,
                 self.use_horizon_in_filtering,
+                self.l_variant,
             )
         elif alg == "sampling":
             trad_learned_monitor, trad_info = run_sampling_learning(
@@ -293,6 +297,7 @@ class LearningExperiment(Experiment):
                 self.old_walk_length,
                 self.use_risk,
                 self.use_horizon_in_filtering,
+                self.l_variant,
             )
         else:
             raise ValueError(f"Unknown learning algorithm: {alg}")
@@ -754,6 +759,11 @@ if __name__ == "__main__":
         help="Name of the experiment to run (default: run all experiments)",
     )
     parser.add_argument(
+        "--variant",
+        type=str,
+        help="Variant of the experiment to run (default: run all variants)",
+    )
+    parser.add_argument(
         "-b",
         "--base-dir",
         type=str,
@@ -839,6 +849,22 @@ if __name__ == "__main__":
         base_dir = args.base_dir
 
     os.makedirs(os.path.dirname(base_dir), exist_ok=True)
+
+    if args.variant:
+        variant = next(
+            (
+                exp
+                for group in experiments
+                for exp in group.get_objects()
+                if exp.variant == args.variant
+            ),
+            None,
+        )
+        if variant:
+            variant.run(timestamp, base_dir)
+        else:
+            print(f"Variant {args.variant} not found.")
+        exit()
 
     if args.concurrent:
         from multiprocessing import Pool
