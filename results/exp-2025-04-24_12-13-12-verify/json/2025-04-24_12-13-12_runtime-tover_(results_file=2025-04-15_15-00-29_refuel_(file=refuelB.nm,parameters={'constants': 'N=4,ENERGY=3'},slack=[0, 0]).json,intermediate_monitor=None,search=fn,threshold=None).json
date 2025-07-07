@@ -1,0 +1,75 @@
+{
+    "experiment": {
+        "name": "runtime-tover",
+        "variant": "(results_file=2025-04-15_15-00-29_refuel_(file=refuelB.nm,parameters={'constants': 'N=4,ENERGY=3'},slack=[0, 0]).json,intermediate_monitor=None,search=fn,threshold=None)",
+        "result_json_file": "stats/exp-2025-04-24_12-13-12-verify/json/2025-04-24_12-13-12_runtime-tover_(results_file=2025-04-15_15-00-29_refuel_(file=refuelB.nm,parameters={'constants': 'N=4,ENERGY=3'},slack=[0, 0]).json,intermediate_monitor=None,search=fn,threshold=None).json",
+        "stop": false,
+        "results_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_refuel_(file=refuelB.nm,parameters={'constants': 'N=4,ENERGY=3'},slack=[0, 0]).json",
+        "monitor": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_refuel_(file=refuelB.nm,parameters={'constants': 'N=4,ENERGY=3'},slack=[0, 0])_verimon.drn",
+        "mon_percent": 1.0,
+        "mc": "tests/premise/refuelB.nm",
+        "spec": "Pmax=? [F<=3 \"empty\"]",
+        "good_label": "empty",
+        "horizon": 10,
+        "relative_error": "1/100",
+        "use_risk": true,
+        "threshold": null,
+        "loader": "pomdp",
+        "parameters": {
+            "constants": "N=4,ENERGY=3"
+        },
+        "use_exact": true,
+        "learn_experiment": {
+            "name": "refuel",
+            "variant": "(file=refuelB.nm,parameters={'constants': 'N=4,ENERGY=3'},slack=[0, 0])",
+            "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_refuel_(file=refuelB.nm,parameters={'constants': 'N=4,ENERGY=3'},slack=[0, 0]).json",
+            "file": "tests/premise/refuelB.nm",
+            "parameters": {
+                "constants": "N=4,ENERGY=3"
+            },
+            "spec": "Pmax=? [F<=3 \"empty\"]",
+            "good_label": "empty",
+            "horizon": 10,
+            "threshold": "3/10",
+            "fp_slack": "0",
+            "fn_slack": "0",
+            "relative_error": "1/100",
+            "use_risk": true,
+            "use_random_eq": true,
+            "verimon_walks_per_state": 100,
+            "verimon_walk_length": 11,
+            "learning_algs": [
+                "verimon"
+            ],
+            "use_horizon_in_filtering": true,
+            "old_walks_per_state": 100000,
+            "old_walk_length": 11,
+            "loader": "pomdp",
+            "use_exact": true
+        },
+        "search": "fn",
+        "paynt_strategy": "ar"
+    },
+    "finished": true,
+    "time": {
+        "total": 11.403515577316284
+    },
+    "mc": {
+        "mc_states": 277,
+        "mc_transitions": 6415,
+        "mc_observations": 107
+    },
+    "monitor": {
+        "monitor_states": 42,
+        "monitor_transitions": 4494
+    },
+    "result": {
+        "goal_threshold": "19/100",
+        "trace": [],
+        "time": 6.716002702713013,
+        "product_time": 2.935570240020752,
+        "paynt_time": 3.7686054706573486,
+        "double_check_time": 0.004343986511230469,
+        "pomdp_states": 1454
+    }
+}

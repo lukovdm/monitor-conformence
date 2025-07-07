@@ -1,0 +1,84 @@
+{
+    "experiment": {
+        "name": "runtime-tover",
+        "variant": "(results_file=2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=5,PMAX=5'},horizon=9,slack=[0, 0]).json,intermediate_monitor=0.5,search=fp,threshold=0.3)",
+        "result_json_file": "stats/exp-2025-04-24_12-13-12-verify/json/2025-04-24_12-13-12_runtime-tover_(results_file=2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=5,PMAX=5'},horizon=9,slack=[0, 0]).json,intermediate_monitor=0.5,search=fp,threshold=0.3).json",
+        "stop": false,
+        "results_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=5,PMAX=5'},horizon=9,slack=[0, 0]).json",
+        "mon_percent": 0.574468085106383,
+        "monitor": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 17:05:17.825623-133.drn",
+        "mc": "tests/premise/airportA-3.nm",
+        "spec": "Pmax=? [F<=4 \"crash\"]",
+        "good_label": "crash",
+        "horizon": 9,
+        "relative_error": "1/100",
+        "use_risk": true,
+        "threshold": "3/10",
+        "loader": "pomdp",
+        "parameters": {
+            "constants": "DMAX=5,PMAX=5"
+        },
+        "use_exact": true,
+        "learn_experiment": {
+            "name": "airport",
+            "variant": "(file=airportA-3.nm,parameters={'constants': 'DMAX=5,PMAX=5'},horizon=9,slack=[0, 0])",
+            "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=5,PMAX=5'},horizon=9,slack=[0, 0]).json",
+            "file": "tests/premise/airportA-3.nm",
+            "parameters": {
+                "constants": "DMAX=5,PMAX=5"
+            },
+            "spec": "Pmax=? [F<=4 \"crash\"]",
+            "good_label": "crash",
+            "horizon": 9,
+            "threshold": "3/10",
+            "fp_slack": "0",
+            "fn_slack": "0",
+            "relative_error": "1/100",
+            "use_risk": true,
+            "use_random_eq": true,
+            "verimon_walks_per_state": 100,
+            "verimon_walk_length": 11,
+            "learning_algs": [
+                "verimon"
+            ],
+            "use_horizon_in_filtering": true,
+            "old_walks_per_state": 100000,
+            "old_walk_length": 10,
+            "loader": "pomdp",
+            "use_exact": true
+        },
+        "search": "fp",
+        "paynt_strategy": "ar"
+    },
+    "finished": true,
+    "time": {
+        "total": 5.946594715118408
+    },
+    "mc": {
+        "mc_states": 145,
+        "mc_transitions": 423,
+        "mc_observations": 50
+    },
+    "monitor": {
+        "monitor_states": 133,
+        "monitor_transitions": 6650
+    },
+    "result": {
+        "goal_threshold": "10957828826631/40062844240000",
+        "trace": [
+            "{d:4,pobs:4,turn:0}",
+            "{d:4,pobs:3,turn:1}",
+            "{d:3,pobs:3,turn:0}",
+            "{d:3,pobs:4,turn:1}",
+            "{d:2,pobs:4,turn:0}",
+            "{d:2,pobs:3,turn:1}",
+            "{d:1,pobs:3,turn:0}",
+            "{d:1,pobs:1,turn:1}"
+        ],
+        "time": 5.740072250366211,
+        "product_time": 0.29862070083618164,
+        "paynt_time": 5.4235570430755615,
+        "double_check_time": 0.00238037109375,
+        "pomdp_states": 692
+    }
+}

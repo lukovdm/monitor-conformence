@@ -1,0 +1,83 @@
+{
+    "experiment": {
+        "name": "runtime-tover",
+        "variant": "(results_file=2025-04-15_15-00-29_hidden_incentive_(horizon=8,slack=[0, 0]).json,intermediate_monitor=0.5,search=fn,threshold=None)",
+        "result_json_file": "stats/exp-2025-04-24_12-13-12-verify/json/2025-04-24_12-13-12_runtime-tover_(results_file=2025-04-15_15-00-29_hidden_incentive_(horizon=8,slack=[0, 0]).json,intermediate_monitor=0.5,search=fn,threshold=None).json",
+        "stop": false,
+        "results_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_hidden_incentive_(horizon=8,slack=[0, 0]).json",
+        "mon_percent": 0.5869565217391305,
+        "monitor": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-16 04:29:58.668148-115.drn",
+        "mc": "tests/premise/hidden-incentive.nm",
+        "spec": "Pmax=? [F<=4 \"crash\"]",
+        "good_label": "crash",
+        "horizon": 8,
+        "relative_error": "1/100",
+        "use_risk": true,
+        "threshold": null,
+        "loader": "pomdp",
+        "parameters": {
+            "constants": "N=3"
+        },
+        "use_exact": true,
+        "learn_experiment": {
+            "name": "hidden_incentive",
+            "variant": "(horizon=8,slack=[0, 0])",
+            "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_hidden_incentive_(horizon=8,slack=[0, 0]).json",
+            "file": "tests/premise/hidden-incentive.nm",
+            "parameters": {
+                "constants": "N=3"
+            },
+            "spec": "Pmax=? [F<=4 \"crash\"]",
+            "good_label": "crash",
+            "horizon": 8,
+            "threshold": "3/10",
+            "fp_slack": "0",
+            "fn_slack": "0",
+            "relative_error": "1/100",
+            "use_risk": true,
+            "use_random_eq": true,
+            "verimon_walks_per_state": 100,
+            "verimon_walk_length": 11,
+            "learning_algs": [
+                "verimon"
+            ],
+            "use_horizon_in_filtering": true,
+            "old_walks_per_state": 100000,
+            "old_walk_length": 9,
+            "loader": "pomdp",
+            "use_exact": true
+        },
+        "search": "fn",
+        "paynt_strategy": "ar"
+    },
+    "finished": true,
+    "time": {
+        "total": 2.984178304672241
+    },
+    "mc": {
+        "mc_states": 397,
+        "mc_transitions": 1649,
+        "mc_observations": 100
+    },
+    "monitor": {
+        "monitor_states": 115,
+        "monitor_transitions": 11500
+    },
+    "result": {
+        "goal_threshold": "1",
+        "trace": [
+            "{ax:1,ay:2,crash:0,done:0,dx:0,dy:0,start:true,turn:false}",
+            "{ax:1,ay:2,crash:0,done:0,dx:0,dy:0,start:true,turn:true}",
+            "{ax:1,ay:2,crash:0,done:0,dx:0,dy:1,start:true,turn:false}",
+            "{ax:1,ay:1,crash:0,done:0,dx:0,dy:1,start:true,turn:true}",
+            "{ax:1,ay:1,crash:0,done:0,dx:0,dy:2,start:true,turn:false}",
+            "{ax:1,ay:2,crash:0,done:0,dx:0,dy:2,start:true,turn:true}",
+            "{ax:1,ay:2,crash:1,done:0,dx:1,dy:2,start:true,turn:false}"
+        ],
+        "time": 2.3412258625030518,
+        "product_time": 1.867891788482666,
+        "paynt_time": 0.35615038871765137,
+        "double_check_time": 0.0016362667083740234,
+        "pomdp_states": 551
+    }
+}
