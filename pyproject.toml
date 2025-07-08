@@ -1,19 +1,16 @@
 [tool.poetry]
 name = "verimon"
 version = "0.1.0"
-description = ""
+description = "test"
 authors = ["Luko van der Maas <luko.vandermaas@ru.nl>"]
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.12,<4.0"
 aalpy = { git = "https://github.com/DES-Lab/AALpy.git" }
 graphviz = "^0.20.3"
 matplotlib = "^3.9.2"
-stormpy = { path = "../stormpy", develop = true }
-stormvogel = { path = "../stormvogel" }
-payntbind = { path = "../synthesis/payntbind", develop = true }
-paynt = { path = "../synthesis", develop= true }
 click = "^8.1.7"
 z3-solver = "^4.13.3.0"
 psutil = "^6.1.0"
@@ -23,6 +20,12 @@ black = "^24.10.0"
 setproctitle = "^1.3.4"
 tabulate = "^0.9.0"
 scipy = "^1.15.2"
+
+[tool.poetry.group.no-docker.dependencies]
+stormpy = { path = "../stormpy", develop = true }
+payntbind = { path = "../synthesis/payntbind", develop = true }
+paynt = { path = "../synthesis", develop= true }
+stormvogel = { path = "../stormvogel", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.2.2"

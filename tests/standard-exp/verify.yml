@@ -1,0 +1,22 @@
+- type: VerifyExperiment
+  name: runtime-tover
+  results_file: 
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_icy-driving_(parameters={'constants': 'IMAX=1'},horizon=3,slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_icy-driving_(parameters={'constants': 'IMAX=1'},horizon=10,slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_refuel_(file=refuelB.nm,parameters={'constants': 'N=3,ENERGY=3'},slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_evade_(horizon=6,slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=3,PMAX=3'},horizon=8,slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=3,PMAX=3'},horizon=9,slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_snakes_ladders_(horizon=8,slack=[0, 0]).json"
+    - "results/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_snakes_ladders_(horizon=10,slack=[0, 0]).json"
+  intermediate_monitor:
+    - 0.5
+    - null
+  monitor_from: "verimon"
+  search: 
+    - fn
+    - fp
+  threshold: 
+    - null
+    - 0.3
+  paynt_strategy: ar

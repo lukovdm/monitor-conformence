@@ -1,0 +1,121 @@
+{
+    "experiment": {
+        "name": "airport",
+        "variant": "(file=airportA-3.nm,parameters={'constants': 'DMAX=3,PMAX=3'},horizon=9,slack=[0.2, 0.05])",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=3,PMAX=3'},horizon=9,slack=[0.2, 0.05]).json",
+        "file": "tests/premise/airportA-3.nm",
+        "parameters": {
+            "constants": "DMAX=3,PMAX=3"
+        },
+        "spec": "Pmax=? [F<=4 \"crash\"]",
+        "good_label": "crash",
+        "horizon": 9,
+        "threshold": "3/10",
+        "fp_slack": "1/5",
+        "fn_slack": "1/20",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "verimon"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 10,
+        "loader": "pomdp",
+        "use_exact": true
+    },
+    "finished": true,
+    "time": {
+        "total": 1379.1989786624908
+    },
+    "mc": {
+        "mc_states": 45,
+        "mc_transitions": 113,
+        "mc_observations": 18
+    },
+    "verimon": {
+        "time": 870.2581849098206,
+        "false_positive": "28613649491/222411521760",
+        "false_positive_trace": [
+            "{d:2,pobs:2,turn:0}",
+            "{d:2,pobs:1,turn:1}",
+            "{d:2,pobs:1,turn:0}",
+            "{d:2,pobs:1,turn:1}",
+            "{d:2,pobs:1,turn:0}",
+            "{d:2,pobs:2,turn:1}",
+            "{d:1,pobs:2,turn:0}",
+            "{d:1,pobs:0,turn:1}"
+        ],
+        "false_negative": "306795506272507/910408567200000",
+        "false_negative_trace": [
+            "{d:2,pobs:2,turn:0}",
+            "{d:2,pobs:1,turn:1}",
+            "{d:2,pobs:1,turn:0}",
+            "{d:2,pobs:2,turn:1}",
+            "{d:1,pobs:2,turn:0}",
+            "{d:1,pobs:1,turn:1}",
+            "{d:1,pobs:1,turn:0}",
+            "{d:1,pobs:1,turn:1}"
+        ],
+        "monitor_states": 66,
+        "eq_used": 4,
+        "fp_found": 1,
+        "fn_found": 8,
+        "fp_bounds": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "249716409709379/2864631386480000"
+        ],
+        "fn_bounds": [
+            null,
+            "1",
+            null,
+            null,
+            "2712853008331839/3843397690520000",
+            null,
+            "2/3",
+            "161/360",
+            "161/360",
+            "26613200461/48423023061",
+            "161/360",
+            "161/360",
+            null
+        ],
+        "monitors": [
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:20:46.800101-13.drn",
+            null,
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:20:48.057194-23.drn",
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:20:50.644976-48.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:20:53.323905-49.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:21:08.763073-54.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:21:24.213056-56.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:21:54.369408-61.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:22:46.109995-62.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:22:47.222659-65.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:27:52.727629-66.drn"
+        ],
+        "product_time": 2.2828633785247803,
+        "paynt_time": 864.2438521385193,
+        "eq_time": 0.08138632774353027,
+        "counterexample_time": 866.91,
+        "lstar_time": 3.33,
+        "dot_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=3,PMAX=3'},horizon=9,slack=[0.2, 0.05])_verimon.dot",
+        "drn_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=3,PMAX=3'},horizon=9,slack=[0.2, 0.05])_verimon.drn"
+    }
+}

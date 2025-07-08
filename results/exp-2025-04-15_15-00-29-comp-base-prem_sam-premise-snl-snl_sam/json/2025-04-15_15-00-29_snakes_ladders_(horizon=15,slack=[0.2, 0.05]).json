@@ -1,0 +1,152 @@
+{
+    "experiment": {
+        "name": "snakes_ladders",
+        "variant": "(horizon=15,slack=[0.2, 0.05])",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_snakes_ladders_(horizon=15,slack=[0.2, 0.05]).json",
+        "file": "tests/mc_u_nxn.pm",
+        "parameters": {
+            "n": 100,
+            "ladders": {
+                "1": 38,
+                "4": 14,
+                "9": 31,
+                "28": 64,
+                "40": 42,
+                "36": 44,
+                "51": 67,
+                "71": 91,
+                "80": 100
+            },
+            "snakes": {
+                "98": 76,
+                "95": 75,
+                "93": 73,
+                "87": 24,
+                "64": 60,
+                "62": 19,
+                "55": 53,
+                "49": 11,
+                "47": 26,
+                "16": 6
+            }
+        },
+        "spec": "Pmax=? [F<5 \"good\"]",
+        "good_label": "good",
+        "horizon": 15,
+        "threshold": "3/10",
+        "fp_slack": "1/5",
+        "fn_slack": "1/20",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "verimon"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 16,
+        "loader": "snakes_ladders",
+        "use_exact": true
+    },
+    "finished": true,
+    "time": {
+        "total": 11784.246085166931
+    },
+    "mc": {
+        "mc_states": 101,
+        "mc_transitions": 502,
+        "mc_observations": 4
+    },
+    "verimon": {
+        "time": 9326.74132347107,
+        "false_positive": "8290471/34229088",
+        "false_positive_trace": [
+            "ladder",
+            "normal",
+            "normal",
+            "normal",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "normal",
+            "normal",
+            "normal"
+        ],
+        "false_negative": "133/414",
+        "false_negative_trace": [
+            "normal",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "normal",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "normal",
+            "normal",
+            "ladder"
+        ],
+        "monitor_states": 345,
+        "eq_used": 1,
+        "fp_found": 2,
+        "fn_found": 9,
+        "fp_bounds": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "1075/14292",
+            "47/702"
+        ],
+        "fn_bounds": [
+            null,
+            "1",
+            "209/240",
+            "1",
+            "1",
+            "1",
+            "1819/3888",
+            "64/169",
+            "9361/20676",
+            "1",
+            null,
+            null
+        ],
+        "monitors": [
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:34.768116-89.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:43.095828-103.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:50.531702-106.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:01:10.124549-111.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:01:46.889668-183.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:02:26.501311-198.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:07:23.857995-265.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:17:58.921186-280.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:29:26.302194-300.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:56:55.184038-321.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 16:27:11.732368-328.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 17:01:13.420786-345.drn"
+        ],
+        "product_time": 6.87557053565979,
+        "paynt_time": 9253.645106315613,
+        "eq_time": 3.624185562133789,
+        "counterexample_time": 9264.83,
+        "lstar_time": 61.87,
+        "dot_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_snakes_ladders_(horizon=15,slack=[0.2, 0.05])_verimon.dot",
+        "drn_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_snakes_ladders_(horizon=15,slack=[0.2, 0.05])_verimon.drn"
+    }
+}

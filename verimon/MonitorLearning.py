@@ -2,14 +2,12 @@ from datetime import datetime
 import logging
 import os
 from time import time
-from typing import Any
 
 from aalpy import SUL, run_Lstar, Dfa, RandomWMethodEqOracle, Oracle
 from stormpy import (
     SparseDtmc,
     SparsePomdp,
     SparseModelComponents,
-    SparseExactDtmc,
     SparseExactPomdp,
     SparseExactModelComponents,
     export_to_drn,
@@ -25,8 +23,8 @@ from stormpy.pomdp import (
 )
 from stormpy.simulator import create_simulator, SparseSimulator
 
-from verimon.loaders import aalpy_dfa_to_stormpy, aalpy_dfa_to_stormvogel
-from verimon.logger import logger, setup_logging
+from verimon.loaders import aalpy_dfa_to_stormpy
+from verimon.logger import logger
 from verimon.verify import false_positive, false_negative
 
 

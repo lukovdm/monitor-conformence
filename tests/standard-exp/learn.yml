@@ -1,0 +1,166 @@
+- type: LearningExperiment
+  name: compare-trad
+  file:
+    - tests/premise/airportB-7.nm
+  parameters: 
+    constants: "DMAX=4,PMAX=4"
+  spec: Pmax=? [F<2 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [sampling]
+  old_walks_per_state:
+    - 100
+    - 100000
+  threshold:
+    - 0.055
+    - 0.2
+  use_exact: true
+
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - tests/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=1"
+  horizon:
+    - 3
+    - 10
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [sampling]
+  use_exact: true
+
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - tests/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=1"
+  horizon:
+    - 3
+    - 10
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  use_exact: true
+
+- type: LearningExperiment
+  name: airport
+  file:
+    - tests/premise/airportA-3.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [sampling]
+  horizon:
+    - 8
+  use_exact: true
+
+- type: LearningExperiment
+  name: airport
+  file:
+    - tests/premise/airportA-3.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  horizon:
+    - 8
+  use_exact: true
+
+- name: snakes_ladders
+  type: LearningExperiment
+  file: tests/mc_u_nxn.pm
+  parameters:
+    n: 100
+    ladders:
+      1: 38
+      4: 14
+      9: 31
+      28: 64
+      40: 42
+      36: 44
+      51: 67
+      71: 91
+      80: 100
+    snakes:
+      98: 76
+      95: 75
+      93: 73
+      87: 24
+      64: 60
+      62: 19
+      55: 53
+      49: 11
+      47: 26
+      16: 6
+  spec: Pmax=? [F<3 "good"]
+  good_label: good
+  loader: snakes_ladders
+  horizon:
+    - 10
+    - 15
+  use_horizon_in_filtering:
+    - true
+  learning_algs: 
+    - [sampling]
+  use_exact: true
+
+
+- name: snakes_ladders
+  type: LearningExperiment
+  file: tests/mc_u_nxn.pm
+  parameters:
+    n: 100
+    ladders:
+      1: 38
+      4: 14
+      9: 31
+      28: 64
+      40: 42
+      36: 44
+      51: 67
+      71: 91
+      80: 100
+    snakes:
+      98: 76
+      95: 75
+      93: 73
+      87: 24
+      64: 60
+      62: 19
+      55: 53
+      49: 11
+      47: 26
+      16: 6
+  spec: Pmax=? [F<5 "good"]
+  good_label: good
+  loader: snakes_ladders
+  horizon:
+    - 10
+    - 15
+  use_horizon_in_filtering:
+    - true
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  learning_algs: 
+    - [verimon]
+  use_exact: true

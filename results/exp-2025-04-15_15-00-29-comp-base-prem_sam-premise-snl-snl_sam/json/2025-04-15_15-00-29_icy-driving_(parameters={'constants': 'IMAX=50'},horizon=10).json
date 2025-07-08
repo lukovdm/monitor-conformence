@@ -1,0 +1,60 @@
+{
+    "experiment": {
+        "name": "icy-driving",
+        "variant": "(parameters={'constants': 'IMAX=50'},horizon=10)",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_icy-driving_(parameters={'constants': 'IMAX=50'},horizon=10).json",
+        "file": "tests/icy-driving/icy-driving.pm",
+        "parameters": {
+            "constants": "IMAX=50"
+        },
+        "spec": "Pmax=? [F<=1 \"crash\"]",
+        "good_label": "crash",
+        "horizon": 10,
+        "threshold": "3/10",
+        "fp_slack": "1/5",
+        "fn_slack": "1/20",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "sampling"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 11,
+        "loader": "pomdp",
+        "use_exact": true
+    },
+    "finished": true,
+    "time": {
+        "total": 144.0605697631836
+    },
+    "mc": {
+        "mc_states": 52,
+        "mc_transitions": 250,
+        "mc_observations": 2
+    },
+    "sampling": {
+        "time": 68.97,
+        "lstar_time": 0.0,
+        "eq_time": 68.97,
+        "false_positive": "7010281/18172000",
+        "false_positive_trace": [
+            "{icy:1}",
+            "{icy:1}",
+            "{icy:1}",
+            "{icy:1}"
+        ],
+        "false_negative": "170719/610000",
+        "false_negative_trace": [
+            "{icy:1}",
+            "{icy:1}",
+            "{icy:1}"
+        ],
+        "monitor_states": 5,
+        "dot_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_icy-driving_(parameters={'constants': 'IMAX=50'},horizon=10)_sampling.dot",
+        "drn_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_icy-driving_(parameters={'constants': 'IMAX=50'},horizon=10)_sampling.drn"
+    }
+}

@@ -197,7 +197,7 @@ def simulator_unroll(mon: Model, horizon):
                         ]
                     )
                     states[(i + 1, dest_s.id)] = new_dest_s
-                    new_dest_s.add_label(f"step={i+1}")
+                    new_dest_s.add_label(f"step={i + 1}")
                     if i + 1 == horizon - 1:
                         new_dest_s.add_label("horizon")
                     else:

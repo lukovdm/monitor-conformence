@@ -1,0 +1,132 @@
+{
+    "experiment": {
+        "name": "snakes_ladders",
+        "variant": "(horizon=12,slack=[0, 0])",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_snakes_ladders_(horizon=12,slack=[0, 0]).json",
+        "file": "tests/mc_u_nxn.pm",
+        "parameters": {
+            "n": 100,
+            "ladders": {
+                "1": 38,
+                "4": 14,
+                "9": 31,
+                "28": 64,
+                "40": 42,
+                "36": 44,
+                "51": 67,
+                "71": 91,
+                "80": 100
+            },
+            "snakes": {
+                "98": 76,
+                "95": 75,
+                "93": 73,
+                "87": 24,
+                "64": 60,
+                "62": 19,
+                "55": 53,
+                "49": 11,
+                "47": 26,
+                "16": 6
+            }
+        },
+        "spec": "Pmax=? [F<5 \"good\"]",
+        "good_label": "good",
+        "horizon": 12,
+        "threshold": "3/10",
+        "fp_slack": "0",
+        "fn_slack": "0",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "verimon"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 13,
+        "loader": "snakes_ladders",
+        "use_exact": true
+    },
+    "finished": true,
+    "time": {
+        "total": 218.87905526161194
+    },
+    "mc": {
+        "mc_states": 101,
+        "mc_transitions": 502,
+        "mc_observations": 4
+    },
+    "verimon": {
+        "time": 160.31930685043335,
+        "false_positive": "47/144",
+        "false_positive_trace": [
+            "ladder",
+            "normal",
+            "ladder",
+            "normal",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "ladder",
+            "normal",
+            "normal"
+        ],
+        "false_negative": "29237/98064",
+        "false_negative_trace": [
+            "ladder",
+            "normal",
+            "normal",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "normal",
+            "ladder",
+            "normal",
+            "normal"
+        ],
+        "monitor_states": 97,
+        "eq_used": 1,
+        "fp_found": 1,
+        "fn_found": 5,
+        "fp_bounds": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "0"
+        ],
+        "fn_bounds": [
+            null,
+            "209/240",
+            "20/51",
+            "20/51",
+            "209/240",
+            "209/240",
+            null
+        ],
+        "monitors": [
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:30.657758-36.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:32.703923-40.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:50.779312-44.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:01:09.525179-60.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:01:12.605553-74.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:01:41.596299-91.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:02:25.867809-97.drn"
+        ],
+        "product_time": 1.2065389156341553,
+        "paynt_time": 151.37642860412598,
+        "eq_time": 3.8659119606018066,
+        "counterexample_time": 156.6,
+        "lstar_time": 3.71,
+        "dot_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_snakes_ladders_(horizon=12,slack=[0, 0])_verimon.dot",
+        "drn_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_snakes_ladders_(horizon=12,slack=[0, 0])_verimon.drn"
+    }
+}
