@@ -5,7 +5,7 @@ This repository contains the implementation of the algorithm called ToVer propos
 
 - [1] "Learning Verified Monitors for Hidden Markov Models" by Luko van der Maas and Sebastian Junges (ATVA 2025)
 
-This artifact requires significant amounts of memory and compute cores to run fully. We provide a reduced experiment set as per the ATVA artifact instructions. We suggest running this reduced set with at least 4 cores and 5 GB of memory, but a single core is supported. When run with 4 cores it should take around 1 hour to run.
+This artifact requires significant amounts of memory and compute cores to run fully. We provide a reduced experiment set as per the ATVA artifact instructions. We suggest running this reduced set with at least 6 cores and 10 GB of memory, but a single core is supported. When run with 6 cores it should take around 1 hour to run.
 
 The full experiments require at least 100 GB of memory and 40 cores to run in a timely manner (between 1-2 days).
 
@@ -112,14 +112,15 @@ To obtain the full results run the below command. Depending on the amount of cor
 ```bash
 python -m verimon.experiment tests/verify-exp/* tests/learn-exp/* -c
 ```
+The log files of our run of the full experiments can be found in the folders `stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam` and `stats/exp-2025-04-24_12-13-12-verify`. The folders can also be used to generate the plots as described in the next section.
 
-All commands take an optional `--core <number of cores>` to specify with how many cores to run the experiments, e.g., `--cores 44` to run with 44 cores. Without this argument it will run on all available cores. Each core can use at most 15GB of memory (many runs don't use the max memory) so it is advisable when running with many cores to have around 10GB of memory per core available.
+All experiment commands take an optional `--core <number of cores>` to specify with how many cores to run the experiments, e.g., `--cores 44` to run with 44 cores. Without this argument it will run on all available cores. Each core can use at most 15GB of memory (many runs don't use the max memory) so it is advisable when running with many cores to have around 10GB of memory per core available. For the reduced set, 2.5GB of memory per core should be enough.
 
 ## Analyzing the results
 
 Our results are stored in the folders `stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam` and `stats/exp-2025-04-24_12-13-12-verify`. These are the exact results used in the paper.
 
-These results can be analyzed by first opening the `paper.ipynb` [notebook](http://127.0.0.1:8080/lab/tree/notebooks/paper.ipynb). Then, changing the `experiment_dir` to point to the created stats folder, e.g., `"../stats/exp-2025-04-15_15-00-29-learn-verify"`. To easily obtain the path, navigate to the stats folder in browser of jupytor lab and right click to copy to path. Finally, executing all cells. All figures are show in the notebook labeled by which figure they represent. The figures are also exported as `.pgf` files at `VerifiableMonitorsTex/inprogress/images/plots`, which are directly included in the paper.
+These results can be analyzed by first opening the `paper.ipynb` [notebook](http://127.0.0.1:8080/lab/tree/notebooks/paper.ipynb). Then, changing the `experiment_dir` to point to the created stats folder, e.g., `"../stats/exp-2025-04-15_15-00-29-learn-verify"`. Make sure that you replace both instances of the assignment of `experiment_dir` to the same path. To easily obtain the path, navigate to the stats folder in browser of jupytor lab and right click to copy to path. Finally, executing all cells. All figures are show in the notebook labeled by which figure they represent. The figures are also exported as `.pgf` files at `VerifiableMonitorsTex/inprogress/images/plots`, which are directly included in the paper. The table are only exported as Tex tables.
 
 Note that when creating the plots for the reduced experiment set, the plots will be very limited and not representative of the full results.
 
