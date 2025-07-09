@@ -867,6 +867,7 @@ if __name__ == "__main__":
                 )
                 os._exit(1)  # Force terminate the process
 
+            # Set up the timeout handler inside the worker process
             signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(args.timeout)
 
@@ -875,30 +876,17 @@ if __name__ == "__main__":
             finally:
                 signal.alarm(0)  # Cancel the alarm if completed normally
 
-        def run_experiment_with_timeout2(exp, timestamp, base_dir):
-            with Pool(processes=1) as pool:
-                async_result = pool.apply_async(exp.run, (timestamp, base_dir))
-                try:
-                    async_result.get(timeout=args.timeout)
-                except Exception as e:
-                    pool.terminate()
-                    pool.join()
-                    if isinstance(e, TimeoutError):
-                        print(
-                            f"Experiment {exp.name} ({exp.variant}) timed out after {args.timeout} seconds"
-                        )
-                        os._exit(1)  # Force terminate the process
-
         with Pool(cores, maxtasksperchild=1) as pool:
             for group in experiments:
                 for exp in group.get_objects():
                     pool.apply_async(
-                        run_experiment_with_timeout2, (exp, timestamp, base_dir)
+                        run_experiment_with_timeout, (exp, timestamp, base_dir)
                     )
 
             try:
                 pool.close()
                 pool.join()
+                pool.terminate()
             except KeyboardInterrupt:
                 pool.terminate()
                 print("Terminating all processes")

@@ -477,6 +477,6 @@ tests/*/*.pdf
 **/*.svg
 **/*.txt
 notebooks/*.yaml
-stats/
+out/
 
 **/arxiv.tar.gz

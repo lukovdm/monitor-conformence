@@ -77,7 +77,7 @@ def add_family_size(data):
 def add_learning_rounds(data):
     # Use regex on log file to find learning rounds
     for d in data:
-        if "verimon" in d:
+        if "sampling" not in d:
             continue
         with open(d["log_path"], "r") as f:
             log = f.read()
