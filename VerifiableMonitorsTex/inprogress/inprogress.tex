@@ -554,7 +554,9 @@ finding false alarms (\cref{prob:FA}).
 \subsection{Relating Missed Alarms to Color-Consistent Policies}
 \label{sec:overview}\label{ssec:maintheorem}
 A (memoryless) \emph{policy} for an MDP $\mc$ is a function $\sigma\colon S \to \Act$, which selects actions for every state.
-An MDP and a policy induce an MC by only keeping the state-action pairs in the transition function selected by the policy. \newtext{The probability measure of MCs is extended to MDPs by specifying a policy, $\Prob^{\mdpc}_{\sigma}$.}\sj{This sentence is very confusing} Policy synthesis for an MDP of a (reachability) property $\phi$ entails finding a policy for an MDP such that the induced MC entails $\phi$. Colored (aka: labelled) MDPs~\cite{DBLP:journals/jair/AndriushchenkoCMJK25} are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition suffices for our needs:
+An MDP and a policy induce an MC by only keeping the state-action pairs in the transition function selected by the policy.
+\newtext{We denote the probability measure on the MC induced by a policy $\sigma$ of the MDP $\mc$ as $\Prob^{\mc}_{\sigma}$}\sj{This sentence is very confusing}\lm{better?}
+Policy synthesis for an MDP of a (reachability) property $\phi$ entails finding a policy for an MDP such that the induced MC entails $\phi$. Colored (aka: labelled) MDPs~\cite{DBLP:journals/jair/AndriushchenkoCMJK25} are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition suffices for our needs:
 \begin{definition}[Colored MDP]\label{def:colMDP}
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc \defeq (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$. % maps states to colors.
 \end{definition}
@@ -612,7 +614,7 @@ We describe our transformation in several steps. In \cref{ssec:ctp}, we encode t
                 \draw[->] (qd3) edge[bend right] node[above] {$\frac{9}{10}$} (qi3);
                 \draw[->] (qd3) edge node[below, near start] {$\frac{1}{10}$} (qc3);
             \end{tikzpicture}}
-        \caption{HMM for \cref{ex:hmmproduct}. States are named by the HMM state, $\{d,i,c\}$ and the monitor state, $\{1,2,3\}$. The alarm states are marked accepting.}
+        \caption{The HMM for \cref{ex:hmmproduct}. States are named by the HMM state, $\{d,i,c\}$ and the monitor state, $\{1,2,3\}$. The alarm states are marked accepting.}
         \label{fig:ctphmm}
     \end{minipage}\hfill
     \begin{minipage}[c]{.56\linewidth}
@@ -667,27 +669,27 @@ We will further simplify the problem such that we are left with a problem on acy
 %The exists missed alarm problem, questions whether there is a trace $\tau$ such that $\tau \in \missedalarms{}{}(\dfa)$. Obviously, when such a trace exists, $\missedalarms{}{}(\dfa) \neq \emptyset$, thus disproving the no-missed-alarms problem for $\dfa$.
 
 \subsubsection{CTR problem}
-We build (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008} between HMM and the DFA.  We define the \emph{alarm states} $F$\lm{I don't yet know what to rename $F$ to.}\sj{$T$ (target)} as those states which correspond to non-accepting states in the DFA. This is equivalent to taking a product with the complement of the monitor.
+We build (a mild variation of) a standard product construction~\cite{baierPrinciplesModelChecking2008} between HMM and the DFA.  We define the \emph{alarm states} $T$ as those states which correspond to non-accepting states in the DFA. This is equivalent to taking a product with the complement of the monitor.
 \begin{example}
     \label{ex:hmmproduct}
     \cref{fig:ctphmm} shows the product of the HMM and monitor $\dfaB$ from \cref{fig:centralexample}. Starting in the initial states $d$ and $1$, the HMM transitions to the $i$ state with probability $\sfrac{9}{10}$. This is an $\icy$ state, and thus the monitor takes the $\icy$ transition to state~$2$. In the product, this is a transition from $\langle d, 1\rangle$ to $\langle i, 2\rangle$ with probability $\sfrac{9}{10}$. The alarm states are any product states of the form $\langle \_ ,3 \rangle$.
 \end{example}
 \begin{definition}[HMM product]
     \label{def:product}
-    Given an HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F')$, the \emph{product HMM} $\langle\mc_{\times \dfa}, F\rangle$ is the HMM  $\mc_{\times \dfa} \defeq (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', Z, \obsf', r')$ with $\obsf'(\langle s, q\rangle) \defeq \obsf(s)$,  $r'(\langle s, q\rangle) \defeq r(s)$, $\ptrans'(\langle s, q\rangle, \langle s', \delta(q, \obsf(s'))\rangle) \defeq \ptrans(s, s')$ and $\ptrans'(x, x') \defeq 0$ otherwise, and finally the alarm states $F \defeq S\times F'$.
+    Given an HMM $\mc=(\Sts, \iota^\mc, \ptrans, Z, \obsf, r)$ and monitor $\dfa=(Q, \Sigma, \delta, \iota^\dfa, F)$, the \emph{product HMM} $\langle\mc_{\times \dfa}, T\rangle$ is the HMM  $\mc_{\times \dfa} \defeq (S \times Q, \langle\iota^\mc,\iota^\dfa\rangle, \ptrans', Z, \obsf', r')$ with $\obsf'(\langle s, q\rangle) \defeq \obsf(s)$,  $r'(\langle s, q\rangle) \defeq r(s)$, $\ptrans'(\langle s, q\rangle, \langle s', \delta(q, \obsf(s'))\rangle) \defeq \ptrans(s, s')$ and $\ptrans'(x, x') \defeq 0$ otherwise, and finally the alarm states $T \defeq S\times F$.
 \end{definition}
 In the product, we can find a trace $\tau$ whose conditional trace risk exceeds a threshold iff $\tau$ is a missed alarm.
 We state the decision problem that needs to be solved: It is key to our computational complexity analysis in \cref{sec:compl}.
 \begin{definition}[CTR Decision Problem]
     \label{def:CTPdecprob}
-    Given HMM $\mc$ with states~$S$ and risk~$r$, horizon $h$, alarm states $F\subseteq\Sts$, and threshold $\lambda_u \in \RR_{\geq 0}$, decide if \[\exists \tau \in \lang{\mc}.~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) > \lambda_u.\]
+    Given HMM $\mc$ with states~$S$ and risk~$r$, horizon $h$, alarm states $T\subseteq\Sts$, and threshold $\lambda_u \in \RR_{\geq 0}$, decide if \[\exists \tau \in \lang{\mc}.~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in T}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow) > \lambda_u.\]
 \end{definition}
-We denote the set of witnesses $\tau$ to a CTR decision problem as $\mathsf{CTR}(\mc, h, F, \lambda_u)$.
+We denote the set of witnesses $\tau$ to a CTR decision problem as $\mathsf{CTR}(\mc, h, T, \lambda_u)$.
 The following lemma states the correctness of the transformation. It follows directly from the definition of missing alarms and the product with the complement.
 \begin{restatable}{lemma}{toctp}
     \label{lem:toctp}
     Using the notation from \cref{thm:maintheorem}, \cref{def:product} and \cref{def:CTPdecprob}:
-    \[ \exists \tau \in \missedalarms{\mc,\lambda_u}{= h}\!(\dfa) \quad\text{ iff }\quad \exists \tau \in \mathsf{CTR}(\mc_{\times\overline{\dfa}}, h, F, \lambda_u)\]
+    \[ \exists \tau \in \missedalarms{\mc,\lambda_u}{= h}\!(\dfa) \quad\text{ iff }\quad \exists \tau \in \mathsf{CTR}(\mc_{\times\overline{\dfa}}, h, T, \lambda_u)\]
 \end{restatable}
 %We provide a proof sketch in \cref{app:proofs}.
 
@@ -710,8 +712,8 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
         \label{ex:actp}
         \sj{Give the HMM etc names, to also illustrate the notation}
         \sj{Clarify that this illustrates the construction that we formalize later.}
-        \cref{fig:actp} shows an unrolling of the HMM from \cref{fig:ctphmm} with $h=3$. 
-        The states are tuples of the unrolled step and the CTR state from \cref{fig:ctphmm}. 
+        We illustrate the construction in \cref{def:acyclichmm} on the HMM from \cref{fig:ctphmm}, which we will call $\mc$. We unroll $\mc$ with a horizon $h=3$ in  \cref{fig:actp}.
+        The states are tuples of the unrolled step and the CTR state from \cref{fig:ctphmm}.
         The initial state is thus $\actps{1}{d}{1}$, which corresponds to a state at step $1$ and in the HMM product state\sj{for example, here refer to definition 9...} $\langle d,1 \rangle$. This state   transitions to $\actps{2}{i}{2}$ and $\actps{2}{c}{2}$.
         \sj{Explain that we handle states at the horizon differently and that we now illustrate how we do that}
         Consider $\actps{3}{i}{3}$, it is at the horizon $3$ and $\langle i, 3\rangle$ is an alarm state. From states at the horizon, we transition to either of three states that help classify the trace.
@@ -739,8 +741,8 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 
 \begin{restatable}{lemma}{toactp}
     \label{lem:toactp}
-    Given an HMM $\mc$, horizon $h$, alarm states $F$, and threshold $\lambda_u$, there exists a $\lambda\in(0,1]$ such that, using $\en$ and $\talrm$ from \cref{def:acyclichmm}:
-    \[ \exists \tau \in \mathsf{CTR}(\mc, h, F, \lambda_u) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda.\]
+    Given an HMM $\mc$, horizon $h$, alarm states $T$, and threshold $\lambda_u$, there exists a $\lambda\in(0,1]$ such that, using $\en$ and $\talrm$ from \cref{def:acyclichmm}:
+    \[ \exists \tau \in \mathsf{CTR}(\mc, h, t, \lambda_u) \quad\text{ iff }\quad \exists \tau \in \lang{\mc_{\blacktriangleright h}}. \sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi \cdot \talrm \mid \tau \cdot \en) \geq \lambda.\]
     % and a threshold $\lambda \in (0,1]$, is there a trace $\tau \in Z^\star$ such that $\sum_{\pi\in\Pi^\mc}\Prob^\mc(\pi a \mid \tau) \geq \lambda$.
 \end{restatable}
 %We provide a proof in \cref{app:proofs}.
@@ -843,7 +845,7 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
 \end{example}
 
 \begin{definition}\label{def:polsyntrans}
-    Given HMM $\mc_{\blacktriangleright h} = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ \newtext{where all states in $\Sts$ are tuples and contain the special states $\igs$, $\safes$, and $\alarms$ like in} \cref{def:acyclichmm}, we define the colored MDP $\mdp_{\gtrdot h} \defeq \left(\left(\Sts\setminus\{\igs\}, \init, \Act, \ptrans' \right), C, c\right)$ with $\Act \defeq \Obs\setminus\{\ig\}$, $C \defeq \{1,\ldots,h\}$, coloring $c$ s.t.\  $c(\langle i,s \rangle) \defeq i$, and\lm{I am not entirely happy with the wording yet, we might change it shuch that the hbox is also fixed}\sj{I would also consider just using the exact notation from Def 11 but more explicitly than we first had it.}
+    Given the HMM from \cref{def:acyclichmm}\lm{Are the $\defeq$ in the brackets okay?} \[ \mc_{\blacktriangleright h} \defeq (\Sts' \defeq \{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans, \Obs' \defeq \Obs \cup \{\en, \ig\}, \obsf, r),\] we define the colored MDP $\mdp_{\gtrdot h} \defeq \left(\left(\Sts'\setminus\{\igs\}, \init, \Act, \ptrans' \right), C, c\right)$ with $\Act \defeq \Obs'\setminus\{\ig\}$, $C \defeq \{1,\ldots,h\}$, coloring $c$ s.t.\  $c(\langle i,s \rangle) \defeq i$, and
     \begin{align*}
         \ptrans'(\langle i, s\rangle, z, \langle j, q\rangle) \defeq
         \begin{cases}
@@ -857,13 +859,13 @@ Thus, we transition normally to a state if the action and observation of the tar
 
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
 \begin{definition}[Trace consistent policy]
-    Given a colored MDP $\mdp_{\gtrdot h}$ as in \cref{def:polsyntrans} \lm{This really is depended on the full thing, don't know what to do here.}\sj{Agreed, but maybe we can make the notation explicit here} and a trace $\tau \in Z^\star$, a \emph{trace consistent policy} satisfies $\sigma_\tau(\langle i, s \rangle) \defeq \tau^{(i)}$, where $\tau^{(i)}$ is the $i$th observation in $\tau$, for $i \leq |\tau|$ and $\sigma_\tau(\langle i, s \rangle) \defeq \en$ otherwise.
+    Given a colored MDP $\mdp_{\gtrdot h}$ as in \cref{def:polsyntrans} \lm{This really is depended on the full thing, don't know what to do here.}\sj{Agreed, but maybe we can make the notation explicit here}\lm{I have changed the notation to match that in def12, but any more feels very verbose to me.} and a trace $\tau \in (Z')^\star$, a \emph{trace consistent policy} satisfies $\sigma_\tau(\langle i, s \rangle) \defeq \tau^{(i)}$, where $\tau^{(i)}$ is the $i$th observation in $\tau$, for $i \leq |\tau|$ and $\sigma_\tau(\langle i, s \rangle) \defeq \en$ otherwise.
 \end{definition}
 Using the coloring as described in \cref{def:polsyntrans}, the trace consistent policies coincide with color-consistent policies (\cref{def:colconsistent}). Finding a missed-alarm trace now reduces to solving the color-consistent policy synthesis problem for targets $\{ \alarms \}$.
 
 \begin{restatable}{lemma}{tocoloredmdp}
     \label{lem:tocoloredmdp}
-    Given an HMM $\mc$, horizon $h$\newtext{, alarm states $F$}, and threshold $\lambda$, it holds that
+    Given an HMM $\mc$, horizon $h$ alarm states $T$, and threshold $\lambda$, it holds that
     \vspace{-.1cm}
     \[
         \begin{array}{c}
@@ -872,16 +874,15 @@ Using the coloring as described in \cref{def:polsyntrans}, the trace consistent 
             \exists \sigma \in \ccSched.  \Prob^{\mdp_{\gtrdot h}}_{\sigma}(\lozenge \{\alarms\}) \geq \lambda
         \end{array}
     \]
-    \newtext{Where $\sigma$ is trace consistent for $\tau$.}
+    Where $\sigma$ is trace consistent for $\tau$.
 \end{restatable}
 
-\newtext{
-    Note that the colored part of the colored MDPs is absolutely necessary in order to map a policy of the colored MDP to a trace.
-    \begin{example}
-        Consider the MDP from \cref{fig:mdpex} while ignoring the coloring. A function mapping $\left\langle 2, \langle i,2\rangle \right\rangle$ to $\icy$ and $\left\langle 2, \langle c,2\rangle \right\rangle$ to $\dry$ is a valid policy for the MDP. However, there does not exist a trace which describes the actions taken in the model, i.e., the trace starts with $\icy$ but then sometime contains $\icy$ and sometimes $\dry$.
-    \end{example}
-    Restricting our policies to color-consistent policies makes sure in every step of the model we only ever take one action, corresponding with one observation in the trace at that step.
-}
+Note that the colored part of the colored MDPs is absolutely necessary in order to map a policy of the colored MDP to a trace.
+\begin{example}
+    Consider the MDP from \cref{fig:mdpex} while ignoring the coloring. A function mapping $\left\langle 2, \langle i,2\rangle \right\rangle$ to $\icy$ and $\left\langle 2, \langle c,2\rangle \right\rangle$ to $\dry$ is a valid policy for the MDP. However, there does not exist a trace which describes the actions taken in the model, i.e., the trace starts with $\icy$ but then sometime contains $\icy$ and sometimes $\dry$.
+\end{example}
+Restricting our policies to color-consistent policies makes sure in every step of the model we only ever take one action, corresponding with one observation in the trace at that step.
+
 
 \subsection{Adapting to No-False-Alarms and Smaller Traces}\label{ssec:nfa}
 
@@ -995,7 +996,7 @@ For EQs, we simply use the notion of correctness from \cref{def:cormon}.
 \begin{definition}\label{def:toverEQ}
     Given an HMM $\mc$, and a monitor $\dfa$, an $\EQ_{\lambda_s, \lambda_u}$ is a function $\EQ_{\lambda_s, \lambda_u}(\dfa)\in\{\top\}\cup\Obs^\star$, such that, $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}), and $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ returns a missed alarm or false alarm trace for an incorrect $\dfa$.
 \end{definition}
-The EQ requires checking both for no-missing-alarms, and for no-false-alarms. \newtext{We perform these checks using our novel verification algorithm described in \cref{sec:monver}.}
+The EQ requires checking both for no-missing-alarms, and for no-false-alarms. We perform these checks using our novel verification algorithm described in \cref{sec:monver}.
 
 \begin{restatable}{lemma}{learncor}
     Given a MAT with a $\EQ_{\lambda_s, \lambda_u}$ and a $\MQ_{\lambda_l}$, a monitor learned with L$^\star$ is correct as long as $\lambda_s \leq \lambda_l \leq \lambda_u$.
@@ -1135,7 +1136,7 @@ A path (or its trace) through $\mathcal{G}_j$ `reads' variable $x_i$ in state $s
 
 We now show that the construction above suffices to show that it is hard to approximate the maximal risk that a monitor admits.
 \begin{definition}[CTR Optimization Problem]
-    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $F\subseteq\Sts$: \[\max\nolimits_{\tau \in \lang{\mc}}~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in F}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow).\]\end{definition}
+    Given an HMM $\mc$ with states in $S$, a unary encoded horizon $h$, a set of alarm states $T\subseteq\Sts$: \[\max\nolimits_{\tau \in \lang{\mc}}~ \sum\nolimits_{\pi\in\Pi^\mc_{=h}\mid\pi_\downarrow \in T}\Prob^\mc(\pi \mid \tau) \cdot r(\pi_\downarrow).\]\end{definition}
 \begin{lemma}
     \label{lem:ctpapxhard}
     The CTR Optimization Problem is APX-hard.
