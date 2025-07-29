@@ -710,13 +710,12 @@ For the first $h$ steps, the unrolling is standard. At the horizon we transition
 \newtext{
     \begin{example}
         \label{ex:actp}
-        \sj{Give the HMM etc names, to also illustrate the notation}
-        \sj{Clarify that this illustrates the construction that we formalize later.}
-        We illustrate the construction in \cref{def:acyclichmm} on the HMM from \cref{fig:ctphmm}, which we will call $\mc$. We unroll $\mc$ with a horizon $h=3$ in  \cref{fig:actp}.
-        The states are tuples of the unrolled step and the CTR state from \cref{fig:ctphmm}.
-        The initial state is thus $\actps{1}{d}{1}$, which corresponds to a state at step $1$ and in the HMM product state\sj{for example, here refer to definition 9...} $\langle d,1 \rangle$. This state   transitions to $\actps{2}{i}{2}$ and $\actps{2}{c}{2}$.
-        \sj{Explain that we handle states at the horizon differently and that we now illustrate how we do that}
-        Consider $\actps{3}{i}{3}$, it is at the horizon $3$ and $\langle i, 3\rangle$ is an alarm state. From states at the horizon, we transition to either of three states that help classify the trace.
+        We illustrate the construction in \cref{def:acyclichmm} on the HMM from \cref{fig:ctphmm}, which we will call $\mc$ and is defined by \cref{def:product}. We unroll $\mc$ with a horizon $h=3$ in \cref{fig:actp}.
+        The states are tuples of the unrolled step and the CTR state from $\mc$.
+        The initial state becomes $\actps{1}{d}{1}$, which corresponds to a state at step $1$ and $\langle d,1 \rangle$ from the $\mc$. This state transitions to $\actps{2}{i}{2}$ and $\actps{2}{c}{2}$.
+
+        States with a step value equal to the horizon are treated differently.
+        Consider $\actps{3}{i}{3}$, it is at the horizon, here $3$, and $\langle i, 3\rangle$ is an alarm state. From states at the horizon, we transition to either of three states that help classify the trace.
         The (normalized) risk of $\actps{3}{i}{3}$ is $0$, since $r(\langle i, 3\rangle) = 0$. Thus, $\actps{3}{i}{3}$ transitions with probability $1$ to $\safes[4]$ and probability $0$ to $\alarms[4]$. Consider $\actps{3}{d}{1}$, $\langle d, 1\rangle$ is not in $F$, but the state is at the horizon, it thus transitions to the ignore state, $\igs[4]$.
     \end{example}
 }
@@ -1268,22 +1267,23 @@ Using verification in the EQ, we always learn correct monitors. We validate this
 \cref{fig:learnThrToverS,fig:learnThrToverNS,fig:learnThrSampling} show $\lambda_u^{\min}$ and $\lambda_s^{\max}$ for \alg and for the baseline. Visually, a monitor is correct if its red bar never touches the green area and the green bar never touches the red area. In 14 out of 87 benchmarks the baseline learns a monitor that misses alarms. One baseline learned monitor has false alarms.
 
 \begin{figure}[t]
-    \begin{subfigure}{.34\linewidth}
-        \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .3cm}
+    \begin{subfigure}{.51\linewidth}
+        \begin{adjustbox}{max width=\linewidth}
             \input{images/plots/thresholds_tover_no_slack.pgf}
         \end{adjustbox}
         \caption{\alg, $\lambda_s=\lambda_l=\lambda_u$}
         \label{fig:learnThrToverNS}
     \end{subfigure}\hfill
-    \begin{subfigure}{.31\linewidth}
-        \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
+    \begin{subfigure}{.47\linewidth}
+        \begin{adjustbox}{max width=\linewidth}
             \input{images/plots/thresholds_tover_slack.pgf}
         \end{adjustbox}
         \caption{\alg, $\lambda_s < \lambda_l < \lambda_u$}
         \label{fig:learnThrToverS}
     \end{subfigure}\hfill
-    \begin{subfigure}{.31\linewidth}
-        \begin{adjustbox}{max width=\linewidth, clip, trim=.3cm .3cm .2cm .2cm}
+    \centering
+    \begin{subfigure}{.47\linewidth}
+        \begin{adjustbox}{max width=\linewidth}
             \input{images/plots/theresholds_sampling.pgf}
         \end{adjustbox}
         \caption{Baseline}
@@ -1298,27 +1298,27 @@ Using verification in the EQ, we always learn correct monitors. We validate this
 
 \sj{If nothing else, make these plots larger!!}
 \begin{figure}[t]
-    \begin{subfigure}{.241\linewidth}
-        \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
+    \begin{subfigure}{.525\linewidth}
+        \begin{adjustbox}{max width=\linewidth}
             \input{images/plots/monitor_sizes_with_slack.pgf}
         \end{adjustbox}
         \caption{$\lambda_s < \lambda_l < \lambda_u$, Size of $\dfa$}
         \label{fig:monsizes}
     \end{subfigure}\hfill
-    \begin{subfigure}{.209\linewidth}
-        \begin{adjustbox}{max width=\linewidth, clip, trim=.2cm .2cm .2cm .2cm}
+    \begin{subfigure}{.455\linewidth}
+        \begin{adjustbox}{max width=\linewidth}
             \input{images/plots/monitor_sizes_no_slack.pgf}
         \end{adjustbox}
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Size of $\dfa$}
         \label{fig:monsizens}
     \end{subfigure}\hfill
-    \begin{subfigure}{.253\linewidth}
+    \begin{subfigure}{.50\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_with_slack.pgf}}
         \caption{$\lambda_s < \lambda_l < \lambda_u$, \mbox{Runtime}}
         \label{fig:runtime-ws-comp}
     \end{subfigure}\hfill
-    \begin{subfigure}{.241\linewidth}
+    \begin{subfigure}{.48\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_no_slack.pgf}}
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Runtime}
@@ -1328,8 +1328,25 @@ Using verification in the EQ, we always learn correct monitors. We validate this
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
+\begin{figure}[t]
+    \resizebox{\linewidth}{!}{
+        \input{images/plots/verimon_times.pgf}}
+    \caption{\newtext{Runtime division over steps in \alg learning.
+            \emph{PAYNT} is the time spent by PAYNT verifying colored MDPs. \emph{L$^\star$} is the time spent by the L$^\star$ algorithm creating a hypothesis including doing MQs. \emph{Transformation} is the time spent transforming HMMs and monitors into colored MDPs for PAYNT. \emph{Conformance} is the time spent on conformance testing during the EQs. Lastly, \emph{Other} denotes any time not spend in the aforementioned processes.
+            Empty bars denote HMMs for which learning did not finish.}}
+    \label{fig:runtimediv}
+\end{figure}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
-We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. One reason could be that \alg needs half or fewer EQs to learn a monitor as can be seen in \cref{app:learnrestable}. In \cref{app:runtimediv}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
+We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. One reason could be that \alg needs half or fewer EQs to learn a monitor as can be seen in \cref{app:learnrestable}. In \cref{fig:runtimediv}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
+
+% \cref{fig:runtimediv} contains the division of the runtime during \alg learning into its component parts. We split the runtime in the following sections:
+% \begin{description}
+%     \item[PAYNT] Time spent by PAYNT verifying colored MDPS
+%     \item[L$^\star$] Time spent by the L$^\star$ algorithm creating a hypothesis. Does include time spent on MQs.
+%     \item[Transformation] Time spent transforming HMMs and monitors into colored MDPs for PAYNT.
+%     \item[Conformance] Time spent on conformance testing during the EQs.
+%     \item[Other] Any time not spent by the above processes.
+% \end{description}
 
 
 %
@@ -1565,23 +1582,8 @@ Using $10000$ samples and $100000$ samples both had the same number of missed al
 
 
 \section{Results from Learning Experiments}\label{sec:reslearn}
-\begin{figure}[h]
-    \resizebox{\linewidth}{!}{
-        \input{images/plots/verimon_times.pgf}}
-    \caption{Runtime division over steps in \alg learning. Empty bars are HMMs for which learning did not finish.}
-    \label{fig:runtimediv}
 
-\end{figure}
 We present the complete results for the Learning experiments.
-\subsection{Runtime Division}\label{app:runtimediv}
-\cref{fig:runtimediv} contains the division of the runtime during \alg learning into its component parts. We split the runtime in the following sections:
-\begin{description}
-    \item[PAYNT] Time spent by PAYNT verifying colored MDPS
-    \item[L$^\star$] Time spent by the L$^\star$ algorithm creating a hypothesis. Does include time spent on MQs.
-    \item[Transformation] Time spent transforming HMMs and monitors into colored MDPs for PAYNT.
-    \item[Conformance] Time spent on conformance testing during the EQs.
-    \item[Other] Any time not spent by the above processes.
-\end{description}
 
 \subsection{Learning Figures Legend}\label{app:learnlegend}
 \cref{fig:legend} contains the symbol legend for all learning and verification experiment figures.
