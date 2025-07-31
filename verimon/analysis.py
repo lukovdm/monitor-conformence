@@ -77,7 +77,7 @@ def add_family_size(data):
 def add_learning_rounds(data):
     # Use regex on log file to find learning rounds
     for d in data:
-        if "verimon" in d:
+        if "sampling" not in d:
             continue
         with open(d["log_path"], "r") as f:
             log = f.read()
@@ -105,9 +105,9 @@ def add_short_names(data, verify=False):
 
         if name not in variant_indexes:
             variant_indexes[name] = 0
-        d["experiment"][
-            "short_name"
-        ] = f"\\textsc{{{name[0].capitalize()}-{variant_indexes[name]}}}"
+        d["experiment"]["short_name"] = (
+            f"\\textsc{{{name[0].capitalize()}-{variant_indexes[name]}}}"
+        )
         variant_indexes[name] += 1
 
 
@@ -298,17 +298,13 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
 
     tab_data = [
         [
-            (
-                file_map[d["experiment"]["mc"]]
-                if d["experiment"]["mc"] in file_map
-                else name_map[d["experiment"]["learn_experiment"]["name"]]
-            ),
+            file_map[d["experiment"]["mc"]]
+            if d["experiment"]["mc"] in file_map
+            else name_map[d["experiment"]["learn_experiment"]["name"]],
             d["experiment"]["short_name"],
-            (
-                d["experiment"]["threshold"]
-                if d["experiment"]["threshold"] is not None
-                else r"\checkmark"
-            ),
+            d["experiment"]["threshold"]
+            if d["experiment"]["threshold"] is not None
+            else r"\checkmark",
             d["experiment"]["horizon"],
             "MA" if d["experiment"]["search"] == "fn" else "FA",
             d["mc"]["mc_states"],
@@ -316,49 +312,32 @@ def generate_verify_table(data, save_figures=False, save_path="./", file_name="v
             d["mc"]["mc_observations"],
             d["monitor"]["monitor_states"],
             d["monitor"]["monitor_transitions"],
+            f"$10^{{{int(math.log10(d['family_size']))}}}$"
+            if d["family_size"] is not None
+            else r"-",
+            (round(d["result"]["time"]) if d["result"]["time"] >= 1 else r"$\leq 1s$")
+            if "fake" not in d["result"]
+            else r"-",
             (
-                f"$10^{{{int(math.log10(d['family_size']))}}}$"
-                if d["family_size"] is not None
-                else r"-"
-            ),
+                round(d["result"]["product_time"])
+                if d["result"]["product_time"] >= 1
+                else r"$\leq 1s$"
+            )
+            if "fake" not in d["result"]
+            else r"-",
             (
-                (
-                    round(d["result"]["time"])
-                    if d["result"]["time"] >= 1
-                    else r"$\leq 1s$"
-                )
-                if "fake" not in d["result"]
-                else r"-"
-            ),
-            (
-                (
-                    round(d["result"]["product_time"])
-                    if d["result"]["product_time"] >= 1
-                    else r"$\leq 1s$"
-                )
-                if "fake" not in d["result"]
-                else r"-"
-            ),
-            (
-                (
-                    round(d["result"]["paynt_time"])
-                    if d["result"]["paynt_time"] >= 1
-                    else r"$\leq 1s$"
-                )
-                if "fake" not in d["result"]
-                else r"-"
-            ),
-            (
-                d["result"]["pomdp_states"]
-                if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
-                else r"-"
-            ),
-            (
-                float(d["result"]["goal_threshold"])
-                if d["result"]["goal_threshold"] is not None
-                and "fake" not in d["result"]
-                else (r"\checkmark" if "fake" not in d["result"] else r"-")
-            ),
+                round(d["result"]["paynt_time"])
+                if d["result"]["paynt_time"] >= 1
+                else r"$\leq 1s$"
+            )
+            if "fake" not in d["result"]
+            else r"-",
+            d["result"]["pomdp_states"]
+            if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
+            else r"-",
+            float(d["result"]["goal_threshold"])
+            if d["result"]["goal_threshold"] is not None and "fake" not in d["result"]
+            else (r"\checkmark" if "fake" not in d["result"] else r"-"),
         ]
         for d in data
     ]
@@ -379,7 +358,7 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
 \toprule
  & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{5}{c}{Baseline}                                                                                                                                                       \\
 \cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-18}
- & & $\lambda_s$ & $\lambda_u$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & Rounds & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
+ & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & Rounds & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
 \midrule
 \endhead"""
 
@@ -405,64 +384,48 @@ def generate_learn_table(data, save_figures=False, save_path="./", file_name="ru
             d["mc"]["mc_states"],
             d["mc"]["mc_transitions"],
             d["mc"]["mc_observations"],
-            (
-                (
-                    round(d["verimon"]["time"])
-                    if d["verimon"]["time"] >= 1
-                    else r"$\leq 1s$"
-                )
-                if "fake" not in d["verimon"]
-                else fake_map[d["verimon"]["time"]]
-            ),
+            (round(d["verimon"]["time"]) if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
+            if "fake" not in d["verimon"]
+            else fake_map[d["verimon"]["time"]],
             len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
             d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else r"-",
             (
-                (
-                    float(d["verimon"]["false_positive"]),
-                    d["verimon"]["false_positive"]
-                    < d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
-                )
-                if "fake" not in d["verimon"]
-                else r"-"
-            ),
+                float(d["verimon"]["false_positive"]),
+                d["verimon"]["false_positive"]
+                < d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
+            )
+            if "fake" not in d["verimon"]
+            else r"-",
             (
-                (
-                    float(d["verimon"]["false_negative"]),
-                    d["verimon"]["false_negative"]
-                    > d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
-                )
-                if "fake" not in d["verimon"]
-                else r"-"
-            ),
+                float(d["verimon"]["false_negative"]),
+                d["verimon"]["false_negative"]
+                > d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
+            )
+            if "fake" not in d["verimon"]
+            else r"-",
             (
-                (
-                    round(d["sampling"]["time"])
-                    if d["sampling"]["time"] >= 1
-                    else r"$\leq 1s$"
-                )
-                if "fake" not in d["sampling"]
-                else fake_map[d["sampling"]["time"]]
-            ),
+                round(d["sampling"]["time"])
+                if d["sampling"]["time"] >= 1
+                else r"$\leq 1s$"
+            )
+            if "fake" not in d["sampling"]
+            else fake_map[d["sampling"]["time"]],
             d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
             d["sampling"]["learning_rounds"] if "fake" not in d["sampling"] else r"-",
             (
-                (
-                    float(d["sampling"]["false_positive"]),
-                    d["sampling"]["false_positive"] < d["experiment"]["threshold"],
-                )
-                if "fake" not in d["sampling"]
-                and d["sampling"]["false_positive"] is not None
-                else r"-"
-            ),
+                float(d["sampling"]["false_positive"]),
+                d["sampling"]["false_positive"] < d["experiment"]["threshold"],
+            )
+            if "fake" not in d["sampling"]
+            and d["sampling"]["false_positive"] is not None
+            else r"-",
             (
-                (
-                    float(d["sampling"]["false_negative"]),
-                    d["sampling"]["false_negative"] > d["experiment"]["threshold"],
-                )
-                if "fake" not in d["sampling"]
-                and d["sampling"]["false_negative"] is not None
-                else r"-"
-            ),
+                float(d["sampling"]["false_negative"]),
+                d["sampling"]["false_negative"] > d["experiment"]["threshold"],
+            )
+            if "fake" not in d["sampling"]
+            and d["sampling"]["false_negative"] is not None
+            else r"-",
         ]
         for d in data
         if "sampling" in d
@@ -689,13 +652,18 @@ def compare_runtimes(
     plt.xlabel(xlabel if xlabel else "ToVer (s log)")
     if not show_y_axis:
         plt.ylabel("")
+        plt.yticks(
+            [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
+            [],
+        )
     else:
         plt.ylabel(ylabel if ylabel else "Baseline (s log)")
+        plt.yticks(
+            [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
+            [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
+        )
 
-    plt.yticks(
-        [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
-        [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
-    )
+    
     plt.xticks(
         [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
         [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
@@ -744,16 +712,12 @@ def compare_monitor_sizes(
 ):
     max_mon_states = max(
         max(
-            (
-                data[key1]["monitor_states"]
-                if key1 in data and isinstance(data[key1]["monitor_states"], int)
-                else 0
-            ),
-            (
-                data[key2]["monitor_states"]
-                if key2 in data and isinstance(data[key2]["monitor_states"], int)
-                else 0
-            ),
+            data[key1]["monitor_states"]
+            if key1 in data and isinstance(data[key1]["monitor_states"], int)
+            else 0,
+            data[key2]["monitor_states"]
+            if key2 in data and isinstance(data[key2]["monitor_states"], int)
+            else 0,
         )
         for data in exp_data
     )
@@ -1019,19 +983,15 @@ def compare_thresholds_bar(
     found_thresholds = [
         (
             [
-                (
-                    data[key]["false_positive"]
-                    if key in data and not isinstance(data[key]["false_positive"], str)
-                    else 1
-                )
+                data[key]["false_positive"]
+                if key in data and not isinstance(data[key]["false_positive"], str)
+                else 1
                 for data in exp_data
             ],
             [
-                (
-                    data[key]["false_negative"]
-                    if key in data and not isinstance(data[key]["false_negative"], str)
-                    else 0
-                )
+                data[key]["false_negative"]
+                if key in data and not isinstance(data[key]["false_negative"], str)
+                else 0
                 for data in exp_data
             ],
         )

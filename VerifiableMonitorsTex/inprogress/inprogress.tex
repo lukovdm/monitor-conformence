@@ -30,8 +30,6 @@
 \newcommand{\lo}[2][]{\todo[color=green!50!white,#1]{\footnotesize{Loes: #2}}}
 \newcommand{\indicator}[1]{[#1]}
 
-\newcommand{\newtext}[1]{{\color{red} #1}}
-
 \newcommand{\Distr}{\Delta}
 \newcommand{\Obs}{Z}
 \newcommand{\act}{a}
@@ -108,7 +106,7 @@
 \crefname{appsec}{App.}{Apps.}
 \Crefname{appsec}{Appendix}{Appendices}
 
-\title{Learning Verified Monitors for Hidden~Markov~Models}
+\title{Learning Verified Monitors for Hidden~Markov~Models\thanks{This work has been partially funded by the NWO grant FuRoRe (OCENW.M.22.282).}}
 
 \author{Luko van der Maas \and Sebastian Junges }
 \institute{Radboud University, Nijmegen, the Netherlands}
@@ -133,7 +131,7 @@ More precisely, a monitor receives a stream of observations about the system and
 Various challenges in creating correct runtime monitors for (semi-)autonomous systems have been identified~\cite{sanchezSurveyChallengesRuntime2019}, such as:
 (1)~the state of the system is only partially observable, i.e., the stream of observations comes from sensor readings and does not uniquely identify the state of a system,
 (2)~the behavior of the system and/or the sensors may be subject to probabilistic uncertainty,
-(3)~the monitor itself is subject to resource constraints (time, memory, etc), and
+(3)~the monitor itself is subject to resource constraints (time, memory, etc.), and
 (4)~the monitor is itself safety-critical and should therefore be subject to extensive validation.
 Challenges (1,2) can be addressed  by modelling the system as a hidden Markov model (HMM), and Challenges (3,4) can be addressed by representing a monitor as, e.g., a (small) finite automaton.
 Concretely, this paper focuses on the following question:
@@ -246,10 +244,10 @@ The trace associated to a system execution describes the information received by
 
 % where every state is labelled with a distribution over observations, see Fig.~\ref{}. Paths are sequences of states and MCs can be seen as specifying a distribution over these paths. An HMM extends MCs by assigning to every state a colour (an \emph{observation}). A trace is a sequence of these observations. 
 
-\paragraph{Monitoring with HMMs.} Monitoring with HMMs assumes that a monitor receives a trace from the system and \newtext{performs} inference on the HMM modelling the system (see \cref{fig:monitors}). In the inference step, the key task is to estimate whether the current system state is dangerous, based on the available information in the form of a trace. Intuitively, the \emph{risk of a trace}~\cite{jungesRuntimeMonitorsMarkov2021} quantifies how likely it is that the system state is dangerous. Formally, this can be defined as the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace. For a given trace, we may compute this risk, e.g., either via model checking~\cite{baierComputingConditionalProbabilities2014} or by a (forward) filtering that tracks a distribution over the current states~\cite{jungesRuntimeMonitorsMarkov2021,rabinerTutorialHiddenMarkov1989}. We call a trace \emph{unsafe} if its risk exceeds an acceptable threshold. Monitors should raise alarms only for unsafe traces.
+\paragraph{Monitoring with HMMs.} Monitoring with HMMs assumes that a monitor receives a trace from the system and performs inference on the HMM modelling the system (see \cref{fig:monitors}). In the inference step, the key task is to estimate whether the current system state is dangerous, based on the available information in the form of a trace. Intuitively, the \emph{risk of a trace}~\cite{jungesRuntimeMonitorsMarkov2021} quantifies how likely it is that the system state is dangerous. Formally, this can be defined as the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace. For a given trace, we may compute this risk, e.g., either via model checking~\cite{baierComputingConditionalProbabilities2014} or by a (forward) filtering that tracks a distribution over the current states~\cite{jungesRuntimeMonitorsMarkov2021,rabinerTutorialHiddenMarkov1989}. We call a trace \emph{unsafe} if its risk exceeds an acceptable threshold. Monitors should raise alarms only for unsafe traces.
 
 \paragraph{What are correct monitors?}
-Like in~\cite{acetoProbabilisticMonitorability2022}, we summarise the behavior of monitors by the    set of traces (i.e., a formal language) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm on) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
+Like in~\cite{acetoProbabilisticMonitorability2022}, we summarize the behavior of monitors by the    set of traces (i.e., a formal language) on which they raise an alarm. A monitor is correct iff it raises an alarm on all unsafe traces. We highlight that a monitor can be correct without doing inference at run time~\cite{cleavelandConservativeSafetyMonitors2023}! The key verification problem in this paper asks whether a monitor, represented as a deterministic finite automaton, accepts (i.e., raises an alarm on) exactly the unsafe traces. In this paper, we only consider traces that are bounded by some fixed horizon.
 
 \paragraph{Illustrative toy example.}
 As a running example, we consider an oversimplified car driving scenario, loosely inspired by runtime monitors obtained from high-fidelity simulations~\cite{DBLP:conf/atva/TorfahXJVS22}. A car can be in three states: It can be on a dry road, on an icy patch, or it has drifted off the road. The HMM in \cref{fig:centralhmm} describes how a car alternates between dry and icy road segments, and where being on an icy (dry) segment positively affects the probability that the next segment is icy (dry). When on an icy road, there is a higher probability to drift off the road. Our sensor can detect dry roads, but cannot distinguish between icy roads and off-road conditions. For a trace $\tau$ such as $\dry \cdot \icy \cdot \icy$, we can define the trace risk as the probability to be off-road conditioned on $\tau$, $\sfrac{13}{22}$ (for this trace, see \cref{ex:riskoftrace}).
@@ -347,8 +345,8 @@ We formalize the problem using colored MDPs and solve it using (exact) probabili
 %We discuss our verification approach in \cref{sec:monver}.
 
 \paragraph{Our learning approach.}
-Ultimately, we do not only want to verify monitors, but we want to \emph{synthesise} correct monitors.
-We already mentioned that the monitors are formal languages. When considering bounded traces, these are regular, and can thus be captured using DFAs. Thus, we aim to synthesise DFAs.
+Ultimately, we do not only want to verify monitors, but we want to \emph{synthesize} correct monitors.
+We already mentioned that the monitors are formal languages. When considering bounded traces, these are regular, and can thus be captured using DFAs. Thus, we aim to synthesize DFAs.
 We do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
 Consider \cref{fig:learning}:
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor, as popularized in \emph{black-box checking}~\cite{DBLP:journals/jalc/PeledVY02}.
@@ -430,7 +428,7 @@ the probability measure $\Prob^{\mc}$ of an MC $\mc$ is the unique probability m
 A reachability property on target states $T$ is the set of paths which contain a state $t \in T$.
 The reachability probability $\Prob(\lozenge T)$ for $\lozenge T$ is defined using the standard cylinder set construction.
 \begin{definition}[HMMs]
-    A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is an MC, $\Obs$ is a finite set of \emph{observations}, $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) \emph{observation function}\footnote{We use determinstic observation functions for concise definitions. Stochastic observation functions can be expressed via a blowup of the HMM, see e.g. \cite{jungesRuntimeMonitorsMarkov2021}.}, and $r\colon \Sts \to \RR_{\geq 0}$ is the \emph{risk function}.
+    A (risk-labelled) HMM is a tuple $\left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ such that $\left(\Sts, \init, \ptrans \right)$ is an MC, $\Obs$ is a finite set of \emph{observations}, $\obsf\colon \Sts \rightarrow \Obs$ is the (deterministic) \emph{observation function}\footnote{We use deterministic observation functions for concise definitions. Stochastic observation functions can be expressed via a blow-up of the HMM, see e.g., \cite{jungesRuntimeMonitorsMarkov2021}.}, and $r\colon \Sts \to \RR_{\geq 0}$ is the \emph{risk function}.
 \end{definition}
 %
 %
@@ -555,7 +553,7 @@ finding false alarms (\cref{prob:FA}).
 \label{sec:overview}\label{ssec:maintheorem}
 A (memoryless) \emph{policy} for an MDP $\mc$ is a function $\sigma\colon S \to \Act$, which selects actions for every state.
 An MDP and a policy induce an MC by only keeping the state-action pairs in the transition function selected by the policy.
-\newtext{We denote the probability measure on the MC induced by a policy $\sigma$ of the MDP $\mc$ as $\Prob^{\mc}_{\sigma}$}\sj{This sentence is very confusing}\lm{better?}
+We denote the probability measure on the MC induced by a policy $\sigma$ of the MDP $\mc$ as $\Prob^{\mc}_{\sigma}$
 Policy synthesis for an MDP of a (reachability) property $\phi$ entails finding a policy for an MDP such that the induced MC entails $\phi$. Colored (aka: labelled) MDPs~\cite{DBLP:journals/jair/AndriushchenkoCMJK25} are an extension to MDPs that allow expressing dependencies between states that policies must adhere to. The following definition suffices for our needs:
 \begin{definition}[Colored MDP]\label{def:colMDP}
     Given an MDP $\mdp$ with states $\Sts$, a \emph{colored MDP} is a tuple $\mdpc \defeq (\mdp, C, c)$, where $C$ is a set of \emph{colors}, and $c\colon \Sts \to C$. % maps states to colors.
@@ -705,24 +703,22 @@ The following lemma states the correctness of the transformation. It follows dir
 \subsubsection{ACTR problem}
 We further simplify the problem by unrolling the model along the horizon $h$ and eliminating the risk function.
 % and the newly created alarm states set into the HMM. %The resulting HMM can be seen as the model for the acyclic CTR problem.
-For the first $h$ steps, the unrolling is standard. At the horizon we transition to the three dedicated states $\alarms$, $\safes$ and $\igs$\footnote{We add the $\igs$ state to easily modify the transformation for the no-false-alarms problem (See \cref{ssec:nfa}).} according to the risk and alarm states.
+For the first $h$ steps, the unrolling is standard. At the horizon we transition to three dedicated states $\alarms$, $\safes$ and $\igs$\footnote{We add the $\igs$ state to easily modify the transformation for the no-false-alarms problem (See \cref{ssec:nfa}).} according to the risk and alarm states $T$.
 
-\newtext{
-    \begin{example}
-        \label{ex:actp}
-        We illustrate the construction in \cref{def:acyclichmm} on the HMM from \cref{fig:ctphmm}, which we will call $\mc$ and is defined by \cref{def:product}. We unroll $\mc$ with a horizon $h=3$ in \cref{fig:actp}.
-        The states are tuples of the unrolled step and the CTR state from $\mc$.
-        The initial state becomes $\actps{1}{d}{1}$, which corresponds to a state at step $1$ and $\langle d,1 \rangle$ from the $\mc$. This state transitions to $\actps{2}{i}{2}$ and $\actps{2}{c}{2}$.
+\begin{example}
+    \label{ex:actp}
+    Consider the HMM $\mc$ depicted in \cref{fig:ctphmm}, which was defined in \cref{ex:hmmproduct}. We unroll $\mc$ with a horizon $h=3$. This yields the HMM in \cref{fig:actp}.
+    The states are tuples of the unrolled step and the CTR state from $\mc$.
+    The initial state becomes $\actps{1}{d}{1}$, which corresponds to a state at step $1$ and $\langle d,1 \rangle$ from the $\mc$. This state transitions to $\actps{2}{i}{2}$ and $\actps{2}{c}{2}$.
+    States with a step value equal to the horizon are treated differently. From states at the horizon, we transition to either of three states that help classify the trace.
+    Consider $\actps{3}{i}{3}$, it is at the horizon $h=3$, and it is in $T$.
+    We want to classify such terminal states. As the (normalized) risk of $\actps{3}{i}{3}$ is $0$, the state is safe and $\actps{3}{i}{3}$ transitions with probability $1$ to $\safes[4]$. Next, Consider $\actps{3}{d}{1}$, $\langle d, 1\rangle$, it is not in $T$, but the state is at the horizon. This state can be ignored, and we transition to the ignore state, $\igs[4]$.
+\end{example}
 
-        States with a step value equal to the horizon are treated differently.
-        Consider $\actps{3}{i}{3}$, it is at the horizon, here $3$, and $\langle i, 3\rangle$ is an alarm state. From states at the horizon, we transition to either of three states that help classify the trace.
-        The (normalized) risk of $\actps{3}{i}{3}$ is $0$, since $r(\langle i, 3\rangle) = 0$. Thus, $\actps{3}{i}{3}$ transitions with probability $1$ to $\safes[4]$ and probability $0$ to $\alarms[4]$. Consider $\actps{3}{d}{1}$, $\langle d, 1\rangle$ is not in $F$, but the state is at the horizon, it thus transitions to the ignore state, $\igs[4]$.
-    \end{example}
-}
 
 \begin{definition}[Unrolling with risk]
     \label{def:acyclichmm}
-    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of an HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm states $F$ and horizon $h$ is the HMM \[ \mc_{\blacktriangleright h} \defeq (\{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf', r'),\] with $\Sts_{\mathsf{end}} \defeq  \{ \alarms, \safes, \igs \}$, $r'(\cdot) = 0$,
+    The (risk-)unrolled HMM $\mc_{\blacktriangleright h}$ of an HMM $\mc = \left(\Sts, \init, \ptrans, \Obs, \obsf, r \right)$ with alarm states $T$ and horizon $h$ is the HMM \[ \mc_{\blacktriangleright h} \defeq (\{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans', \Obs \cup \{\en, \ig\}, \obsf', r'),\] with $\Sts_{\mathsf{end}} \defeq  \{ \alarms, \safes, \igs \}$, $r'(\cdot) = 0$,
     $\obsf'$ given by (1) $\obsf'(\langle i, s\rangle) \defeq \obsf(s)$, \quad(2) $\obsf'(\igs) \defeq \ig$, \quad and (3) $\obsf'(\alarms) = \obsf'(\safes) \defeq \en$,
     and $\ptrans'$ given by:
     \begin{align*}
@@ -844,7 +840,7 @@ For Lemma~\ref{lem:toactp}, we must find a trace such that a conditional reachab
 \end{example}
 
 \begin{definition}\label{def:polsyntrans}
-    Given the HMM from \cref{def:acyclichmm}\lm{Are the $\defeq$ in the brackets okay?} \[ \mc_{\blacktriangleright h} \defeq (\Sts' \defeq \{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans, \Obs' \defeq \Obs \cup \{\en, \ig\}, \obsf, r),\] we define the colored MDP $\mdp_{\gtrdot h} \defeq \left(\left(\Sts'\setminus\{\igs\}, \init, \Act, \ptrans' \right), C, c\right)$ with $\Act \defeq \Obs'\setminus\{\ig\}$, $C \defeq \{1,\ldots,h\}$, coloring $c$ s.t.\  $c(\langle i,s \rangle) \defeq i$, and
+    Given the HMM from \cref{def:acyclichmm} \[ \mc_{\blacktriangleright h} \defeq (\Sts' \defeq \{1,\hdots,h\} \times \Sts \cup \Sts_{\mathsf{end}}, \langle 1,\init\rangle, \ptrans, \Obs' \defeq \Obs \cup \{\en, \ig\}, \obsf, r),\] we define the colored MDP $\mdp_{\gtrdot h} \defeq \left(\left(\Sts'\setminus\{\igs\}, \init, \Act, \ptrans' \right), C, c\right)$ with $\Act \defeq \Obs'\setminus\{\ig\}$, $C \defeq \{1,\ldots,h\}$, coloring $c$ s.t.\  $c(\langle i,s \rangle) \defeq i$, and
     \begin{align*}
         \ptrans'(\langle i, s\rangle, z, \langle j, q\rangle) \defeq
         \begin{cases}
@@ -858,7 +854,7 @@ Thus, we transition normally to a state if the action and observation of the tar
 
 The above construction allows for conditioning on a trace $\tau$ by constructing a policy $\sigma$ that selects the $i$th observation of $\tau$ in the state with step $i$.
 \begin{definition}[Trace consistent policy]
-    Given a colored MDP $\mdp_{\gtrdot h}$ as in \cref{def:polsyntrans} \lm{This really is depended on the full thing, don't know what to do here.}\sj{Agreed, but maybe we can make the notation explicit here}\lm{I have changed the notation to match that in def12, but any more feels very verbose to me.} and a trace $\tau \in (Z')^\star$, a \emph{trace consistent policy} satisfies $\sigma_\tau(\langle i, s \rangle) \defeq \tau^{(i)}$, where $\tau^{(i)}$ is the $i$th observation in $\tau$, for $i \leq |\tau|$ and $\sigma_\tau(\langle i, s \rangle) \defeq \en$ otherwise.
+    Given a colored MDP $\mdp_{\gtrdot h}$ as in \cref{def:polsyntrans} and a trace $\tau \in (Z')^\star$, a \emph{trace consistent policy} satisfies $\sigma_\tau(\langle i, s \rangle) \defeq \tau^{(i)}$, where $\tau^{(i)}$ is the $i$th observation in $\tau$, for $i \leq |\tau|$ and $\sigma_\tau(\langle i, s \rangle) \defeq \en$ otherwise.
 \end{definition}
 Using the coloring as described in \cref{def:polsyntrans}, the trace consistent policies coincide with color-consistent policies (\cref{def:colconsistent}). Finding a missed-alarm trace now reduces to solving the color-consistent policy synthesis problem for targets $\{ \alarms \}$.
 
@@ -969,10 +965,10 @@ This problem differs in two ways from the no-missed-alarms problem. We are findi
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa).\]
 \end{restatable}
 \noindent We highlight the ideas here, for details see \cref{app:proofs}.
-In order to find a trace accepted by the monitor, we no longer take the complement of the monitor while transforming to CTR. To find a safe trace we compute reachability on $\safes$ instead of $\alarms$ while taking as a threshold $1-\lambda$. Thus, we find a trace whose probability of being safe is above a threshold\footnote{\newtext{We cannot directly aim to compute a trace whose risk is below a threshold since minimizing reachability of $\alarms$ will result in a scheduler that always resets to the initial state if possible. Consider the colored MDP in \cref{fig:mdpex}, the color-consistent policy with the lowest probability of reaching the alarm state is as follows: take the $\dry$ action in step 2, and $\en$ in step 3. This policy has probability zero of reaching either $\alarms$ or $\safes$, and thus does not map to a valid trace.}}.
+In order to find a trace accepted by the monitor, we no longer take the complement of the monitor while transforming to CTR. To find a safe trace we compute reachability on $\safes$ instead of $\alarms$ while taking as a threshold $1-\lambda$. Thus, we find a trace whose probability of being safe is above a threshold\footnote{We cannot directly aim to compute a trace whose risk is below a threshold since minimizing reachability of $\alarms$ will result in a scheduler that always resets to the initial state if possible. Consider the colored MDP in \cref{fig:mdpex}, the color-consistent policy with the lowest probability of reaching the alarm state is as follows: take the $\dry$ action in step 2, and $\en$ in step 3. This policy has probability zero of reaching either $\alarms$ or $\safes$, and thus does not map to a valid trace.}.
 
 \section{Learning Correct Monitors}\label{sec:learning}
-We present \emph{learning} correct monitors (\cref{prob:Learn}), by combining automata learning using a \emph{Minimally Adequate Teacher} (MAT,~\cite{DBLP:journals/iandc/Angluin87}) and monitor verification. \lm{reviewer note: It might be better to phrase the starting of the sentence in another manner, for instance, as "We now consider Problem 3, i.e., learning correct monitors. We accomplish this by combining ..." But I don't agree.}
+We present \emph{learning} correct monitors (\cref{prob:Learn}), by combining automata learning using a \emph{Minimally Adequate Teacher} (MAT,~\cite{DBLP:journals/iandc/Angluin87}) and monitor verification.
 %This combination needs only minor glue. 
 %We furthermore discuss some improvements that bridge the gap between common assumptions in MAT automata learning and our monitor setup\sj{is this still true? I havent seen anything about unrolling etc}.
 
@@ -1004,7 +1000,7 @@ The EQ requires checking both for no-missing-alarms, and for no-false-alarms. We
 This means that our EQ does not check for equivalence, but simply accepts any correct monitor~\cite{DBLP:journals/jalc/PeledVY02}. We investigate the effect of this inconclusive area in \cref{sec:experiments}.
 
 \paragraph{Conformance queries.}
-An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If the monitor and the MQ don't agree on a trace, it is given as a counterexample. In our approach we use a hybrid of \newtext{conformance and verification EQs}. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring. \newtext{We thus first try to find easy counterexamples using conformance, when this does not produce any we perform our verification routine.}
+An alternative to the EQ in \cref{def:toverEQ} is a conformance query \cite{groceAdaptiveModelChecking2002}. It tests a monitor by sampling traces from the HMM and checking if the MQ and the monitor agree. If the monitor and the MQ don't agree on a trace, it is given as a counterexample. In our approach we use a hybrid of conformance and verification EQs. Monitors produced early in the learning process often contain many missed alarms and false alarms. Verification can find them, however, applying the transformation from \cref{sec:monver} has a constant cost. Conformance queries can often find a counterexample faster if they have a high probability of occurring. We thus first try to find easy counterexamples using conformance, when this does not produce any we perform our verification routine.
 
 \section{Computational Complexity}\label{sec:compl}
 This section discusses the hardness of monitor verification (\cref{lem:complexity}) and the inapproximability of a related optimization problem (\cref{lem:ctpapxhard}).
@@ -1164,7 +1160,7 @@ All experiments are run  on a single thread of an AMD Ryzen TRP 5965WX, with a m
 %We ran multiple benchmarks in parallel.
 
 \paragraph{Benchmarks.}
-We take the benchmarks \textsc{Aiport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} from \cite{jungesRuntimeMonitorsMarkov2021}, adapted to HMMs. We add \textsc{Icy-Driving}, a scaled-up version of the running example and \textsc{SnL} based on the game ``Snakes and Ladders''.
+We take the benchmarks \textsc{Airport}, \textsc{Refuel}, \textsc{Evade}, and \textsc{Hidden-Incentive} from \cite{jungesRuntimeMonitorsMarkov2021}, adapted to HMMs. We add \textsc{Icy-Driving}, a scaled-up version of the running example and \textsc{SnL} based on the game ``Snakes and Ladders''.
 While the benchmarks from the literature contain many observations, i.e., few states share an observation, the new benchmarks only have a few different observations. All benchmarks are scalable. The risk function is defined by a temporal property, e.g., the probability of reaching a bad state within a few steps.
 % We use benchmarks up to hundreds of states and thousands of transitions.
 
@@ -1296,7 +1292,6 @@ Using verification in the EQ, we always learn correct monitors. We validate this
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
 \alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \cref{app:learnrestable}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 8 times, mostly at least 1.5 times smaller)\footnote{For $\lambda_s = \lambda_u$, the language of correct monitors learned with \alg and baseline are equivalent up to the horizon, but the monitors respond differently on longer traces.}.
 
-\sj{If nothing else, make these plots larger!!}
 \begin{figure}[t]
     \begin{subfigure}{.525\linewidth}
         \begin{adjustbox}{max width=\linewidth}
@@ -1312,28 +1307,28 @@ Using verification in the EQ, we always learn correct monitors. We validate this
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Size of $\dfa$}
         \label{fig:monsizens}
     \end{subfigure}\hfill
-    \begin{subfigure}{.50\linewidth}
+    \begin{subfigure}{.525\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_with_slack.pgf}}
         \caption{$\lambda_s < \lambda_l < \lambda_u$, \mbox{Runtime}}
         \label{fig:runtime-ws-comp}
     \end{subfigure}\hfill
-    \begin{subfigure}{.48\linewidth}
+    \begin{subfigure}{.455\linewidth}
         \resizebox{\linewidth}{!}{
             \input{images/plots/runtimes_no_slack.pgf}}
         \caption{$\lambda_s=\lambda_l=\lambda_u$, Runtime}
         \label{fig:runtime-ns-comp}
     \end{subfigure}
-    \caption{States in learned monitors and runtimes: \alg vs baseline. The runtime includes labels for time-outs ($\infty$), out-of-memory (MO), and incorrect ($\times$).}
+    \caption{States in learned monitors and runtimes: \alg vs. baseline. The runtime includes labels for time-outs ($\infty$), out-of-memory (MO), and incorrect ($\times$).}
 \end{figure}
 
 \paragraph{How fast do we learn the monitors?}
 \begin{figure}[t]
     \resizebox{\linewidth}{!}{
         \input{images/plots/verimon_times.pgf}}
-    \caption{\newtext{Runtime division over steps in \alg learning.
-            \emph{PAYNT} is the time spent by PAYNT verifying colored MDPs. \emph{L$^\star$} is the time spent by the L$^\star$ algorithm creating a hypothesis including doing MQs. \emph{Transformation} is the time spent transforming HMMs and monitors into colored MDPs for PAYNT. \emph{Conformance} is the time spent on conformance testing during the EQs. Lastly, \emph{Other} denotes any time not spend in the aforementioned processes.
-            Empty bars denote HMMs for which learning did not finish.}}
+    \caption{Division of runtime for \alg learning for different models.
+        \emph{PAYNT} is the time spent by PAYNT verifying colored MDPs. \emph{L$^\star$} is the time spent by the L$^\star$ algorithm creating a hypothesis including doing MQs. \emph{Transformation} is the time spent transforming HMMs and monitors into colored MDPs for PAYNT. \emph{Conformance} is the time spent on conformance testing during the EQs. Lastly, \emph{Other} denotes any time not spend in the aforementioned processes.
+        Empty bars denote HMMs for which learning did not finish.}
     \label{fig:runtimediv}
 \end{figure}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
@@ -1375,7 +1370,7 @@ This work studies \emph{monitoring based on stochastic systems} and combines \em
 
 \paragraph{Model-based monitoring for stochastic systems.}
 Runtime verification is a wide field, see~\cite{DBLP:journals/sttt/FalconeFM12,sanchezSurveyChallengesRuntime2019,DBLP:series/lncs/HavelundRR19} for surveys. We review work on \emph{model-based} runtime monitoring for stochastic systems. In particular, using state estimation on HMMs to  decide whether to raise an alarm given a particular trace has been investigated in~\cite{sistlaMonitoringTemporalProperties2008,stollerRuntimeVerificationState2012,wilcoxRuntimeVerificationStochastic2010}, extended to hybrid models~\cite{sistlaRuntimeMonitoringStochastic2012}, models with nondeterminism~\cite{jungesRuntimeMonitorsMarkov2021} and randomly timed models~\cite{DBLP:conf/tacas/BadingsVJSJ24}. We use these techniques to answer membership queries. The HMMs for runtime monitoring can be learned from a set of traces, see, e.g.,~\cite{babaeeEmphPreventPredictiveRunTime2018,babaeeAcceleratedLearningPredictive2019} and more recently \cite{cleavelandConservativeSafetyMonitors2023}, where they find the state risks at design time using model checking and use state estimation for runtime verification. %\sj{This sounds very close to what we do? Can we clarify the difference?}
-Related to runtime monitoring is runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is succesful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
+Related to runtime monitoring is runtime enforcement, in particular shielding~\cite{DBLP:conf/tacas/BloemKKW15,RW87,DBLP:conf/aaai/FultonP18,jansen-et-al-concur-2020}. Shielding is successful in fully observable models but less studied in partial observable settings, in~\cite{DBLP:conf/aaai/Carr0JT23}, shields are computed for qualitative properties.
 Finally, in \cite{acetoProbabilisticMonitorability2022}, a more general notion of correct monitors via linear time $\mu$-calculus is investigated, while in \cite{DBLP:journals/corr/abs-2412-11754} a notion of correct \emph{predictors} is introduced.
 Both can be seen as generalizations of our definitions.
 % The monitors are conservative if the model is\lm{Explain conservative?}.
@@ -1388,7 +1383,7 @@ Learning monitors has been advocated in, e.g., \cite{cairoliNeuralPredictiveMoni
 %A theoretical framework on monitor correctness is given by \cite{acetoProbabilisticMonitorability2022}. They describe monitors correctness using to a linear time $\mu$-calculus, and split it into soundness and correctness. A monitor is just two disjoint prefix-complete\lm{Meaning that if a prefix is part of the set, its extensions are too. There is a proper word for this.} sets of accepting traces, and rejecting traces.
 
 \paragraph{Probabilistic verification.}
-The verification of our monitors applies model checking of conditional probabilities~\cite{DBLP:conf/tacas/AndresR08,baierComputingConditionalProbabilities2014} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,DBLP:conf/tacas/BadingsVJSJ24}. Most related is recent work in~\cite{DBLP:conf/tacas/BadingsVJSJ24}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{DBLP:journals/corr/abs-2405-13583}, which can also be tackled using synthesis approaches~\cite{DBLP:conf/cav/AndriushchenkoBCJKM23}. Finally, considering MDPs as \emph{distribution transfomers} yields related but semantically different computationally hard problems that have been solved using (different) inductive synthesis approaches~\cite{DBLP:conf/cav/AkshayCMZ23,DBLP:conf/ijcai/0001CMZ24}.
+The verification of our monitors applies model checking of conditional probabilities~\cite{DBLP:conf/tacas/AndresR08,baierComputingConditionalProbabilities2014} to runtime verification, similar to \cite{jungesRuntimeMonitorsMarkov2021,DBLP:conf/tacas/BadingsVJSJ24}. Most related is recent work in~\cite{DBLP:conf/tacas/BadingsVJSJ24}, where the models are CTMCs and the observation trace is uncertain itself. They also encounter a notion of trace-consistent policies, but instead of using synthesis, they overapproximate the verification by considering all policies. In contrast, our method is \emph{complete}. Verification with partial observability as in our HMMs also occurs in the verification of partially observable MDPs~\cite{DBLP:journals/corr/abs-2405-13583}, which can also be tackled using synthesis approaches~\cite{DBLP:conf/cav/AndriushchenkoBCJKM23}. Finally, considering MDPs as \emph{distribution transformers} yields related but semantically different computationally hard problems that have been solved using (different) inductive synthesis approaches~\cite{DBLP:conf/cav/AkshayCMZ23,DBLP:conf/ijcai/0001CMZ24}.
 
 
 \section{Conclusion and Future Work}
@@ -1410,12 +1405,12 @@ This paper presented a first approach to verification of monitors with respect t
 \section{Proof Outlines for \cref{sec:monver}}\label{app:proofs}
 \toctp*
 \begin{proofoutline}
-    By the product construction, there exists a bijective mapping between paths in $M_{\times\overline{\dfa}}$ and paths in the monitor $\dfa$ and HMM $\mc$. If the final state of a path is in $F$, the mapped path is not accepted by the monitor. The risk of a path in $M_{\times\overline{\dfa}}$ has the same risk as the mapped path in $\mc$. Thus, if a trace is a witness for the CTR problem, it is a missed alarm for $\mc$ and $\dfa$.
+    By the product construction, there exists a bijective mapping between paths in $M_{\times\overline{\dfa}}$ and paths in the monitor $\dfa$ and HMM $\mc$. If the final state of a path is in $T$, the mapped path is not accepted by the monitor. The risk of a path in $M_{\times\overline{\dfa}}$ has the same risk as the mapped path in $\mc$. Thus, if a trace is a witness for the CTR problem, it is a missed alarm for $\mc$ and $\dfa$.
 \end{proofoutline}
 
 \toactp*
 \begin{proofoutline}
-    We choose $\lambda = \sfrac{\lambda_u}{\max_{s\in S}r(s)}$. Both directions follow from applying \cref{def:CTPdecprob} and defining a bijective mapping $f$ between paths of length the horizon in $\mc_{\times\overline{\dfa}}$ (From the CTR problem) and $\mc_{\blacktriangleright h}$ such that $\Prob^{\mc_{\times\overline{\dfa}}}(\pi) = \Prob^{\mc_{\blacktriangleright h}}(f(\pi))$. Now, for any path $\pi$ of length $h$ ending in a state in $F$, the transition of $f(\pi_\downarrow)$ to $\talrm$ is equal to the normalized risk on $\pi_\downarrow$.
+    We choose $\lambda = \sfrac{\lambda_u}{\max_{s\in S}r(s)}$. Both directions follow from applying \cref{def:CTPdecprob} and defining a bijective mapping $f$ between paths of length the horizon in $\mc_{\times\overline{\dfa}}$ (From the CTR problem) and $\mc_{\blacktriangleright h}$ such that $\Prob^{\mc_{\times\overline{\dfa}}}(\pi) = \Prob^{\mc_{\blacktriangleright h}}(f(\pi))$. Now, for any path $\pi$ of length $h$ ending in a state in $T$, the transition of $f(\pi_\downarrow)$ to $\talrm$ is equal to the normalized risk on $\pi_\downarrow$.
     Thus, any trace which is a witness of CTR has a summed probability above $\lambda$ in $\mc_{\blacktriangleright h}$.
 \end{proofoutline}
 
@@ -1427,13 +1422,13 @@ This paper presented a first approach to verification of monitors with respect t
 
 \leqhtheorem*
 \begin{proof}
-    We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, which gets a seperate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. Taking action $l$ leads to the state $\langle l, \iota\rangle$.
+    We modify the transformation from \cref{thm:maintheorem} in the policy synthesis step. We add a new initial state, $\iota'$, which gets a separate coloring from all other states. This state contains an action for each possible length $l$ of a trace up to the horizon. Taking action $l$ leads to the state $\langle l, \iota\rangle$.
     \begin{align*}
         \ptrans'(\iota', l)(\langle l, \iota\rangle) & = 1
     \end{align*}
     We now show this transformation is correct.
 
-    In order to verify that there are no-missed-alarms for all $l<h$, we could use the transformation from \cref{thm:maintheorem} with the horizon equal to all $l<h$. This would neccesitate doing policy synthesis for $h$ colored MDPs.
+    In order to verify that there are no-missed-alarms for all $l<h$, we could use the transformation from \cref{thm:maintheorem} with the horizon equal to all $l<h$. This would necessitate doing policy synthesis for $h$ colored MDPs.
     \[ \exists_{\tau} \exists_{l\leq h} \Prob^{\sigma_\tau}[\lozenge alarm] > \lambda_u \]
     If any of these $h$ policy synthesis problems can find a policy $\sigma_\tau$, there exists a trace $\tau\in\missedalarms{\leq h}{}$.
 
@@ -1486,7 +1481,7 @@ This paper presented a first approach to verification of monitors with respect t
 
 
 
-Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTR instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$, we also set $F=\{t\}$. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding paths end in state $t$.
+Consider a 3CNF formula $\varphi = \bigwedge c_1 \dots c_m$ over variables $X$, $|X|=n$, with clause $c_j = \ell^1_j \lor \ell^2_j \lor \ell^3_j$ and each literal $\ell^i_j \in \{ x, \neg x \mid x \in X\}$. We transform this into a CTR instance with $\lambda = 1$ and an acyclic HMM $\mc_\varphi$  with observations $\Obs= \{ \#, \bot, \top \}$. The only state with positive risk  is a dedicated state $t$ with $r(t) = 1$, we also set $T=\{t\}$. The crux of the construction is that there is a trace with risk $1$ iff there is a satisfying assignment to $\varphi$. In the constructed HMM, there is a trace with risk $1$ iff there is a trace where all corresponding paths end in state $t$.
 
 Before we give a formal definition of $\mc_\varphi$, we give some intuition.
 We represent assignments $\alpha\colon X \rightarrow \{\bot,\top \}$ by traces through the HMM $\#\# \cdot \alpha(x_0) \cdot \# \cdot \alpha(x_1) \dots \cdot \#$. We create gadgets for every clause. The gadgets are connected as in \cref{fig:gadgetsconnected}: That is, intuitively, $\mc_\varphi$ randomly selects a clause $c_j$ with probability $\nicefrac{1}{m}$ and transitions into gadget $\mathcal{G}_j$ defined below. Next, we show that the gadget reaches positive risk in every gadget only if the corresponding clause is satisfied by the assignment.
