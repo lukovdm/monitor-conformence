@@ -17,6 +17,7 @@ This readme gives an overview of the functionality. It also describes how to rep
 - [Running experiments](#running-experiments) describes how to reproduce the experiments.
 - [Analyzing the results](#analyzing-the-results) describes how to recreate the figures from the paper.
 - [Source code structure](#source-code-structure) describes the structure of this repo.
+- [Creating the Docker](#creating-the-docker) describes how to create the docker used in this repository.
 
 ## Smoke testing
 
@@ -67,30 +68,25 @@ You can use the tover algorithm on any prism POMDP model or snakes and ladder bo
 
 For a POMDP:
 ```bash
-python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec "Pmax=? [F<=4 crash]" --good_label crash --threshold 0.3 --horizon 10 --relative_error 0.01 --use_risk --fp_slack 0.2 --fn_slack 0.05 --use_random_eq --walks_per_state 100 --walk_len 11 --base_dir stats/airport_experiment
+python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 8 --relative_error 0.01 --use_risk --fp_slack 0.2 --fn_slack 0.05 --use_random_eq --walks_per_state 100 --walk_len 11 --use_horizon_in_filtering --base_dir stats/airport_experiment
 ```
 
 For SnLs:
 ```bash
-python -m verimon.run --file tests/mc_u_nxn.pm --loader snakes_ladders --n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6" --spec "Pmax=? [F<5 good]" --good_label good --threshold 0.3 --horizon 15 --relative_error 0.01 --use_risk --fp_slack 0.2 --fn_slack 0.05 --use_random_eq --walks_per_state 100 --walk_len 11 --base_dir stats/snakes_ladders_experiment
+ python -m verimon.run --file tests/premise/airportA-7.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 10 --fp_slack 0.2 --fn_slack 0.05 --base_dir stats/airport_experiment
 ```
 
 The inputs to `python -m verimon.run` are as follows:
-- `--file tests/premise/airportA-3.nm` or `--file tests/mc_u_nxn.pm` for the prism file containing the POMDP or SnLs model.
+- `--file tests/premise/airportA-3.nm` or `--file tests/snake_ladder/mc_u_nxn.pm` for the prism file containing the POMDP or SnLs model.
 - `--loader pomdp` or `--loader snakes_ladders` specifying the loader to load the model with. Either POMDPs or SnLs.
 - `--constants "DMAX=3,PMAX=3"` specify any constants used to build the prism POMDP model.
 - `--n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6"` the parameters for the SnLs board. The amount of squares (should be a square number), the locations of the ladders with their destinations and similarly for the snakes.
-- `--spec "Pmax=? [F<=4 crash]"` gives the specification with which to generate the risks.
+- `--spec 'Pmax=? [F<=4 "crash"]'` gives the specification with which to generate the risks.
 - `--good_label crash` gives the target label in the model.
 - `--threshold 0.3` is the learning threshold.
 - `--horizon 10` contains the horizon in which the monitor should be correct.
-- `--relative_error 0.01` is the relative error to allow in PAYNT.
-- `--use_risk` enables risks.
 - `--fp_slack 0.2` is the area below the learning threshold considered as undetermined.
 - `--fn_slack 0.05` is the area above he learning threshold considered as undetermined.
-- `--use_random_eq` enables doing some MQs before verifying in the EQ to find easy counter examples.
-- `--walks_per_state 100` is the amount of walk to do per state in the EQ using the MQ.
-- `--walk_len 11` is the length of the walks in the EQ using the MQ.
 - `--base_dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
 
 ## Running experiments
@@ -151,3 +147,9 @@ We will shortly describe the purpose of each of the files contained in python pa
 - `verimon/transformations.py` contains the transformation of a monitor and an HMM into the CTR problem with unrolled horizon. Thus it does both the product and the unrolling over the horizon.
 - `verimon/utils.py` contains several utility functions.
 - `verimon/verify.py` wrappers around `generator.py` for calculating the false positives and false negatives of a monitor for a model.
+
+## Creating the Docker
+The docker file used in this repository can be built with the following command.
+```bash
+docker build . -t lukovdm/tover:ATVA
+```

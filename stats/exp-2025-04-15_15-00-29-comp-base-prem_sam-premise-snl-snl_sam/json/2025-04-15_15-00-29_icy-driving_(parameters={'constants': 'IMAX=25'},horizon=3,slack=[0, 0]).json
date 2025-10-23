@@ -1,0 +1,73 @@
+{
+    "experiment": {
+        "name": "icy-driving",
+        "variant": "(parameters={'constants': 'IMAX=25'},horizon=3,slack=[0, 0])",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_icy-driving_(parameters={'constants': 'IMAX=25'},horizon=3,slack=[0, 0]).json",
+        "file": "tests/icy-driving/icy-driving.pm",
+        "parameters": {
+            "constants": "IMAX=25"
+        },
+        "spec": "Pmax=? [F<=1 \"crash\"]",
+        "good_label": "crash",
+        "horizon": 3,
+        "threshold": "3/10",
+        "fp_slack": "0",
+        "fn_slack": "0",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "verimon"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 4,
+        "loader": "pomdp",
+        "use_exact": true
+    },
+    "finished": true,
+    "time": {
+        "total": 0.20432281494140625
+    },
+    "mc": {
+        "mc_states": 27,
+        "mc_transitions": 125,
+        "mc_observations": 2
+    },
+    "verimon": {
+        "time": 0.10923194885253906,
+        "false_positive": 1,
+        "false_positive_trace": null,
+        "false_negative": "427/2200",
+        "false_negative_trace": [
+            "{icy:1}",
+            "{icy:1}"
+        ],
+        "monitor_states": 6,
+        "eq_used": 2,
+        "fp_found": 0,
+        "fn_found": 0,
+        "fp_bounds": [
+            null,
+            null
+        ],
+        "fn_bounds": [
+            null,
+            null
+        ],
+        "monitors": [
+            null,
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:32.121199-6.drn"
+        ],
+        "product_time": 0.0056035518646240234,
+        "paynt_time": 0.022453784942626953,
+        "eq_time": 0.06601977348327637,
+        "counterexample_time": 0.1,
+        "lstar_time": 0.0,
+        "dot_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_icy-driving_(parameters={'constants': 'IMAX=25'},horizon=3,slack=[0, 0])_verimon.dot",
+        "drn_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_icy-driving_(parameters={'constants': 'IMAX=25'},horizon=3,slack=[0, 0])_verimon.drn"
+    }
+}

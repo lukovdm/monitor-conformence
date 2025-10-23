@@ -8,6 +8,8 @@ from verimon.MonitorLearning import run_verimon
 from verimon.loaders import aalpy_dfa_to_stormvogel
 from stormvogel.mapping import stormvogel_to_stormpy
 from stormpy import export_to_drn
+from verimon.logger import clear_logging, setup_logging
+from stormpy.utility import sharpen
 
 
 def main():
@@ -85,11 +87,6 @@ def main():
         help="Relative error for Paynt (default: 0.01).",
     )
     filtering_group.add_argument(
-        "--use_risk",
-        action="store_true",
-        help="Enable risk-based filtering (default: False).",
-    )
-    filtering_group.add_argument(
         "--fp_slack",
         type=float,
         default=0.2,
@@ -102,17 +99,21 @@ def main():
         help="False negative slack (default: 0.05).",
     )
     filtering_group.add_argument(
-        "--use_horizon_in_filtering",
-        action="store_true",
-        help="Use horizon in filtering (default: False).",
+        "--no_horizon_in_filtering",
+        action="store_false",
+        default=True,
+        dest="use_horizon_in_filtering",
+        help="Do not use horizon in filtering (default: Use it).",
     )
 
     # Equivalence oracle-related arguments
     oracle_group = parser.add_argument_group("Equivalence Oracle")
     oracle_group.add_argument(
-        "--use_random_eq",
-        action="store_true",
-        help="Use random equivalence oracle (default: False).",
+        "--no_random_eq",
+        action="store_false",
+        default=True,
+        dest="use_random_eq",
+        help="Do not use random equivalence oracle (default: Use it).",
     )
     oracle_group.add_argument(
         "--walks_per_state",
@@ -138,6 +139,11 @@ def main():
 
     args = parser.parse_args()
 
+    log_file = f"{args.base_dir}/logfile.log"
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    clear_logging()
+    setup_logging(path=log_file)
+
     # Load model based on loader type
     if args.loader == "pomdp":
         # Pass constants directly as a string
@@ -146,7 +152,7 @@ def main():
             observations,
             mc,
             expr_manager,
-        ) = pomdp_to_stormpy_mc(args.file, args.constants, False)
+        ) = pomdp_to_stormpy_mc(args.file, args.constants, True)
         alphabet = list(observations)
     elif args.loader == "snakes_ladders":
         if args.n is None or args.ladders is None or args.snakes is None:
@@ -168,7 +174,7 @@ def main():
             args.n,
             ladders,
             snakes,
-            False,
+            True,
         )
         alphabet = ["init", "normal", "snake", "ladder"]
         initial_observation = "init"
@@ -177,6 +183,7 @@ def main():
 
     # Ensure base directory exists
     os.makedirs(args.base_dir, exist_ok=True)
+    os.makedirs(os.path.join(args.base_dir, "models"), exist_ok=True)
 
     # Run Verimon
     (learned_monitor, lstar_stats), stats = run_verimon(
@@ -185,12 +192,12 @@ def main():
         initial_observation=initial_observation,
         spec=args.spec,
         good_label=args.good_label,
-        threshold=args.threshold,
+        threshold=sharpen(5, args.threshold),
         horizon=args.horizon,
-        relative_error=args.relative_error,
-        use_risk=args.use_risk,
-        fp_slack=args.fp_slack,
-        fn_slack=args.fn_slack,
+        relative_error=sharpen(5, args.relative_error),
+        use_risk=True,
+        fp_slack=sharpen(5, args.fp_slack),
+        fn_slack=sharpen(5, args.fn_slack),
         expression_manager=expr_manager,
         use_random_eq=args.use_random_eq,
         walks_per_state=args.walks_per_state,
