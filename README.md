@@ -56,7 +56,7 @@ docker run --rm -it -p 8080:8080 --name tover lukovdm/tover:ATVA
 If you want to have a shared folder to copy out results, plots or other files you can instead run
 
 ```bash
-docker run --mount type=bind,source="$(pwd)/app",target=/app --rm -it -p 8080:8080 --name tover lukovdm/tover:ATVA
+docker run --volume ./stats:/app/stats --rm -it -p 8080:8080 --name tover lukovdm/tover:ATVA
 ```
 
 All files included in the repo can found in the app folder in you current directory.
