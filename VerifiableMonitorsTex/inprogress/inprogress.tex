@@ -2,7 +2,7 @@
 \pdfoutput=1
 
 % \usepackage{natbib}
-\usepackage[style=lncs,backend=biber]{biblatex}
+% \usepackage{bibtex}
 \usepackage{microtype}
 \usepackage{preamble}
 \usepackage[hidelinks]{hyperref}
@@ -22,6 +22,9 @@
 \usepackage{adjustbox}
 \usepackage{thmtools}
 \usepackage{orcidlink}
+\usepackage{comment}
+
+\newcommand{\appcite}[2]{#2} % Change to #2 for the Arxiv version
 
 \newcommand{\sebastian}[1]{\textcolor{red}{SJ: #1}}
 \newcommand{\sj}[2][]{\todo[color=red!50!white,#1]{\footnotesize{SJ: #2}}}
@@ -82,9 +85,9 @@
 \usetikzlibrary{patterns, intersections, positioning, shapes.geometric, shapes.misc, shapes.symbols, calc,
 	automata, arrows, decorations.pathreplacing,decorations.pathmorphing, backgrounds}
 
-\addbibresource{zotero_dblp.bib}
+% \addbibresource{zotero_dblp.bib}
 
-\addbibresource{literature.bib}	
+% \addbibresource{literature.bib}	
 
 \crefname{figure}{Fig.}{Figs.}
 \Crefname{figure}{Figure}{Figures}
@@ -240,10 +243,6 @@ The trace associated to a system execution describes the information received by
     \end{minipage}
 \end{figure}
 
-
-
-% where every state is labelled with a distribution over observations, see Fig.~\ref{}. Paths are sequences of states and MCs can be seen as specifying a distribution over these paths. An HMM extends MCs by assigning to every state a colour (an \emph{observation}). A trace is a sequence of these observations. 
-
 \paragraph{Monitoring with HMMs.} Monitoring with HMMs assumes that a monitor receives a trace from the system and performs inference on the HMM modelling the system (see \cref{fig:monitors}). In the inference step, the key task is to estimate whether the current system state is dangerous, based on the available information in the form of a trace. Intuitively, the \emph{risk of a trace}~\cite{jungesRuntimeMonitorsMarkov2021} quantifies how likely it is that the system state is dangerous. Formally, this can be defined as the probability of ending in a dangerous state, conditioned on the fact that the system execution matches the trace. For a given trace, we may compute this risk, e.g., either via model checking~\cite{baierComputingConditionalProbabilities2014} or by a (forward) filtering that tracks a distribution over the current states~\cite{jungesRuntimeMonitorsMarkov2021,rabinerTutorialHiddenMarkov1989}. We call a trace \emph{unsafe} if its risk exceeds an acceptable threshold. Monitors should raise alarms only for unsafe traces.
 
 \paragraph{What are correct monitors?}
@@ -330,8 +329,6 @@ In this paper, we assume we are given a \emph{useful} model of the system.  Whil
 \paragraph{Computational complexity results.}
 Deciding whether a monitor is correct is coNP-complete (\cref{lem:complexity}), assuming that the horizon is unary encoded.  In particular, we study the dual problem that asks whether a monitor misclassifies at least one trace as safe/unsafe.
 A simpler variant of this problem asks whether there is a bounded trace in the HMM that is unsafe.
-%\footnote{The results also apply to checking for safe traces.}
-%The problem is clearly in NP (assuming that the bound is unary encoded).
 This problem is already strongly NP-hard (\cref{lem:ctpdecnphard}) and the optimization problem that asks to compute (the risk of) most risky trace is APX-hard (\cref{lem:ctpapxhard}), which indicates that it is intractable to even approximate this risk.
 
 \paragraph{Our verification approach.}
@@ -341,8 +338,7 @@ First, for a single trace, computing the risk can be reduced to computing a reac
 Thus, inspired by~\cite{DBLP:conf/tacas/BadingsVJSJ24}, we reduce our problem to the question: \emph{Is there a DFA (accepting exactly one trace, accepted by our monitor)
     such that the probability in the product MC exceeds a threshold?}
 The answer is no iff the monitor has no missed alarms.
-We formalize the problem using colored MDPs and solve it using (exact) probabilistic model synthesis methods~\cite{DBLP:conf/uai/Andriushchenko022}, as implemented in the tool PAYNT~\cite{andriushchenkoPAYNTToolInductive2021}. %\footnote{Alternatively, in \cref{sec:monver}, we show that we can construct a product of an acyclic DFA accepting sets of traces and the HMM. However, this yields partially observable MDP, where we must search for memoryless policies, similar to a construction in~\cite{DBLP:conf/tacas/BadingsVJSJ24}. This problem is equivalent to the synthesis problem and can therefore also be solved using Paynt~\cite{DBLP:conf/uai/Andriushchenko022}.}. 
-%We discuss our verification approach in \cref{sec:monver}.
+We formalize the problem using colored MDPs and solve it using (exact) probabilistic model synthesis methods~\cite{DBLP:conf/uai/Andriushchenko022}, as implemented in the tool PAYNT~\cite{andriushchenkoPAYNTToolInductive2021}.
 
 \paragraph{Our learning approach.}
 Ultimately, we do not only want to verify monitors, but we want to \emph{synthesize} correct monitors.
@@ -350,22 +346,7 @@ We already mentioned that the monitors are formal languages. When considering bo
 We do this using active automata learning~(AAL, \cite{DBLP:journals/iandc/Angluin87,DBLP:journals/cacm/Vaandrager17}), which is similar to other oracle-guided inductive synthesis loops~\cite{DBLP:journals/acta/JhaS17}.
 Consider \cref{fig:learning}:
 To use AAL, we must provide a \emph{membership oracle} that decides for a single trace whether the risk of the trace exceeds a threshold and an \emph{equivalence oracle} that decides whether a given hypothesis monitor is indeed correct. The membership oracle can be implemented via inference for standard monitors on HMMs (see above), while the equivalence oracle can be implemented by verifying the correctness of the monitor, as popularized in \emph{black-box checking}~\cite{DBLP:journals/jalc/PeledVY02}.
-Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, ignore traces that cannot occur, and combine our equivalence oracle with a conformance oracle to boost performance. %
-
-% \sj{mention limitaiton with horizon somwhere? (but where?)}
-%\paragraph{Practical considerations in using active automata learning.}
-%Practically, some modifcations are important:
-%\begin{itemize}
-%    \item Finite horizon
-%    \item dont care
-%    \item combining conformance and equivalence queries?
-%\end{itemize}
-%
-%
-%\paragraph{Empirical evaluation.}
-%\sebastian{TODO summarise results of the empirical eval here.}
-
-
+Practically, some minor modifications are necessary to embed our approach in an AAL framework: We have to handle the finite horizon, ignore traces that cannot occur, and combine our equivalence oracle with a conformance oracle to boost performance.
 
 \paragraph{Contributions.}
 In summary, this paper provides a first framework to learn runtime monitors---encoded as finite automata---that are verified to be correct with respect to a given HMM. The main contributions are:
@@ -376,33 +357,9 @@ In summary, this paper provides a first framework to learn runtime monitors---en
 
 \smallskip
 \noindent
-\cref{app:proofs,app:complexity} contain proof (sketches) for all lemmas and theorems.
-%
-%\begin{figure}[t]
-%    \centerline{
-%        \begin{tikzpicture}[node distance=1.3cm,every node/.style={font=\scriptsize}]
-%            \node (startMA) {};
-%            \node (startFA) [below=of startMA] {};
-%            \node[problem] (MA) [right=1cm of startMA] {No-missed-alarms\\ \emph{\cref{ssec:maintheorem}}};
-%            \node[problem] (FA) [right=1cm of startFA] {No-false-alarms\\\emph{\cref{ssec:nfa}}};
-%            \node[problem] (CTP) [below right = -.25 cm and 1.3 cm of MA] {CTP\\\emph{\cref{ssec:ctp}}};
-%            \node[problem] (ACTP) [right=of CTP] {ACTP\\\emph{\cref{ssec:ctp}}};
-%            \node[problem] (PolSyn) [right=of ACTP] {Colored MDP\\Policy Synthesis\\\emph{\cref{ssec:polsyn}}};
-%
-%            \draw[->] (startMA) -- node[below,align=left] {$\mc, \dfa,$\\$h, r, \lambda_u$} (MA);
-%            \draw[->] (startFA) -- node[below,align=left] {$\mc, \dfa,$\\$h, r, \lambda_s$} (FA);
-%            \draw[->] (MA) -- ($(MA|-CTP)$) --node[below, align=left, near end] {$\mc_{\times\dfa},$\\$F, h, r,$\\$\lambda$} (CTP);
-%            \draw ($(MA|-FA.north)$) -- ($(MA|-CTP)$);
-%            \draw[->] (CTP) -- node[below,align=left] {$\mc_{\blacktriangleright h},$\\$\lambda$} (ACTP);
-%            \draw[->] (ACTP) -- node[below,align=left] {$\mc_{\gtrdot h},$\\$\lambda$} (PolSyn);
-%        \end{tikzpicture}
-%    }
-%    \caption{Overview of proof of \cref{thm:maintheorem}, containing the different intermediate problems, together with the inputs for each problem.}
-%    \label{fig:maintheorem}
-%\end{figure}
+The extended edition \appcite{\cite[App. A and B]{TR}}{\cref{app:proofs,app:complexity}} contains proof (sketches) for all lemmas and theorems.
 
 \section{Formal Problem Statement}
-%We recap standard notions on stochastic models and finite automata and introduce the formal problem statement. We use the following notation:
 Let $X$ be a finite set. A distribution $\mu$ over $X$ is a mapping $\mu\colon X \rightarrow [0,1]$ such that $\sum_{x \in X} \mu(x) = 1$. The set of all distributions over $X$ is written $\Distr(X)$.
 
 
@@ -888,7 +845,7 @@ The approach for \cref{thm:maintheorem} only works for traces of length exactly 
     Given an HMM $\mc$, a monitor $\dfa$, unsafe threshold $\lambda_u$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \missedalarms{\mc,\lambda_u}{\leq h}\!(\dfa).\]
 \end{restatable}
-\noindent The main insight for this theorem is shown in \cref{fig:leqhorizon}. We combine the colored MDPs given by \cref{thm:maintheorem} for horizons 1 to $h$ into one colored MDP, such that a policy starts by choosing which length trace to use (\cref{fig:leqstepa}). We can also instead directly construct a bisimulation quotient  $\mc_{\gtrdot h}$ of this combined MDP  with a small addition (\cref{fig:leqstepb}). We detail this construction in \cref{app:proofs}.
+\noindent The main insight for this theorem is shown in \cref{fig:leqhorizon}. We combine the colored MDPs given by \cref{thm:maintheorem} for horizons 1 to $h$ into one colored MDP, such that a policy starts by choosing which length trace to use (\cref{fig:leqstepa}). We can also instead directly construct a bisimulation quotient  $\mc_{\gtrdot h}$ of this combined MDP  with a small addition (\cref{fig:leqstepb}). We detail this construction in \appcite{\cite[App. A]{TR}}{\cref{app:proofs}}.
 
 \begin{figure}[t]
     \begin{subfigure}{.48\linewidth}
@@ -964,7 +921,7 @@ This problem differs in two ways from the no-missed-alarms problem. We are findi
     Given an HMM $\mc$, a monitor $\dfa$, safe threshold $\lambda_s$, horizon $h$, and risk $r$, there is a colored MDP $\mdpc$ with target states $T$, and threshold $\lambda$ s.t.\
     \[ \exists \sigma \in \ccSched.\ \Prob^{\mdpc}_{\sigma}(\lozenge T) \geq \lambda\quad\text{ iff }\quad \exists \tau\in \falsealarms{\mc,\lambda_s}{\leq h}\!(\dfa).\]
 \end{restatable}
-\noindent We highlight the ideas here, for details see \cref{app:proofs}.
+\noindent We highlight the ideas here, for details see \appcite{\cite[App. A]{TR}}{\cref{app:proofs}}.
 In order to find a trace accepted by the monitor, we no longer take the complement of the monitor while transforming to CTR. To find a safe trace we compute reachability on $\safes$ instead of $\alarms$ while taking as a threshold $1-\lambda$. Thus, we find a trace whose probability of being safe is above a threshold\footnote{We cannot directly aim to compute a trace whose risk is below a threshold since minimizing reachability of $\alarms$ will result in a scheduler that always resets to the initial state if possible. Consider the colored MDP in \cref{fig:mdpex}, the color-consistent policy with the lowest probability of reaching the alarm state is as follows: take the $\dry$ action in step 2, and $\en$ in step 3. This policy has probability zero of reaching either $\alarms$ or $\safes$, and thus does not map to a valid trace.}.
 
 \section{Learning Correct Monitors}\label{sec:learning}
@@ -986,7 +943,7 @@ To learn a monitor $\dfa$, we provide the HMM $\mc$, a risk function $r$, a hori
 \begin{definition}\label{def:toverMQ}
     Given any trace $\tau \in \Obs^\star$ and a horizon $h$, membership query  $\MQ_{\lambda_l}$ is a function such that $\MQ_{\lambda_l}(\tau)$ is unsafe iff $\tau \in \lang{\mc}$\footnote{Defining traces $\tau\notin\lang{\mc}$ as safe is an arbitrary design decision.} and $\tau \in \unsafetraces{\lambda_l}{\leq h}$.
 \end{definition}
-Such a function for $\MQ_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \emph{or} by model checking the induced Markov chain that reflects the trace-consistent policy in \cref{sec:monver}~\cite{rabinerTutorialHiddenMarkov1989, jungesRuntimeMonitorsMarkov2021}.
+Such a function for $\MQ_{\lambda_l}$ can be defined by keeping track of the probability of being in each state after every observation from the trace \emph{or} by model checking the induced Markov chain that reflects the trace-consistent policy in \cref{sec:monver}~\cite{rabinerTutorialHiddenMarkov1989,jungesRuntimeMonitorsMarkov2021}.
 For EQs, we simply use the notion of correctness from \cref{def:cormon}.
 \begin{definition}\label{def:toverEQ}
     Given an HMM $\mc$, and a monitor $\dfa$, an $\EQ_{\lambda_s, \lambda_u}$ is a function $\EQ_{\lambda_s, \lambda_u}(\dfa)\in\{\top\}\cup\Obs^\star$, such that, $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ holds if $\dfa$ is correct for $\mc$ with $\lambda_s$, and $\lambda_u$ (in the sense of \cref{def:cormon}), and $\EQ_{\lambda_s, \lambda_u}^\mc(\dfa)$ returns a missed alarm or false alarm trace for an incorrect $\dfa$.
@@ -1017,7 +974,7 @@ To establish NP-hardness, we consider the CTR problem from~\cref{def:CTPdecprob}
     The CTR Decision Problem is (strongly) NP-hard.
 \end{lemma}
 %The lemma holds even for acyclic HMMs. 
-The proof features a reduction from CNF-SAT, the problem of satisfiability of a propositional formula. We illustrate the reduction, details are in \cref{app:complexity}.
+The proof features a reduction from CNF-SAT, the problem of satisfiability of a propositional formula. We illustrate the reduction, details are in \appcite{\cite[App. B]{TR}}{\cref{app:complexity}}.
 
 \tikzset{
     %->, % makes the edges directed
@@ -1228,18 +1185,18 @@ We verify correctness w.r.t.\ the same $\lambda_s, \lambda_u$.
         \end{scriptsize}
     \end{adjustbox}
     \vspace{.2cm}
-    \caption{Subset of verification results found in \cref{app:verrestable}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Lastly, we list the size of the colored MDP produced by the transformation and the risk of the found counterexample. If no trace was found with a risk above (or below, for FA) the indicated threshold, the monitor is correct (\checkmark).}
+    \caption{Subset of verification results found in \appcite{\cite[App. C.2]{TR}}{\cref{app:verrestable}}. The columns give the family name, an ID, horizon, and whether we check for missed alarms or false alarms. We give the size of the HMM (states, transitions), the number of observations, the size of the DFA (states, transitions), and the size of the language after pruning unreachable states. Furthermore, we list the run time for the complete verification procedure as well as the time spent on transforming the problem into a policy synthesis problem and the policy synthesis in PAYNT. Lastly, we list the size of the colored MDP produced by the transformation and the risk of the found counterexample. If no trace was found with a risk above (or below, for FA) the indicated threshold, the monitor is correct (\checkmark).}
     \label{tab:verifysubest}
     \vspace{-.5cm}
 \end{table}
 
 %\paragraph{How scalable is verification?}
 \paragraph{Results.}
-We present our results in \cref{tab:verifysubest}, which is a subset of the 516 benchmarks shown in \cref{app:verrestable}. Generally, we observe that we verify the correctness of monitors on at least billions of traces, which shows that enumerating the traces is not a feasible alternative. Our verification handles monitors and HMMs with both hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-40}, \textsc{E-42}, \textsc{H-10}.
+We present our results in \cref{tab:verifysubest}, which is a subset of the 516 benchmarks shown in \appcite{\cite[App. C.2]{TR}}{\cref{app:verrestable}}. Generally, we observe that we verify the correctness of monitors on at least billions of traces, which shows that enumerating the traces is not a feasible alternative. Our verification handles monitors and HMMs with both hundreds of states and up to hundred thousands of transitions, see benchmarks \textsc{E-40}, \textsc{E-42}, \textsc{H-10}.
 Benchmarks \textsc{A-180}, \textsc{A-182} reflect verification w.r.t. almost trivial monitors, for which it is typically easy to find a counterexample, \textsc{A-184}, \textsc{A-186}, \textsc{S-76}, \textsc{S-78} reflect a semi-correct monitor, and \textsc{A-188}, \textsc{A-190}, \textsc{S-80}, \textsc{S-82} reflect verification of the same HMM with respect to a larger correct monitor.
 Increasing the horizon significantly increases the runtime, even for small models, e.g., \textsc{I-34} compared to \textsc{I-10} and \textsc{I-22}.
 %Lastly, we are able to verify HMMs and monitors with large numbers of states as seen in E-44 to E-46 of \textsc{Evade}.
-In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see \cref{app:transtimeres}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the vast majority of time is spent on PAYNT. The transformation is never the bottleneck (see \cref{app:verrestable}).
+In all benchmarks, the runtime consists almost exclusively of creating the input to PAYNT (taking the product and creating the MDP) and in running PAYNT. The former runs in polynomial time in the size of the input (see \appcite{\cite[App. C.1]{TR}}{\cref{app:transtimeres}}), whereas the latter uses various heuristics to avoid the exponential computation time. In the current implementation, except for the (comparably) large \textsc{Evade} benchmarks, the vast majority of time is spent on PAYNT. The transformation is never the bottleneck (see \appcite{\cite[App. C.2]{TR}}{\cref{app:verrestable}}).
 
 %\paragraph{What steps are most expensive?}
 %The time spent to verify a monitor can mostly be split up in time to apply the transformation from \cref{sec:monver}, and time spent to verify the created colored MDP using PAYNT. Verifying a colored MDP is an NP-complete problem, and its runtime is heavily dependent on the internal structures and thresholds used. From \cref{tab:verifysubest}, the \textsc{Evade} benchmarks are comparably large but take only around eight seconds to verify by PAYNT, where A-10 and A-11 are much smaller, but take around a thousand seconds to verify. The transformation step does seem to increase if the size of the HMM or the monitor increases as can be seen in \cref{fig:sizevsprod}. But this again does differ between benchmarks.
@@ -1251,12 +1208,10 @@ We consider the necessity of these EQs, the size of the learned monitors, and th
 
 \paragraph{Setup.}
 We use the MAT framework from \cref{sec:learning}.
-%The role of $\lambda_s \neq \lambda_u$ is evaluated in \textbf{Q4} below.
 Before every EQ, we run conformance checking (max.\ 100 samples using as threshold $\lambda_s$ and 100 samples with $\lambda_u$, see \cref{sec:learning}).
 As hyper-parameters, we investigate (1) $\lambda_s = 0.1, \lambda_l = 0.3, \lambda_u = 0.35$, with inconclusive trace, and (2) $\lambda_s = \lambda_l = \lambda_u = 0.3$, without inconclusive traces%
-\footnote{We study correctness of monitors learned by the baseline w.r.t.\ different $\lambda_l$  in \cref{sec:ressampling}.}.
-We compare against a baseline that does not use EQs, i.e., the baseline uses the MAT framework with only conformance checking (max.\ 100000 samples,  different numbers of samples are tested in \cref{sec:ressampling}).
-%We only discuss the results of learning with $\lambda_s = \lambda_l = \lambda_u$ and with $\lambda_s \leq \lambda_l \leq \lambda_u$ together for \textbf{Q3}. In \textbf{Q4} we discuss the impact of setting $\lambda_u \neq \lambda_s$.\sj{This makes things a bit complicated}
+\footnote{We study correctness of monitors learned by the baseline w.r.t.\ different $\lambda_l$ in \appcite{\cite[App. D]{TR}}{\cref{sec:ressampling}}.}.
+We compare against a baseline that does not use EQs, i.e., the baseline uses the MAT framework with only conformance checking (max.\ 100000 samples, different numbers of samples are tested in \appcite{\cite[App. D]{TR}}{\cref{sec:ressampling}}).
 
 \paragraph{Are the monitors correct?}
 Using verification in the EQ, we always learn correct monitors. We validate this experimentally \emph{and} show that the baseline does not always yield correct monitors. For every monitor we determine the unsafe trace with the lowest risk (\emph{actual alarm threshold}, $\lambda_u^{\min}$) and the safe trace with the highest risk (\emph{actual no-alarm threshold}, $\lambda_s^{\max}$). In a correct monitor, we have $\lambda_u^{\min} \geq \lambda_u$ and $\lambda_s^{\max} \leq \lambda_s$.
@@ -1290,7 +1245,7 @@ Using verification in the EQ, we always learn correct monitors. We validate this
 
 \paragraph{How big are the monitors?}
 %\lm{Mention we are learning stuff that is hard for AAL people to learn.}
-\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \cref{app:learnrestable}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 8 times, mostly at least 1.5 times smaller)\footnote{For $\lambda_s = \lambda_u$, the language of correct monitors learned with \alg and baseline are equivalent up to the horizon, but the monitors respond differently on longer traces.}.
+\alg{} learns monitors with hundreds of states and tens of thousands transitions, see \cref{fig:monsizes,fig:monsizens} (log-scale!) and \appcite{\cite[App. E.2]{TR}}{\cref{app:learnrestable}}. For the literature on AAL, these are large automata~\cite{yangImprovingModelInference2019,aichernigBenchmarkingCombinationsLearning2024,smeenkApplyingAutomataLearning2015}. Comparing the sizes of the monitors learned using \alg and the baseline, monitors are smaller (up to 8 times, mostly at least 1.5 times smaller)\footnote{For $\lambda_s = \lambda_u$, the language of correct monitors learned with \alg and baseline are equivalent up to the horizon, but the monitors respond differently on longer traces.}.
 
 \begin{figure}[t]
     \begin{subfigure}{.525\linewidth}
@@ -1332,7 +1287,7 @@ Using verification in the EQ, we always learn correct monitors. We validate this
     \label{fig:runtimediv}
 \end{figure}
 We compare the runtime of \alg and baseline in the \cref{fig:runtime-ws-comp,fig:runtime-ns-comp} (log-scale!).
-We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. One reason could be that \alg needs half or fewer EQs to learn a monitor as can be seen in \cref{app:learnrestable}. In \cref{fig:runtimediv}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
+We remark that only \alg{} is guaranteed to be correct. Neither of the two learning algorithms is clearly faster than the other, but \alg{} has the potential to significantly accelerate the learning process, despite the high complexity. One reason could be that \alg needs half or fewer EQs to learn a monitor as can be seen in \appcite{\cite[App. E.2]{TR}}{\cref{app:learnrestable}}. In \cref{fig:runtimediv}, we detail where the time is spent. For most benchmarks, the EQ (in particular, PAYNT) is the bottleneck. However, for several \textsc{Evade} benchmarks, most time is spent within L$^\star$ code. We conjecture this happens as finding counterexamples is simple in these models.
 
 % \cref{fig:runtimediv} contains the division of the runtime during \alg learning into its component parts. We split the runtime in the following sections:
 % \begin{description}
@@ -1392,11 +1347,12 @@ This paper presented a first approach to verification of monitors with respect t
 
 
 \clearpage
-\printbibliography{}
-% \bibliographystyle{plain}
-% \bibliography{literature,zotero}
+% \printbibliography{}
+\bibliographystyle{splncs04}
+\bibliography{literature,zotero_dblp}
 \clearpage
 
+\appcite{}{
 \appendix
 \crefalias{section}{appendix}
 \crefalias{subsection}{appsec}
@@ -1601,5 +1557,6 @@ Whenever either the \alg columns of a row or the baseline columns of a row conta
     \setlength\LTleft{-.2cm}
     \input{images/plots/experiments.tex}
 \end{scriptsize}
+}
 
 \end{document}
