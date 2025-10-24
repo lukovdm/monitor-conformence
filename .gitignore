@@ -480,3 +480,4 @@ notebooks/*.yaml
 out/
 
 **/arxiv.tar.gz
+**/tover.tar

@@ -125,7 +125,7 @@ class FilteringSUL(SUL):
                 )
             return False
 
-        if self.horizon is not None and self.observation_length > self.horizon:
+        if self.horizon is not None and self.observation_length >= self.horizon:
             if self.do_logging:
                 logger.debug(
                     f"Risk collapsed to 0 after observing past the horizon ({self.observation_length})",
