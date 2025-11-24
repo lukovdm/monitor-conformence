@@ -27,7 +27,10 @@ from stormpy import (
     SparseModelComponents,
 )
 from stormpy.core import _build_sparse_exact_model_from_drn
-from stormvogel.mapping import stormpy_to_stormvogel, stormvogel_to_stormpy
+from stormvogel.mapping import (
+    stormpy_to_stormvogel,
+    stormvogel_to_stormpy,
+)
 from stormvogel.model import Model, EmptyAction, Branch, ModelType, new_mdp, State
 
 from verimon.logger import logger

@@ -1,0 +1,115 @@
+{
+    "experiment": {
+        "name": "refuel",
+        "variant": "(file=refuelB.nm,parameters={'constants': 'N=3,ENERGY=3'},slack=[0, 0])",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_refuel_(file=refuelB.nm,parameters={'constants': 'N=3,ENERGY=3'},slack=[0, 0]).json",
+        "file": "tests/premise/refuelB.nm",
+        "parameters": {
+            "constants": "N=3,ENERGY=3"
+        },
+        "spec": "Pmax=? [F<=3 \"empty\"]",
+        "good_label": "empty",
+        "horizon": 10,
+        "threshold": "3/10",
+        "fp_slack": "0",
+        "fn_slack": "0",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "verimon"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 11,
+        "loader": "pomdp",
+        "use_exact": true
+    },
+    "finished": true,
+    "time": {
+        "total": 37.481465339660645
+    },
+    "mc": {
+        "mc_states": 173,
+        "mc_transitions": 3429,
+        "mc_observations": 63
+    },
+    "verimon": {
+        "time": 11.259141683578491,
+        "false_positive": "541/1000",
+        "false_positive_trace": [
+            "{ax:0,ay:0,fuelempty:1,fuelfull:1,meter:3,start:true}",
+            "{ax:1,ay:0,fuelempty:1,fuelfull:0,meter:1,start:true}",
+            "{ax:0,ay:0,fuelempty:0,fuelfull:0,meter:0,start:true}",
+            "{ax:0,ay:0,fuelempty:1,fuelfull:1,meter:3,start:true}",
+            "{ax:1,ay:0,fuelempty:1,fuelfull:0,meter:1,start:true}",
+            "{ax:0,ay:0,fuelempty:0,fuelfull:0,meter:0,start:true}",
+            "{ax:0,ay:0,fuelempty:1,fuelfull:1,meter:3,start:true}",
+            "{ax:1,ay:0,fuelempty:1,fuelfull:0,meter:1,start:true}"
+        ],
+        "false_negative": "19/100",
+        "false_negative_trace": [],
+        "monitor_states": 27,
+        "eq_used": 13,
+        "fp_found": 0,
+        "fn_found": 1,
+        "fp_bounds": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+        ],
+        "fn_bounds": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "1"
+        ],
+        "monitors": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:32.255739-26.drn",
+            "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/inter-mons/mon-2025-04-15 15:00:36.623036-27.drn"
+        ],
+        "product_time": 2.755607843399048,
+        "paynt_time": 5.2466957569122314,
+        "eq_time": 0.27441883087158203,
+        "counterexample_time": 8.52,
+        "lstar_time": 2.72,
+        "dot_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_refuel_(file=refuelB.nm,parameters={'constants': 'N=3,ENERGY=3'},slack=[0, 0])_verimon.dot",
+        "drn_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/models/monitor_refuel_(file=refuelB.nm,parameters={'constants': 'N=3,ENERGY=3'},slack=[0, 0])_verimon.drn"
+    }
+}

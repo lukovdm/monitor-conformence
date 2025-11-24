@@ -1,0 +1,36 @@
+{
+    "experiment": {
+        "name": "airport",
+        "variant": "(file=airportA-3.nm,parameters={'constants': 'DMAX=4,PMAX=4'},horizon=11,slack=[0, 0])",
+        "result_json_file": "stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam/json/2025-04-15_15-00-29_airport_(file=airportA-3.nm,parameters={'constants': 'DMAX=4,PMAX=4'},horizon=11,slack=[0, 0]).json",
+        "file": "tests/premise/airportA-3.nm",
+        "parameters": {
+            "constants": "DMAX=4,PMAX=4"
+        },
+        "spec": "Pmax=? [F<=4 \"crash\"]",
+        "good_label": "crash",
+        "horizon": 11,
+        "threshold": "3/10",
+        "fp_slack": "0",
+        "fn_slack": "0",
+        "relative_error": "1/100",
+        "use_risk": true,
+        "use_random_eq": true,
+        "verimon_walks_per_state": 100,
+        "verimon_walk_length": 11,
+        "learning_algs": [
+            "verimon"
+        ],
+        "use_horizon_in_filtering": true,
+        "old_walks_per_state": 100000,
+        "old_walk_length": 12,
+        "loader": "pomdp",
+        "use_exact": true
+    },
+    "finished": false,
+    "mc": {
+        "mc_states": 88,
+        "mc_transitions": 244,
+        "mc_observations": 32
+    }
+}

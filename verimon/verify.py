@@ -1,9 +1,6 @@
-from copy import deepcopy
 from datetime import datetime
-from operator import is_
 import os
 from time import time
-import traceback
 from typing import Any
 
 from paynt.family.family import Family
@@ -20,15 +17,11 @@ from stormpy import (
     export_to_drn,
     Rational,
 )
-from stormvogel.mapping import stormvogel_to_stormpy
-from stormvogel.model import Model
 
-from verimon.algs import complement_model, complement_stormpy_mon
+from verimon.algs import complement_stormpy_mon
 from verimon.generator import Verifier
 from verimon.logger import logger
 from verimon.transformations import (
-    prune_monitor,
-    simulator_unroll,
     stormpy_simulator_unroll,
 )
 

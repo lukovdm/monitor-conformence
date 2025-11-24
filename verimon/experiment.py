@@ -8,7 +8,6 @@ import resource
 from time import time
 import traceback
 from typing import Any, Literal
-from numpy import double
 from setproctitle import getproctitle, setproctitle
 import yaml
 
@@ -784,6 +783,13 @@ if __name__ == "__main__":
         type=int,
         default=0,
     )
+    parser.add_argument(
+        "-t",
+        "--timeout",
+        type=int,
+        default=43200,  # 12 hours in seconds
+        help="Timeout for each experiment in seconds (default: 43200 seconds, i.e., 12 hours)",
+    )
     parser.add_argument("--debug", action="store_true", help="Enable debug pausing")
     args = parser.parse_args()
 
@@ -852,18 +858,18 @@ if __name__ == "__main__":
         if args.cores > 0:
             cores = args.cores
         else:
-            cores = os.cpu_count() - args.cores
+            cores = os.cpu_count() + args.cores
 
         def run_experiment_with_timeout(exp, timestamp, base_dir):
-            # Set a 12-hour timeout (43200 seconds)
-
             def timeout_handler(signum, frame):
-                print(f"Experiment {exp.name} ({exp.variant}) timed out after 12 hours")
+                print(
+                    f"Experiment {exp.name} ({exp.variant}) timed out after {args.timeout} seconds"
+                )
                 os._exit(1)  # Force terminate the process
 
             # Set up the timeout handler inside the worker process
             signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(43200)  # 12 hours = 43200 seconds
+            signal.alarm(args.timeout)
 
             try:
                 exp.run(timestamp, base_dir)
@@ -880,6 +886,7 @@ if __name__ == "__main__":
             try:
                 pool.close()
                 pool.join()
+                pool.terminate()
             except KeyboardInterrupt:
                 pool.terminate()
                 print("Terminating all processes")

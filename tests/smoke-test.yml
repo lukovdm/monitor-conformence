@@ -1,0 +1,16 @@
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - tests/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=1"
+  horizon:
+    - 3
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  slack: 
+    - [0, 0]
+  use_exact: true
