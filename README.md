@@ -68,7 +68,7 @@ You can use the tover algorithm on any prism POMDP model or snakes and ladder bo
 
 For a POMDP:
 ```bash
-python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 8 --relative_error 0.01 --use_risk --fp_slack 0.2 --fn_slack 0.05 --use_random_eq --walks_per_state 100 --walk_len 11 --use_horizon_in_filtering --base_dir stats/airport_experiment
+python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 8 --fp_slack 0.2 --fn_slack 0.05 --walk_len 11 --base_dir stats/airport_experiment
 ```
 
 For SnLs:

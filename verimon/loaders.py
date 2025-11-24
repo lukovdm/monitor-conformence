@@ -26,7 +26,7 @@ from stormpy import (
     SparseExactModelComponents,
     SparseModelComponents,
 )
-from stormpy.core import _build_sparse_exact_model_from_drn
+from stormpy._core import _build_sparse_exact_model_from_drn
 from stormvogel.mapping import (
     stormpy_to_stormvogel,
     stormvogel_to_stormpy,

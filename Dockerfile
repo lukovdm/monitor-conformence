@@ -1,4 +1,4 @@
-FROM lukovdm/stormvogel:tover
+FROM lukovdm/stormvogel:tover-new
 
 RUN apt-get update && apt-get install -y \
     texlive \

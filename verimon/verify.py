@@ -163,7 +163,12 @@ def _verify_helper(
 
     # mon = bisim_minimise_monitor(mon) Bisimulation minimisation removes choice labeling, whichi is essential for us
     model = Verifier(
-        mc, mon, expr_manager, options["good_label"], options["paynt_strategy"]
+        mc,
+        mon,
+        expr_manager,
+        options["good_label"],
+        options["paynt_strategy"],
+        options["export_benchmarks"],
     )
     if options["use_risk"]:
         model.set_risk(options["good_spec"])
@@ -176,28 +181,28 @@ def _verify_helper(
     stats["product_time"] = time() - product_start
     logger.debug("creating product done")
 
-    # if "model_path" in options:
-    #     os.makedirs(options["model_path"], exist_ok=True)
-    #     timestamp = time()
-    #     path = f"{options['model_path']}/pomdp-null-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn"
-    #     export_to_drn(
-    #         model.pomdp,
-    #         path,
-    #     )
+    if "model_path" in options and options["export_benchmarks"]:
+        os.makedirs(options["model_path"], exist_ok=True)
+        timestamp = time()
+        path = f"{options['model_path']}/pomdp-null-{len(model.benchmark_pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn"
+        export_to_drn(
+            model.benchmark_pomdp,
+            path,
+        )
 
     logger.debug("Finding specified trace")
     paynt_start = time()
     res = model.check_paynt_prop(paynt_spec, options["relative_error"])
     stats["paynt_time"] = time() - paynt_start
 
-    # if "model_path" in options:
-    #     try:
-    #         os.rename(
-    #             path,
-    #             f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn",
-    #         )
-    #     except Exception as e:
-    #         logger.error(f"Could not rename file: {traceback.format_exc()}")
+    if "model_path" in options and options["export_benchmarks"]:
+        try:
+            os.rename(
+                path,
+                f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.benchmark_pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn",
+            )
+        except Exception as e:
+            logger.error(f"Could not rename file: {traceback.format_exc()}")
 
     if res is None:
         logger.info("no counter example during verification")

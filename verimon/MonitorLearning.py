@@ -222,6 +222,7 @@ class VerimonEqOracle(Oracle):
         walks_per_state: int = 100,
         walk_len: int = 100,
         base_dir: str | None = None,
+        export_benchmarks: bool = False,
     ):
         """
 
@@ -250,6 +251,7 @@ class VerimonEqOracle(Oracle):
         self.use_risk = use_risk
         self.expression_manager = expression_manager
         self.base_dir = base_dir
+        self.export_benchmarks = export_benchmarks
 
         self.stats = {
             "num_rounds": 0,
@@ -339,6 +341,7 @@ class VerimonEqOracle(Oracle):
                 "relative_error": self.relative_error,
                 "use_risk": self.use_risk,
                 "filtering": self.filter_sul,
+                "export_benchmarks": self.export_benchmarks,
             }
             | (
                 {"model_path": self.base_dir + "/debug-models"}
@@ -383,6 +386,7 @@ class VerimonEqOracle(Oracle):
                 "relative_error": self.relative_error,
                 "use_risk": self.use_risk,
                 "filtering": self.filter_sul,
+                "export_benchmarks": self.export_benchmarks,
             }
             | (
                 {"model_path": self.base_dir + "/debug-models"}
@@ -447,6 +451,7 @@ def run_verimon(
     walks_per_state: int,
     walk_len: int,
     use_horizon_in_filtering: bool,
+    export_benchmarks: bool = False,
     base_dir: str | None = None,
 ) -> tuple[tuple[Dfa, dict], dict]:
     sul = FilteringSUL(
@@ -476,6 +481,7 @@ def run_verimon(
         walks_per_state,
         walk_len,
         base_dir,
+        export_benchmarks,
     )
 
     return (

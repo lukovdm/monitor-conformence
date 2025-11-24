@@ -42,6 +42,7 @@ class Verifier:
         expr_manager: ExpressionManager,
         good_label: str,
         paynt_strategy: str = "ar",
+        export_benchmarks: bool = False,
     ) -> None:
         if mc.is_exact ^ mon.is_exact:
             raise Exception(
@@ -69,6 +70,7 @@ class Verifier:
             self.options = GenerateMonitorVerifierExactOptions()
             self.options.good_label = good_label
             self.options.step_prefix = "step="
+            self.options.use_risk = True
             self.generator = GenerateMonitorVerifierExact(
                 mc, mon, expr_manager, self.options
             )
@@ -76,13 +78,36 @@ class Verifier:
             self.options = GenerateMonitorVerifierDoubleOptions()
             self.options.good_label = good_label
             self.options.step_prefix = "step="
+            self.options.use_risk = True
             self.generator = GenerateMonitorVerifierDouble(
                 mc, mon, expr_manager, self.options
             )
 
+        self.export_benchmarks = export_benchmarks
+        if export_benchmarks:
+            if self.mc.is_exact:
+                self.benchmark_options = GenerateMonitorVerifierExactOptions()
+                self.benchmark_options.good_label = good_label
+                self.benchmark_options.step_prefix = "step="
+                self.benchmark_options.use_risk = True
+                self.benchmark_options.use_rejection_sampling = False
+                self.benchmark_generator = GenerateMonitorVerifierExact(
+                    mc, mon, expr_manager, self.benchmark_options
+                )
+            else:
+                self.benchmark_options = GenerateMonitorVerifierDoubleOptions()
+                self.benchmark_options.good_label = good_label
+                self.benchmark_options.step_prefix = "step="
+                self.benchmark_options.use_risk = True
+                self.benchmark_options.use_rejection_sampling = False
+                self.benchmark_generator = GenerateMonitorVerifierDouble(
+                    mc, mon, expr_manager, self.benchmark_options
+                )
+
     def apply_spec(self: Self, spec: str):
         """
         Add the good label to all states where the probability of spec is above threshold.
+        Only used when not using risk!
 
         :param spec: A string containing the LTL specification used to determine good states
         """
@@ -92,6 +117,7 @@ class Verifier:
         logger.info(
             f"New good states become: {self.mc.labeling.get_states(self.good_label)}"
         )
+        self.options.use_risk = False
         if self.mc.is_exact:
             self.generator = GenerateMonitorVerifierExact(
                 self.mc, self.mon, self.expr_manager, self.options
@@ -102,29 +128,25 @@ class Verifier:
             )
 
     def set_risk(self: Self, risk_prop: str):
-        self.options.use_risk = True
-        if self.mc.is_exact:
-            self.generator = GenerateMonitorVerifierExact(
-                self.mc, self.mon, self.expr_manager, self.options
-            )
-        else:
-            self.generator = GenerateMonitorVerifierDouble(
-                self.mc, self.mon, self.expr_manager, self.options
-            )
-
+        """
+        Set the risk function according to the given property.
+        :param risk_prop: A string containing the LTL specification used to determine the risk function
+        """
         prop = parse_properties(risk_prop)
         result = model_checking(self.mc, prop[0])
 
         self.generator.set_risk(result.get_values())
-        logger.info(f"Risk function becomes: {result.get_values()}")
+        if self.export_benchmarks:
+            self.benchmark_generator.set_risk(result.get_values())
+
+        logger.debug(f"Risk function becomes: {result.get_values()}")
 
     def create_product(self: Self):
-        # with open(f"models/mc-{self.good_label}.dot", "w") as f:
-        #     f.write(self.mc.to_dot())
         self.monitor_verifier = self.generator.create_product()
         self.pomdp = self.monitor_verifier.get_product()
-        # with open(f"models/pomdp-{self.good_label}.dot", "w") as f:
-        #     f.write(self.pomdp.to_dot())
+        if self.export_benchmarks:
+            self.benchmark_monitor_verifier = self.benchmark_generator.create_product()
+            self.benchmark_pomdp = self.benchmark_monitor_verifier.get_product()
 
     def check_storm_prop(self: Self, str_prop: str):
         prop = parse_properties(str_prop)
@@ -145,7 +167,7 @@ class Verifier:
             formula, relative_error, self.pomdp.is_exact
         )
         specification = paynt.verification.property.Specification([prop])
-        paynt.verification.property.Property.initialize()
+        paynt.verification.property.Property.initialize(self.pomdp.is_exact)
 
         if self.pomdp.is_exact:
             explicit_quotient = payntbind.synthesis.addMissingChoiceLabelsExact(
@@ -164,9 +186,7 @@ class Verifier:
         synthesizer = paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
             self.pomdp_quotient, self.paynt_strategy
         )  # type: ignore
-        assignment = synthesizer.synthesize(
-            print_stats=False, keep_optimum=True
-        )  # type: ignore  use print_stats=False to remove synthesis summary
+        assignment = synthesizer.synthesize(print_stats=False, keep_optimum=True)  # type: ignore  use print_stats=False to remove synthesis summary
 
         if synthesizer.best_assignment_value == 0:
             logger.info("max probability is 0, thus no counterexample found")

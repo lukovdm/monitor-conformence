@@ -136,6 +136,12 @@ def main():
         default=f"stats/verimon-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
         help="Base directory for storing results (default: auto-generated timestamped directory).",
     )
+    output_group.add_argument(
+        "--export_benchmarks",
+        action="store_true",
+        default=False,
+        help="Export benchmark models during verification (default: False).",
+    )
 
     args = parser.parse_args()
 
@@ -204,6 +210,7 @@ def main():
         walk_len=args.walk_len,
         use_horizon_in_filtering=args.use_horizon_in_filtering,
         base_dir=args.base_dir,
+        export_benchmarks=args.export_benchmarks,
     )
 
     # Store and plot the learned monitor
