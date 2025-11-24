@@ -53,6 +53,7 @@ class FilteringSUL(SUL):
         self.observation_length = 0
         self.do_logging = False
         self.last_risk = 0
+        self.out_of_model = False
 
         if mc.is_exact:
             components = SparseExactModelComponents(mc.transition_matrix, mc.labeling)
@@ -117,6 +118,7 @@ class FilteringSUL(SUL):
         if self.do_logging:
             logger.debug(f"reset tracker, {self.last_risk}")
         self.observation_length = 0
+        self.out_of_model = False
 
     def post(self):
         pass
@@ -127,6 +129,7 @@ class FilteringSUL(SUL):
                 logger.debug(
                     f"Risk collapsed to 0 after observing {observation} ({self.observation_length})",
                 )
+            self.out_of_model = True
             return False
 
         if self.horizon is not None and self.observation_length > self.horizon:
@@ -134,6 +137,7 @@ class FilteringSUL(SUL):
                 logger.debug(
                     f"Risk collapsed to 0 after observing past the horizon ({self.observation_length})",
                 )
+            self.out_of_model = True
             return False
 
         if observation is not None:
@@ -145,6 +149,7 @@ class FilteringSUL(SUL):
                     logger.debug(
                         f"Observing {observation} resulted in collapse, {res}",
                     )
+                self.out_of_model = True
                 return False
 
         risk = self.tracker.obtain_current_risk(max=False)
