@@ -21,6 +21,8 @@ from stormpy import (
     SparseExactMdp,
     ExpressionManager,
     Rational,
+    ConditionalAlgorithmSetting,
+    MinMaxMethod,
 )
 from stormpy.pomdp import (
     GenerateMonitorVerifierExact,
@@ -34,6 +36,15 @@ from verimon.logger import logger
 from verimon.utils import compact_json_str, get_pos, hole_to_observations
 
 
+conditional_methods_map = {
+    "rejection": ConditionalAlgorithmSetting.restart,
+    "restart": ConditionalAlgorithmSetting.restart,
+    "bisection": ConditionalAlgorithmSetting.bisection,
+    "bisection_advanced": ConditionalAlgorithmSetting.bisection_advanced,
+    "policy_iteration": ConditionalAlgorithmSetting.policy_iteration,
+}
+
+
 class Verifier:
     def __init__(
         self: Self,
@@ -43,6 +54,7 @@ class Verifier:
         good_label: str,
         paynt_strategy: str = "ar",
         export_benchmarks: bool = False,
+        conditional_method: str = "rejection",
     ) -> None:
         if mc.is_exact ^ mon.is_exact:
             raise Exception(
@@ -61,6 +73,7 @@ class Verifier:
         self.good_label = good_label
         self.pomdp_quotient = None
         self.pomdp = None
+        self.conditional_method = conditional_method
 
         if mc.is_exact and paynt_strategy != "ar":
             raise ValueError("Only AR strategy is supported for exact models")
@@ -68,41 +81,24 @@ class Verifier:
 
         if self.mc.is_exact:
             self.options = GenerateMonitorVerifierExactOptions()
-            self.options.good_label = good_label
-            self.options.step_prefix = "step="
-            self.options.use_risk = True
+        else:
+            self.options = GenerateMonitorVerifierDoubleOptions()
+
+        self.options.good_label = good_label
+        self.options.step_prefix = "step="
+        self.options.use_risk = True
+        self.options.use_rejection_sampling = self.conditional_method == "rejection"
+
+        if self.mc.is_exact:
             self.generator = GenerateMonitorVerifierExact(
                 mc, mon, expr_manager, self.options
             )
         else:
-            self.options = GenerateMonitorVerifierDoubleOptions()
-            self.options.good_label = good_label
-            self.options.step_prefix = "step="
-            self.options.use_risk = True
             self.generator = GenerateMonitorVerifierDouble(
                 mc, mon, expr_manager, self.options
             )
 
         self.export_benchmarks = export_benchmarks
-        if export_benchmarks:
-            if self.mc.is_exact:
-                self.benchmark_options = GenerateMonitorVerifierExactOptions()
-                self.benchmark_options.good_label = good_label
-                self.benchmark_options.step_prefix = "step="
-                self.benchmark_options.use_risk = True
-                self.benchmark_options.use_rejection_sampling = False
-                self.benchmark_generator = GenerateMonitorVerifierExact(
-                    mc, mon, expr_manager, self.benchmark_options
-                )
-            else:
-                self.benchmark_options = GenerateMonitorVerifierDoubleOptions()
-                self.benchmark_options.good_label = good_label
-                self.benchmark_options.step_prefix = "step="
-                self.benchmark_options.use_risk = True
-                self.benchmark_options.use_rejection_sampling = False
-                self.benchmark_generator = GenerateMonitorVerifierDouble(
-                    mc, mon, expr_manager, self.benchmark_options
-                )
 
     def apply_spec(self: Self, spec: str):
         """
@@ -136,17 +132,11 @@ class Verifier:
         result = model_checking(self.mc, prop[0])
 
         self.generator.set_risk(result.get_values())
-        if self.export_benchmarks:
-            self.benchmark_generator.set_risk(result.get_values())
-
         logger.debug(f"Risk function becomes: {result.get_values()}")
 
     def create_product(self: Self):
         self.monitor_verifier = self.generator.create_product()
         self.pomdp = self.monitor_verifier.get_product()
-        if self.export_benchmarks:
-            self.benchmark_monitor_verifier = self.benchmark_generator.create_product()
-            self.benchmark_pomdp = self.benchmark_monitor_verifier.get_product()
 
     def check_storm_prop(self: Self, str_prop: str):
         prop = parse_properties(str_prop)
@@ -159,16 +149,32 @@ class Verifier:
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
     ) -> tuple[Family, float | Rational | None] | None:
+        assert self.pomdp is not None, "POMDP product not created yet"
+
+        # Setup paynt logging and timer
         paynt.cli.setup_logger()
         paynt.utils.timer.GlobalTimer.start()
 
+        # Create paynt specification
         formula = PrismParser.parse_property(str_prop)
         prop = paynt.verification.property.construct_property(
             formula, relative_error, self.pomdp.is_exact
         )
         specification = paynt.verification.property.Specification([prop])
-        paynt.verification.property.Property.initialize(self.pomdp.is_exact)
 
+        # Set storm model checking settings
+        if "bisection" in self.conditional_method:
+            min_max_method = MinMaxMethod.value_iteration
+        else:
+            min_max_method = None
+
+        paynt.verification.property.Property.initialize(
+            self.pomdp.is_exact,
+            conditional_methods_map[self.conditional_method],
+            min_max_method,
+        )
+
+        # Create PAYNT model quotient from pomdp
         if self.pomdp.is_exact:
             explicit_quotient = payntbind.synthesis.addMissingChoiceLabelsExact(
                 self.pomdp
@@ -182,7 +188,7 @@ class Verifier:
             explicit_quotient, specification
         )
 
-        # synthesize 1-FSC
+        # synthesize counterexample scheduler
         synthesizer = paynt.synthesizer.synthesizer.Synthesizer.choose_synthesizer(
             self.pomdp_quotient, self.paynt_strategy
         )  # type: ignore
@@ -193,8 +199,11 @@ class Verifier:
             logger.info(synthesizer.stat.get_summary())
             return None
 
+        # Clear paynt logger handlers to avoid duplicate logs in further calls
         root_logger = logging.getLogger()
         root_logger.handlers.clear()
+
+        # Return results
         if assignment is not None:
             logger.info(
                 f"counterexample found: {assignment} ({synthesizer.quotient.specification.optimality.optimum if synthesizer.quotient.specification.optimality else None})"

@@ -129,6 +129,7 @@ class LearningExperiment(Experiment):
         old_walks_per_state: int = 100000,
         old_walk_length: int | None = None,
         use_exact: bool = False,
+        conditional_method: str = "rejection",
         variant: Any | None = None,
     ):
         old_walk_length = (
@@ -161,6 +162,7 @@ class LearningExperiment(Experiment):
         self.use_horizon_in_filtering = use_horizon_in_filtering
         self.old_walks_per_state = old_walks_per_state
         self.old_walk_length = old_walk_length
+        self.conditional_method = conditional_method
         self.loader = loader
         self.use_exact = use_exact
 
@@ -186,6 +188,7 @@ class LearningExperiment(Experiment):
                 self.verimon_walk_length,
                 self.use_horizon_in_filtering,
                 base_dir,
+                self.conditional_method,
             )
             verimon_time = time() - verimon_start_time
 
@@ -374,6 +377,8 @@ class LearningExperiment(Experiment):
                     "use_risk": self.use_risk,
                     "filtering": sul,
                     "model_path": base_dir + "/debug-models/",
+                    "export_benchmarks": False,
+                    "conditional_method": self.conditional_method,
                 },
             )
 
@@ -394,6 +399,8 @@ class LearningExperiment(Experiment):
                     "use_risk": self.use_risk,
                     "filtering": sul,
                     "model_path": base_dir + "/debug-models/",
+                    "export_benchmarks": False,
+                    "conditional_method": self.conditional_method,
                 },
             )
 
@@ -506,6 +513,7 @@ class VerifyExperiment(Experiment):
         use_risk: bool = True,
         threshold: float | None = None,
         use_exact: bool = False,
+        conditional_method: str = "rejection",
     ):
         super().__init__(name, variant)
 
@@ -571,6 +579,7 @@ class VerifyExperiment(Experiment):
         self.threshold = threshold
         self.search = search
         self.paynt_strategy = paynt_strategy
+        self.conditional_method = conditional_method
 
     def run(self, timestamp: str, base_dir: str):
         if self.stop:
@@ -674,6 +683,8 @@ class VerifyExperiment(Experiment):
                             "use_risk": self.use_risk,
                             "paynt_strategy": self.paynt_strategy,
                             "model_path": base_dir + "/debug-models/",
+                            "export_benchmarks": False,
+                            "conditional_method": self.conditional_method,
                         }
                         | ({"filtering": sul} if self.threshold is not None else {})
                     ),
@@ -842,7 +853,7 @@ if __name__ == "__main__":
 
     if args.base_dir == "":
         filenames = [f.name.split("/")[-1].split(".")[0] for f in args.files]
-        base_dir = f"stats/exp-{timestamp}-{'-'.join(filenames)}"
+        base_dir = f"out/exp-{timestamp}-{'-'.join(filenames)}"
     else:
         base_dir = args.base_dir
 

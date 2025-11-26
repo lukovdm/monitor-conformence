@@ -127,6 +127,19 @@ def main():
         default=11,
         help="Length of walks for random equivalence oracle (default: 11).",
     )
+    oracle_group.add_argument(
+        "--conditional_method",
+        type=str,
+        choices=[
+            "rejection",
+            "bisection",
+            "bisection_advanced",
+            "restart",
+            "policy_iteration",
+        ],
+        default="rejection",
+        help="Method for conditional probability estimation (default: rejection).",
+    )
 
     # Output-related arguments
     output_group = parser.add_argument_group("Output")

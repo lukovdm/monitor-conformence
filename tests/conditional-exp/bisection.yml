@@ -1,0 +1,121 @@
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - tests/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=1"
+    - constants: "IMAX=25"
+    - constants: "IMAX=50"
+  horizon:
+    - 3
+    - 10
+    - 25
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  use_exact:
+    - true
+    - false
+  conditional_method: bisection
+
+- type: LearningExperiment
+  name: refuel
+  file:
+    - tests/premise/refuel.nm
+    - tests/premise/refuelB.nm
+  parameters:
+    - constants: "N=3,ENERGY=3"
+    - constants: "N=4,ENERGY=3"
+    - constants: "N=3,ENERGY=4"
+  spec: Pmax=? [F<=3 "empty"]
+  good_label: empty
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  use_exact:
+    - true
+    - false
+  conditional_method: bisection
+
+- type: LearningExperiment
+  name: evade
+  file: tests/premise/evade-monitoring.nm
+  parameters:
+    constants: "N=4,RADIUS=2"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  horizon:
+    - 6
+    - 7
+    - 8
+    - 9
+  learning_algs: 
+    - [verimon]
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  use_exact:
+    - true
+    - false
+  conditional_method: bisection
+
+- type: LearningExperiment
+  name: hidden_incentive
+  file: tests/premise/hidden-incentive.nm
+  parameters:
+    constants: "N=3"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  horizon:
+    - 8
+    - 9
+    - 10
+    - 11
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  use_exact:
+    - true
+    - false
+  conditional_method: bisection
+
+- type: LearningExperiment
+  name: airport
+  file:
+    - tests/premise/airportA-3.nm
+    - tests/premise/airportB-3.nm
+    - tests/premise/airportA-7.nm
+    - tests/premise/airportB-7.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+    - constants: "DMAX=4,PMAX=4"
+    - constants: "DMAX=5,PMAX=5"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  horizon:
+    - 8
+    - 9
+    - 10
+    - 11
+  slack: 
+    - [0, 0]
+    - [0.2, 0.05]
+  use_exact:
+    - true
+    - false
+  conditional_method: bisection

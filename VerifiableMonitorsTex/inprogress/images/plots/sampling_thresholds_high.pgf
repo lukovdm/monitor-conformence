@@ -30,9 +30,9 @@
 %%   
 %%   \ifdefined\pdftexversion\else  % non-pdftex case.
 %%     \usepackage{fontspec}
-%%     \setmainfont{DejaVuSerif.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-HSnaZ5_u-py3.11/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf/}]
-%%     \setsansfont{DejaVuSans.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-HSnaZ5_u-py3.11/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf/}]
-%%     \setmonofont{DejaVuSansMono.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-HSnaZ5_u-py3.11/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf/}]
+%%     \setmainfont{DejaVuSerif.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-AKvrCngx-py3.13/lib/python3.13/site-packages/matplotlib/mpl-data/fonts/ttf/}]
+%%     \setsansfont{DejaVuSans.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-AKvrCngx-py3.13/lib/python3.13/site-packages/matplotlib/mpl-data/fonts/ttf/}]
+%%     \setmonofont{DejaVuSansMono.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-AKvrCngx-py3.13/lib/python3.13/site-packages/matplotlib/mpl-data/fonts/ttf/}]
 %%   \fi
 %%   \makeatletter\@ifpackageloaded{underscore}{}{\usepackage[strings]{underscore}}\makeatother
 %%
@@ -159,8 +159,8 @@
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{0.273979in}{3.405388in}}%
 \pgfpathlineto{\pgfqpoint{0.479126in}{3.405388in}}%
-\pgfpathlineto{\pgfqpoint{0.479126in}{1.647912in}}%
-\pgfpathlineto{\pgfqpoint{0.273979in}{1.647912in}}%
+\pgfpathlineto{\pgfqpoint{0.479126in}{1.443027in}}%
+\pgfpathlineto{\pgfqpoint{0.273979in}{1.443027in}}%
 \pgfpathlineto{\pgfqpoint{0.273979in}{3.405388in}}%
 \pgfpathclose%
 \pgfusepath{fill}%
@@ -199,8 +199,8 @@
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{1.185743in}{3.405388in}}%
 \pgfpathlineto{\pgfqpoint{1.390891in}{3.405388in}}%
-\pgfpathlineto{\pgfqpoint{1.390891in}{1.769475in}}%
-\pgfpathlineto{\pgfqpoint{1.185743in}{1.769475in}}%
+\pgfpathlineto{\pgfqpoint{1.390891in}{2.021439in}}%
+\pgfpathlineto{\pgfqpoint{1.185743in}{2.021439in}}%
 \pgfpathlineto{\pgfqpoint{1.185743in}{3.405388in}}%
 \pgfpathclose%
 \pgfusepath{fill}%
@@ -219,8 +219,8 @@
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{1.641626in}{3.405388in}}%
 \pgfpathlineto{\pgfqpoint{1.846773in}{3.405388in}}%
-\pgfpathlineto{\pgfqpoint{1.846773in}{1.814108in}}%
-\pgfpathlineto{\pgfqpoint{1.641626in}{1.814108in}}%
+\pgfpathlineto{\pgfqpoint{1.846773in}{1.843210in}}%
+\pgfpathlineto{\pgfqpoint{1.641626in}{1.843210in}}%
 \pgfpathlineto{\pgfqpoint{1.641626in}{3.405388in}}%
 \pgfpathclose%
 \pgfusepath{fill}%
@@ -339,8 +339,8 @@
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{0.935008in}{1.095388in}}%
 \pgfpathlineto{\pgfqpoint{1.140155in}{1.095388in}}%
-\pgfpathlineto{\pgfqpoint{1.140155in}{3.172381in}}%
-\pgfpathlineto{\pgfqpoint{0.935008in}{3.172381in}}%
+\pgfpathlineto{\pgfqpoint{1.140155in}{3.268474in}}%
+\pgfpathlineto{\pgfqpoint{0.935008in}{3.268474in}}%
 \pgfpathlineto{\pgfqpoint{0.935008in}{1.095388in}}%
 \pgfpathclose%
 \pgfusepath{fill}%
@@ -379,8 +379,8 @@
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{1.846773in}{1.095388in}}%
 \pgfpathlineto{\pgfqpoint{2.051920in}{1.095388in}}%
-\pgfpathlineto{\pgfqpoint{2.051920in}{2.990772in}}%
-\pgfpathlineto{\pgfqpoint{1.846773in}{2.990772in}}%
+\pgfpathlineto{\pgfqpoint{2.051920in}{2.595004in}}%
+\pgfpathlineto{\pgfqpoint{1.846773in}{2.595004in}}%
 \pgfpathlineto{\pgfqpoint{1.846773in}{1.095388in}}%
 \pgfpathclose%
 \pgfusepath{fill}%
@@ -419,8 +419,8 @@
 \pgfsetdash{}{0pt}%
 \pgfpathmoveto{\pgfqpoint{2.758538in}{1.095388in}}%
 \pgfpathlineto{\pgfqpoint{2.963685in}{1.095388in}}%
-\pgfpathlineto{\pgfqpoint{2.963685in}{2.019069in}}%
-\pgfpathlineto{\pgfqpoint{2.758538in}{2.019069in}}%
+\pgfpathlineto{\pgfqpoint{2.963685in}{2.073558in}}%
+\pgfpathlineto{\pgfqpoint{2.758538in}{2.073558in}}%
 \pgfpathlineto{\pgfqpoint{2.758538in}{1.095388in}}%
 \pgfpathclose%
 \pgfusepath{fill}%

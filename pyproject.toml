@@ -22,10 +22,9 @@ tabulate = "^0.9.0"
 scipy = "^1.15.2"
 
 [tool.poetry.group.no-docker.dependencies]
-stormpy = { path = "../stormpy", develop = true }
-payntbind = { path = "../synthesis/payntbind", develop = true }
-paynt = { path = "../synthesis", develop= true }
-stormvogel = { path = "../stormvogel", develop = true }
+stormpy = { path = "../stormpy-tover", develop = true }
+paynt = { path = "../synthesis-tover", develop= true }
+stormvogel = { path = "../stormvogel-tover", develop = true }
 
 [tool.poetry.group.dev.dependencies]
 notebook = "^7.2.2"

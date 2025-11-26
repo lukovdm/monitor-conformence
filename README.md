@@ -86,7 +86,7 @@ The inputs to `python -m verimon.run` are as follows:
 - `--threshold 0.3` is the learning threshold.
 - `--horizon 10` contains the horizon in which the monitor should be correct.
 - `--fp_slack 0.2` is the area below the learning threshold considered as undetermined.
-- `--fn_slack 0.05` is the area above he learning threshold considered as undetermined.
+- `--fn_slack 0.05` is the area above the learning threshold considered as undetermined.
 - `--base_dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
 
 ## Running experiments

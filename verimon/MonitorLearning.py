@@ -223,6 +223,7 @@ class VerimonEqOracle(Oracle):
         walk_len: int = 100,
         base_dir: str | None = None,
         export_benchmarks: bool = False,
+        conditional_method: str = "rejection",
     ):
         """
 
@@ -252,6 +253,7 @@ class VerimonEqOracle(Oracle):
         self.expression_manager = expression_manager
         self.base_dir = base_dir
         self.export_benchmarks = export_benchmarks
+        self.conditional_method = conditional_method
 
         self.stats = {
             "num_rounds": 0,
@@ -291,16 +293,16 @@ class VerimonEqOracle(Oracle):
             )
             self.filter_sul.threshold = self.threshold + self.fn_slack
             cex = self.eq_orcale.find_cex(hypothesis)
-            if (
-                cex is None or self._check_hyp_on_trace(hypothesis, cex)
+            if cex is None or self._check_hyp_on_trace(
+                hypothesis, cex
             ):  # We found a counter example but it is not a false negative, thus we ignore it
                 logger.debug(
                     f"Finding fp using eq oracle, threshold: {self.threshold - self.fp_slack}"
                 )
                 self.filter_sul.threshold = self.threshold - self.fp_slack
                 cex = self.eq_orcale.find_cex(hypothesis)
-                if (
-                    cex is None or not self._check_hyp_on_trace(hypothesis, cex)
+                if cex is None or not self._check_hyp_on_trace(
+                    hypothesis, cex
                 ):  # We found a counter example but it is not a false positive, thus we ignore it
                     logger.debug("No counter example found using eq oracle")
                     cex = None
@@ -342,6 +344,7 @@ class VerimonEqOracle(Oracle):
                 "use_risk": self.use_risk,
                 "filtering": self.filter_sul,
                 "export_benchmarks": self.export_benchmarks,
+                "conditional_method": self.conditional_method,
             }
             | (
                 {"model_path": self.base_dir + "/debug-models"}
@@ -387,6 +390,7 @@ class VerimonEqOracle(Oracle):
                 "use_risk": self.use_risk,
                 "filtering": self.filter_sul,
                 "export_benchmarks": self.export_benchmarks,
+                "conditional_method": self.conditional_method,
             }
             | (
                 {"model_path": self.base_dir + "/debug-models"}
@@ -452,6 +456,7 @@ def run_verimon(
     walk_len: int,
     use_horizon_in_filtering: bool,
     export_benchmarks: bool = False,
+    conditional_method: str = "rejection",
     base_dir: str | None = None,
 ) -> tuple[tuple[Dfa, dict], dict]:
     sul = FilteringSUL(
@@ -482,6 +487,7 @@ def run_verimon(
         walk_len,
         base_dir,
         export_benchmarks,
+        conditional_method,
     )
 
     return (

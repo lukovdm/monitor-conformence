@@ -45,10 +45,15 @@ def false_positive(
     if options is None:
         options = {}
 
-    if threshold is None:
-        paynt_spec = 'Pmax=? [F "stop"]'
+    if options["conditional_method"] != "rejection":
+        conditional_spec = ' | F "condition"'
     else:
-        paynt_spec = f'P>{1 - threshold} [F "stop"]'
+        conditional_spec = ""
+
+    if threshold is None:
+        paynt_spec = f'Pmax=? [F "stop"{conditional_spec}]'
+    else:
+        paynt_spec = f'P>{1 - threshold} [F "stop"{conditional_spec}]'
 
     res = _verify_helper(
         mc, mon, paynt_spec, horizon, expr_manager, default_option | options
@@ -71,10 +76,15 @@ def false_negative(
     if options is None:
         options = {}
 
-    if threshold is None:
-        paynt_spec = 'Pmax=? [F "goal"]'
+    if options["conditional_method"] != "rejection":
+        conditional_spec = ' | F "condition"'
     else:
-        paynt_spec = f'P>{threshold} [F "goal"]'
+        conditional_spec = ""
+
+    if threshold is None:
+        paynt_spec = f'Pmax=? [F "goal"{conditional_spec}]'
+    else:
+        paynt_spec = f'P>{threshold} [F "goal"{conditional_spec}]'
 
     mon_c = complement_stormpy_mon(mon, "accepting")
 
@@ -99,10 +109,15 @@ def true_positive(
     if options is None:
         options = {}
 
-    if threshold is None:
-        paynt_spec = 'Pmax=? [F "goal"]'
+    if options["conditional_method"] != "rejection":
+        conditional_spec = ' | F "condition"'
     else:
-        paynt_spec = f'P>{1 - threshold} [F "goal"]'
+        conditional_spec = ""
+
+    if threshold is None:
+        paynt_spec = f'Pmax=? [F "goal"{conditional_spec}]'
+    else:
+        paynt_spec = f'P>{1 - threshold} [F "goal"{conditional_spec}]'
 
     res = _verify_helper(
         mc, mon, paynt_spec, horizon, expr_manager, default_option | options
@@ -125,10 +140,15 @@ def true_negative(
     if options is None:
         options = {}
 
-    if threshold is None:
-        paynt_spec = 'Pmax=? [F "stop"]'
+    if options["conditional_method"] != "rejection":
+        conditional_spec = ' | F "condition"'
     else:
-        paynt_spec = f'P>{threshold} [F "stop"]'
+        conditional_spec = ""
+
+    if threshold is None:
+        paynt_spec = f'Pmax=? [F "stop"{conditional_spec}]'
+    else:
+        paynt_spec = f'P>{threshold} [F "stop"{conditional_spec}]'
 
     mon_c = complement_stormpy_mon(mon, "accepting")
 
@@ -161,14 +181,15 @@ def _verify_helper(
     mon = stormpy_simulator_unroll(mon_cycl, horizon)
     logger.debug("Unrolling done")
 
-    # mon = bisim_minimise_monitor(mon) Bisimulation minimisation removes choice labeling, whichi is essential for us
+    # Create verifier object, this contains the product construction and paynt checking
     model = Verifier(
         mc,
         mon,
         expr_manager,
         options["good_label"],
         options["paynt_strategy"],
-        options["export_benchmarks"],
+        options.get("export_benchmarks", False),
+        options.get("conditional_method", "rejection"),
     )
     if options["use_risk"]:
         model.set_risk(options["good_spec"])
@@ -181,29 +202,33 @@ def _verify_helper(
     stats["product_time"] = time() - product_start
     logger.debug("creating product done")
 
+    # Export model if needed
     if "model_path" in options and options["export_benchmarks"]:
         os.makedirs(options["model_path"], exist_ok=True)
         timestamp = time()
-        path = f"{options['model_path']}/pomdp-null-{len(model.benchmark_pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn"
+        path = f"{options['model_path']}/pomdp-null-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn"
         export_to_drn(
-            model.benchmark_pomdp,
+            model.pomdp,
             path,
         )
 
+    # Find a trace that violates the property
     logger.debug("Finding specified trace")
     paynt_start = time()
     res = model.check_paynt_prop(paynt_spec, options["relative_error"])
     stats["paynt_time"] = time() - paynt_start
 
+    # Rename exported model with paynt time
     if "model_path" in options and options["export_benchmarks"]:
         try:
             os.rename(
                 path,
-                f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.benchmark_pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn",
+                f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn",
             )
         except Exception as e:
             logger.error(f"Could not rename file: {traceback.format_exc()}")
 
+    # Check if a counter example was found
     if res is None:
         logger.info("no counter example during verification")
         return None, None, None, model, stats
@@ -211,9 +236,11 @@ def _verify_helper(
         assignment, value = res
         stats["value"] = value
 
+    # If a counter example was found, get the associated trace
     trace = model.trace_of_assignment(assignment)
     logger.info(f"Found trace: {trace}")
 
+    # Double check the result by applying the scheduler and model checking the resulting MC
     double_check_time = time()
     induced_mc = model.created_induced_mc(assignment)
 
@@ -227,11 +254,21 @@ def _verify_helper(
     env.solver_environment.native_solver_environment.precision = Rational(str(1e-6))
     env.solver_environment.minmax_solver_environment.precision = Rational(str(1e-6))
 
+    # Make properties for double check conditional if needed
+    if options["conditional_method"] != "rejection":
+        conditional_prop = ' | F "condition"'
+    else:
+        conditional_prop = ""
+
     result_goal: float = model_checking(
-        induced_mc, parse_properties('Pmax=? [F "goal"]')[0], environment=env
+        induced_mc,
+        parse_properties(f'Pmax=? [F "goal"{conditional_prop}]')[0],
+        environment=env,
     ).at(induced_mc.initial_states[0])
     result_stop: float = model_checking(
-        induced_mc, parse_properties('Pmax=? [F "stop"]')[0], environment=env
+        induced_mc,
+        parse_properties(f'Pmax=? [F "stop"{conditional_prop}]')[0],
+        environment=env,
     ).at(induced_mc.initial_states[0])
     logger.info(f"Goal probability counterexample: {result_goal}")
 

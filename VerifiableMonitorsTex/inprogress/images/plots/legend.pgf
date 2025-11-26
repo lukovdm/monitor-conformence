@@ -30,9 +30,9 @@
 %%   
 %%   \ifdefined\pdftexversion\else  % non-pdftex case.
 %%     \usepackage{fontspec}
-%%     \setmainfont{DejaVuSerif.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-HSnaZ5_u-py3.11/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf/}]
-%%     \setsansfont{DejaVuSans.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-HSnaZ5_u-py3.11/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf/}]
-%%     \setmonofont{DejaVuSansMono.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-HSnaZ5_u-py3.11/lib/python3.11/site-packages/matplotlib/mpl-data/fonts/ttf/}]
+%%     \setmainfont{DejaVuSerif.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-AKvrCngx-py3.13/lib/python3.13/site-packages/matplotlib/mpl-data/fonts/ttf/}]
+%%     \setsansfont{DejaVuSans.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-AKvrCngx-py3.13/lib/python3.13/site-packages/matplotlib/mpl-data/fonts/ttf/}]
+%%     \setmonofont{DejaVuSansMono.ttf}[Path=\detokenize{/home/luko/.cache/pypoetry/virtualenvs/verimon-AKvrCngx-py3.13/lib/python3.13/site-packages/matplotlib/mpl-data/fonts/ttf/}]
 %%   \fi
 %%   \makeatletter\@ifpackageloaded{underscore}{}{\usepackage[strings]{underscore}}\makeatother
 %%
