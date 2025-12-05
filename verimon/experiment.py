@@ -694,7 +694,7 @@ class VerifyExperiment(Experiment):
                             "use_risk": self.use_risk,
                             "paynt_strategy": self.paynt_strategy,
                             "model_path": base_dir + "/debug-models/",
-                            "export_benchmarks": True,
+                            "export_benchmarks": False,
                             "conditional_method": self.conditional_method,
                         }
                         | ({"filtering": sul} if self.threshold is not None else {})
