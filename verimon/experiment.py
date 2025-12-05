@@ -1,15 +1,20 @@
 from abc import ABC, abstractmethod
+from hashlib import md5
 import json
 import os
 import argparse
 from datetime import datetime
-from random import shuffle
+from random import seed, shuffle
 import resource
 from time import time
 import traceback
-from typing import Any, Literal
+from typing import Any, Literal, cast
 from setproctitle import getproctitle, setproctitle
+from tqdm import tqdm
 import yaml
+import signal
+import os
+
 
 from verimon.generator import Verifier
 from verimon import loaders
@@ -20,7 +25,7 @@ from verimon.MonitorLearning import (
     run_verimon,
 )
 from verimon.logger import OutputLogger, clear_logging, setup_logging, logger
-from verimon.utils import ObjectGroup
+from verimon.utils import ObjectGroup, str_to_float
 from verimon.verify import false_positive, false_negative, true_negative, true_positive
 from verimon.loaders import aalpy_dfa_to_stormpy, aalpy_dfa_to_stormvogel
 
@@ -57,16 +62,17 @@ class Experiment(ABC):
         proc_title = proc_title.split("<")[0]
         setproctitle(f"{proc_title} <{self.name} {self.variant}>")
         # Setup logging
-        log_file = f"{base_dir}/logs/{timestamp}_{self.name}_{self.variant}.log"
+        self.variant_hash = md5(str(self.variant).encode()).hexdigest()
+        log_file = f"{base_dir}/logs/{timestamp}_{self.name}_{self.variant_hash}.log"
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
         clear_logging()
-        setup_logging(path=log_file)
+        setup_logging(path=log_file, output_to_stdout=False)
 
         # Make sure models directory exists
         os.makedirs(f"{base_dir}/models/", exist_ok=True)
 
         self.result_json_file = (
-            f"{base_dir}/json/{timestamp}_{self.name}_{self.variant}.json"
+            f"{base_dir}/json/{timestamp}_{self.name}_{self.variant_hash}.json"
         )
         self.write_results(finished=False)
 
@@ -187,8 +193,9 @@ class LearningExperiment(Experiment):
                 self.verimon_walks_per_state,
                 self.verimon_walk_length,
                 self.use_horizon_in_filtering,
-                base_dir,
+                False,
                 self.conditional_method,
+                base_dir,
             )
             verimon_time = time() - verimon_start_time
 
@@ -213,14 +220,14 @@ class LearningExperiment(Experiment):
                 f"-----------------------------------"
             )
             verimon_learned_monitor.visualize(
-                path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon",
+                path=f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_verimon",
                 file_type="dot",
             )
             mon = aalpy_dfa_to_stormvogel(verimon_learned_monitor)
             mon_storm = stormvogel_to_stormpy(mon)
             export_to_drn(
                 mon_storm,
-                f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
+                f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_verimon.drn",
             )
             logger.info("Verifying the verimon learned models")
             fp_verimon_result, fn_verimon_result = self._run_verify(
@@ -257,8 +264,8 @@ class LearningExperiment(Experiment):
                 "eq_time": stats["eq_time"],
                 "counterexample_time": verimon_info["eq_oracle_time"],
                 "lstar_time": verimon_info["learning_time"],
-                "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.dot",
-                "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_verimon.drn",
+                "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_verimon.dot",
+                "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_verimon.drn",
             }
         except Exception as e:
             logger.error(f"Error in Verimon: {traceback.format_exc()}")
@@ -313,14 +320,14 @@ class LearningExperiment(Experiment):
             f"-----------------------------------"
         )
         trad_learned_monitor.visualize(
-            path=f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}",
+            path=f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_{alg}",
             file_type="dot",
         )
         mon = aalpy_dfa_to_stormvogel(trad_learned_monitor)
         mon_storm = stormvogel_to_stormpy(mon)
         export_to_drn(
             mon_storm,
-            f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}.drn",
+            f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_{alg}.drn",
         )
         logger.info(f"Verifying the {alg} learned models")
         fp_trad_result, fn_trad_result = self._run_verify(
@@ -339,8 +346,8 @@ class LearningExperiment(Experiment):
             "false_negative": fn_trad_result[0] if fn_trad_result else None,
             "false_negative_trace": fn_trad_result[1] if fn_trad_result else None,
             "monitor_states": len(trad_learned_monitor.states),
-            "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}.dot",
-            "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant}_{alg}.drn",
+            "dot_file": f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_{alg}.dot",
+            "drn_file": f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_{alg}.drn",
         }
 
     def _run_verify(
@@ -541,13 +548,13 @@ class VerifyExperiment(Experiment):
                 self.monitor = exp[monitor_from]["drn_file"]
                 self.mon_percent = 1.0
 
+            self.intermediate_monitor = intermediate_monitor
             self.mc = exp["experiment"]["file"]
             self.spec = exp["experiment"]["spec"]
             self.good_label = exp["experiment"]["good_label"]
             self.horizon = exp["experiment"]["horizon"]
-            self.relative_error = exp["experiment"]["relative_error"]
+            self.relative_error = str_to_float(exp["experiment"]["relative_error"])
             self.use_risk = exp["experiment"]["use_risk"]
-            self.threshold = exp["experiment"]["threshold"]
             self.loader = exp["experiment"]["loader"]
             self.parameters = exp["experiment"]["parameters"]
             self.use_exact = exp["experiment"]["use_exact"]
@@ -579,6 +586,7 @@ class VerifyExperiment(Experiment):
         self.threshold = threshold
         self.search = search
         self.paynt_strategy = paynt_strategy
+        self.use_exact = use_exact
         self.conditional_method = conditional_method
 
     def run(self, timestamp: str, base_dir: str):
@@ -591,6 +599,9 @@ class VerifyExperiment(Experiment):
             self.threshold = (
                 sharpen(3, self.threshold) if self.use_exact else self.threshold
             )
+        self.relative_error = (
+            sharpen(5, self.relative_error) if self.use_exact else self.relative_error
+        )
 
         start_time = time()
 
@@ -683,7 +694,7 @@ class VerifyExperiment(Experiment):
                             "use_risk": self.use_risk,
                             "paynt_strategy": self.paynt_strategy,
                             "model_path": base_dir + "/debug-models/",
-                            "export_benchmarks": False,
+                            "export_benchmarks": True,
                             "conditional_method": self.conditional_method,
                         }
                         | ({"filtering": sul} if self.threshold is not None else {})
@@ -696,7 +707,7 @@ class VerifyExperiment(Experiment):
                         logger.info(f"Assignment: {assignment}")
                         logger.info(f"PAYNT result: {assignment.analysis_result}")
 
-                    path = f"{base_dir}/models/monitor_{self.name}_{self.variant}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
+                    path = f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
                     verify_json = {
                         "goal_threshold": result_goal,
                         "trace": trace,
@@ -746,6 +757,27 @@ class VerifyExperiment(Experiment):
             logger.info(
                 f"Finished verification experiment: {self.name} ({self.variant})"
             )
+
+
+def run_experiment_with_timeout(arg):
+    exp, timestamp, base_dir, timeout = arg
+
+    print(f"Starting experiment {exp.name} ({exp.variant}) with timeout {timeout}s")
+
+    def timeout_handler(signum, frame):
+        print(
+            f"Experiment {exp.name} ({exp.variant}) timed out after {timeout} seconds"
+        )
+        os._exit(1)  # Force terminate the process
+
+    # Set up the timeout handler inside the worker process
+    signal.signal(signal.SIGALRM, timeout_handler)
+    signal.alarm(timeout)
+    seed(0)
+    try:
+        exp.run(timestamp, base_dir)
+    finally:
+        signal.alarm(0)  # Cancel the alarm if completed normally
 
 
 # Run experiments based on command line arguments
@@ -805,12 +837,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.debug:
-        import os
-
         input("Press Enter to continue... " + str(os.getpid()))
 
     data = [exp for f in args.files for exp in yaml.load(f, Loader=yaml.FullLoader)]
-    experiments = []
+    experiments: list[ObjectGroup] = []
     for group in data:
         if group["type"] == "LearningExperiment":
             exp_type = LearningExperiment
@@ -825,10 +855,14 @@ if __name__ == "__main__":
 
     if args.list_experiments:
         print("Available experiments:")
+        total = 0
         for group in experiments:
-            print(f"- {group.kwargss['name'][0]}")
-            for exp in group.get_objects():
+            objects = list(group.get_objects())
+            total += len(objects)
+            print(f"- {group.kwargss['name'][0]} ({len(objects)} variants):")
+            for exp in objects:
                 print(f"\t- {exp.name} {exp.variant}")
+        print(f"Total experiments: {total}")
         exit()
 
     if args.print:
@@ -860,39 +894,33 @@ if __name__ == "__main__":
     os.makedirs(os.path.dirname(base_dir), exist_ok=True)
 
     if args.concurrent:
-        from multiprocessing import Pool
-        import signal
+        from multiprocessing import Pool, set_start_method
         import os
 
-        shuffle(experiments)
+        set_start_method("forkserver")
 
         if args.cores > 0:
             cores = args.cores
+        if args.cores == 0:
+            cores = cast(int, os.cpu_count()) - 1
         else:
             cores = os.cpu_count() + args.cores
 
-        def run_experiment_with_timeout(exp, timestamp, base_dir):
-            def timeout_handler(signum, frame):
-                print(
-                    f"Experiment {exp.name} ({exp.variant}) timed out after {args.timeout} seconds"
-                )
-                os._exit(1)  # Force terminate the process
+        banchmarks = []
+        for group in experiments:
+            for exp in group.get_objects():
+                banchmarks.append(exp)
 
-            # Set up the timeout handler inside the worker process
-            signal.signal(signal.SIGALRM, timeout_handler)
-            signal.alarm(args.timeout)
+        shuffle(banchmarks)
 
-            try:
-                exp.run(timestamp, base_dir)
-            finally:
-                signal.alarm(0)  # Cancel the alarm if completed normally
+        with Pool(cores) as pool:
+            args = [(exp, timestamp, base_dir, args.timeout) for exp in banchmarks]
 
-        with Pool(cores, maxtasksperchild=1) as pool:
-            for group in experiments:
-                for exp in group.get_objects():
-                    pool.apply_async(
-                        run_experiment_with_timeout, (exp, timestamp, base_dir)
-                    )
+            for _ in tqdm(
+                pool.imap_unordered(run_experiment_with_timeout, args),
+                total=len(banchmarks),
+            ):
+                pass
 
             try:
                 pool.close()

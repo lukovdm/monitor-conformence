@@ -1,476 +1,13 @@
-from collections import Counter
+from collections import OrderedDict
 from fractions import Fraction
-import json
 from math import ceil
-import math
-import os
-from random import seed
-import time
-import traceback
-from typing import Any
 import re
-import matplotlib.pyplot as plt
+import time
+from typing import Any, cast
+from matplotlib import pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
-
-from verimon.verify import false_positive
-
-
-VERIFY_EXPERIMENTS = 336
-LEARN_EXPERIMENTS = 275
-
-
-def clean_dict(d):
-    # If value is rational number, convert to float
-    for k, v in d.items():
-        if isinstance(v, dict):
-            clean_dict(v)
-        elif isinstance(v, str):
-            try:
-                d[k] = Fraction(v)
-            except ValueError:
-                pass
-
-
-def clean_data(data):
-    # Correctly interpret rational numebrs in data
-    for d in data:
-        clean_dict(d)
-
-
-def combine_sampling_and_verimon(data, equal_fields):
-    for d in data:
-        if "sampling" in d["experiment"]["learning_algs"]:
-            continue
-        for d2 in data:
-            if d == d2 or "sampling" not in d2["experiment"]["learning_algs"]:
-                continue
-            if all(
-                d["experiment"][field] == d2["experiment"][field]
-                for field in equal_fields
-            ):
-                if "sampling" in d2:
-                    d["sampling"] = d2["sampling"]
-                if "verimon" in d2:
-                    d["verimon"] = d2["verimon"]
-                d["experiment"]["learning_algs"] += d2["experiment"]["learning_algs"]
-                d2["ignore"] = True
-                break
-
-    return [d for d in data if "ignore" not in d]
-
-
-def add_family_size(data):
-    # Use regex on log file to find family size
-    for d in data:
-        if "family_size" in d:
-            continue
-        with open(d["log_path"], "r") as f:
-            log = f.read()
-        match = re.search(r"family size: (\d+e?\d*),", log)
-        if match:
-            d["family_size"] = float(match.group(1))
-        else:
-            d["family_size"] = None
-
-
-def add_learning_rounds(data):
-    # Use regex on log file to find learning rounds
-    for d in data:
-        if "sampling" not in d:
-            continue
-        with open(d["log_path"], "r") as f:
-            log = f.read()
-        match = re.search(r"Learning Rounds:  (\d+)", log)
-        if match:
-            d["sampling"]["learning_rounds"] = int(match.group(1))
-        else:
-            d["sampling"]["learning_rounds"] = None
-
-
-def prep_data_for_latex(data):
-    for d in data:
-        d["experiment"]["name"] = d["experiment"]["name"].replace("_", "\\_")
-        d["experiment"]["variant"] = d["experiment"]["variant"].replace("_", "\\_")
-
-
-def add_short_names(data, verify=False):
-    # Short names are first letter of name and index of variant
-    variant_indexes: dict[str, int] = {}
-    for d in data:
-        if "learn_experiment" in d["experiment"]:
-            name = d["experiment"]["learn_experiment"]["name"]
-        else:
-            name = d["experiment"]["name"]
-
-        if name not in variant_indexes:
-            variant_indexes[name] = 0
-        d["experiment"]["short_name"] = (
-            f"\\textsc{{{name[0].capitalize()}-{variant_indexes[name]}}}"
-        )
-        variant_indexes[name] += 1
-
-
-def add_symbol_color(data, verify=False, color_map="hsv"):
-    symbols = [
-        "o",
-        "s",
-        "D",
-        ">",
-        "^",
-        "p",
-        "*",
-        "h",
-        "H",
-        "d",
-    ]
-    seed(42)
-    if color_map is None:
-        colors = lambda x: "black"
-    else:
-        colors = plt.get_cmap(color_map)
-
-    if verify:
-        experiment_names = set(
-            data["experiment"]["learn_experiment"]["name"] for data in data
-        )
-        experiment_name_counter = Counter(
-            [data["experiment"]["learn_experiment"]["name"] for data in data]
-        )
-        experiment_symbols = {
-            name: symbols[i % len(symbols)]
-            for i, name in enumerate(sorted(experiment_names))
-        }
-
-        for i, exp in enumerate(data):
-            exp["symbol"] = experiment_symbols[
-                exp["experiment"]["learn_experiment"]["name"]
-            ]
-            exp["color"] = colors(
-                (
-                    i
-                    % (
-                        experiment_name_counter[
-                            exp["experiment"]["learn_experiment"]["name"]
-                        ]
-                    )
-                )
-                % 20
-            )
-    else:
-        experiment_names = set(data["experiment"]["name"] for data in data).difference(
-            ["compare-trad"]
-        )
-        experiment_name_counter = Counter([data["experiment"]["name"] for data in data])
-        experiment_symbols = {
-            name: symbols[i % len(symbols)]
-            for i, name in enumerate(sorted(experiment_names))
-        }
-
-        for i, exp in enumerate(data):
-            exp["symbol"] = experiment_symbols.get(exp["experiment"]["name"], "+")
-            exp["color"] = colors(
-                (i % (experiment_name_counter[exp["experiment"]["name"]])) % 20
-            )
-
-    return symbols, colors
-
-
-def load_experiment_data(path: str):
-    json_files: list[str] = [
-        f for f in os.listdir(path + "/json") if f.endswith(".json")
-    ]
-
-    experiment_data: list[dict] = []
-    unfished_count = 0
-    for json_file in json_files:
-        with open(os.path.join(path + "/json/", json_file), "r") as f:
-            try:
-                data: dict = json.load(f)
-            except json.JSONDecodeError:
-                print(f"Error in {json_file}: JSONDecodeError")
-                traceback.print_exc()
-                continue
-            if "verimon" in data and "error" in data["verimon"]:
-                print(f"Error in {json_file}: {data['verimon']['error']}")
-                continue
-
-            data["json_path"] = os.path.join(path + "/json/", json_file)
-            data["log_path"] = os.path.join(path + "/logs/", json_file[:-5] + ".log")
-
-            if not data["finished"]:
-                unfished_count += 1
-                if "time" not in data:
-                    data["time"] = {"total": 0}
-                if (
-                    "learning_algs" in data["experiment"]
-                ):  # Fill in gaps of Learning experiment
-                    with open(data["log_path"], "r") as f:
-                        log = f.read()
-                        timed_out = "timed out after 12 hours" in log
-                        val = "timeout" if timed_out else "out of memory"
-                    if (
-                        "verimon" in data["experiment"]["learning_algs"]
-                        and "verimon" not in data
-                    ):
-                        data["verimon"] = {
-                            "fake": True,
-                            "time": val,
-                            "monitor_states": val,
-                            "false_positive": val,
-                            "false_negative": val,
-                        }
-                    if (
-                        "sampling" in data["experiment"]["learning_algs"]
-                        and "sampling" not in data
-                    ):
-                        data["sampling"] = {
-                            "fake": True,
-                            "time": val,
-                            "monitor_states": val,
-                            "false_positive": val,
-                            "false_negative": val,
-                        }
-                elif "learn_experiment" in data["experiment"]:
-                    if "result" not in data:
-                        data["result"] = {
-                            "fake": True,
-                            "goal_threshold": -1,
-                            "pomdp_states": 0,
-                            "time": 10**4,
-                            "product_time": 0,
-                            "paynt_time": 0,
-                            "double_check_time": 0,
-                        }
-
-            if "result" in data and "error" in data["result"]:
-                if data["result"]["error"] == "No result":
-                    data["result"]["goal_threshold"] = None
-                else:
-                    data["result"] = {
-                        "fake": True,
-                        "goal_threshold": -1,
-                        "pomdp_states": 0,
-                        "time": 10**4,
-                        "product_time": 0,
-                        "paynt_time": 0,
-                        "double_check_time": 0,
-                    }
-            experiment_data.append(data)
-
-    print(
-        f"Loaded {len(experiment_data) - unfished_count}/{len(experiment_data)}/{(VERIFY_EXPERIMENTS if 'verify' in path else LEARN_EXPERIMENTS) - len(experiment_data)} ({(len(experiment_data) - unfished_count) / (VERIFY_EXPERIMENTS if 'verify' in path else LEARN_EXPERIMENTS) * 100:.2f}%) JSON files from {path}"
-    )
-    experiment_data.sort(
-        key=lambda x: (x["experiment"]["name"], str(x["experiment"]["variant"]))
-    )
-    return experiment_data
-
-
-def generate_verify_table(data, save_figures=False, save_path="./", file_name="verify"):
-    preamble = r"""% Auto generated table
-\begin{longtable}[c]{@{}llrrrrrrrrrrrrrr@{}}
-\caption{Table of all verification experiments.}
-\label{tab:fullverifyres}\\                                                                                                                                                                                                                                                                                                        \\
-\toprule
- & & \multicolumn{8}{c}{Benchmark} & \multicolumn{5}{c}{\alg}                                                                                                                                                       \\
-\cmidrule(lr){3-11}\cmidrule(lr){12-16}
- & & $\lambda_l$ & $h$ & MA/FA & $|\Sts^\mc|$ & $|\ptrans^\mc|$ & $|Z|$ & $|\Sts^\dfa|$ & $|\ptrans^\dfa|$ & $|\lang{\mc}^{\leq h}|$ & Time (s) & Trans (s) & PAYNT (s) & $|\mdp_{\gtrdot h}|$ & $\lambda^{found}$  \\
-\midrule
-\endhead"""
-
-    name_map = {
-        "airport": r"\textsc{Airport}",
-        "evade": r"\textsc{Evade}",
-        "refuel": r"\textsc{Refuel}",
-        "icy-driving": r"\textsc{Icy-Driving}",
-        "hidden_incentive": r"\textsc{Hidden-Incen.}",
-        "snakes_ladders": r"\textsc{SnL}",
-    }
-    file_map = {
-        "tests/premise/airportA-3.nm": r"\textsc{AirportA-3}",
-        "tests/premise/airportA-7.nm": r"\textsc{AirportA-7}",
-        "tests/premise/airportB-3.nm": r"\textsc{AirportB-3}",
-        "tests/premise/airportB-7.nm": r"\textsc{AirportB-7}",
-        "tests/premise/refuel.nm": r"\textsc{Refuel}",
-        "tests/premise/refuelB.nm": r"\textsc{RefuelB}",
-    }
-
-    tab_data = [
-        [
-            file_map[d["experiment"]["mc"]]
-            if d["experiment"]["mc"] in file_map
-            else name_map[d["experiment"]["learn_experiment"]["name"]],
-            d["experiment"]["short_name"],
-            d["experiment"]["threshold"]
-            if d["experiment"]["threshold"] is not None
-            else r"\checkmark",
-            d["experiment"]["horizon"],
-            "MA" if d["experiment"]["search"] == "fn" else "FA",
-            d["mc"]["mc_states"],
-            d["mc"]["mc_transitions"],
-            d["mc"]["mc_observations"],
-            d["monitor"]["monitor_states"],
-            d["monitor"]["monitor_transitions"],
-            f"$10^{{{int(math.log10(d['family_size']))}}}$"
-            if d["family_size"] is not None
-            else r"-",
-            (round(d["result"]["time"]) if d["result"]["time"] >= 1 else r"$\leq 1s$")
-            if "fake" not in d["result"]
-            else r"-",
-            (
-                round(d["result"]["product_time"])
-                if d["result"]["product_time"] >= 1
-                else r"$\leq 1s$"
-            )
-            if "fake" not in d["result"]
-            else r"-",
-            (
-                round(d["result"]["paynt_time"])
-                if d["result"]["paynt_time"] >= 1
-                else r"$\leq 1s$"
-            )
-            if "fake" not in d["result"]
-            else r"-",
-            d["result"]["pomdp_states"]
-            if "fake" not in d["result"] and d["result"]["pomdp_states"] is not None
-            else r"-",
-            float(d["result"]["goal_threshold"])
-            if d["result"]["goal_threshold"] is not None and "fake" not in d["result"]
-            else (r"\checkmark" if "fake" not in d["result"] else r"-"),
-        ]
-        for d in data
-    ]
-    tab_with_lines: list[Any] = [tab_data[0]]
-    for line in tab_data[1:]:
-        if line[0] != tab_with_lines[-1][0]:
-            tab_with_lines.append("SEPERATING LINE")
-        tab_with_lines.append(line)
-
-    generate_table(preamble, tab_with_lines, save_path, file_name)
-
-
-def generate_learn_table(data, save_figures=False, save_path="./", file_name="runtime"):
-    preamble = r"""% Auto generated table
-\begin{longtable}[c]{@{}llrrrrrrrrrrrrrrrr@{}}
-\caption{Table of all learn experiments.}
-\label{tab:fulllearnexp}\\                                                                                                                                                                                                                                                                                                    \\
-\toprule
- & & \multicolumn{6}{c}{Benchmark} & \multicolumn{5}{c}{\alg} & \multicolumn{5}{c}{Baseline}                                                                                                                                                       \\
-\cmidrule(lr){3-8}\cmidrule(lr){9-13}\cmidrule(lr){14-18}
- & & $\lambda_u$ & $\lambda_s$ & $h$ & $|\Sts|$ & $|\ptrans|$ & $|Z|$ & Time (s) & Rounds & $|\dfa|$ & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ & Time (s) & $|\dfa|$ & Rounds & $\lambda_u^{\min}$ & $\lambda_s^{\max}$ \\
-\midrule
-\endhead"""
-
-    name_map = {
-        "airport": r"\textsc{Airport}",
-        "evade": r"\textsc{Evade}",
-        "refuel": r"\textsc{Refuel}",
-        "icy-driving": r"\textsc{Icy-Driving}",
-        "hidden_incentive": r"\textsc{Hidden-Incen.}",
-        "snakes_ladders": r"\textsc{SnL}",
-    }
-    fake_map = {
-        "timeout": r"$\infty$",
-        "out of memory": r"OM",
-    }
-    tab_data = [
-        [
-            name_map[d["experiment"]["name"]],
-            d["experiment"]["short_name"],
-            d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
-            d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
-            d["experiment"]["horizon"],
-            d["mc"]["mc_states"],
-            d["mc"]["mc_transitions"],
-            d["mc"]["mc_observations"],
-            (round(d["verimon"]["time"]) if d["verimon"]["time"] >= 1 else r"$\leq 1s$")
-            if "fake" not in d["verimon"]
-            else fake_map[d["verimon"]["time"]],
-            len(d["verimon"]["monitors"]) if "fake" not in d["verimon"] else r"-",
-            d["verimon"]["monitor_states"] if "fake" not in d["verimon"] else r"-",
-            (
-                float(d["verimon"]["false_positive"]),
-                d["verimon"]["false_positive"]
-                < d["experiment"]["threshold"] - d["experiment"]["fp_slack"],
-            )
-            if "fake" not in d["verimon"]
-            else r"-",
-            (
-                float(d["verimon"]["false_negative"]),
-                d["verimon"]["false_negative"]
-                > d["experiment"]["threshold"] + d["experiment"]["fn_slack"],
-            )
-            if "fake" not in d["verimon"]
-            else r"-",
-            (
-                round(d["sampling"]["time"])
-                if d["sampling"]["time"] >= 1
-                else r"$\leq 1s$"
-            )
-            if "fake" not in d["sampling"]
-            else fake_map[d["sampling"]["time"]],
-            d["sampling"]["monitor_states"] if "fake" not in d["sampling"] else r"-",
-            d["sampling"]["learning_rounds"] if "fake" not in d["sampling"] else r"-",
-            (
-                float(d["sampling"]["false_positive"]),
-                d["sampling"]["false_positive"] < d["experiment"]["threshold"],
-            )
-            if "fake" not in d["sampling"]
-            and d["sampling"]["false_positive"] is not None
-            else r"-",
-            (
-                float(d["sampling"]["false_negative"]),
-                d["sampling"]["false_negative"] > d["experiment"]["threshold"],
-            )
-            if "fake" not in d["sampling"]
-            and d["sampling"]["false_negative"] is not None
-            else r"-",
-        ]
-        for d in data
-        if "sampling" in d
-    ]
-    tab_with_lines: list[Any] = [tab_data[0]]
-    for line in tab_data[1:]:
-        if line[0] != tab_with_lines[-1][0]:
-            tab_with_lines.append("SEPERATING LINE")
-        tab_with_lines.append(line)
-
-    generate_table(preamble, tab_with_lines, save_path, file_name)
-
-
-def generate_table(preamble, data, save_path="./", file_name="runtime"):
-    with open(f"{save_path}/{file_name}.tex", "w") as f:
-        f.write(preamble)
-        for line in data:
-            if line == "SEPERATING LINE":
-                f.write(r"\midrule" + "\n")
-            else:
-                str_line = []
-                for e in line:
-                    prefix = ""
-                    postfix = ""
-                    if isinstance(e, tuple):
-                        if e[1]:
-                            prefix = r"{\color{red} "
-                            postfix = r"}"
-                        e = e[0]
-
-                    if isinstance(e, float):
-                        str_line.append(f"{prefix}{e:.2f}{postfix}")
-                    elif isinstance(e, Fraction):
-                        str_line.append(
-                            f"{prefix}\\sfrac{{{e.numerator}}}{{{e.denominator}}}{postfix}"
-                        )
-                    else:
-                        str_line.append(str(e))
-                f.write(" & ".join(e for e in str_line) + r"\\" + "\n")
-        f.write(
-            r"""
-\bottomrule
-\end{longtable}
-            """
-        )
+from itertools import combinations, product
 
 
 def compare_runtimes(
@@ -663,7 +200,6 @@ def compare_runtimes(
             [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
         )
 
-    
     plt.xticks(
         [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
         [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
@@ -712,12 +248,16 @@ def compare_monitor_sizes(
 ):
     max_mon_states = max(
         max(
-            data[key1]["monitor_states"]
-            if key1 in data and isinstance(data[key1]["monitor_states"], int)
-            else 0,
-            data[key2]["monitor_states"]
-            if key2 in data and isinstance(data[key2]["monitor_states"], int)
-            else 0,
+            (
+                data[key1]["monitor_states"]
+                if key1 in data and isinstance(data[key1]["monitor_states"], int)
+                else 0
+            ),
+            (
+                data[key2]["monitor_states"]
+                if key2 in data and isinstance(data[key2]["monitor_states"], int)
+                else 0
+            ),
         )
         for data in exp_data
     )
@@ -919,11 +459,8 @@ def compare_thresholds(
             else "False Negatives threshold\n(maximal risk for trace not in monitor)"
         )
     plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
-    # plt.title(
-    #     title
-    #     if title
-    #     else f"Comparison of False Positives and False Negatives thresholds in {key1.capitalize()} and {key2.capitalize()}"
-    # )
+    if title:
+        plt.title(title)
     plt.xlim(max(0, xmin * 0.95), min(1, xmax * 1.05))
     plt.ylim(max(0, ymin * 0.95), min(1, ymax * 1.05))
     plt.grid()
@@ -983,15 +520,19 @@ def compare_thresholds_bar(
     found_thresholds = [
         (
             [
-                data[key]["false_positive"]
-                if key in data and not isinstance(data[key]["false_positive"], str)
-                else 1
+                (
+                    data[key]["false_positive"]
+                    if key in data and not isinstance(data[key]["false_positive"], str)
+                    else 1
+                )
                 for data in exp_data
             ],
             [
-                data[key]["false_negative"]
-                if key in data and not isinstance(data[key]["false_negative"], str)
-                else 0
+                (
+                    data[key]["false_negative"]
+                    if key in data and not isinstance(data[key]["false_negative"], str)
+                    else 0
+                )
                 for data in exp_data
             ],
         )
@@ -1030,7 +571,7 @@ def compare_thresholds_bar(
                 )
 
     bar_width = 1 / (len(keys) * 2) - 0.05
-    index = range(math.ceil(len(exp_data) / bundle))
+    index = range(ceil(len(exp_data) / bundle))
 
     for i, (key_fp_thresholds, key_fn_thresholds) in enumerate(
         found_bundled_thresholds
@@ -1064,6 +605,8 @@ def compare_thresholds_bar(
     ax.legend(loc="upper left")
     ax.grid(axis="y")
     plt.xlim(-0.5, len(exp_data) / bundle)
+    if title:
+        plt.title(title)
 
     fig.set_size_inches(*fig_size)
 
@@ -1072,10 +615,288 @@ def compare_thresholds_bar(
     plt.show()
 
 
+def any_frac_to_float(x):
+    if isinstance(x, Fraction):
+        return float(x)
+    return x
+
+
+def compare_runtime_by_params(
+    exp_data,
+    param_keys: list[str],
+    key: str = "verimon",
+    time_key: str = "time",
+    figsize: tuple = (20, 10),
+    experiments_in_legends=True,
+    timeout=10**5,
+    out_of_memory=10**5 * 4,
+    incorrect=10**5 * 16,
+    unfinished=10**5 * 64,
+    fit_all=True,
+    plot_kwargs={},
+):
+    """Compare runtime by varying parameters specified in param_keys. Creates a plot of all combinations of param_keys values specified in param_values."""
+
+    # First group data by other parameters in 'experiment' except the param_keys
+    # Also find the possible values for each param_key
+    param_values = {k: set() for k in param_keys}
+    param_groups = {}
+    for data in exp_data:
+        group_key = tuple(
+            (k, str(any_frac_to_float(v)))
+            for k, v in data["experiment"].items()
+            if k not in param_keys
+            and k
+            not in [
+                "variant",
+                "result_json_file",
+                "short_name",
+                "variant_hash",
+                "learn_experiment",
+            ]
+        ) + (
+            (lambda x: x.group(0) if x is not None else None)(
+                re.compile(r"intermediate_monitor=(\d+\.\d+)").search(
+                    data["experiment"]["variant"]
+                )
+            ),
+        )
+        if group_key not in param_groups:
+            param_groups[group_key] = {}
+
+        for k in param_keys:
+            param_values[k].add(data["experiment"][k])
+
+        param_value = tuple(data["experiment"][k] for k in param_keys)
+        if param_value in param_groups[group_key]:
+            raise ValueError(
+                f"Duplicate data for parameter setting {param_value} in group {group_key}"
+            )
+        param_groups[group_key][param_value] = data
+
+    for group_key, group_data in param_groups.items():
+        if len(group_data) < 4:
+            print(
+                f"Missing data for {group_key}: only {len(group_data)} combinations present."
+            )
+
+    # Now create subplots for each combination of pairs of assiging values to param_keys. Ignore combinations where both param sets are the same.
+    param_combinations = list(product(*[sorted(param_values[k]) for k in param_keys]))
+    param_param_combinations = list(combinations(param_combinations, 2))
+    num_plots = len(param_param_combinations)
+
+    fig, axes = plt.subplots(nrows=ceil(num_plots / 3), ncols=3, figsize=figsize)
+    fig.suptitle(
+        f"Runtime comparison by parameter combinations: {', '.join(param_keys)}",
+        fontsize=12,
+    )
+    axes = axes.flatten()
+    plot_idx = 0
+
+    for params1, params2 in param_param_combinations:
+        ax = axes[plot_idx]
+        plot_idx += 1
+
+        max_x, max_y = 0.0, 0.0
+
+        for group_key, group_data in param_groups.items():
+            time1, time2 = None, None
+            colors = []
+            hashes = [None, None]
+            for param in (params1, params2):
+                if param in group_data:
+                    data = group_data[param]
+
+                    time_value = data[key][time_key]
+                    if isinstance(time_value, str) and "/" in time_value:
+                        time_value = float(Fraction(time_value))
+                    elif time_value is None:
+                        continue
+
+                    # Handle timeout, out-of-memory, incorrect as large values
+                    if time_value == "timeout":
+                        time_value = timeout
+                    elif time_value == "out of memory":
+                        time_value = out_of_memory
+                    elif "goal_threshold" not in data[key] and (
+                        data[key]["false_positive"] is None
+                        or data[key]["false_negative"] is None
+                        or data[key]["false_positive"]
+                        < data["experiment"]["threshold"]
+                        - data["experiment"]["fp_slack"]
+                        or data[key]["false_negative"]
+                        > data["experiment"]["threshold"]
+                        + data["experiment"]["fn_slack"]
+                    ):
+                        time_value = incorrect
+
+                    if param == params1:
+                        time1 = time_value
+                        hashes[0] = data["experiment"]["variant_hash"]
+                    if param == params2:
+                        time2 = time_value
+                        hashes[1] = data["experiment"]["variant_hash"]
+
+                    colors.append(data["color"])
+
+                elif param == params1:
+                    time1 = unfinished
+                elif param == params2:
+                    time2 = unfinished
+
+            # Detech it there is a large relative difference in times and print out the group_key
+            if time1 is not None and time2 is not None:
+                rel_diff = abs(time1 - time2) / max(time1, time2)
+                if rel_diff >= 0.9 and max(time1, time2) < timeout:
+                    print(
+                        f"Large relative difference ({rel_diff:.4f}: times {time1} vs {time2}) for params {params1} vs {params2} in hashes {hashes}"
+                    )
+
+            max_x = max(max_x, cast(float, time1) if time1 is not None else 0)
+            max_y = max(max_y, cast(float, time2) if time2 is not None else 0)
+
+            if len(colors) == 0:
+                continue
+
+            # Now plot the point
+            ax.scatter(
+                time1,
+                time2,
+                marker=data["symbol"],
+                # color=sorted(colors)[0],
+                color="None",
+                edgecolor=sorted(colors)[0],
+                label=(f"{data['experiment']['name']} {data['experiment']['variant']}"),
+                **plot_kwargs,
+            )
+
+        # Add even and 10x, 100x slower and faster lines for reference
+        # Cut lines so they do not cross the "incorrect" thresholds on either axis
+        ax.plot(
+            [0, timeout],
+            [0, timeout],
+            r"-",
+            color="0.5",
+        )
+        ax.plot(
+            [0, timeout],
+            [0, timeout / 10],
+            "--",
+            color="0.5",
+            label="10x slower",
+        )
+        ax.plot(
+            [0, timeout],
+            [0, timeout / 100],
+            "--",
+            color="0.5",
+            label="100x slower",
+        )
+        ax.plot(
+            [0, timeout / 10],
+            [0, timeout],
+            "--",
+            color="0.5",
+        )
+        ax.plot(
+            [0, timeout / 100],
+            [0, timeout],
+            "--",
+            color="0.5",
+        )
+
+        # Add non-time lines for timeouts, out-of-memory, incorrect, unfinished
+        ax.axline(
+            (0, timeout),
+            (timeout, timeout),
+            color="gray",
+            linestyle="--",
+            label="Param 2 timeout",
+        )
+        ax.axline(
+            (timeout, 0),
+            (timeout, timeout),
+            color="gray",
+            linestyle="--",
+            label="Param 1 timeout",
+        )
+        ax.axline(
+            (0, out_of_memory),
+            (out_of_memory, out_of_memory),
+            color="gray",
+            linestyle="--",
+            label="Param 2 out of memory",
+        )
+        ax.axline(
+            (out_of_memory, 0),
+            (out_of_memory, out_of_memory),
+            color="gray",
+            linestyle="--",
+            label="Param 1 out of memory",
+        )
+        ax.axline(
+            (0, incorrect),
+            (incorrect, incorrect),
+            color="gray",
+            linestyle="--",
+            label="Param 2 incorrect",
+        )
+        ax.axline(
+            (incorrect, 0),
+            (incorrect, incorrect),
+            color="gray",
+            linestyle="--",
+            label="Param 1 incorrect",
+        )
+        ax.axline(
+            (0, unfinished),
+            (unfinished, unfinished),
+            color="gray",
+            linestyle="--",
+            label="Param 2 unfinished",
+        )
+        ax.axline(
+            (unfinished, 0),
+            (unfinished, unfinished),
+            color="gray",
+            linestyle="--",
+            label="Param 1 unfinished",
+        )
+
+        ax.loglog()
+
+        ax.set_yticks(
+            [10**i for i in range(-1, 5)]
+            + [timeout, out_of_memory, incorrect, unfinished],
+            [f"$10^{{{i}}}$" for i in range(-1, 5)]
+            + [r"$\infty$", "ERR", r"$\times$", "U"],
+        )
+
+        ax.set_xticks(
+            [10**i for i in range(-1, 5)]
+            + [timeout, out_of_memory, incorrect, unfinished],
+            [f"$10^{{{i}}}$" for i in range(-1, 5)]
+            + [r"$\infty$", "ERR", r"$\times$", "U"],
+        )
+
+        # Set labels and title
+        ax.set_xlabel(", ".join(f"{v}" for k, v in zip(param_keys, params1)))
+        ax.set_ylabel(", ".join(f"{v}" for k, v in zip(param_keys, params2)))
+        ax.grid(True, which="major", ls="--")
+        if fit_all:
+            ax.set_xlim(0.1, unfinished * 2)
+            ax.set_ylim(0.1, unfinished * 2)
+        else:
+            ax.set_xlim(0.1, max_x * 1.2)
+            ax.set_ylim(0.1, max_y * 1.2)
+
+    return fig, axes
+
+
 def runtime_by_params(
     exp_data,
     key: str,
-    params: list[tuple[str, str, str]],
+    params: list[tuple[tuple[str, str] | list[tuple[str, str]], str]],
     time_key: str = "time",
     title: str | None = None,
     figsize: tuple = (10, 10),
@@ -1092,13 +913,14 @@ def runtime_by_params(
 
     for i, param in enumerate(params):
         ax = axes[i]
+        select_keys, type_plot = param
 
         if fit_line:
             symbol_points = {}
             for d in exp_data:
                 if "fake" in d[key]:
                     continue
-                val = d[param[0]][param[1]]
+                val = d[select_keys[0]][select_keys[1]]
                 t = d[key][time_key]
                 if (
                     t is None
@@ -1148,12 +970,17 @@ def runtime_by_params(
                     # Curve fitting might fail in some cases
                     pass
 
-        if param[2] == "box":
+        if type_plot == "box":
             groups = {}
             for d in exp_data:
                 if "fake" in d[key]:
                     continue
-                val = d[param[0]][param[1]]
+
+                if isinstance(select_keys, list):
+                    val = "\n".join(str(d[k][sk]) for k, sk in select_keys)
+                else:
+                    val = d[select_keys[0]][select_keys[1]]
+
                 val = "None" if val is None else val
                 if val not in groups:
                     groups[val] = []
@@ -1167,7 +994,12 @@ def runtime_by_params(
             for data in exp_data:
                 if "fake" in data[key]:
                     continue
-                val = data[param[0]][param[1]]
+
+                if isinstance(select_keys, list):
+                    val = str(tuple(data[k][sk] for k, sk in select_keys))
+                else:
+                    val = data[select_keys[0]][select_keys[1]]
+
                 ax.plot(
                     val,
                     data[key][time_key],
@@ -1176,10 +1008,22 @@ def runtime_by_params(
                     label=name_func(data),
                     **plot_kwargs,
                 )
-            if param[2] == "log":
+            if type_plot == "log":
                 ax.set_yscale("log")
 
-        ax.set_xlabel(xlabel if xlabel else param[1].replace("_", " ").capitalize())
+        if isinstance(select_keys, list):
+            ax.set_xlabel(
+                xlabel
+                if xlabel
+                else ", ".join(
+                    sk.replace("_", " ").capitalize() for _, sk in select_keys
+                )
+            )
+        else:
+            ax.set_xlabel(
+                xlabel if xlabel else select_keys[1].replace("_", " ").capitalize()
+            )
+
         if not show_y_axis:
             ax.set_ylabel("")
             ax.set_yticks([])

@@ -1,6 +1,8 @@
 import argparse
 import os
 from datetime import datetime
+from pyexpat import model
+import sys
 
 from matplotlib.pylab import f
 from verimon.loaders import pomdp_to_stormpy_mc, load_snl_stormpy
@@ -50,6 +52,18 @@ def main():
         type=str,
         help="Snakes for Snakes and Ladders in the format 'start1:end1,start2:end2'.",
     )
+    model_group.add_argument(
+        "--exact",
+        action="store_true",
+        default=False,
+        help="Use exact probabilities in the model (default: False).",
+    )
+    model_group.add_argument(
+        "--float",
+        action="store_true",
+        default=False,
+        help="Use floating-point probabilities in the model (default: False).",
+    )
 
     # Specification-related arguments
     spec_group = parser.add_argument_group("Specification")
@@ -60,7 +74,7 @@ def main():
         help="Specification for the model (e.g., a property in Storm format).",
     )
     spec_group.add_argument(
-        "--good_label",
+        "--good-label",
         type=str,
         required=True,
         help="Label for good states in the model.",
@@ -81,25 +95,25 @@ def main():
         help="Maximum steps for filtering (default: 10).",
     )
     filtering_group.add_argument(
-        "--relative_error",
+        "--relative-error",
         type=float,
         default=0.01,
         help="Relative error for Paynt (default: 0.01).",
     )
     filtering_group.add_argument(
-        "--fp_slack",
+        "--fp-slack",
         type=float,
         default=0.2,
         help="False positive slack (default: 0.2).",
     )
     filtering_group.add_argument(
-        "--fn_slack",
+        "--fn-slack",
         type=float,
         default=0.05,
         help="False negative slack (default: 0.05).",
     )
     filtering_group.add_argument(
-        "--no_horizon_in_filtering",
+        "--no-horizon-in-filtering",
         action="store_false",
         default=True,
         dest="use_horizon_in_filtering",
@@ -109,26 +123,26 @@ def main():
     # Equivalence oracle-related arguments
     oracle_group = parser.add_argument_group("Equivalence Oracle")
     oracle_group.add_argument(
-        "--no_random_eq",
+        "--no-random-eq",
         action="store_false",
         default=True,
         dest="use_random_eq",
         help="Do not use random equivalence oracle (default: Use it).",
     )
     oracle_group.add_argument(
-        "--walks_per_state",
+        "--walks-per-state",
         type=int,
         default=100,
         help="Number of walks per state for random equivalence oracle (default: 100).",
     )
     oracle_group.add_argument(
-        "--walk_len",
+        "--walk-len",
         type=int,
         default=11,
         help="Length of walks for random equivalence oracle (default: 11).",
     )
     oracle_group.add_argument(
-        "--conditional_method",
+        "--conditional-method",
         type=str,
         choices=[
             "rejection",
@@ -144,19 +158,24 @@ def main():
     # Output-related arguments
     output_group = parser.add_argument_group("Output")
     output_group.add_argument(
-        "--base_dir",
+        "--base-dir",
         type=str,
-        default=f"stats/verimon-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+        default=f"out/verimon-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
         help="Base directory for storing results (default: auto-generated timestamped directory).",
     )
     output_group.add_argument(
-        "--export_benchmarks",
+        "--export-benchmarks",
         action="store_true",
         default=False,
         help="Export benchmark models during verification (default: False).",
     )
 
     args = parser.parse_args()
+
+    if args.exact or args.float:
+        exact = args.exact or not args.float
+    else:
+        raise ValueError("Either --exact or --float must be specified.")
 
     log_file = f"{args.base_dir}/logfile.log"
     os.makedirs(os.path.dirname(log_file), exist_ok=True)
@@ -171,7 +190,7 @@ def main():
             observations,
             mc,
             expr_manager,
-        ) = pomdp_to_stormpy_mc(args.file, args.constants, True)
+        ) = pomdp_to_stormpy_mc(args.file, args.constants, exact)
         alphabet = list(observations)
     elif args.loader == "snakes_ladders":
         if args.n is None or args.ladders is None or args.snakes is None:
@@ -193,7 +212,7 @@ def main():
             args.n,
             ladders,
             snakes,
-            True,
+            exact,
         )
         alphabet = ["init", "normal", "snake", "ladder"]
         initial_observation = "init"
@@ -224,6 +243,7 @@ def main():
         use_horizon_in_filtering=args.use_horizon_in_filtering,
         base_dir=args.base_dir,
         export_benchmarks=args.export_benchmarks,
+        conditional_method=args.conditional_method,
     )
 
     # Store and plot the learned monitor

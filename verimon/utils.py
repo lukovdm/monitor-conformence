@@ -83,3 +83,14 @@ class ObjectGroup:
         if isinstance(value, str) and "/" in value:
             return value.split("/")[-1]
         return str(value)
+
+
+def str_to_float(s: str) -> float:
+    try:
+        return float(s)
+    except ValueError:
+        if "/" in s:
+            num, denom = s.split("/")
+            return float(num) / float(denom)
+        else:
+            raise

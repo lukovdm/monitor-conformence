@@ -46,7 +46,7 @@ def false_positive(
         options = {}
 
     if options["conditional_method"] != "rejection":
-        conditional_spec = ' | F "condition"'
+        conditional_spec = ' || F "condition"'
     else:
         conditional_spec = ""
 
@@ -77,7 +77,7 @@ def false_negative(
         options = {}
 
     if options["conditional_method"] != "rejection":
-        conditional_spec = ' | F "condition"'
+        conditional_spec = ' || F "condition"'
     else:
         conditional_spec = ""
 
@@ -110,7 +110,7 @@ def true_positive(
         options = {}
 
     if options["conditional_method"] != "rejection":
-        conditional_spec = ' | F "condition"'
+        conditional_spec = ' || F "condition"'
     else:
         conditional_spec = ""
 
@@ -141,7 +141,7 @@ def true_negative(
         options = {}
 
     if options["conditional_method"] != "rejection":
-        conditional_spec = ' | F "condition"'
+        conditional_spec = ' || F "condition"'
     else:
         conditional_spec = ""
 
@@ -256,7 +256,7 @@ def _verify_helper(
 
     # Make properties for double check conditional if needed
     if options["conditional_method"] != "rejection":
-        conditional_prop = ' | F "condition"'
+        conditional_prop = ' || F "condition"'
     else:
         conditional_prop = ""
 
@@ -276,9 +276,8 @@ def _verify_helper(
         not mc.is_exact and abs(1 - (result_stop + result_goal)) > 0.05
     ):
         raise Exception(
-            "Inconsistent scheduler found during maximisation, this should not happen",
-            result_stop,
-            result_goal,
+            f"Inconsistent scheduler found during maximisation, this should not happen. "
+            f"(Cond) prob stop: {result_stop}, (cond) prob goal: {result_goal}, together: {result_stop + result_goal}."
         )
 
     if value:

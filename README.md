@@ -68,12 +68,12 @@ You can use the tover algorithm on any prism POMDP model or snakes and ladder bo
 
 For a POMDP:
 ```bash
-python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 8 --fp_slack 0.2 --fn_slack 0.05 --walk_len 11 --base_dir stats/airport_experiment
+python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 8 --fp-slack 0.2 --fn-slack 0.05 --walk-len 11 --base-dir stats/airport_experiment
 ```
 
 For SnLs:
 ```bash
- python -m verimon.run --file tests/premise/airportA-7.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 10 --fp_slack 0.2 --fn_slack 0.05 --base_dir stats/airport_experiment
+ python -m verimon.run --file tests/premise/airportA-7.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 10 --fp-slack 0.2 --fn-slack 0.05 --base-dir stats/airport_experiment
 ```
 
 The inputs to `python -m verimon.run` are as follows:
@@ -82,12 +82,12 @@ The inputs to `python -m verimon.run` are as follows:
 - `--constants "DMAX=3,PMAX=3"` specify any constants used to build the prism POMDP model.
 - `--n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6"` the parameters for the SnLs board. The amount of squares (should be a square number), the locations of the ladders with their destinations and similarly for the snakes.
 - `--spec 'Pmax=? [F<=4 "crash"]'` gives the specification with which to generate the risks.
-- `--good_label crash` gives the target label in the model.
+- `--good-label crash` gives the target label in the model.
 - `--threshold 0.3` is the learning threshold.
 - `--horizon 10` contains the horizon in which the monitor should be correct.
-- `--fp_slack 0.2` is the area below the learning threshold considered as undetermined.
-- `--fn_slack 0.05` is the area above the learning threshold considered as undetermined.
-- `--base_dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
+- `--fp-slack 0.2` is the area below the learning threshold considered as undetermined.
+- `--fn-slack 0.05` is the area above the learning threshold considered as undetermined.
+- `--base-dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
 
 ## Running experiments
 Our experiments are defined in yaml files and consumed by the python file `verimon/experiments.py`. 
