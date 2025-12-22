@@ -214,7 +214,7 @@ def load_experiment_data(path: str):
                     with open(data["log_path"], "r") as f:
                         log = f.read()
                         timed_out = "timed out after 12 hours" in log
-                        val = "timeout" if timed_out else "out of memory"
+                        val = "timeout" if timed_out else "OOM"
                     if (
                         "verimon" in data["experiment"]["learning_algs"]
                         and "verimon" not in data
@@ -225,6 +225,7 @@ def load_experiment_data(path: str):
                             "monitor_states": val,
                             "false_positive": val,
                             "false_negative": val,
+                            "iterations": val,
                         }
                     if (
                         "sampling" in data["experiment"]["learning_algs"]
@@ -236,6 +237,7 @@ def load_experiment_data(path: str):
                             "monitor_states": val,
                             "false_positive": val,
                             "false_negative": val,
+                            "iterations": val,
                         }
                 elif "learn_experiment" in data["experiment"]:
                     if "result" not in data:
@@ -243,10 +245,11 @@ def load_experiment_data(path: str):
                             "fake": True,
                             "goal_threshold": -1,
                             "pomdp_states": 0,
-                            "time": 10**5 * 64,
+                            "time": "unfinished",
                             "product_time": 0,
                             "paynt_time": 0,
                             "double_check_time": 0,
+                            "iterations": "unfinished",
                         }
 
             if "result" in data and "error" in data["result"]:
@@ -257,10 +260,11 @@ def load_experiment_data(path: str):
                         "fake": True,
                         "goal_threshold": -1,
                         "pomdp_states": 0,
-                        "time": 10**5 * 4,
+                        "time": "OOM",
                         "product_time": 0,
                         "paynt_time": 0,
                         "double_check_time": 0,
+                        "iterations": "unfinished",
                     }
             experiment_data.append(data)
 

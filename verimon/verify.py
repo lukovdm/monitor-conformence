@@ -206,7 +206,7 @@ def _verify_helper(
     if "model_path" in options and options["export_benchmarks"]:
         os.makedirs(options["model_path"], exist_ok=True)
         timestamp = time()
-        path = f"{options['model_path']}/pomdp-null-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn"
+        path = f"{options['model_path']}/pomdp-tnull-itnull-st{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{options.get('hash', 'nohash')}-{timestamp}.drn"
         export_to_drn(
             model.pomdp,
             path,
@@ -215,25 +215,27 @@ def _verify_helper(
     # Find a trace that violates the property
     logger.debug("Finding specified trace")
     paynt_start = time()
-    res = model.check_paynt_prop(paynt_spec, options["relative_error"])
+    assignment, value, iterations = model.check_paynt_prop(
+        paynt_spec, options["relative_error"]
+    )
     stats["paynt_time"] = time() - paynt_start
+    stats["iterations"] = iterations
 
     # Rename exported model with paynt time
     if "model_path" in options and options["export_benchmarks"]:
         try:
             os.rename(
                 path,
-                f"{options['model_path']}/pomdp-{stats['paynt_time']:.3f}-{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{timestamp}.drn",
+                f"{options['model_path']}/pomdp-t{stats['paynt_time']:.3f}-it{stats['iterations']}-st{len(model.pomdp.states)}-{paynt_spec.replace('/', ' div ')}-{options.get('hash', 'nohash')}-{timestamp}.drn",
             )
         except Exception as e:
             logger.error(f"Could not rename file: {traceback.format_exc()}")
 
     # Check if a counter example was found
-    if res is None:
+    if assignment is None:
         logger.info("no counter example during verification")
         return None, None, None, model, stats
     else:
-        assignment, value = res
         stats["value"] = value
 
     # If a counter example was found, get the associated trace

@@ -148,7 +148,7 @@ class Verifier:
 
     def check_paynt_prop(
         self: Self, str_prop: str, relative_error=0, return_all=False
-    ) -> tuple[Family, float | Rational | None] | None:
+    ) -> tuple[Family | None, float | Rational | None, int | None]:
         assert self.pomdp is not None, "POMDP product not created yet"
 
         # Setup paynt logging and timer
@@ -197,7 +197,7 @@ class Verifier:
         if synthesizer.best_assignment_value == 0:
             logger.info("max probability is 0, thus no counterexample found")
             logger.info(synthesizer.stat.get_summary())
-            return None
+            return None, None, synthesizer.stat.iterations_mdp
 
         # Clear paynt logger handlers to avoid duplicate logs in further calls
         root_logger = logging.getLogger()
@@ -209,15 +209,19 @@ class Verifier:
                 f"counterexample found: {assignment} ({synthesizer.quotient.specification.optimality.optimum if synthesizer.quotient.specification.optimality else None})"
             )
             logger.info(synthesizer.stat.get_summary())
-            return assignment, (
-                synthesizer.quotient.specification.optimality.optimum
-                if synthesizer.quotient.specification.optimality
-                else None
+            return (
+                assignment,
+                (
+                    synthesizer.quotient.specification.optimality.optimum
+                    if synthesizer.quotient.specification.optimality
+                    else None
+                ),
+                synthesizer.stat.iterations_mdp,
             )
         else:
             logger.info("no counterexamples above threshold")
             logger.info(synthesizer.stat.get_summary())
-            return None
+            return None, None, synthesizer.stat.iterations_mdp
 
     def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):
         simulator: SparseSimulator = create_simulator(self.pomdp)

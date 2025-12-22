@@ -694,8 +694,9 @@ class VerifyExperiment(Experiment):
                             "use_risk": self.use_risk,
                             "paynt_strategy": self.paynt_strategy,
                             "model_path": base_dir + "/debug-models/",
-                            "export_benchmarks": False,
+                            "export_benchmarks": True,
                             "conditional_method": self.conditional_method,
+                            "hash": self.variant_hash,
                         }
                         | ({"filtering": sul} if self.threshold is not None else {})
                     ),
@@ -719,6 +720,7 @@ class VerifyExperiment(Experiment):
                             if "double_check_time" in stats
                             else None
                         ),
+                        "iterations": stats["iterations"],
                         "pomdp_states": len(model.pomdp.states),
                     }
                     if model:
@@ -738,6 +740,7 @@ class VerifyExperiment(Experiment):
                         "time": verify_time,
                         "product_time": stats["product_time"],
                         "paynt_time": stats["paynt_time"],
+                        "iterations": stats["iterations"],
                         "double_check_time": None,
                         "pomdp_states": len(model.pomdp.states),
                     }

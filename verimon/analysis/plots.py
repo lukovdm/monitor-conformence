@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from fractions import Fraction
-from math import ceil
+from math import ceil, log10
 import re
 import time
 from typing import Any, cast
@@ -8,6 +8,24 @@ from matplotlib import pyplot as plt
 import numpy as np
 from scipy.optimize import curve_fit
 from itertools import combinations, product
+
+
+def calculate_error_lines(data, value_func):
+    max_time = 0
+    for data in data:
+        time_value = value_func(data)
+        if (
+            isinstance(time_value, float)
+            or isinstance(time_value, int)
+            or isinstance(time_value, Fraction)
+        ):
+            max_time = max(max_time, time_value)
+
+    timeout = max_time * 1.5
+    out_of_memory = timeout * 4
+    incorrect = out_of_memory * 4
+    unfinished = incorrect * 4
+    return max_time, timeout, out_of_memory, incorrect, unfinished
 
 
 def compare_runtimes(
@@ -26,31 +44,60 @@ def compare_runtimes(
     file_name="runtime",
     show_y_axis: bool = True,
     plot_kwargs={},
-    timeout=10**5,
-    out_of_memory=10**5 * 4,
-    incorrect=10**5 * 16,
     min_value=1,
 ):
+    max_time, timeout, out_of_memory, incorrect, unfinished = calculate_error_lines(
+        exp_data,
+        lambda d: max(
+            d[key1]["time"] if key1 in d else 0,
+            d[key2]["time"] if key2 in d else 0,
+        ),
+    )
+
+    for data in exp_data:
+        if key1 not in data or key2 not in data:
+            continue
+        time1 = data[key1]["time"]
+        time2 = data[key2]["time"]
+
+        if time1 == "timeout":
+            time1 = timeout
+        elif time1 == "out of memory":
+            time1 = out_of_memory
+        elif (
+            data[key1]["false_positive"] is None
+            or data[key1]["false_negative"] is None
+            or data[key1]["false_positive"]
+            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
+            or data[key1]["false_negative"]
+            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+        ):
+            time1 = incorrect
+
+        if time2 == "timeout":
+            time2 = timeout
+        elif time2 == "out of memory":
+            time2 = out_of_memory
+        elif (
+            data[key2]["false_positive"] is None
+            or data[key2]["false_negative"] is None
+            or data[key2]["false_positive"]
+            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
+            or data[key2]["false_negative"]
+            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+        ):
+            time2 = incorrect
+
+        plt.plot(
+            max(time1, min_value),
+            max(time2, min_value),
+            data["symbol"],
+            color=data["color"],
+            label=name_func(data) if experiments_in_legends else None,
+            **plot_kwargs,
+        )
+
     max_lim = incorrect * 2
-    # offset = 1.3
-    # plt.text(
-    #     timeout * (1 / offset),
-    #     offset * min_value,
-    #     "Baseline is faster",
-    #     color="gray",
-    #     ha="right",
-    #     va="bottom",
-    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    # )
-    # plt.text(
-    #     offset * min_value,
-    #     timeout * (1 / offset),
-    #     "ToVer is faster",
-    #     color="gray",
-    #     ha="left",
-    #     va="top",
-    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    # )
 
     plt.plot([0, max_lim], [0, max_lim], r"-", color="0.5")
     plt.plot(
@@ -137,49 +184,6 @@ def compare_runtimes(
         linestyle=r"--",
         label="Baseline incorrect",
     )
-
-    for data in exp_data:
-        if key1 not in data or key2 not in data:
-            continue
-        time1 = data[key1]["time"]
-        time2 = data[key2]["time"]
-
-        if time1 == "timeout":
-            time1 = timeout
-        elif time1 == "out of memory":
-            time1 = out_of_memory
-        elif (
-            data[key1]["false_positive"] is None
-            or data[key1]["false_negative"] is None
-            or data[key1]["false_positive"]
-            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
-            or data[key1]["false_negative"]
-            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
-        ):
-            time1 = incorrect
-
-        if time2 == "timeout":
-            time2 = timeout
-        elif time2 == "out of memory":
-            time2 = out_of_memory
-        elif (
-            data[key2]["false_positive"] is None
-            or data[key2]["false_negative"] is None
-            or data[key2]["false_positive"]
-            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
-            or data[key2]["false_negative"]
-            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
-        ):
-            time2 = incorrect
-
-        plt.plot(
-            max(time1, min_value),
-            max(time2, min_value),
-            data["symbol"],
-            color=data["color"],
-            label=name_func(data) if experiments_in_legends else None,
-            **plot_kwargs,
-        )
 
     plt.grid()
     if log_scale:
@@ -628,11 +632,8 @@ def compare_runtime_by_params(
     time_key: str = "time",
     figsize: tuple = (20, 10),
     experiments_in_legends=True,
-    timeout=10**5,
-    out_of_memory=10**5 * 4,
-    incorrect=10**5 * 16,
-    unfinished=10**5 * 64,
     fit_all=True,
+    title=None,
     plot_kwargs={},
 ):
     """Compare runtime by varying parameters specified in param_keys. Creates a plot of all combinations of param_keys values specified in param_values."""
@@ -687,11 +688,23 @@ def compare_runtime_by_params(
 
     fig, axes = plt.subplots(nrows=ceil(num_plots / 3), ncols=3, figsize=figsize)
     fig.suptitle(
-        f"Runtime comparison by parameter combinations: {', '.join(param_keys)}",
+        (
+            title
+            if title
+            else f"Runtime comparison by parameter combinations: {', '.join(param_keys)}"
+        ),
         fontsize=12,
     )
     axes = axes.flatten()
     plot_idx = 0
+
+    max_time, timeout, out_of_memory, incorrect, unfinished = calculate_error_lines(
+        exp_data,
+        lambda d: max(
+            d[key][time_key] if key in d and d[key][time_key] else 0,
+            d[key][time_key] if key in d and d[key][time_key] else 0,
+        ),
+    )
 
     for params1, params2 in param_param_combinations:
         ax = axes[plot_idx]
@@ -707,6 +720,12 @@ def compare_runtime_by_params(
                 if param in group_data:
                     data = group_data[param]
 
+                    if time_key not in data[key]:
+                        print(
+                            f"Missing time_key '{time_key}' in data for key '{key}' with the following data: {data[key]}"
+                        )
+                        continue
+
                     time_value = data[key][time_key]
                     if isinstance(time_value, str) and "/" in time_value:
                         time_value = float(Fraction(time_value))
@@ -716,8 +735,10 @@ def compare_runtime_by_params(
                     # Handle timeout, out-of-memory, incorrect as large values
                     if time_value == "timeout":
                         time_value = timeout
-                    elif time_value == "out of memory":
+                    elif time_value == "OOM":
                         time_value = out_of_memory
+                    elif time_value == "unfinished":
+                        time_value = unfinished
                     elif "goal_threshold" not in data[key] and (
                         data[key]["false_positive"] is None
                         or data[key]["false_negative"] is None
@@ -866,16 +887,16 @@ def compare_runtime_by_params(
         ax.loglog()
 
         ax.set_yticks(
-            [10**i for i in range(-1, 5)]
+            [10**i for i in range(-1, int(log10(max_time)) + 1)]
             + [timeout, out_of_memory, incorrect, unfinished],
-            [f"$10^{{{i}}}$" for i in range(-1, 5)]
+            [f"$10^{{{i}}}$" for i in range(-1, int(log10(max_time)) + 1)]
             + [r"$\infty$", "ERR", r"$\times$", "U"],
         )
 
         ax.set_xticks(
-            [10**i for i in range(-1, 5)]
+            [10**i for i in range(-1, int(log10(max_time)) + 1)]
             + [timeout, out_of_memory, incorrect, unfinished],
-            [f"$10^{{{i}}}$" for i in range(-1, 5)]
+            [f"$10^{{{i}}}$" for i in range(-1, int(log10(max_time)) + 1)]
             + [r"$\infty$", "ERR", r"$\times$", "U"],
         )
 
