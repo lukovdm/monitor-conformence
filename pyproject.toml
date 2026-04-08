@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "verimon"
+name = "tover"
 version = "0.1.0"
-description = "test"
+description = "ToVer: Learning Verified Monitors for Hidden Markov Models"
 authors = ["Luko van der Maas <luko.vandermaas@ru.nl>"]
 readme = "README.md"
 package-mode = false

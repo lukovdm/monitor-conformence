@@ -1,0 +1,143 @@
+"""CLI entry point for a single ToVer monitor learning run."""
+import argparse
+import os
+from datetime import datetime
+
+from stormpy import export_to_drn
+from stormpy.utility import sharpen
+from stormvogel.mapping import stormvogel_to_stormpy
+
+from tover.core.learning import run_tover
+from tover.models.automata import aalpy_dfa_to_stormvogel
+from tover.models.pomdp import pomdp_to_stormpy_mc
+from tover.models.snakes import load_snl_stormpy, SNL_MC_PATH
+from tover.utils.logger import clear_logging, setup_logging
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Run ToVer monitor learning.")
+
+    model_group = parser.add_argument_group("Model")
+    model_group.add_argument("--file", type=str, required=True, help="Path to the model file.")
+    model_group.add_argument(
+        "--loader", type=str, choices=["pomdp", "snakes_ladders"], required=True,
+        help="Loader type for the model.",
+    )
+    model_group.add_argument("--constants", type=str, help="Constants for the POMDP model.")
+    model_group.add_argument("--n", type=int, help="Board size for Snakes and Ladders.")
+    model_group.add_argument(
+        "--ladders", type=str, help="Ladders in the format 'start1:end1,start2:end2'."
+    )
+    model_group.add_argument(
+        "--snakes", type=str, help="Snakes in the format 'start1:end1,start2:end2'."
+    )
+    model_group.add_argument(
+        "--exact", action="store_true", default=False, help="Use exact probabilities."
+    )
+    model_group.add_argument(
+        "--float", action="store_true", default=False, help="Use floating-point probabilities."
+    )
+
+    spec_group = parser.add_argument_group("Specification")
+    spec_group.add_argument("--spec", type=str, required=True, help="Property specification.")
+    spec_group.add_argument("--good-label", type=str, required=True, help="Label for good states.")
+
+    filter_group = parser.add_argument_group("Filtering")
+    filter_group.add_argument("--threshold", type=float, default=0.3)
+    filter_group.add_argument("--horizon", type=int, default=10)
+    filter_group.add_argument("--relative-error", type=float, default=0.01)
+    filter_group.add_argument("--fp-slack", type=float, default=0.2)
+    filter_group.add_argument("--fn-slack", type=float, default=0.05)
+    filter_group.add_argument(
+        "--no-horizon-in-filtering", action="store_false", default=True,
+        dest="use_horizon_in_filtering",
+    )
+
+    oracle_group = parser.add_argument_group("Equivalence Oracle")
+    oracle_group.add_argument(
+        "--no-random-eq", action="store_false", default=True, dest="use_random_eq"
+    )
+    oracle_group.add_argument("--walks-per-state", type=int, default=100)
+    oracle_group.add_argument("--walk-len", type=int, default=11)
+    oracle_group.add_argument(
+        "--conditional-method",
+        type=str,
+        choices=["rejection", "bisection", "bisection_advanced", "restart", "policy_iteration"],
+        default="rejection",
+    )
+
+    out_group = parser.add_argument_group("Output")
+    out_group.add_argument(
+        "--base-dir",
+        type=str,
+        default=f"out/tover-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
+    )
+    out_group.add_argument("--export-benchmarks", action="store_true", default=False)
+
+    args = parser.parse_args()
+
+    if args.exact or args.float:
+        exact = args.exact or not args.float
+    else:
+        raise ValueError("Either --exact or --float must be specified.")
+
+    log_file = f"{args.base_dir}/logfile.log"
+    os.makedirs(os.path.dirname(log_file), exist_ok=True)
+    clear_logging()
+    setup_logging(path=log_file)
+
+    if args.loader == "pomdp":
+        initial_observation, observations, mc, expr_manager = pomdp_to_stormpy_mc(
+            args.file, args.constants, exact
+        )
+        alphabet = list(observations)
+    elif args.loader == "snakes_ladders":
+        if args.n is None or args.ladders is None or args.snakes is None:
+            raise ValueError("For Snakes and Ladders, --n, --ladders, and --snakes must be specified.")
+        ladders = {int(k): int(v) for k, v in (item.split(":") for item in args.ladders.split(","))}
+        snakes = {int(k): int(v) for k, v in (item.split(":") for item in args.snakes.split(","))}
+        mc, expr_manager = load_snl_stormpy(SNL_MC_PATH, args.n, ladders, snakes, exact)
+        alphabet = ["init", "normal", "snake", "ladder"]
+        initial_observation = "init"
+    else:
+        raise ValueError("Unknown loader type.")
+
+    os.makedirs(args.base_dir, exist_ok=True)
+    os.makedirs(os.path.join(args.base_dir, "models"), exist_ok=True)
+
+    (learned_monitor, lstar_stats), stats = run_tover(
+        mc=mc,
+        alphabet=alphabet,
+        initial_observation=initial_observation,
+        spec=args.spec,
+        good_label=args.good_label,
+        threshold=sharpen(5, args.threshold),
+        horizon=args.horizon,
+        relative_error=sharpen(5, args.relative_error),
+        use_risk=True,
+        fp_slack=sharpen(5, args.fp_slack),
+        fn_slack=sharpen(5, args.fn_slack),
+        expression_manager=expr_manager,
+        use_random_eq=args.use_random_eq,
+        walks_per_state=args.walks_per_state,
+        walk_len=args.walk_len,
+        use_horizon_in_filtering=args.use_horizon_in_filtering,
+        base_dir=args.base_dir,
+        export_benchmarks=args.export_benchmarks,
+        conditional_method=args.conditional_method,
+    )
+
+    monitor_path_base = os.path.join(args.base_dir, "models/monitor_tover")
+    learned_monitor.visualize(path=f"{monitor_path_base}.dot", file_type="dot")
+    mon = aalpy_dfa_to_stormvogel(learned_monitor)
+    mon_storm = stormvogel_to_stormpy(mon)
+    export_to_drn(mon_storm, f"{monitor_path_base}.drn")
+
+    print("Learning completed.")
+    print(f"Learned monitor saved to: {monitor_path_base}.dot and {monitor_path_base}.drn")
+    print(f"Statistics: {stats}")
+    print(f"L* statistics: {lstar_stats}")
+
+
+if __name__ == "__main__":
+    main()
