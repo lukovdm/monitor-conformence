@@ -1,28 +1,47 @@
 import os
 import traceback
+from dataclasses import dataclass, field
 from datetime import datetime
 from time import time
 from typing import Any, Literal
 
-from paynt.family.family import Family
-
 import stormpy
+from paynt.family.family import Family
 from stormpy import (
-    model_checking,
-    parse_properties,
+    ExpressionManager,
+    Rational,
     SparseDtmc,
     SparseExactDtmc,
-    SparseMdp,
     SparseExactMdp,
-    ExpressionManager,
+    SparseMdp,
     export_to_drn,
-    Rational,
+    model_checking,
+    parse_properties,
 )
 
-from tover.models.algorithms import complement_monitor
-from tover.core.synthesis import Verifier
+from tover.core.synthesis import ConditionalMethod, Verifier
 from tover.core.transformations import stormpy_unroll
+from tover.models.algorithms import complement_monitor
 from tover.utils.logger import logger
+
+
+@dataclass
+class VerifyStats:
+    product_time: float = 0.0
+    paynt_time: float = 0.0
+    iterations: int = 0
+    value: float | None = None
+    double_check_time: float | None = None
+
+    def __iadd__(self, other: "VerifyStats") -> "VerifyStats":
+        self.product_time += other.product_time
+        self.paynt_time += other.paynt_time
+        self.iterations += other.iterations
+        if other.double_check_time is not None:
+            self.double_check_time = (
+                self.double_check_time or 0.0
+            ) + other.double_check_time
+        return self
 
 
 default_option = {
@@ -31,14 +50,13 @@ default_option = {
     "relative_error": 0.1,
     "use_risk": False,
     "paynt_strategy": "ar",
+    "conditional_method": ConditionalMethod.REJECTION,
 }
 
 VerifyResult = tuple[
-    float | None,
-    list[str] | None,
-    Family | None,
+    tuple[float, list[str], Family] | None,
     Verifier,
-    dict[str, float],
+    VerifyStats,
 ]
 
 
@@ -97,7 +115,7 @@ def _rate(
     horizon: int,
     expr_manager: ExpressionManager,
     threshold: float | None = None,
-    options: dict | None = None,
+    options: dict[str, Any] | None = None,
 ) -> VerifyResult:
     """Parameterised core for all four verification functions.
 
@@ -110,9 +128,7 @@ def _rate(
         options = {}
 
     conditional_spec = (
-        ' || F "condition"'
-        if options.get("conditional_method") != "rejection"
-        else ""
+        ' || F "condition"' if options.get("conditional_method") != "rejection" else ""
     )
 
     use_goal_label = kind in ("fn", "tp")
@@ -135,14 +151,14 @@ def _rate(
     if use_complement:
         mon = complement_monitor(mon, "accepting")
 
-    result, trace, assignment, model, stats = _verify_helper(
+    cex, model, stats = _verify_helper(
         mc, mon, paynt_spec, horizon, expr_manager, default_option | options
     )
 
-    if result is None and threshold is None:
-        return default_when_no_cex, trace, assignment, model, stats
+    if cex is None and threshold is None:
+        return (default_when_no_cex, [], None), model, stats  # type: ignore[return-value]
 
-    return result, trace, assignment, model, stats
+    return cex, model, stats
 
 
 def _verify_helper(
@@ -156,7 +172,7 @@ def _verify_helper(
     if options is None:
         options = {}
 
-    stats: dict[str, Any] = {"product_time": 0.0, "paynt_time": 0.0}
+    stats = VerifyStats()
 
     logger.info("Building model")
 
@@ -181,7 +197,7 @@ def _verify_helper(
         logger.debug("Apply spec done")
 
     model.create_product()
-    stats["product_time"] = time() - product_start
+    stats.product_time = time() - product_start
     logger.debug("creating product done")
 
     if "model_path" in options and options["export_benchmarks"]:
@@ -200,16 +216,16 @@ def _verify_helper(
     assignment, value, iterations = model.check_paynt_prop(
         paynt_spec, options["relative_error"]
     )
-    stats["paynt_time"] = time() - paynt_start
-    stats["iterations"] = iterations
+    stats.paynt_time = time() - paynt_start
+    stats.iterations = iterations
 
     if "model_path" in options and options["export_benchmarks"]:
         try:
             os.rename(
                 path,
                 f"{options['model_path']}/pomdp"
-                f"-t{stats['paynt_time']:.3f}"
-                f"-it{stats['iterations']}"
+                f"-t{stats.paynt_time:.3f}"
+                f"-it{stats.iterations}"
                 f"-st{len(model.pomdp.states)}"
                 f"-{paynt_spec.replace('/', ' div ')}"
                 f"-{options.get('hash', 'nohash')}-{timestamp}.drn",
@@ -219,9 +235,9 @@ def _verify_helper(
 
     if assignment is None:
         logger.info("no counter example during verification")
-        return None, None, None, model, stats
+        return None, model, stats
     else:
-        stats["value"] = value
+        stats.value = value
 
     trace = model.trace_of_assignment(assignment)
     logger.info(f"Found trace: {trace}")
@@ -240,9 +256,7 @@ def _verify_helper(
     env.solver_environment.minmax_solver_environment.precision = Rational(str(1e-6))
 
     conditional_prop = (
-        ' || F "condition"'
-        if options.get("conditional_method") != "rejection"
-        else ""
+        ' || F "condition"' if options.get("conditional_method") != "rejection" else ""
     )
 
     result_goal: float = model_checking(
@@ -306,6 +320,6 @@ def _verify_helper(
                         f"{options['model_path']}/induced-filter-{datetime.now()}.drn",
                     )
 
-    stats["double_check_time"] = time() - double_check_time
+    stats.double_check_time = time() - double_check_time
 
-    return result_goal, trace, assignment, model, stats
+    return (result_goal, trace, assignment), model, stats

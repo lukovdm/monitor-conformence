@@ -483,3 +483,5 @@ out/
 **/tover.tar
 
 out/
+.zed/
+.claude/

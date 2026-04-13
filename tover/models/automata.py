@@ -1,19 +1,19 @@
 from aalpy import Dfa
 from stormpy import (
-    SparseMdp,
-    SparseExactMdp,
-    DirectEncodingParserOptions,
-    build_model_from_drn,
     BuilderOptions,
-    build_sparse_model_with_options,
-    build_sparse_exact_model_with_options,
-    ExactSparseMatrixBuilder,
-    SparseMatrixBuilder,
-    StateLabeling,
     ChoiceLabeling,
+    DirectEncodingParserOptions,
+    ExactSparseMatrixBuilder,
     Rational,
+    SparseExactMdp,
     SparseExactModelComponents,
+    SparseMatrixBuilder,
+    SparseMdp,
     SparseModelComponents,
+    StateLabeling,
+    build_model_from_drn,
+    build_sparse_exact_model_with_options,
+    build_sparse_model_with_options,
     parse_prism_program,
 )
 from stormpy._core import _build_sparse_exact_model_from_drn
@@ -22,7 +22,7 @@ from stormvogel.model import Model, new_mdp
 from tover.utils.logger import logger
 
 
-def aalpy_dfa_to_stormvogel(dfa_a: Dfa) -> Model:
+def aalpy_dfa_to_stormvogel(dfa_a: Dfa[str]) -> Model[float]:
     """Convert an AALpy DFA to a Stormvogel MDP."""
     dfa_sv = new_mdp()
 
@@ -52,7 +52,9 @@ def aalpy_dfa_to_stormvogel(dfa_a: Dfa) -> Model:
     return dfa_sv
 
 
-def aalpy_dfa_to_stormpy(dfa_a: Dfa, use_exact: bool) -> SparseMdp | SparseExactMdp:
+def aalpy_dfa_to_stormpy(
+    dfa_a: Dfa[str], use_exact: bool
+) -> SparseMdp | SparseExactMdp:
     """Convert an AALpy DFA to a Stormpy MDP."""
     state_labeling = StateLabeling(len(dfa_a.states))
     state_labeling.add_label("accepting")

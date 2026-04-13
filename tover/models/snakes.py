@@ -2,21 +2,23 @@ from math import sqrt
 from random import randrange
 
 from stormpy import (
-    PrismProgram,
-    PrismConstant,
-    parse_prism_program,
     BuilderOptions,
-    build_sparse_model_with_options,
-    build_sparse_exact_model_with_options,
+    ExpressionManager,
+    PrismConstant,
+    PrismProgram,
     SparseDtmc,
     SparseExactDtmc,
-    ExpressionManager,
+    build_sparse_exact_model_with_options,
+    build_sparse_model_with_options,
+    parse_prism_program,
 )
-from stormvogel.mapping import stormpy_to_stormvogel
-from stormvogel.model import Model, new_mdp
+from stormvogel.model import Model
+from stormvogel.stormpy_utils.mapping import stormpy_to_stormvogel
 
 # Path to the uncontrollable Snakes & Ladders PRISM template
-SNL_MC_PATH = "benchmarks/models/snake_ladder/mc_u_nxn.pm"
+SNL_MC_PATH = "experiments/snake_ladder/mc_u_nxn.pm"
+
+SNAKES_OBSERVATION_LABELS = ["init", "normal", "snake", "ladder"]
 
 
 def random_snl_board(n: int) -> tuple[int, dict[int, int], dict[int, int]]:
@@ -41,7 +43,9 @@ def random_snl_board(n: int) -> tuple[int, dict[int, int], dict[int, int]]:
     return n, ladders, snakes
 
 
-def load_snl(path: str, n: int, ladders: dict[int, int], snakes: dict[int, int]) -> Model:
+def load_snl(
+    path: str, n: int, ladders: dict[int, int], snakes: dict[int, int]
+) -> Model:
     snl_prism: PrismProgram = parse_prism_program(path)
     if not snl_prism.has_undefined_constants:
         raise Exception("Model is already fully defined")
@@ -62,9 +66,15 @@ def load_snl_stormpy(
     options.set_build_state_valuations()
 
     if use_exact:
-        return build_sparse_exact_model_with_options(prism, options), snl_prism.expression_manager
+        return (
+            build_sparse_exact_model_with_options(prism, options),
+            snl_prism.expression_manager,
+        )
     else:
-        return build_sparse_model_with_options(prism, options), snl_prism.expression_manager
+        return (
+            build_sparse_model_with_options(prism, options),
+            snl_prism.expression_manager,
+        )
 
 
 def load_defined_snl(path: str) -> tuple[Model, int, dict[int, int], dict[int, int]]:
@@ -91,14 +101,22 @@ def _define_snl_constants(
                 value = snl_prism.expression_manager.create_integer(-1)
             else:
                 value = snl_prism.expression_manager.create_integer(
-                    int(ladders_list[int(const.name[1:-1]) - 1][0 if const.name[2] == "s" else 1])
+                    int(
+                        ladders_list[int(const.name[1:-1]) - 1][
+                            0 if const.name[2] == "s" else 1
+                        ]
+                    )
                 )
         elif const.name.startswith("s"):
             if int(const.name[1:-1]) > len(snakes_list):
                 value = snl_prism.expression_manager.create_integer(-1)
             else:
                 value = snl_prism.expression_manager.create_integer(
-                    int(snakes_list[int(const.name[1:-1]) - 1][0 if const.name[2] == "s" else 1])
+                    int(
+                        snakes_list[int(const.name[1:-1]) - 1][
+                            0 if const.name[2] == "s" else 1
+                        ]
+                    )
                 )
         else:
             continue
@@ -134,12 +152,12 @@ def _get_sl_prism_consts(model) -> tuple[int, dict[int, int], dict[int, int]]:
 
     for c in model.constants:
         if c.name.startswith("l"):
-            ladders_list[int(c.name[1])][0 if c.name[2] == "s" else 1] = (
-                c.definition.evaluate_as_int()
-            )
+            ladders_list[int(c.name[1])][
+                0 if c.name[2] == "s" else 1
+            ] = c.definition.evaluate_as_int()
         elif c.name.startswith("s"):
-            snakes_list[int(c.name[1])][0 if c.name[2] == "s" else 1] = (
-                c.definition.evaluate_as_int()
-            )
+            snakes_list[int(c.name[1])][
+                0 if c.name[2] == "s" else 1
+            ] = c.definition.evaluate_as_int()
 
     return n, dict(ladders_list), dict(snakes_list)

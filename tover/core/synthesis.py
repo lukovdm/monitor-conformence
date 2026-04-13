@@ -1,4 +1,5 @@
 import logging
+from enum import StrEnum
 from typing import Self
 
 import paynt.cli
@@ -8,39 +9,52 @@ import paynt.synthesizer.synthesizer
 import paynt.utils.timer
 import paynt.verification.property
 import payntbind.synthesis
+from numpy._core.numeric import True_
 from paynt.family.family import Family
 from paynt.parser.prism_parser import PrismParser
 from paynt.synthesizer.synthesizer_ar import SynthesizerAR
 from stormpy import (
-    parse_properties,
-    model_checking,
+    ConditionalAlgorithmSetting,
+    ExpressionManager,
+    MinMaxMethod,
+    Rational,
     SparseDtmc,
     SparseExactDtmc,
-    SparseMdp,
     SparseExactMdp,
-    ExpressionManager,
-    Rational,
-    ConditionalAlgorithmSetting,
-    MinMaxMethod,
+    SparseMdp,
+    model_checking,
+    parse_properties,
 )
 from stormpy.pomdp import (
-    GenerateMonitorVerifierExact,
-    GenerateMonitorVerifierExactOptions,
     GenerateMonitorVerifierDouble,
     GenerateMonitorVerifierDoubleOptions,
+    GenerateMonitorVerifierExact,
+    GenerateMonitorVerifierExactOptions,
 )
-from stormpy.simulator import create_simulator, SimulatorActionMode, SparseSimulator
+from stormpy.simulator import SimulatorActionMode, SparseSimulator, create_simulator
 
 from tover.utils.helpers import compact_json_str, get_pos, hole_to_observations
 from tover.utils.logger import logger
 
 
+class ConditionalMethod(StrEnum):
+    REJECTION = "rejection"
+    RESTART = "restart"
+    BISECTION = "bisection"
+    BISECTION_ADVANCED = "bisection_advanced"
+    BISECTION_PT = "bisection_pt"
+    BISECTION_ADVANCED_PT = "bisection_advanced_pt"
+    POLICY_ITERATION = "policy_iteration"
+
+
 CONDITIONAL_METHODS = {
-    "rejection": ConditionalAlgorithmSetting.restart,
-    "restart": ConditionalAlgorithmSetting.restart,
-    "bisection": ConditionalAlgorithmSetting.bisection,
-    "bisection_advanced": ConditionalAlgorithmSetting.bisection_advanced,
-    "policy_iteration": ConditionalAlgorithmSetting.policy_iteration,
+    ConditionalMethod.REJECTION: ConditionalAlgorithmSetting.restart,
+    ConditionalMethod.RESTART: ConditionalAlgorithmSetting.restart,
+    ConditionalMethod.BISECTION: ConditionalAlgorithmSetting.bisection,
+    ConditionalMethod.BISECTION_ADVANCED: ConditionalAlgorithmSetting.bisection_advanced,
+    ConditionalMethod.BISECTION_PT: ConditionalAlgorithmSetting.bisection_pt,
+    ConditionalMethod.BISECTION_ADVANCED_PT: ConditionalAlgorithmSetting.bisection_advanced_pt,
+    ConditionalMethod.POLICY_ITERATION: ConditionalAlgorithmSetting.policy_iteration,
 }
 
 
@@ -59,7 +73,7 @@ class Verifier:
         good_label: str,
         paynt_strategy: str = "ar",
         export_benchmarks: bool = False,
-        conditional_method: str = "rejection",
+        conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
     ) -> None:
         if mc.is_exact ^ mon.is_exact:
             raise ValueError(
@@ -117,7 +131,7 @@ class Verifier:
         prop = parse_properties(risk_prop)
         result = model_checking(self.mc, prop[0])
         self.generator.set_risk(result.get_values())
-        logger.debug(f"Risk function becomes: {result.get_values()}")
+        # logger.debug(f"Risk function becomes: {result.get_values()}")
 
     def create_product(self: Self):
         self.monitor_verifier = self.generator.create_product()
@@ -150,16 +164,28 @@ class Verifier:
         specification = paynt.verification.property.Specification([prop])
 
         min_max_method = (
-            MinMaxMethod.value_iteration if "bisection" in self.conditional_method else None
+            MinMaxMethod.value_iteration
+            if "bisection" in self.conditional_method
+            else None
         )
+
+        paynt.verification.property.Property.conditional_algorithm = (
+            CONDITIONAL_METHODS[self.conditional_method]
+        )
+
+        paynt.verification.property.Property.conditional_bisection_optimization = (
+            not str_prop.startswith("Pmax")
+        )
+
         paynt.verification.property.Property.initialize(
             self.pomdp.is_exact,
-            CONDITIONAL_METHODS[self.conditional_method],
             min_max_method,
         )
 
         if self.pomdp.is_exact:
-            explicit_quotient = payntbind.synthesis.addMissingChoiceLabelsExact(self.pomdp)
+            explicit_quotient = payntbind.synthesis.addMissingChoiceLabelsExact(
+                self.pomdp
+            )
         else:
             explicit_quotient = payntbind.synthesis.addMissingChoiceLabels(self.pomdp)
 

@@ -23,7 +23,7 @@ This readme gives an overview of the functionality. It also describes how to rep
 
 In order to smoke test this artifact, follow the steps in [Getting ToVer](#getting-tover). Then run the smoke test experiments:
 ```bash
-python -m verimon.experiment tests/smoke-test.yml -c
+python -m tover.cli.experiment experiments/smoke-test.yml --concurrent
 ```
 
 This should generate statistics in the folder `stats/` which can either be inspected using [JupyterLab](http://127.0.0.1:8080/lab/) (Make sure to refresh the jupyter lab file browser if the stats folder is not shown after running the test), or using the command line opened by starting the docker container.
@@ -64,20 +64,20 @@ All files included in the repo can found in the app folder in you current direct
 The storm and stormpy source code can be found in `/opt/storm` and `/opt/stormpy` or in the zip file.
 
 ## Running ToVer
-You can use the tover algorithm on any prism POMDP model or snakes and ladder board configuration by invoking the `verimon/run.py` script. We show two examples below.
+You can use the tover algorithm on any prism POMDP model or snakes and ladder board configuration by invoking `python -m tover.cli.run`. We show two examples below.
 
 For a POMDP:
 ```bash
-python -m verimon.run --file tests/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 8 --fp-slack 0.2 --fn-slack 0.05 --walk-len 11 --base-dir stats/airport_experiment
+python -m tover.cli.run --file experiments/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 8 --fp-slack 0.2 --fn-slack 0.05 --walk-len 11 --exact --base-dir out/airport_experiment
 ```
 
 For SnLs:
 ```bash
- python -m verimon.run --file tests/premise/airportA-7.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 10 --fp-slack 0.2 --fn-slack 0.05 --base-dir stats/airport_experiment
+python -m tover.cli.run --file experiments/premise/airportA-7.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 10 --fp-slack 0.2 --fn-slack 0.05 --exact --base-dir out/airport_experiment
 ```
 
-The inputs to `python -m verimon.run` are as follows:
-- `--file tests/premise/airportA-3.nm` or `--file tests/snake_ladder/mc_u_nxn.pm` for the prism file containing the POMDP or SnLs model.
+The inputs to `python -m tover.cli.run` are as follows:
+- `--file experiments/premise/airportA-3.nm` or `--file experiments/snake_ladder/mc_u_nxn.pm` for the prism file containing the POMDP or SnLs model.
 - `--loader pomdp` or `--loader snakes_ladders` specifying the loader to load the model with. Either POMDPs or SnLs.
 - `--constants "DMAX=3,PMAX=3"` specify any constants used to build the prism POMDP model.
 - `--n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6"` the parameters for the SnLs board. The amount of squares (should be a square number), the locations of the ladders with their destinations and similarly for the snakes.
@@ -90,27 +90,27 @@ The inputs to `python -m verimon.run` are as follows:
 - `--base-dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
 
 ## Running experiments
-Our experiments are defined in yaml files and consumed by the python file `verimon/experiments.py`. 
+Our experiments are defined in yaml files and consumed by `python -m tover.cli.experiment`.
 
-The file `tests/reduced-exp/verify.yml` contains the reduced version of the experiments for the section "Efficiency of Monitor Verification", and the folder `tests/verify-exp/` contains the extended version of the experiments found in the verification secion of the paper.
+The file `experiments/reduced-exp/verify.yml` contains the reduced version of the experiments for the section "Efficiency of Monitor Verification", and the folder `experiments/verify-exp/` contains the extended version of the experiments found in the verification secion of the paper.
 
-The file `tests/reduced-exp/learn.yml` contains the reduced version of the experiments for the section "Efficiency of Monitor Learning", and the folder `tests/learn-exp/` contains the extended version of the experiments found in the learning section.
+The file `experiments/reduced-exp/learn.yml` contains the reduced version of the experiments for the section "Efficiency of Monitor Learning", and the folder `experiments/learn-exp/` contains the extended version of the experiments found in the learning section.
 
 
 For obtaining the reduced results run the following command.
 ```bash
-python -m verimon.experiment tests/reduced-exp/* -c -t 9300
+python -m tover.cli.experiment experiments/reduced-exp/* --concurrent --timeout 9300
 ```
-This exectues all experiments found the the folder `tests/reduced-exp/` concurrently, each with a timeout of 10 minutes (600 seconds).
+This executes all experiments found in the folder `experiments/reduced-exp/` concurrently, each with a timeout of 9300 seconds.
 
-To obtain the full results run the below command. Depending on the amount of cores available this can take beween 1-2 days.
+To obtain the full results run the below command. Depending on the amount of cores available this can take between 1-2 days.
 
 ```bash
-python -m verimon.experiment tests/verify-exp/* tests/learn-exp/* -c
+python -m tover.cli.experiment experiments/verify-exp/* experiments/learn-exp/* --concurrent
 ```
 The log files of our run of the full experiments can be found in the folders `stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam` and `stats/exp-2025-04-24_12-13-12-verify`. The folders can also be used to generate the plots as described in the next section.
 
-All experiment commands take an optional `--core <number of cores>` to specify with how many cores to run the experiments, e.g., `--cores 44` to run with 44 cores. Without this argument it will run on all available cores. Each core can use at most 15GB of memory (many runs don't use the max memory) so it is advisable when running with many cores to have around 10GB of memory per core available. For the reduced set, 2.5GB of memory per core should be enough.
+All experiment commands take an optional `--cores <number of cores>` to specify with how many cores to run the experiments, e.g., `--cores 44` to run with 44 cores. Without this argument it will run on all available cores. Each core can use at most 15GB of memory (many runs don't use the max memory) so it is advisable when running with many cores to have around 10GB of memory per core available. For the reduced set, 2.5GB of memory per core should be enough.
 
 ## Analyzing the results
 
@@ -134,19 +134,44 @@ Our source code contains two parts:
 The transformation of a CTR problem HMM into a Colored MDP is implemented in C++ in `storm/src/storm-pomdp/generator/GenerateMonitorVerifier.cpp` with its bindings implemented in `sormpy/src/pomdp/generator.cpp`.
 
 ### ToVer algorithm
-We will shortly describe the purpose of each of the files contained in python part of the source code found in `ToVer/verimon`. Note that Verimon is an old name for our tool and it is still used in the source code to refer to ToVer.
-- `verimon/algs.py` defines several well known algorithms on markov models and automata.
-- `verimon/analysis.py` defines functions for creating the plots seen in the paper.
-- `verimon/draw.py` draws Snakes and Ladder board states for visualizations.
-- `verimon/experiment.py` runs experiments defined by yaml files.
-- `verimon/generator.py` calls the C++ code to transform a CTR HMM into a Colored MDP and calls paynt on the Colored MDP.
-- `verimon/loaders.py` loads in different kinds of models as stormpy and stormvogel models.
-- `verimon/logger.py` defines a logger to be used by all other scripts.
-- `verimon/MonitorLearning.py` is the entry point for learning monitors and defines the membership and equivalence queries.
-- `verimon/run.py` contains a command line interface for monitor learning.
-- `verimon/transformations.py` contains the transformation of a monitor and an HMM into the CTR problem with unrolled horizon. Thus it does both the product and the unrolling over the horizon.
-- `verimon/utils.py` contains several utility functions.
-- `verimon/verify.py` wrappers around `generator.py` for calculating the false positives and false negatives of a monitor for a model.
+The Python source code is in `tover/`, organised into the following packages.
+
+**`tover/cli/`** — Command line interfaces
+- `run.py` — Single monitor learning run (`python -m tover.cli.run`)
+- `experiment.py` — Batch experiment execution from YAML configs (`python -m tover.cli.experiment`)
+
+**`tover/core/`** — Learning and verification algorithm
+- `sul.py` — `FilteringSUL`: wraps the MC, uses a nondeterministic belief tracker to classify observations as accept/reject/don't-care relative to the threshold
+- `oracles.py` — `ToVerEqOracle`: equivalence oracle that calls PAYNT synthesis to find false positives/negatives; `SamplingEqOracle`: fast random-walk pre-check; `OracleStats`: typed dataclass collecting per-round statistics
+- `learning.py` — `run_tover`: the full L# + PAYNT learning loop; `run_trad_learning` and `run_sampling_learning`: baseline variants
+- `synthesis.py` — `Verifier`: builds the MC × monitor product and calls PAYNT to find a counterexample scheduler; `ConditionalMethod` enum
+- `verification.py` — `false_positive`, `false_negative`, `true_positive`, `true_negative`: unroll the monitor, construct a `Verifier`, run PAYNT, and double-check the result; `VerifyStats` dataclass
+- `transformations.py` — `stormpy_unroll`: BFS finite-horizon unrolling of a cyclic MDP; `language_of_hmm`: computes the reference language for L#
+
+**`tover/models/`** — Model loading and conversion
+- `pomdp.py` — Parses PRISM POMDPs into a `SparseDtmc` (actions averaged; observation valuations become the alphabet)
+- `snakes.py` — Loads Snakes and Ladders board models
+- `automata.py` — Converts AALpy DFAs ↔ Stormpy `SparseMdp` (monitor representation)
+- `algorithms.py` — Monitor transformations such as complement construction
+
+**`tover/lsharp/`** — L# learning algorithm and monitor-specific oracles
+- `monitor_lsharp.py` — Monitor-aware L# learner entry point
+- `monitor_wp_method.py` — `MonitorWpMethodEqOracle` and `MonitorRandomWpMethodEqOracle`: W/Wp-method equivalence oracles that exploit the reference language
+
+**`tover/experiments/`** — Experiment infrastructure
+- `runner.py` — `LearningExperiment` and `VerifyExperiment`: experiment classes loaded from YAML
+- `scheduler.py` — Runs experiments concurrently using `multiprocessing` with per-experiment timeouts and a 15 GiB memory limit
+- `config.py` — `ObjectGroup`: expands parameter grids from YAML into experiment instances
+
+**`tover/analysis/`** — Result analysis
+- `load_data.py` — Loads experiment JSON results
+- `plots.py` — Generates matplotlib figures for the paper
+- `tables.py` — Generates LaTeX tables for the paper
+
+**`tover/utils/`** — Shared utilities
+- `logger.py` — Logging setup used across all modules
+- `helpers.py` — Miscellaneous helper functions
+- `draw.py` — Draws Snakes and Ladders board states for visualisation
 
 ## Creating the Docker
 The docker file used in this repository can be built with the following command.

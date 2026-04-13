@@ -81,7 +81,7 @@ module main
                                       1/d:(pos'=(pos + 4 > n) ? (n - (n - (pos + 4))*-1) : (pos + 4)) +
                                       1/d:(pos'=(pos + 5 > n) ? (n - (n - (pos + 5))*-1) : (pos + 5)) +
                                       1/d:(pos'=(pos + 6 > n) ? (n - (n - (pos + 6))*-1) : (pos + 6));
-    
+
 endmodule
 
 label "ladder" = ladder;
