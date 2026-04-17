@@ -1,8 +1,6 @@
-from collections import OrderedDict
 from fractions import Fraction
 from math import ceil, log10
 import re
-import time
 from typing import Any, cast
 from matplotlib import pyplot as plt
 import numpy as np
@@ -10,17 +8,83 @@ from scipy.optimize import curve_fit
 from itertools import combinations, product
 
 
-def calculate_error_lines(data, value_func):
-    max_time = 0
-    for data in data:
-        time_value = value_func(data)
-        if (
-            isinstance(time_value, float)
-            or isinstance(time_value, int)
-            or isinstance(time_value, Fraction)
-        ):
-            max_time = max(max_time, time_value)
+# Fields used to match experiments across methods when pairing
+DEFAULT_MATCH_FIELDS = [
+    "name",
+    "file",
+    "parameters",
+    "horizon",
+    "threshold",
+    "fp_slack",
+    "fn_slack",
+    "spec",
+    "good_label",
+]
 
+
+def pair_by_benchmark(
+    data1: list[dict],
+    data2: list[dict],
+    match_fields: list[str] = DEFAULT_MATCH_FIELDS,
+) -> list[tuple[dict, dict]]:
+    """Pair entries from data1 and data2 that share the same benchmark.
+
+    Matching is done on match_fields in d["experiment"]. Unmatched entries
+    are silently dropped.
+    """
+    pairs = []
+    for d1 in data1:
+        for d2 in data2:
+            if all(
+                d1["experiment"].get(f) == d2["experiment"].get(f) for f in match_fields
+            ):
+                pairs.append((d1, d2))
+                break
+    return pairs
+
+
+def _resolve_time(
+    d: dict,
+    timeout: float,
+    out_of_memory: float,
+    incorrect: float,
+) -> float:
+    """Map an experiment entry to a plot-ready time value.
+
+    Failed experiments map to sentinel values (timeout/OOM/incorrect);
+    correct experiments return results["time"].
+    """
+    if d["results"] is None:
+        return timeout if d.get("error") == "timeout" else out_of_memory
+    r = d["results"]
+    threshold = d["experiment"]["threshold"]
+    fp_slack = d["experiment"]["fp_slack"]
+    fn_slack = d["experiment"]["fn_slack"]
+    fp, fn = r.get("false_positive"), r.get("false_negative")
+    if (
+        fp is None
+        or fn is None
+        or fp < threshold - fp_slack
+        or fn > threshold + fn_slack
+    ):
+        return incorrect
+    return r["time"]
+
+
+def calculate_error_lines(
+    data: list[dict],
+    value_func,
+) -> tuple[float, float, float, float, float]:
+    """Compute sentinel line positions based on the maximum observed value."""
+    max_time = max(
+        (
+            v
+            for d in data
+            for v in [value_func(d)]
+            if isinstance(v, (int, float, Fraction))
+        ),
+        default=1.0,
+    )
     timeout = max_time * 1.5
     out_of_memory = timeout * 4
     incorrect = out_of_memory * 4
@@ -29,203 +93,102 @@ def calculate_error_lines(data, value_func):
 
 
 def compare_runtimes(
-    exp_data: list[dict[str, Any]],
-    key1: str,
-    key2: str,
+    data1: list[dict[str, Any]],
+    data2: list[dict[str, Any]],
+    label1: str = "Method 1",
+    label2: str = "Method 2",
+    match_fields: list[str] = DEFAULT_MATCH_FIELDS,
     title: str | None = None,
     figsize: tuple = (10, 6),
     xlabel: str | None = None,
     ylabel: str | None = None,
     log_scale: bool = True,
-    name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
-    experiments_in_legends=True,
-    save_figures=False,
-    save_path="./",
-    file_name="runtime",
+    name_func=lambda d1, d2: f"{d1['experiment']['name']} {d1['experiment']['variant']}",
+    experiments_in_legends: bool = True,
+    save_figures: bool = False,
+    save_path: str = "./",
+    file_name: str = "runtime",
     show_y_axis: bool = True,
-    plot_kwargs={},
-    min_value=1,
+    plot_kwargs: dict = {},
+    min_value: float = 1,
 ):
+    pairs = pair_by_benchmark(data1, data2, match_fields)
+
     max_time, timeout, out_of_memory, incorrect, unfinished = calculate_error_lines(
-        exp_data,
-        lambda d: max(
-            d[key1]["time"] if key1 in d else 0,
-            d[key2]["time"] if key2 in d else 0,
-        ),
+        [d for pair in pairs for d in pair],
+        lambda d: d["results"]["time"] if d["results"] is not None else 0,
     )
 
-    for data in exp_data:
-        if key1 not in data or key2 not in data:
-            continue
-        time1 = data[key1]["time"]
-        time2 = data[key2]["time"]
-
-        if time1 == "timeout":
-            time1 = timeout
-        elif time1 == "out of memory":
-            time1 = out_of_memory
-        elif (
-            data[key1]["false_positive"] is None
-            or data[key1]["false_negative"] is None
-            or data[key1]["false_positive"]
-            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
-            or data[key1]["false_negative"]
-            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
-        ):
-            time1 = incorrect
-
-        if time2 == "timeout":
-            time2 = timeout
-        elif time2 == "out of memory":
-            time2 = out_of_memory
-        elif (
-            data[key2]["false_positive"] is None
-            or data[key2]["false_negative"] is None
-            or data[key2]["false_positive"]
-            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
-            or data[key2]["false_negative"]
-            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
-        ):
-            time2 = incorrect
-
+    for d1, d2 in pairs:
+        time1 = _resolve_time(d1, timeout, out_of_memory, incorrect)
+        time2 = _resolve_time(d2, timeout, out_of_memory, incorrect)
         plt.plot(
             max(time1, min_value),
             max(time2, min_value),
-            data["symbol"],
-            color=data["color"],
-            label=name_func(data) if experiments_in_legends else None,
+            d1["symbol"],
+            color=d1["color"],
+            label=name_func(d1, d2) if experiments_in_legends else None,
             **plot_kwargs,
         )
 
     max_lim = incorrect * 2
 
     plt.plot([0, max_lim], [0, max_lim], r"-", color="0.5")
-    plt.plot(
-        [0, max_lim * 10],
-        [0, max_lim],
-        "--",
-        color="0.5",
-        label="10x faster",
+    plt.plot([0, max_lim * 10], [0, max_lim], "--", color="0.5", label="10x faster")
+    plt.plot([0, max_lim], [0, max_lim * 10], "--", color="0.5")
+    plt.plot([0, max_lim * 100], [0, max_lim], ":", color="0.5", label="100x faster")
+    plt.plot([0, max_lim], [0, max_lim * 100], ":", color="0.5")
+    ax = plt.gca()
+    ax.text(
+        0.05,
+        0.95,
+        f"{label1} faster",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=9,
+        color="0.4",
     )
-    plt.plot(
-        [0, max_lim],
-        [0, max_lim * 10],
-        "--",
-        color="0.5",
+    ax.text(
+        0.95,
+        0.05,
+        f"{label2} faster",
+        transform=ax.transAxes,
+        ha="right",
+        va="bottom",
+        fontsize=9,
+        color="0.4",
     )
-    plt.plot(
-        [0, max_lim * 100],
-        [0, max_lim],
-        ":",
-        color="0.5",
-        label="100x faster",
-    )
-    plt.plot(
-        [0, max_lim],
-        [0, max_lim * 100],
-        ":",
-        color="0.5",
-    )
-    plt.fill_between(
-        [0, max_lim],
-        [0, max_lim],
-        max_lim,
-        color="lightgreen",
-        alpha=0.2,
-        label=f"{key1.capitalize()} is faster",
-    )
-    plt.fill_between(
-        [0, max_lim],
-        0,
-        [0, max_lim],
-        color="lightcoral",
-        alpha=0.2,
-        label=f"{key2.capitalize()} is faster",
-    )
-    plt.axline(
-        (0, timeout),
-        (timeout, timeout),
-        color="gray",
-        linestyle=r"--",
-        label="ToVer timeout",
-    )
-    plt.axline(
-        (timeout, 0),
-        (timeout, timeout),
-        color="gray",
-        linestyle=r"--",
-        label="Baseline timeout",
-    )
-    plt.axline(
-        (0, out_of_memory),
-        (out_of_memory, out_of_memory),
-        color="gray",
-        linestyle=r"--",
-        label="ToVer out of memory",
-    )
-    plt.axline(
-        (out_of_memory, 0),
-        (out_of_memory, out_of_memory),
-        color="gray",
-        linestyle=r"--",
-        label="Baseline out of memory",
-    )
-    plt.axline(
-        (0, incorrect),
-        (incorrect, incorrect),
-        color="gray",
-        linestyle=r"--",
-        label="ToVer incorrect",
-    )
-    plt.axline(
-        (incorrect, 0),
-        (incorrect, incorrect),
-        color="gray",
-        linestyle=r"--",
-        label="Baseline incorrect",
-    )
+    for sentinel, label in [
+        (timeout, "timeout"),
+        (out_of_memory, "out of memory"),
+        (incorrect, "incorrect"),
+    ]:
+        plt.axhline(sentinel, color="gray", linestyle="--", label=f"{label2} {label}")
+        plt.axvline(sentinel, color="gray", linestyle="--", label=f"{label1} {label}")
+
+    plt.xlim(min_value, max_lim)
+    plt.ylim(min_value, max_lim)
 
     plt.grid()
     if log_scale:
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.xlabel(xlabel if xlabel else "ToVer (s log)")
+    plt.xlabel(xlabel if xlabel else f"{label1} (s log)")
+
+    min_pow = ceil(log10(min_value))
+    max_pow = ceil(log10(max_lim))
+    tick_positions = [10**i for i in range(min_pow, max_pow)] + [timeout, out_of_memory, incorrect]
+    tick_labels = [f"$10^{{{i}}}$" for i in range(min_pow, max_pow)] + [r"$\infty$", "MO", r"$\times$"]
+    plt.xticks(tick_positions, tick_labels)
     if not show_y_axis:
         plt.ylabel("")
-        plt.yticks(
-            [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
-            [],
-        )
+        plt.yticks(tick_positions, [])
     else:
-        plt.ylabel(ylabel if ylabel else "Baseline (s log)")
-        plt.yticks(
-            [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
-            [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
-        )
+        plt.ylabel(ylabel if ylabel else f"{label2} (s log)")
+        plt.yticks(tick_positions, tick_labels)
 
-    plt.xticks(
-        [10**i for i in range(-1, 5)] + [timeout, out_of_memory, incorrect],
-        [f"$10^{{{i}}}$" for i in range(-1, 5)] + [r"$\infty$", "MO", r"$\times$"],
-    )
-    ax = plt.gca()
-    # xticks = ax.get_xticklabels()
-    # for i in range(len(xticks) - 3, len(xticks)):
-    #     xticks[i].set_rotation(90)
-    #     xticks[i].set_ha("right")
-
-    plt.xlim(min_value, max_lim)
-    plt.ylim(min_value, max_lim)
-
-    # Hide minor ticks between the last 3 major ticks (≥ 10^5)
-    if log_scale:
-        for axis in [ax.xaxis, ax.yaxis]:
-            for tick in axis.get_minor_ticks():
-                if tick.get_loc() >= 10**4:
-                    tick.tick1line.set_visible(False)
-                    tick.tick2line.set_visible(False)
-
-    # plt.legend(loc="upper left")
     fig = plt.gcf()
     fig.set_size_inches(*figsize)
     if save_figures:
@@ -234,93 +197,52 @@ def compare_runtimes(
 
 
 def compare_monitor_sizes(
-    exp_data: list[dict[str, Any]],
-    key1: str,
-    key2: str,
+    data1: list[dict[str, Any]],
+    data2: list[dict[str, Any]],
+    label1: str = "Method 1",
+    label2: str = "Method 2",
+    match_fields: list[str] = DEFAULT_MATCH_FIELDS,
     title: str | None = None,
     figsize: tuple = (10, 6),
     xlabel: str | None = None,
     ylabel: str | None = None,
     log_scale: bool = True,
-    name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
-    experiments_in_legends=True,
-    save_figures=False,
-    save_path="./",
-    file_name="monitor_sizes",
+    name_func=lambda d1, d2: f"{d1['experiment']['name']} {d1['experiment']['variant']}",
+    experiments_in_legends: bool = True,
+    save_figures: bool = False,
+    save_path: str = "./",
+    file_name: str = "monitor_sizes",
     show_y_axis: bool = True,
-    plot_kwargs={},
+    plot_kwargs: dict = {},
 ):
+    pairs = pair_by_benchmark(data1, data2, match_fields)
+
     max_mon_states = max(
-        max(
-            (
-                data[key1]["monitor_states"]
-                if key1 in data and isinstance(data[key1]["monitor_states"], int)
-                else 0
-            ),
-            (
-                data[key2]["monitor_states"]
-                if key2 in data and isinstance(data[key2]["monitor_states"], int)
-                else 0
-            ),
-        )
-        for data in exp_data
+        (
+            v
+            for d1, d2 in pairs
+            for v in [
+                d1["results"]["monitor_states"] if d1["results"] is not None else 0,
+                d2["results"]["monitor_states"] if d2["results"] is not None else 0,
+            ]
+            if isinstance(v, int)
+        ),
+        default=10,
     )
     max_lim = max_mon_states * 1.5
-    # offset = 1.5
-    # plt.text(
-    #     max_lim * (1 / offset),
-    #     offset,
-    #     "Baseline is smaller",
-    #     color="gray",
-    #     ha="right",
-    #     va="bottom",
-    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    # )
-    # plt.text(
-    #     offset,
-    #     max_lim * (1 / offset),
-    #     "ToVer is smaller",
-    #     color="gray",
-    #     ha="left",
-    #     va="top",
-    #     rotation=math.degrees(math.atan(figsize[1] / figsize[0])),
-    # )
 
-    plt.plot(
-        [0, max_lim],
-        [0, max_lim],
-        "k-",
-        linewidth=1,
-    )
-    plt.plot(
-        [0, max_lim * 10],
-        [0, max_lim],
-        "k--",
-        label="10x smaller",
-    )
-    plt.plot(
-        [0, max_lim],
-        [0, max_lim * 10],
-        "k--",
-    )
-    plt.plot(
-        [0, max_lim * 100],
-        [0, max_lim],
-        "k:",
-        label="100x smaller",
-    )
-    plt.plot(
-        [0, max_lim],
-        [0, max_lim * 100],
-        "k:",
-    )
+    plt.plot([0, max_lim], [0, max_lim], "k-", linewidth=1)
+    plt.plot([0, max_lim * 10], [0, max_lim], "k--", label="10x smaller")
+    plt.plot([0, max_lim], [0, max_lim * 10], "k--")
+    plt.plot([0, max_lim * 100], [0, max_lim], "k:", label="100x smaller")
+    plt.plot([0, max_lim], [0, max_lim * 100], "k:")
     plt.fill_between(
         [0, max_lim],
         [0, max_lim],
         max_lim,
         color="lightgreen",
         alpha=0.2,
-        label=f"{key1.capitalize()} is smaller",
+        label=f"{label1} is smaller",
     )
     plt.fill_between(
         [0, max_lim],
@@ -328,41 +250,36 @@ def compare_monitor_sizes(
         [0, max_lim],
         color="lightcoral",
         alpha=0.2,
-        label=f"{key2.capitalize()} is smaller",
+        label=f"{label2} is smaller",
     )
 
-    for data in exp_data:
-        if key1 not in data or key2 not in data:
+    for d1, d2 in pairs:
+        if d1["results"] is None or d2["results"] is None:
             continue
-
-        monitor_states1 = data[key1]["monitor_states"]
-        monitor_states2 = data[key2]["monitor_states"]
-        if monitor_states1 is None or monitor_states2 is None:
-            continue
-        if isinstance(monitor_states1, str) or isinstance(monitor_states2, str):
+        r1, r2 = d1["results"], d2["results"]
+        threshold = d1["experiment"]["threshold"]
+        fp_slack = d1["experiment"]["fp_slack"]
+        fn_slack = d1["experiment"]["fn_slack"]
+        ms1, ms2 = r1.get("monitor_states"), r2.get("monitor_states")
+        if not isinstance(ms1, int) or not isinstance(ms2, int):
             continue
         if (
-            data[key1]["false_positive"] is None
-            or data[key1]["false_negative"] is None
-            or data[key1]["false_positive"]
-            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
-            or data[key1]["false_negative"]
-            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
-            or data[key2]["false_positive"] is None
-            or data[key2]["false_negative"] is None
-            or data[key2]["false_positive"]
-            < data["experiment"]["threshold"] - data["experiment"]["fp_slack"]
-            or data[key2]["false_negative"]
-            > data["experiment"]["threshold"] + data["experiment"]["fn_slack"]
+            r1.get("false_positive") is None
+            or r1.get("false_negative") is None
+            or r1["false_positive"] < threshold - fp_slack
+            or r1["false_negative"] > threshold + fn_slack
+            or r2.get("false_positive") is None
+            or r2.get("false_negative") is None
+            or r2["false_positive"] < threshold - fp_slack
+            or r2["false_negative"] > threshold + fn_slack
         ):
             continue
-
         plt.plot(
-            monitor_states1,
-            monitor_states2,
-            data["symbol"],
-            color=data["color"],
-            label=name_func(data) if experiments_in_legends else None,
+            ms1,
+            ms2,
+            d1["symbol"],
+            color=d1["color"],
+            label=name_func(d1, d2) if experiments_in_legends else None,
             **plot_kwargs,
         )
 
@@ -373,18 +290,16 @@ def compare_monitor_sizes(
         plt.xscale("log")
         plt.yscale("log")
 
-    plt.xlabel(xlabel if xlabel else r"ToVer $|\mathcal{A}|$ (log)")
+    plt.xlabel(xlabel if xlabel else rf"{label1} $|\mathcal{{A}}|$ (log)")
     if not show_y_axis:
         plt.ylabel("")
-        plt.yticks([10**i for i in range(0, 4)], ["" for i in range(0, 4)])
+        plt.yticks([10**i for i in range(0, 4)], [""] * 4)
     else:
         plt.ylabel(
-            ylabel if ylabel else r"Baseline $|\mathcal{A}|$ (log)",
+            ylabel if ylabel else rf"{label2} $|\mathcal{{A}}|$ (log)",
             ha="center",
             y=0.43,
         )
-
-    # plt.legend(bbox_to_anchor=(1.05, 1.02), loc="upper left")
 
     fig = plt.gcf()
     fig.set_size_inches(*figsize)
@@ -394,20 +309,24 @@ def compare_monitor_sizes(
 
 
 def compare_thresholds(
-    exp_data,
-    key1: str,
-    key2: str,
+    data1: list[dict],
+    data2: list[dict],
     colors,
-    threshold=0.3,
-    fn_slack=0.05,
-    fp_slack=0.2,
+    label1: str = "Method 1",
+    label2: str = "Method 2",
+    match_fields: list[str] = DEFAULT_MATCH_FIELDS,
+    threshold: float = 0.3,
+    fn_slack: float = 0.05,
+    fp_slack: float = 0.2,
     title: str | None = None,
     figsize: tuple = (10, 6),
     xlabel: str | None = None,
     ylabel: str | None = None,
-    name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
+    name_func=lambda d1, d2: f"{d1['experiment']['name']} {d1['experiment']['variant']}",
     show_y_axis: bool = True,
 ):
+    pairs = pair_by_benchmark(data1, data2, match_fields)
+
     plt.axhline(y=threshold, color="gray", linestyle="--")
     plt.axhline(y=threshold + fn_slack, color="r", linestyle="--")
     plt.axvline(x=threshold, color="gray", linestyle="--")
@@ -420,33 +339,23 @@ def compare_thresholds(
         alpha=0.3,
     )
 
-    xmin, ymin = 1, 1
-    xmax, ymax = 0, 0
+    xmin, ymin = 1.0, 1.0
+    xmax, ymax = 0.0, 0.0
 
-    for i, data in enumerate(exp_data):
-        if key1 not in data or key2 not in data:
-            continue
-        key1_fp = data[key1]["false_positive"]
-        key1_fp = 0 if key1_fp is None else key1_fp
-        key1_fn = data[key1]["false_negative"]
-        key1_fn = 1 if key1_fn is None else key1_fn
-        key2_fp = data[key2]["false_positive"]
-        key2_fp = 0 if key2_fp is None else key2_fp
-        key2_fn = data[key2]["false_negative"]
-        key2_fn = 1 if key2_fn is None else key2_fn
+    for i, (d1, d2) in enumerate(pairs):
+        r1 = d1["results"] or {}
+        r2 = d2["results"] or {}
+        fp1 = float(r1.get("false_positive") or 0)
+        fn1 = float(r1.get("false_negative") or 1)
+        fp2 = float(r2.get("false_positive") or 0)
+        fn2 = float(r2.get("false_negative") or 1)
 
-        plt.plot(
-            [key1_fp],
-            [key1_fn],
-            data["symbol"],
-            color=data["color"],
-            label=name_func(data),
-        )
-        plt.plot([key1_fp, key2_fp], [key1_fn, key2_fn], color=colors(i % colors.N))
-        xmin = min(xmin, key1_fp, key2_fp)
-        ymin = min(ymin, key1_fn, key2_fn)
-        xmax = max(xmax, key1_fp, key2_fp)
-        ymax = max(ymax, key1_fn, key2_fn)
+        plt.plot([fp1], [fn1], d1["symbol"], color=d1["color"], label=name_func(d1, d2))
+        plt.plot([fp1, fp2], [fn1, fn2], color=colors(i % colors.N))
+        xmin = min(xmin, fp1, fp2)
+        ymin = min(ymin, fn1, fn2)
+        xmax = max(xmax, fp1, fp2)
+        ymax = max(ymax, fn1, fn2)
 
     plt.xlabel(
         xlabel
@@ -474,146 +383,132 @@ def compare_thresholds(
 
 
 def compare_thresholds_bar(
-    exp_data,
-    keys: list[str],
-    bottom_name: str,
+    datasets: list[tuple[str, list[dict]]],
     bottom_func,
-    threshold=0.3,
-    fn_slack=0.0,
-    fp_slack=0.0,
-    bundle=1,
-    fig_size=(10, 5),
+    threshold: float = 0.3,
+    fn_slack: float = 0.0,
+    fp_slack: float = 0.0,
+    bundle: int = 1,
+    fig_size: tuple = (10, 5),
     title: str | None = None,
     xlabel: str | None = None,
     ylabel: str | None = None,
-    experiments_in_legends=True,
-    save_figures=False,
-    save_path="./",
-    file_name="thresholds",
+    save_figures: bool = False,
+    save_path: str = "./",
+    file_name: str = "thresholds",
     show_y_axis: bool = True,
 ):
-    colors = plt.get_cmap("tab20")
+    """Bar chart of FP/FN thresholds across experiments.
+
+    Args:
+        datasets: List of (label, data_list) pairs, one per method to compare.
+        bottom_func: Function mapping a data entry to its x-axis label.
+    """
+    tab_colors = plt.get_cmap("tab20")
     fig, ax = plt.subplots()
 
+    # Use the first dataset's list to determine experiment count
+    _, first_data = datasets[0]
+    n = len(first_data)
+
     ax.fill_betweenx(
-        [0, threshold - fp_slack],
-        -1,
-        len(exp_data) / bundle + 1,
-        color="lightgreen",
-        alpha=0.3,
+        [0, threshold - fp_slack], -1, n / bundle + 1, color="lightgreen", alpha=0.3
     )
     ax.fill_betweenx(
-        [threshold + fn_slack, 1],
-        -1,
-        len(exp_data) / bundle + 1,
-        color="lightcoral",
-        alpha=0.5,
+        [threshold + fn_slack, 1], -1, n / bundle + 1, color="lightcoral", alpha=0.5
     )
     ax.fill_betweenx(
         [threshold - fp_slack, threshold + fn_slack],
         -1,
-        len(exp_data) / bundle + 1,
+        n / bundle + 1,
         color="lightgrey",
         alpha=0.5,
     )
-
     ax.axhline(y=threshold, color="grey", linestyle="--")
-    ax.axhline(y=threshold + fn_slack, color="grey", linestyle=r"-", linewidth=1)
-    ax.axhline(y=threshold - fp_slack, color="grey", linestyle=r"-", linewidth=1)
+    ax.axhline(y=threshold + fn_slack, color="grey", linestyle="-", linewidth=1)
+    ax.axhline(y=threshold - fp_slack, color="grey", linestyle="-", linewidth=1)
 
     found_thresholds = [
         (
             [
                 (
-                    data[key]["false_positive"]
-                    if key in data and not isinstance(data[key]["false_positive"], str)
-                    else 1
+                    float(d["results"]["false_positive"])
+                    if d["results"] is not None
+                    and not isinstance(d["results"].get("false_positive"), str)
+                    and d["results"].get("false_positive") is not None
+                    else 1.0
                 )
-                for data in exp_data
+                for d in data
             ],
             [
                 (
-                    data[key]["false_negative"]
-                    if key in data and not isinstance(data[key]["false_negative"], str)
-                    else 0
+                    float(d["results"]["false_negative"])
+                    if d["results"] is not None
+                    and not isinstance(d["results"].get("false_negative"), str)
+                    and d["results"].get("false_negative") is not None
+                    else 0.0
                 )
-                for data in exp_data
+                for d in data
             ],
         )
-        for key in keys
+        for _, data in datasets
     ]
 
-    # Replace None with -0.1 for plotting
-    found_thresholds = [
-        (
-            [1 if fp is None else fp for fp in fp_thresholds],
-            [0 if fn is None else fn for fn in fn_thresholds],
-        )
-        for fp_thresholds, fn_thresholds in found_thresholds
-    ]
-
-    found_bundled_thresholds = []
     if bundle == 1:
-        found_bundled_thresholds = found_thresholds
-        exp_names = [bottom_func(data) for data in exp_data]
+        bundled = found_thresholds
+        exp_names = [bottom_func(d) for d in first_data]
     else:
+        bundled = []
         exp_names = []
-        for thresh in found_thresholds:
-            found_bundled_thresholds.append(([], []))
-            for j in range(0, len(thresh[1]), bundle):
-                max_idx = thresh[1][j : j + bundle].index(
-                    max(thresh[1][j : j + bundle])
-                )
+        for fp_vals, fn_vals in found_thresholds:
+            fps_b, fns_b = [], []
+            for j in range(0, len(fn_vals), bundle):
+                chunk_fn = fn_vals[j : j + bundle]
+                max_idx = chunk_fn.index(max(chunk_fn))
+                fps_b.append(fp_vals[j : j + bundle][max_idx])
+                fns_b.append(chunk_fn[max_idx])
                 exp_names.append(
-                    "/".join([bottom_func(exp_data[k]) for k in range(j, j + bundle)])
+                    "/".join(bottom_func(first_data[k]) for k in range(j, j + bundle))
                 )
-                found_bundled_thresholds[-1][0].append(
-                    thresh[0][j : j + bundle][max_idx]
-                )
-                found_bundled_thresholds[-1][1].append(
-                    thresh[1][j : j + bundle][max_idx]
-                )
+            bundled.append((fps_b, fns_b))
 
-    bar_width = 1 / (len(keys) * 2) - 0.05
-    index = range(ceil(len(exp_data) / bundle))
+    n_datasets = len(datasets)
+    bar_width = 1 / (n_datasets * 2) - 0.05
+    index = range(ceil(n / bundle))
 
-    for i, (key_fp_thresholds, key_fn_thresholds) in enumerate(
-        found_bundled_thresholds
-    ):
+    for i, ((key_fp, key_fn), (label, _)) in enumerate(zip(bundled, datasets)):
         ax.bar(
             [j + i * 2 * bar_width for j in index],
-            [-(1 - t) for t in key_fp_thresholds],
+            [-(1 - t) for t in key_fp],
             bar_width,
             bottom=1,
-            label=f"in monitor traces",
-            color=colors(i + 6 % colors.N),
+            label=f"{label} — in monitor",
+            color=tab_colors((i * 2 + 6) % tab_colors.N),
         )
         ax.bar(
             [j + (i * 2 + 1) * bar_width for j in index],
-            key_fn_thresholds,
+            key_fn,
             bar_width,
-            label=f"out of monitor traces",
-            color=colors(i + 4 % colors.N),
+            label=f"{label} — out of monitor",
+            color=tab_colors((i * 2 + 4) % tab_colors.N),
         )
 
     if not show_y_axis:
         plt.ylabel("")
-        ax.set_yticklabels(["" for _ in ax.get_yticks()])
+        ax.set_yticklabels([""] * len(ax.get_yticks()))
     else:
         plt.ylabel(ylabel if ylabel else "risk threshold")
     plt.xticks(
-        [i + bar_width * (len(keys) - 0.5) for i in index],
+        [i + bar_width * (n_datasets - 0.5) for i in index],
         exp_names,
         rotation=90,
     )
     ax.legend(loc="upper left")
     ax.grid(axis="y")
-    plt.xlim(-0.5, len(exp_data) / bundle)
+    plt.xlim(-0.5, n / bundle)
     if title:
         plt.title(title)
-
     fig.set_size_inches(*fig_size)
-
     if save_figures:
         plt.savefig(f"{save_path}/{file_name}.pgf", bbox_inches="tight")
     plt.show()
@@ -626,37 +521,32 @@ def any_frac_to_float(x):
 
 
 def compare_runtime_by_params(
-    exp_data,
+    exp_data: list[dict],
     param_keys: list[str],
-    key: str = "verimon",
     time_key: str = "time",
     figsize: tuple = (20, 10),
-    experiments_in_legends=True,
-    fit_all=True,
-    title=None,
-    plot_kwargs={},
+    fit_all: bool = True,
+    title: str | None = None,
+    plot_kwargs: dict = {},
 ):
-    """Compare runtime by varying parameters specified in param_keys. Creates a plot of all combinations of param_keys values specified in param_values."""
+    """Compare runtime across different parameter settings.
 
-    # First group data by other parameters in 'experiment' except the param_keys
-    # Also find the possible values for each param_key
+    Creates a scatter subplot for every pair of param_keys value combinations,
+    showing how runtime changes between two parameter configurations.
+    """
     param_values = {k: set() for k in param_keys}
-    param_groups = {}
+    param_groups: dict = {}
+
     for data in exp_data:
+        if data["results"] is None:
+            continue
         group_key = tuple(
             (k, str(any_frac_to_float(v)))
             for k, v in data["experiment"].items()
             if k not in param_keys
-            and k
-            not in [
-                "variant",
-                "result_json_file",
-                "short_name",
-                "variant_hash",
-                "learn_experiment",
-            ]
+            and k not in ["variant", "result_json_file", "short_name", "variant_hash"]
         ) + (
-            (lambda x: x.group(0) if x is not None else None)(
+            (lambda m: m.group(0) if m else None)(
                 re.compile(r"intermediate_monitor=(\d+\.\d+)").search(
                     data["experiment"]["variant"]
                 )
@@ -677,22 +567,16 @@ def compare_runtime_by_params(
 
     for group_key, group_data in param_groups.items():
         if len(group_data) < 4:
-            print(
-                f"Missing data for {group_key}: only {len(group_data)} combinations present."
-            )
+            print(f"Missing data for {group_key}: only {len(group_data)} combinations.")
 
-    # Now create subplots for each combination of pairs of assiging values to param_keys. Ignore combinations where both param sets are the same.
     param_combinations = list(product(*[sorted(param_values[k]) for k in param_keys]))
     param_param_combinations = list(combinations(param_combinations, 2))
     num_plots = len(param_param_combinations)
 
     fig, axes = plt.subplots(nrows=ceil(num_plots / 3), ncols=3, figsize=figsize)
     fig.suptitle(
-        (
-            title
-            if title
-            else f"Runtime comparison by parameter combinations: {', '.join(param_keys)}"
-        ),
+        title
+        or f"Runtime comparison by parameter combinations: {', '.join(param_keys)}",
         fontsize=12,
     )
     axes = axes.flatten()
@@ -700,207 +584,120 @@ def compare_runtime_by_params(
 
     max_time, timeout, out_of_memory, incorrect, unfinished = calculate_error_lines(
         exp_data,
-        lambda d: max(
-            d[key][time_key] if key in d and d[key][time_key] else 0,
-            d[key][time_key] if key in d and d[key][time_key] else 0,
-        ),
+        lambda d: d["results"][time_key] if d["results"] is not None else 0,
     )
 
     for params1, params2 in param_param_combinations:
         ax = axes[plot_idx]
         plot_idx += 1
-
         max_x, max_y = 0.0, 0.0
 
         for group_key, group_data in param_groups.items():
-            time1, time2 = None, None
+            time1: float | None = None
+            time2: float | None = None
             colors = []
             hashes = [None, None]
+
             for param in (params1, params2):
                 if param in group_data:
                     data = group_data[param]
-
-                    if time_key not in data[key]:
-                        print(
-                            f"Missing time_key '{time_key}' in data for key '{key}' with the following data: {data[key]}"
+                    if data["results"] is None:
+                        tv = (
+                            timeout if data.get("error") == "timeout" else out_of_memory
                         )
-                        continue
-
-                    time_value = data[key][time_key]
-                    if isinstance(time_value, str) and "/" in time_value:
-                        time_value = float(Fraction(time_value))
-                    elif time_value is None:
-                        continue
-
-                    # Handle timeout, out-of-memory, incorrect as large values
-                    if time_value == "timeout":
-                        time_value = timeout
-                    elif time_value == "OOM":
-                        time_value = out_of_memory
-                    elif time_value == "unfinished":
-                        time_value = unfinished
-                    elif "goal_threshold" not in data[key] and (
-                        data[key]["false_positive"] is None
-                        or data[key]["false_negative"] is None
-                        or data[key]["false_positive"]
-                        < data["experiment"]["threshold"]
-                        - data["experiment"]["fp_slack"]
-                        or data[key]["false_negative"]
-                        > data["experiment"]["threshold"]
-                        + data["experiment"]["fn_slack"]
-                    ):
-                        time_value = incorrect
+                    else:
+                        tv = data["results"].get(time_key)
+                        if tv is None:
+                            continue
+                        if isinstance(tv, str) and "/" in tv:
+                            tv = float(Fraction(tv))
+                        fp = data["results"].get("false_positive")
+                        fn = data["results"].get("false_negative")
+                        thresh = data["experiment"]["threshold"]
+                        if (
+                            fp is None
+                            or fn is None
+                            or fp < thresh - data["experiment"]["fp_slack"]
+                            or fn > thresh + data["experiment"]["fn_slack"]
+                        ):
+                            tv = incorrect
 
                     if param == params1:
-                        time1 = time_value
-                        hashes[0] = data["experiment"]["variant_hash"]
-                    if param == params2:
-                        time2 = time_value
-                        hashes[1] = data["experiment"]["variant_hash"]
-
+                        time1 = tv
+                        hashes[0] = data["experiment"].get("variant_hash")
+                    else:
+                        time2 = tv
+                        hashes[1] = data["experiment"].get("variant_hash")
                     colors.append(data["color"])
-
                 elif param == params1:
                     time1 = unfinished
-                elif param == params2:
+                else:
                     time2 = unfinished
 
-            # Detech it there is a large relative difference in times and print out the group_key
             if time1 is not None and time2 is not None:
                 rel_diff = abs(time1 - time2) / max(time1, time2)
                 if rel_diff >= 0.9 and max(time1, time2) < timeout:
                     print(
-                        f"Large relative difference ({rel_diff:.4f}: times {time1} vs {time2}) for params {params1} vs {params2} in hashes {hashes}"
+                        f"Large relative difference ({rel_diff:.4f}: {time1} vs {time2}) "
+                        f"for params {params1} vs {params2} in hashes {hashes}"
                     )
 
             max_x = max(max_x, cast(float, time1) if time1 is not None else 0)
             max_y = max(max_y, cast(float, time2) if time2 is not None else 0)
 
-            if len(colors) == 0:
+            if not colors:
                 continue
-
-            # Now plot the point
             ax.scatter(
                 time1,
                 time2,
                 marker=data["symbol"],
-                # color=sorted(colors)[0],
                 color="None",
                 edgecolor=sorted(colors)[0],
-                label=(f"{data['experiment']['name']} {data['experiment']['variant']}"),
+                label=f"{data['experiment']['name']} {data['experiment']['variant']}",
                 **plot_kwargs,
             )
 
-        # Add even and 10x, 100x slower and faster lines for reference
-        # Cut lines so they do not cross the "incorrect" thresholds on either axis
-        ax.plot(
-            [0, timeout],
-            [0, timeout],
-            r"-",
-            color="0.5",
-        )
-        ax.plot(
-            [0, timeout],
-            [0, timeout / 10],
-            "--",
-            color="0.5",
-            label="10x slower",
-        )
-        ax.plot(
-            [0, timeout],
-            [0, timeout / 100],
-            "--",
-            color="0.5",
-            label="100x slower",
-        )
-        ax.plot(
-            [0, timeout / 10],
-            [0, timeout],
-            "--",
-            color="0.5",
-        )
-        ax.plot(
-            [0, timeout / 100],
-            [0, timeout],
-            "--",
-            color="0.5",
-        )
-
-        # Add non-time lines for timeouts, out-of-memory, incorrect, unfinished
-        ax.axline(
-            (0, timeout),
-            (timeout, timeout),
-            color="gray",
-            linestyle="--",
-            label="Param 2 timeout",
-        )
-        ax.axline(
-            (timeout, 0),
-            (timeout, timeout),
-            color="gray",
-            linestyle="--",
-            label="Param 1 timeout",
-        )
-        ax.axline(
-            (0, out_of_memory),
-            (out_of_memory, out_of_memory),
-            color="gray",
-            linestyle="--",
-            label="Param 2 out of memory",
-        )
-        ax.axline(
-            (out_of_memory, 0),
-            (out_of_memory, out_of_memory),
-            color="gray",
-            linestyle="--",
-            label="Param 1 out of memory",
-        )
-        ax.axline(
-            (0, incorrect),
-            (incorrect, incorrect),
-            color="gray",
-            linestyle="--",
-            label="Param 2 incorrect",
-        )
-        ax.axline(
-            (incorrect, 0),
-            (incorrect, incorrect),
-            color="gray",
-            linestyle="--",
-            label="Param 1 incorrect",
-        )
-        ax.axline(
-            (0, unfinished),
-            (unfinished, unfinished),
-            color="gray",
-            linestyle="--",
-            label="Param 2 unfinished",
-        )
-        ax.axline(
-            (unfinished, 0),
-            (unfinished, unfinished),
-            color="gray",
-            linestyle="--",
-            label="Param 1 unfinished",
-        )
+        ax.plot([0, timeout], [0, timeout], r"-", color="0.5")
+        ax.plot([0, timeout], [0, timeout / 10], "--", color="0.5", label="10x slower")
+        ax.plot([0, timeout], [0, timeout / 100], ":", color="0.5", label="100x slower")
+        ax.plot([0, timeout / 10], [0, timeout], "--", color="0.5")
+        ax.plot([0, timeout / 100], [0, timeout], ":", color="0.5")
+        for sentinel, label in [
+            (timeout, "timeout"),
+            (out_of_memory, "OOM"),
+            (incorrect, "incorrect"),
+            (unfinished, "unfinished"),
+        ]:
+            ax.axline(
+                (0, sentinel),
+                (sentinel, sentinel),
+                color="gray",
+                linestyle="--",
+                label=f"Param 2 {label}",
+            )
+            ax.axline(
+                (sentinel, 0),
+                (sentinel, sentinel),
+                color="gray",
+                linestyle="--",
+                label=f"Param 1 {label}",
+            )
 
         ax.loglog()
-
-        ax.set_yticks(
-            [10**i for i in range(-1, int(log10(max_time)) + 1)]
-            + [timeout, out_of_memory, incorrect, unfinished],
-            [f"$10^{{{i}}}$" for i in range(-1, int(log10(max_time)) + 1)]
-            + [r"$\infty$", "ERR", r"$\times$", "U"],
-        )
-
-        ax.set_xticks(
-            [10**i for i in range(-1, int(log10(max_time)) + 1)]
-            + [timeout, out_of_memory, incorrect, unfinished],
-            [f"$10^{{{i}}}$" for i in range(-1, int(log10(max_time)) + 1)]
-            + [r"$\infty$", "ERR", r"$\times$", "U"],
-        )
-
-        # Set labels and title
+        ticks = [10**i for i in range(-1, int(log10(max_time)) + 1)] + [
+            timeout,
+            out_of_memory,
+            incorrect,
+            unfinished,
+        ]
+        tick_labels = [f"$10^{{{i}}}$" for i in range(-1, int(log10(max_time)) + 1)] + [
+            r"$\infty$",
+            "ERR",
+            r"$\times$",
+            "U",
+        ]
+        ax.set_yticks(ticks, tick_labels)
+        ax.set_xticks(ticks, tick_labels)
         ax.set_xlabel(", ".join(f"{v}" for k, v in zip(param_keys, params1)))
         ax.set_ylabel(", ".join(f"{v}" for k, v in zip(param_keys, params2)))
         ax.grid(True, which="major", ls="--")
@@ -915,8 +712,7 @@ def compare_runtime_by_params(
 
 
 def runtime_by_params(
-    exp_data,
-    key: str,
+    exp_data: list[dict],
     params: list[tuple[tuple[str, str] | list[tuple[str, str]], str]],
     time_key: str = "time",
     title: str | None = None,
@@ -925,24 +721,23 @@ def runtime_by_params(
     ylabel: str | None = None,
     fit_line: bool = False,
     name_func=lambda d: f"{d['experiment']['name']} {d['experiment']['variant']}",
-    experiments_in_legends=True,
+    experiments_in_legends: bool = True,
     show_y_axis: bool = True,
-    plot_kwargs={},
+    plot_kwargs: dict = {},
 ):
     fig, axes = plt.subplots(nrows=ceil(len(params) / 2), ncols=2, figsize=figsize)
     axes = axes.flatten()
 
-    for i, param in enumerate(params):
+    for i, (select_keys, type_plot) in enumerate(params):
         ax = axes[i]
-        select_keys, type_plot = param
 
         if fit_line:
-            symbol_points = {}
+            symbol_points: dict = {}
             for d in exp_data:
-                if "fake" in d[key]:
+                if d["results"] is None:
                     continue
                 val = d[select_keys[0]][select_keys[1]]
-                t = d[key][time_key]
+                t = d["results"][time_key]
                 if (
                     t is None
                     or val is None
@@ -950,34 +745,17 @@ def runtime_by_params(
                     or isinstance(t, str)
                 ):
                     continue
-
-                if d["symbol"] not in symbol_points:
-                    symbol_points[d["symbol"]] = []
-
-                symbol_points[d["symbol"]].append((val, t))
+                symbol_points.setdefault(d["symbol"], []).append((val, t))
 
             for symbol, points in symbol_points.items():
                 xs, ys = zip(*points)
-                # Linear fit
-                # fit = np.polyfit(xs, ys, 1)
                 x_line = np.linspace(min(xs), max(xs), 100)
-                # ax.plot(
-                #     x_line,
-                #     np.polyval(fit, x_line),
-                #     "-",
-                #     color="green",
-                #     marker=symbol,
-                #     markevery=0.1,  # Show marker every 20 points
-                #     label="Linear fit",
-                # )
-
-                # Exponential fit using scipy's curve_fit
 
                 def exp_func(x, a, b):
                     return a * np.exp(b * x)
 
                 try:
-                    popt, pcov = curve_fit(exp_func, xs, ys, p0=(1, 0.1))
+                    popt, _ = curve_fit(exp_func, xs, ys, p0=(1, 0.1))
                     ax.plot(
                         x_line,
                         exp_func(x_line, *popt),
@@ -988,42 +766,34 @@ def runtime_by_params(
                         label=f"Exp fit: {popt[0]:.2f}*e^({popt[1]:.4f}x)",
                     )
                 except RuntimeError:
-                    # Curve fitting might fail in some cases
                     pass
 
         if type_plot == "box":
-            groups = {}
+            groups: dict = {}
             for d in exp_data:
-                if "fake" in d[key]:
+                if d["results"] is None:
                     continue
-
                 if isinstance(select_keys, list):
                     val = "\n".join(str(d[k][sk]) for k, sk in select_keys)
                 else:
                     val = d[select_keys[0]][select_keys[1]]
-
                 val = "None" if val is None else val
-                if val not in groups:
-                    groups[val] = []
-                t = d[key][time_key]
+                t = d["results"][time_key]
                 if t is not None:
-                    groups[val].append(t)
-
+                    groups.setdefault(str(val), []).append(t)
             labels, data_list = zip(*groups.items())
             ax.boxplot(data_list, labels=labels, showmeans=True, showfliers=False)
         else:
             for data in exp_data:
-                if "fake" in data[key]:
+                if data["results"] is None:
                     continue
-
                 if isinstance(select_keys, list):
                     val = str(tuple(data[k][sk] for k, sk in select_keys))
                 else:
                     val = data[select_keys[0]][select_keys[1]]
-
                 ax.plot(
                     val,
-                    data[key][time_key],
+                    data["results"][time_key],
                     data["symbol"],
                     color=data["color"],
                     label=name_func(data),
@@ -1035,25 +805,18 @@ def runtime_by_params(
         if isinstance(select_keys, list):
             ax.set_xlabel(
                 xlabel
-                if xlabel
-                else ", ".join(
-                    sk.replace("_", " ").capitalize() for _, sk in select_keys
-                )
+                or ", ".join(sk.replace("_", " ").capitalize() for _, sk in select_keys)
             )
         else:
-            ax.set_xlabel(
-                xlabel if xlabel else select_keys[1].replace("_", " ").capitalize()
-            )
+            ax.set_xlabel(xlabel or select_keys[1].replace("_", " ").capitalize())
 
         if not show_y_axis:
             ax.set_ylabel("")
             ax.set_yticks([])
         else:
-            ax.set_ylabel(ylabel if ylabel else f"{key.capitalize()} Run Time (s log)")
+            ax.set_ylabel(ylabel or f"Run Time (s log)")
         ax.set_title(
-            title
-            if title
-            else f"{param[1].replace('_', ' ').capitalize()} to {key.capitalize()} Run {time_key.capitalize()}"
+            title or f"{type_plot.replace('_', ' ').capitalize()} run {time_key}"
         )
         ax.grid(True, which="both", ls="--")
 
@@ -1078,13 +841,8 @@ def runtime_from_logs(logpath: str):
                 try:
                     elapsed = float(match.group(1))
                     _, _, loc, msg = [s.strip() for s in line.split(" - ", 4)]
-
-                    if loc not in entries:
-                        entries[loc] = 0
-                    entries[loc] += elapsed
-
-                    if loc not in example_msg:
-                        example_msg[loc] = msg
+                    entries[loc] = entries.get(loc, 0) + elapsed
+                    example_msg.setdefault(loc, msg)
                 except ValueError:
                     pass
-        return entries, example_msg
+    return entries, example_msg

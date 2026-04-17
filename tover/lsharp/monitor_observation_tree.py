@@ -1,4 +1,5 @@
 import itertools
+from math import floor
 import time
 from collections import deque
 
@@ -51,7 +52,7 @@ class MonitorObservationTree:
         for inp, output in zip(inputs, outputs):
             node = node.extend_and_get(inp, output)
             node.set_output(output)
-            if node not in self.frontier_to_basis_dict:
+            if node not in self.frontier_to_basis_dict and node not in self.basis:
                 candidates = {candidate for candidate in self.basis}
                 self.frontier_to_basis_dict[node] = candidates
 
@@ -80,7 +81,7 @@ class MonitorObservationTree:
 
         while node != start_node:
             if node.parent is None:
-                return None
+                raise ValueError("End node is not reachable from the start node.")
             transfer_sequence.append(node.input_to_parent)
             node = node.parent
 
@@ -96,7 +97,7 @@ class MonitorObservationTree:
 
         while node != self.root:
             if node.parent is None:
-                return None
+                raise ValueError("Target node is not reachable from the root.")
             transfer_sequence.append(node.input_to_parent)
             node = node.parent
 
@@ -194,7 +195,7 @@ class MonitorObservationTree:
                 continue
             basis_list = self.frontier_to_basis_dict[iso_frontier_node]
             if len(basis_list) == 1:
-                candidate = next(iter(self.frontier_to_basis_dict[iso_frontier_node]))
+                candidate = list(basis_list)[0]
                 if len(self.get_access_sequence(candidate)) <= len(
                     self.get_access_sequence(iso_frontier_node)
                 ):
@@ -207,7 +208,7 @@ class MonitorObservationTree:
                     if candidate in candidates:
                         candidates.remove(candidate)
                     candidates.add(iso_frontier_node)
-                self.frontier_to_basis_dict[candidate] = {node for node in self.basis}
+                self.frontier_to_basis_dict[candidate] = {iso_frontier_node}
                 return True
         return False
 
@@ -350,6 +351,7 @@ class MonitorObservationTree:
                     Function(dfa_output, [Function(states_mapping, [Int(i)])]).Iff(val)
                 )
 
+        # Frontier nodes map to the same state as one of their candidates or to a new state
         for node, candidates in self.frontier_to_basis_dict.items():
             if node not in nodes:
                 continue
@@ -376,6 +378,21 @@ class MonitorObservationTree:
                 d_ij = Function(delta, [Int(i), Int(j)])
                 s.add_assertion(GE(d_ij, Int(0)))
                 s.add_assertion(LT(d_ij, Int(self.size)))
+
+        # Appart nodes cannot be merged
+        if self.use_compatibility:
+            for node1 in nodes:
+                for node2 in nodes:
+                    if node1 == node2:
+                        continue
+                    if Apartness.states_are_apart(node1, node2, self):
+                        s.add_assertion(
+                            Function(
+                                states_mapping, [Int(nodes.index(node1))]
+                            ).NotEquals(
+                                Function(states_mapping, [Int(nodes.index(node2))])
+                            )
+                        )
 
         try:
             logger.debug("Solving...")
@@ -412,16 +429,47 @@ class MonitorObservationTree:
         """
         Builds the hypothesis which will be sent to the SUL and checks consistency
         """
-        self.find_adequate_observation_tree()
-        transition_mapping, output_mapping = self.find_hypothesis()
-        if transition_mapping is not None:
-            hypothesis = self.construct_hypothesis(
-                transition_mapping=transition_mapping, output_mapping=output_mapping
+        lower_bound = self.size
+        upper_bound = None
+        hypothesis = None
+
+        first_iteration = True
+
+        while upper_bound is None or lower_bound < upper_bound:
+            self.find_adequate_observation_tree()
+
+            # The size of the basis can have been updated while searching for an adequate observation tree.
+            lower_bound = max(lower_bound, len(self.basis))
+
+            if first_iteration:
+                self.size = lower_bound
+                first_iteration = False
+            else:
+                self.size = (
+                    floor((lower_bound + upper_bound) / 2)
+                    if upper_bound is not None
+                    else lower_bound * 2
+                )
+            logger.info(
+                f"Trying to find hypothesis of size {self.size} with bounds [{lower_bound}, {upper_bound}]"
             )
-            return hypothesis
-        else:
-            self.size += 1
-            return None
+
+            transition_mapping, output_mapping = self.find_hypothesis()
+            if transition_mapping is not None:
+                hypothesis = self.construct_hypothesis(
+                    transition_mapping=transition_mapping, output_mapping=output_mapping
+                )
+                upper_bound = self.size
+            else:
+                lower_bound = self.size + 1
+                if lower_bound == upper_bound:
+                    # When ending on an UNSAT self.size should be incremented such that is equal to the last SAT size.
+                    self.size = lower_bound
+                    logger.debug(
+                        f"End of binary search, ended on UNSAT, setting hyp size to {self.size}"
+                    )
+
+        return hypothesis
 
     def defined_in_reference(self, inputs):
         """
@@ -453,9 +501,9 @@ class MonitorObservationTree:
             # Skipping OQ completely because all required info is in the obs tree
             return False
         else:
-            logger.debug(
-                f"Posing reduced OQ {defined_inputs[:-1]}, original OQ {inputs}"
-            )
+            # logger.debug(
+            #     f"Posing reduced OQ {defined_inputs[:-1]}, original OQ {inputs}"
+            # )
             outputs = self.sul.query(defined_inputs[:-1]) + ["unknown"]
             self.insert_observation_sequence(defined_inputs, outputs)
             return True
@@ -464,7 +512,7 @@ class MonitorObservationTree:
         """
         Extend the frontier self.size - len(self.basis) steps from the basis
         """
-        length = self.size - len(self.basis) + 1  # used to be a 3 here?
+        length = 3  # used to be a 3 here?
         # Loop over words of length 'length'
         for word in itertools.product(self.alphabet, repeat=length):
             for node in self.basis:
@@ -563,10 +611,7 @@ class MonitorObservationTree:
             # Add basis candidates for frontier nodes
             if node in frontier_set:
                 candidates = self.frontier_to_basis_dict[node]
-                candidate_ids = sorted(
-                    self.basis.index(c) for c in candidates if c in basis_set
-                )
-                label += f"\\n{" ".join(str(cid) for cid in candidate_ids)}"
+                label += f"\\n{" ".join(str(cid.id) for cid in candidates)}"
 
             lines.append(
                 f'    n{node.id} [label="{label}", shape={shape}, color={color}];'
@@ -585,7 +630,7 @@ class MonitorObservationTree:
         Inserts the counter example into the observation tree and searches for the
         input-output sequence which is different
         """
-        logger.debug(f"Processing counterexample {cex_inputs}")
+        # logger.debug(f"Processing counterexample {cex_inputs}")
         self.execute_query(cex_inputs)
         self.update_frontier_to_basis_dict()
         return

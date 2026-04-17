@@ -269,7 +269,7 @@ def _verify_helper(
         parse_properties(f'Pmax=? [F "stop"{conditional_prop}]')[0],
         environment=env,
     ).at(induced_mc.initial_states[0])
-    logger.info(f"Goal probability counterexample: {result_goal}")
+    logger.debug(f"Goal probability counterexample: {result_goal}")
 
     if (mc.is_exact and result_stop + result_goal != 1) or (
         not mc.is_exact and abs(1 - (result_stop + result_goal)) > 0.05
@@ -299,10 +299,10 @@ def _verify_helper(
                 )
 
         if "filtering" in options:
-            logger.info("Checking results using filtering")
+            logger.debug("Checking results using filtering")
             res_filtering = options["filtering"].steps(trace)
             result_goal = res_filtering
-            logger.info(f"Filtering result: {res_filtering}")
+            logger.debug(f"Filtering result: {res_filtering}")
             if "stop" in paynt_spec:
                 value = 1 - value
 

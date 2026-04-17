@@ -48,7 +48,8 @@ def run_tover(
     conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
     learning_method: LearningMethod = LearningMethod.LSHARP,
     # Timeouts
-    solver_timeout: int | None = None,
+    solver_timeout: int = 200,
+    learning_timeout: int | None = 100000,
     # Optional components
     export_benchmarks: bool = False,
     base_dir: str | None = None,
@@ -66,7 +67,7 @@ def run_tover(
     )
 
     if use_reference_language and learning_method == LearningMethod.LSHARP:
-        refrence = language_of_hmm(mc, alphabet)
+        refrence = language_of_hmm(mc, alphabet, horizon)
     else:
         refrence = None
 
@@ -108,6 +109,7 @@ def run_tover(
                     sul,
                     eq_oracle,
                     automaton_type="dfa",
+                    return_data=True,
                     print_level=2,
                 ),
             ),
@@ -122,6 +124,7 @@ def run_tover(
                     sul,
                     eq_oracle,
                     solver_timeout=solver_timeout,
+                    learning_timeout=learning_timeout,
                 ),
                 eq_oracle.stats,
             )

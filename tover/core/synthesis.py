@@ -206,7 +206,7 @@ class Verifier:
 
         if synthesizer.best_assignment_value == 0:
             logger.info("max probability is 0, thus no counterexample found")
-            logger.info(synthesizer.stat.get_summary())
+            logger.debug(synthesizer.stat.get_summary())
             return None, None, synthesizer.stat.iterations_mdp
 
         optimum = (
@@ -217,11 +217,11 @@ class Verifier:
 
         if assignment is not None:
             logger.info(f"counterexample found: {assignment} ({optimum})")
-            logger.info(synthesizer.stat.get_summary())
+            logger.debug(synthesizer.stat.get_summary())
             return assignment, optimum, synthesizer.stat.iterations_mdp
         else:
             logger.info("no counterexamples above threshold")
-            logger.info(synthesizer.stat.get_summary())
+            logger.debug(synthesizer.stat.get_summary())
             return None, None, synthesizer.stat.iterations_mdp
 
     def simulate_paynt_assignment(self: Self, assignment: Family, tries=10000):
@@ -229,7 +229,7 @@ class Verifier:
         sched = hole_to_observations(assignment)
 
         old_observation, reward, labels = simulator.restart()
-        logger.info(
+        logger.debug(
             f"s{simulator._report_state()}, obs={old_observation}, labels={' '.join(labels)}",
         )
         paths = [[]]
@@ -268,8 +268,8 @@ class Verifier:
                 break
             old_observation = observation
 
-        logger.info("\n".join([p[0] for p in paths[-1]]))
-        logger.info(f"it took {len(paths)} tries until the goal was reached")
+        logger.debug("\n".join([p[0] for p in paths[-1]]))
+        logger.debug(f"it took {len(paths)} tries until the goal was reached")
 
         return [(0, [])] + [
             (pos, next_states) for _, pos, next_states in paths[-1] if pos >= 0

@@ -7,8 +7,11 @@ from datetime import datetime
 from hashlib import md5
 from time import time
 from typing import Any, Literal, final, override
+from unittest import loader
 
 from aalpy import Dfa
+from numpy import exp
+from pytest import skip
 from setproctitle import getproctitle, setproctitle
 from stormpy import (
     ExpressionManager,
@@ -19,13 +22,10 @@ from stormpy import (
     export_to_drn,
 )
 from stormpy.utility import sharpen
-from stormvogel.mapping import stormvogel_to_stormpy
 
 from tover.core.learning import (
     LearningMethod,
-    run_sampling_learning,
     run_tover,
-    run_trad_learning,
 )
 from tover.core.oracles import OracleStats
 from tover.core.sul import FilteringSUL
@@ -38,7 +38,7 @@ from tover.core.verification import (
 )
 from tover.models import pomdp as pomdp_loader
 from tover.models import snakes as snl_loader
-from tover.models.automata import aalpy_dfa_to_stormpy, aalpy_dfa_to_stormvogel
+from tover.models.automata import aalpy_dfa_to_stormpy
 from tover.utils.helpers import str_to_float
 from tover.utils.logger import OutputLogger, clear_logging, logger, setup_logging
 
@@ -47,11 +47,45 @@ class Experiment(ABC):
     def __init__(
         self,
         name: str,
-        variant: str | None = None,
+        variant: str,
+        loader: Literal["pomdp", "snakes_ladders"],
+        parameters: dict[str, Any],
+        file: str,
+        use_exact: bool,
     ):
         self.name: str = name
         self.variant: str | None = variant
         self.result_json_file: str = ""
+
+        self.loader: str = loader
+        self.parameters: dict[str, Any] = parameters
+        self.file: str = file
+        self.use_exact: bool = use_exact
+
+        self.mc = None
+        self.expr_manager = None
+        self.alphabet = None
+        self.initial_observation = None
+
+    def _load_model(self):
+        if self.loader == "pomdp" and self.parameters:
+            self.initial_observation, self.alphabet, self.mc, self.expr_manager = (
+                pomdp_loader.pomdp_to_stormpy_mc(
+                    self.file, self.parameters["constants"], self.use_exact
+                )
+            )
+        elif self.loader == "snakes_ladders" and self.parameters:
+            self.mc, self.expr_manager = snl_loader.load_snl_stormpy(
+                snl_loader.SNL_MC_PATH,
+                self.parameters["n"],
+                self.parameters["ladders"],
+                self.parameters["snakes"],
+                self.use_exact,
+            )
+            self.alphabet = snl_loader.SNAKES_OBSERVATION_LABELS
+            self.initial_observation = "init"
+        else:
+            raise ValueError("Unknown loader or missing parameters")
 
     @override
     def __str__(self):
@@ -84,8 +118,6 @@ class Experiment(ABC):
         finished: bool,
         total_time: float | None = None,
         results: dict[str, Any] | None = None,
-        mc: SparseDtmc | SparseExactDtmc | None = None,
-        alphabet: list[str] | None = None,
         monitor: SparseMdp | SparseExactMdp | None = None,
     ):
         result_json: dict[str, Any] = {
@@ -94,11 +126,11 @@ class Experiment(ABC):
         }
         if total_time is not None:
             result_json["time"] = {"total": total_time}
-        if mc is not None and alphabet is not None:
+        if self.mc is not None and self.alphabet is not None:
             result_json["mc"] = {
-                "mc_states": len(mc.states),
-                "mc_transitions": mc.nr_transitions,
-                "mc_observations": len(alphabet),
+                "mc_states": len(self.mc.states),
+                "mc_transitions": self.mc.nr_transitions,
+                "mc_observations": len(self.alphabet),
             }
         if monitor is not None:
             result_json["monitor"] = {
@@ -106,7 +138,7 @@ class Experiment(ABC):
                 "monitor_transitions": monitor.nr_transitions,
             }
         if results is not None:
-            result_json.update(results)
+            result_json["results"] = results
 
         os.makedirs(name=os.path.dirname(self.result_json_file), exist_ok=True)
         with open(self.result_json_file, "w") as f:
@@ -119,12 +151,14 @@ class LearningExperiment(Experiment):
         self,
         # Required
         name: str,
+        # Variant
+        variant: str,
+        # Model and specification
         file: str,
         spec: str,
         good_label: str,
         loader: Literal["pomdp", "snakes_ladders"],
-        # Optional model
-        parameters: dict[str, Any] | None = None,
+        parameters: dict[str, Any],
         # Monitor parameters
         horizon: int = 10,
         threshold: float = 0.3,
@@ -133,21 +167,19 @@ class LearningExperiment(Experiment):
         # Behavior flags
         use_risk: bool = True,
         use_horizon_in_filtering: bool = True,
+        use_dont_care: bool = True,
+        use_refrence_language: bool = True,
         conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
-        use_exact: bool = False,
+        use_exact: bool = True,
         # Learning
-        learning_algs: list[str] | None = None,
         learning_method: LearningMethod = LearningMethod.LSHARP,
-        random_eq_method: dict[str, int] | None = None,
-        # Baseline comparison
-        old_walks_per_state: int = 100000,
-        old_walk_length: int | None = None,
-        # Variant
-        variant: str | None = None,
+        random_eq_method: dict[str, int] | Literal["default"] | None = "default",
     ):
-        super().__init__(name, variant)
-        self.file = file
-        self.parameters = parameters
+        super().__init__(name, variant, loader, parameters, file, use_exact)
+
+        if random_eq_method == "default":
+            random_eq_method = {}
+
         self.spec = spec
         self.good_label = good_label
         self.horizon = horizon
@@ -160,42 +192,23 @@ class LearningExperiment(Experiment):
         self.conditional_method = conditional_method
         self.loader = loader
         self.use_exact = use_exact
-        self.learning_algs = learning_algs if learning_algs is not None else ["verimon"]
         self.learning_method = learning_method
         self.random_eq_method = random_eq_method
-        self.old_walks_per_state = old_walks_per_state
-        self.old_walk_length = (
-            old_walk_length if old_walk_length is not None else horizon + 1
-        )
+        self.use_dont_care = use_dont_care
+        self.use_refrence_language = use_refrence_language
 
-    def _load_model(self):
-        if self.loader == "pomdp" and self.parameters:
-            return pomdp_loader.pomdp_to_stormpy_mc(
-                self.file, self.parameters["constants"], self.use_exact
-            )
-        elif self.loader == "snakes_ladders" and self.parameters:
-            mc, expr_manager = snl_loader.load_snl_stormpy(
-                snl_loader.SNL_MC_PATH,
-                self.parameters["n"],
-                self.parameters["ladders"],
-                self.parameters["snakes"],
-                self.use_exact,
-            )
-            alphabet = snl_loader.SNAKES_OBSERVATION_LABELS
-            initial_observation = "init"
-            return initial_observation, set(alphabet), mc, expr_manager
-        else:
-            raise ValueError("Unknown loader or missing parameters")
+        if learning_method == LearningMethod.LSTAR:
+            if not use_dont_care or not use_refrence_language:
+                raise ValueError(
+                    "L* requires use_dont_care and use_reference_language to be True to avoid duplicates"
+                )
 
-    def _export_monitor(self, monitor: Dfa[str], base_dir: str, alg_suffix: str) -> str:
+    def _export_monitor(self, monitor: Dfa[str], base_dir: str) -> str:
         """Visualize and export a learned monitor to dot and drn formats."""
-        path_base = (
-            f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}_{alg_suffix}"
-        )
+        path_base = f"{base_dir}/models/monitor_{self.name}_{self.variant_hash}"
         monitor.visualize(path=path_base, file_type="dot")
-        mon_sv = aalpy_dfa_to_stormvogel(monitor)
-        mon_storm = stormvogel_to_stormpy(mon_sv)
-        export_to_drn(mon_storm, f"{path_base}.drn")
+        mon = aalpy_dfa_to_stormpy(monitor, use_exact=self.use_exact)
+        export_to_drn(mon, f"{path_base}.drn")
         return path_base
 
     def _log_learning_summary(
@@ -219,7 +232,7 @@ class LearningExperiment(Experiment):
             f"  Conformance checking   : {info['eq_oracle_time']}\n"
             f"Learning Algorithm\n"
             f" # Membership Queries    : {info['queries_learning']}\n"
-            f" # Steps                 : {info['steps_learning']}\n"
+            # f" # Steps                 : {info['steps_learning']}\n"
             f"Equivalence Query\n"
             f" # Membership Queries    : {info['queries_eq_oracle']}\n"
             f" # Steps                 : {info['steps_eq_oracle']}\n"
@@ -229,23 +242,27 @@ class LearningExperiment(Experiment):
 
     def _run_verify(
         self,
-        mc: SparseDtmc | SparseExactDtmc,
         learned_monitor: Dfa[str],
-        expr_manager: ExpressionManager,
-        initial_observation: str,
-        alphabet: list[str],
         base_dir: str,
     ) -> tuple[Any, Any]:
+        assert (
+            self.mc is not None
+            and self.alphabet is not None
+            and self.initial_observation is not None
+            and self.expr_manager is not None
+        )
+
         sul = FilteringSUL(
-            mc,
-            initial_observation,
-            alphabet,
+            self.mc,
+            self.initial_observation,
+            list(self.alphabet),
             self.spec,
             self.threshold,
             self.horizon if self.use_horizon_in_filtering else None,
             self.use_risk,
+            self.use_dont_care,
         )
-        mon = aalpy_dfa_to_stormpy(learned_monitor, mc.is_exact)
+        mon = aalpy_dfa_to_stormpy(learned_monitor, self.mc.is_exact)
         verify_opts = {
             "good_spec": self.spec,
             "good_label": self.good_label,
@@ -259,7 +276,7 @@ class LearningExperiment(Experiment):
 
         try:
             fp_result = false_positive(
-                mc, mon, self.horizon, expr_manager, options=verify_opts
+                self.mc, mon, self.horizon, self.expr_manager, options=verify_opts
             )
         except Exception:
             logger.error(f"Exception for fp: {traceback.format_exc()}")
@@ -267,7 +284,7 @@ class LearningExperiment(Experiment):
 
         try:
             fn_result = false_negative(
-                mc, mon, self.horizon, expr_manager, options=verify_opts
+                self.mc, mon, self.horizon, self.expr_manager, options=verify_opts
             )
         except Exception:
             logger.error(f"Exception for fn: {traceback.format_exc()}")
@@ -284,17 +301,22 @@ class LearningExperiment(Experiment):
             "false_negative_trace": fn_cex[1] if fn_cex is not None else None,
         }
 
-    def _run_tover(
-        self, base_dir, mc, alphabet, initial_observation, expr_manager
-    ) -> dict:
+    def _run_tover(self, base_dir) -> dict:
+        assert (
+            self.mc is not None
+            and self.alphabet is not None
+            and self.initial_observation is not None
+            and self.expr_manager is not None
+        )
+
         try:
             logger.info("Running ToVer")
             start_time = time()
             (learned_monitor, lstar_info), stats = run_tover(
-                mc=mc,
-                alphabet=alphabet,
-                initial_observation=initial_observation,
-                expression_manager=expr_manager,
+                mc=self.mc,
+                alphabet=list(self.alphabet),
+                initial_observation=self.initial_observation,
+                expression_manager=self.expr_manager,
                 spec=self.spec,
                 good_label=self.good_label,
                 threshold=self.threshold,
@@ -303,6 +325,7 @@ class LearningExperiment(Experiment):
                 fn_slack=self.fn_slack,
                 relative_error=self.relative_error,
                 use_risk=self.use_risk,
+                use_reference_language=self.use_refrence_language,
                 use_horizon_in_filtering=self.use_horizon_in_filtering,
                 conditional_method=self.conditional_method,
                 learning_method=self.learning_method,
@@ -312,15 +335,11 @@ class LearningExperiment(Experiment):
             elapsed = time() - start_time
 
             self._log_learning_summary(lstar_info, stats)
-            path_base = self._export_monitor(learned_monitor, base_dir, "tover")
+            path_base = self._export_monitor(learned_monitor, base_dir)
 
             logger.info("Verifying the ToVer learned monitor")
             fp_result, fn_result = self._run_verify(
-                mc,
                 learned_monitor,
-                expr_manager,
-                initial_observation,
-                alphabet,
                 base_dir,
             )
 
@@ -336,72 +355,15 @@ class LearningExperiment(Experiment):
                 "product_time": stats.product_time,
                 "paynt_time": stats.paynt_time,
                 "eq_time": stats.eq_time,
-                "counterexample_time": lstar_info["eq_oracle_time"],
-                "lstar_time": lstar_info["learning_time"],
+                "learning_stats": lstar_info,
                 "dot_file": f"{path_base}.dot",
                 "drn_file": f"{path_base}.drn",
                 **self._build_verify_result_dict(fp_result, fn_result),
             }
         except Exception as e:
             logger.error(f"Error in ToVer: {traceback.format_exc()}")
+            traceback.print_exc()
             return {"error": str(e), "msg": e.__repr__()}
-
-    def _run_baseline(
-        self,
-        alg: str,
-        base_dir: str,
-        mc: SparseDtmc | SparseExactDtmc,
-        alphabet: list[str],
-        initial_observation: str,
-        expr_manager: ExpressionManager,
-    ) -> dict[str, Any]:
-        logger.info(f"Running {alg} learning")
-        if alg == "wrandom":
-            learned_monitor, lstar_info = run_trad_learning(
-                mc,
-                alphabet,
-                initial_observation,
-                self.spec,
-                self.threshold,
-                self.horizon,
-                self.old_walks_per_state,
-                self.old_walk_length,
-                self.use_risk,
-                self.use_horizon_in_filtering,
-            )
-        elif alg == "sampling":
-            learned_monitor, lstar_info = run_sampling_learning(
-                mc,
-                alphabet,
-                initial_observation,
-                self.spec,
-                self.threshold,
-                self.horizon,
-                self.old_walks_per_state,
-                self.old_walk_length,
-                self.use_risk,
-                self.use_horizon_in_filtering,
-            )
-        else:
-            raise ValueError(f"Unknown learning algorithm: {alg}")
-
-        self._log_learning_summary(lstar_info)
-        path_base = self._export_monitor(learned_monitor, base_dir, alg)
-
-        logger.info(f"Verifying the {alg} learned monitor")
-        fp_result, fn_result = self._run_verify(
-            mc, learned_monitor, expr_manager, initial_observation, alphabet, base_dir
-        )
-
-        return {
-            "time": lstar_info["total_time"],
-            "lstar_time": lstar_info["learning_time"],
-            "eq_time": lstar_info["eq_oracle_time"],
-            "monitor_states": len(learned_monitor.states),
-            "dot_file": f"{path_base}.dot",
-            "drn_file": f"{path_base}.drn",
-            **self._build_verify_result_dict(fp_result, fn_result),
-        }
 
     @override
     def run(self, timestamp: str, base_dir: str):
@@ -419,31 +381,16 @@ class LearningExperiment(Experiment):
         os.makedirs(f"{base_dir}/models/", exist_ok=True)
 
         with OutputLogger():
-            initial_observation, observations, mc, expr_manager = self._load_model()
-            alphabet = list(observations)
-            self.write_results(finished=False, mc=mc, alphabet=alphabet)
+            self._load_model()
+            self.write_results(finished=False)
 
-            results = {}
-            for alg in self.learning_algs:
-                if alg == "verimon":
-                    results["verimon"] = self._run_tover(
-                        base_dir, mc, alphabet, initial_observation, expr_manager
-                    )
-                elif alg in ["sampling", "wrandom"]:
-                    results[alg] = self._run_baseline(
-                        alg, base_dir, mc, alphabet, initial_observation, expr_manager
-                    )
-                self.write_results(
-                    finished=False, results=results, mc=mc, alphabet=alphabet
-                )
+            results = self._run_tover(base_dir)
 
             total_time = time() - start_time
             self.write_results(
                 finished=True,
                 total_time=total_time,
                 results=results,
-                mc=mc,
-                alphabet=alphabet,
             )
             logger.info(f"Finished learning experiment {self.name} ({self.variant})")
 
@@ -452,11 +399,13 @@ class LearningExperiment(Experiment):
 class VerifyExperiment(Experiment):
     def __init__(
         self,
-        # Required
+        # Variant
         name: str,
+        variant: str,
+        # To search
         search: Literal["fp", "fn", "tp", "tn"],
         # Required when results_file is not given
-        mc: str | None = None,
+        file: str | None = None,
         spec: str | None = None,
         good_label: str | None = None,
         loader: Literal["pomdp", "snakes_ladders"] | None = None,
@@ -475,12 +424,9 @@ class VerifyExperiment(Experiment):
         use_exact: bool = False,
         paynt_strategy: str = "ar",
         conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
-        # Variant
-        variant: str | None = None,
     ):
-        super().__init__(name, variant)
-
         self.stop = False
+
         if results_file:
             exp = json.load(open(results_file, "r"))
             self.results_file = results_file
@@ -504,66 +450,48 @@ class VerifyExperiment(Experiment):
                 self.monitor = exp[monitor_from]["drn_file"]
                 self.mon_percent = 1.0
 
+            file = exp["experiment"]["file"]
+            loader = exp["experiment"]["loader"]
+            parameters = exp["experiment"]["parameters"]
+            use_exact = exp["experiment"]["use_exact"]
+
             self.intermediate_monitor = intermediate_monitor
-            self.mc = exp["experiment"]["file"]
             self.spec = exp["experiment"]["spec"]
             self.good_label = exp["experiment"]["good_label"]
             self.horizon = exp["experiment"]["horizon"]
             self.relative_error = str_to_float(exp["experiment"]["relative_error"])
             self.use_risk = exp["experiment"]["use_risk"]
-            self.loader = exp["experiment"]["loader"]
-            self.parameters = exp["experiment"]["parameters"]
-            self.use_exact = exp["experiment"]["use_exact"]
             self.learn_experiment = exp["experiment"]
         else:
             if (
-                mc is None
+                file is None
                 or spec is None
                 or good_label is None
                 or loader is None
                 or parameters is None
             ):
                 raise ValueError(
-                    f"mc, spec, good_label, loader, and parameters are required when results_file is not given"
+                    f"file, spec, good_label, loader, and parameters are required when results_file is not given"
                 )
 
             self.monitor = monitor
-            self.mc = mc
             self.spec = spec
             self.good_label = good_label
             self.horizon = horizon
             self.relative_error = relative_error
             self.use_risk = use_risk
             self.threshold = threshold
-            self.loader = loader
-            self.parameters = parameters
             self.results_file = None
-            self.use_exact = use_exact
+
+        assert loader is not None and parameters is not None and file is not None
+
+        super().__init__(name, variant, loader, parameters, file, use_exact)
 
         self.threshold = threshold
         self.search = search
         self.paynt_strategy = paynt_strategy
         self.use_exact = use_exact
         self.conditional_method = conditional_method
-
-    def _load_model(self):
-        if self.loader == "pomdp" and self.parameters:
-            return pomdp_loader.pomdp_to_stormpy_mc(
-                self.mc, self.parameters["constants"], self.use_exact
-            )
-        elif self.loader == "snakes_ladders" and self.parameters:
-            mc, expr_manager = snl_loader.load_snl_stormpy(
-                snl_loader.SNL_MC_PATH,
-                self.parameters["n"],
-                self.parameters["ladders"],
-                self.parameters["snakes"],
-                self.use_exact,
-            )
-            alphabet = snl_loader.SNAKES_OBSERVATION_LABELS
-            initial_observation = "init"
-            return initial_observation, set(alphabet), mc, expr_manager
-        else:
-            raise ValueError("Unknown loader or missing parameters")
 
     def _load_monitor(self, use_exact: bool):
         if self.monitor is None:
@@ -614,22 +542,23 @@ class VerifyExperiment(Experiment):
         verify_func = verify_func_map[self.search]
 
         with OutputLogger():
-            initial_observation, observations, mc, expr_manager = self._load_model()
-            alphabet = list(observations)
-            self.write_results(finished=False, mc=mc, alphabet=alphabet)
+            self._load_model()
+            self.write_results(finished=False)
 
             monitor = self._load_monitor(self.use_exact)
-            self.write_results(
-                finished=False, monitor=monitor, mc=mc, alphabet=alphabet
-            )
+            self.write_results(finished=False, monitor=monitor)
 
             try:
                 sul = None
                 if self.threshold is not None:
+                    assert (
+                        self.initial_observation is not None
+                        and self.alphabet is not None
+                    )
                     sul = FilteringSUL(
-                        mc,
-                        initial_observation,
-                        alphabet,
+                        self.mc,
+                        self.initial_observation,
+                        list(self.alphabet),
                         self.spec,
                         self.threshold,
                         self.horizon,
@@ -638,11 +567,11 @@ class VerifyExperiment(Experiment):
                     )
 
                 verify_start = time()
-                cex, model, stats = verify_func(  # type: ignore[call-arg]
-                    mc,
+                cex, model, stats = verify_func(
+                    self.mc,
                     monitor,
                     self.horizon,
-                    expr_manager,
+                    self.expr_manager,
                     threshold=self.threshold,
                     options={
                         "good_spec": self.spec,
@@ -702,9 +631,7 @@ class VerifyExperiment(Experiment):
             total_time = time() - start_time
             self.write_results(
                 finished=True,
-                results={"result": verify_json},
-                mc=mc,
-                alphabet=alphabet,
+                results=verify_json,
                 monitor=monitor,
                 total_time=total_time,
             )

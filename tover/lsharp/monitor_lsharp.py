@@ -13,15 +13,15 @@ def run_monitor_lsharp(
     reference: Dfa[str],
     sul: SUL,
     eq_oracle: Oracle,
-    solver_timeout: int | None = 200,
+    solver_timeout: int,
+    learning_timeout: int | None = 1000,
     replace_basis: bool = True,
-    use_compatibility: bool = False,
+    use_compatibility: bool = True,
 ) -> tuple[Dfa[str], dict[str, Any]]:
     ob_tree = MonitorObservationTree(
         alphabet, reference, sul, solver_timeout, replace_basis, use_compatibility
     )
     start_time = time.time()
-    timeout = solver_timeout
 
     eq_query_time = 0
     learning_rounds = 0
@@ -31,8 +31,8 @@ def run_monitor_lsharp(
     while True:
         learning_rounds += 1
 
-        if timeout and time.time() - start_time > timeout:
-            logger.warning("Learning timed out after %d seconds.", timeout)
+        if learning_timeout and time.time() - start_time > learning_timeout:
+            logger.warning(f"Learning timed out after {learning_timeout} seconds.")
             break
 
         # Building the hypothesis
@@ -40,10 +40,6 @@ def run_monitor_lsharp(
 
         if hypothesis is None:
             continue
-
-        hypothesis.visualize(
-            f"out/test/models/hypothesis_round_{learning_rounds}", file_type="png"
-        )
 
         # Pose Equivalence Query
         eq_query_start = time.time()
@@ -56,6 +52,8 @@ def run_monitor_lsharp(
 
         # Process the counterexample and start a new learning round
         ob_tree.process_counter_example(cex)
+
+        # open("out/test/monitor_ob_tree.dot", "w").write(ob_tree.to_dot())
 
     total_time = time.time() - start_time
     smt_time = ob_tree.smt_time

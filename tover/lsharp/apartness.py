@@ -4,15 +4,25 @@ from collections import deque
 class Apartness:
     @staticmethod
     def incompatible_output(output1, output2):
-        return output1 != output2 and output1 is not None and output2 is not None and output1 != "unknown" and output2 != "unknown"
+        return (
+            output1 != output2
+            and output1 is not None
+            and output2 is not None
+            and output1 != "unknown"
+            and output2 != "unknown"
+        )
 
     @staticmethod
     def compute_witness(state1, state2, ob_tree):
         # Finds a distinguishing sequence between two states if they are apart based on the observation tree
-        if ob_tree.automaton_type == 'mealy':
-            state1_destination = Apartness._show_states_are_apart_mealy(state1, state2, ob_tree.alphabet)
+        if ob_tree.automaton_type == "mealy":
+            state1_destination = Apartness._show_states_are_apart_mealy(
+                state1, state2, ob_tree.alphabet
+            )
         else:
-            state1_destination = Apartness._show_states_are_apart_moore(state1, state2, ob_tree.alphabet)
+            state1_destination = Apartness._show_states_are_apart_moore(
+                state1, state2, ob_tree.alphabet
+            )
         if not state1_destination:
             return None
         return ob_tree.get_transfer_sequence(state1, state1_destination)
@@ -20,10 +30,16 @@ class Apartness:
     @staticmethod
     def states_are_apart(state1, state2, ob_tree):
         # Checks if two states are apart by checking any output difference in the observation tree
-        if ob_tree.automaton_type == 'mealy':
-            return Apartness._show_states_are_apart_mealy(state1, state2, ob_tree.alphabet) is not None
+        if ob_tree.automaton_type == "mealy":
+            return (
+                Apartness._show_states_are_apart_mealy(state1, state2, ob_tree.alphabet)
+                is not None
+            )
         else:
-            return Apartness._show_states_are_apart_moore(state1, state2, ob_tree.alphabet) is not None
+            return (
+                Apartness._show_states_are_apart_moore(state1, state2, ob_tree.alphabet)
+                is not None
+            )
 
     @staticmethod
     def _show_states_are_apart_mealy(first, second, alphabet):
@@ -38,10 +54,17 @@ class Apartness:
 
                 if first_output is not None and second_output is not None:
                     if first_output != second_output and (
-                            first_output not in ["unknown", None] and second_output not in ["unknown", None]):
+                        first_output not in ["unknown", None]
+                        and second_output not in ["unknown", None]
+                    ):
                         return first_node.get_successor(input_val)
 
-                    pairs.append((first_node.get_successor(input_val), second_node.get_successor(input_val)))
+                    pairs.append(
+                        (
+                            first_node.get_successor(input_val),
+                            second_node.get_successor(input_val),
+                        )
+                    )
 
         return None
 
@@ -55,16 +78,23 @@ class Apartness:
                 first_output = first_node.output
                 second_output = second_node.output
                 if first_output != second_output and (
-                        first_output not in ["unknown", None] and second_output not in ["unknown", None]):
+                    first_output not in ["unknown", None]
+                    and second_output not in ["unknown", None]
+                ):
                     return first_node
 
                 for input_val in alphabet:
-                    pairs.append((first_node.get_successor(input_val), second_node.get_successor(input_val)))
+                    pairs.append(
+                        (
+                            first_node.get_successor(input_val),
+                            second_node.get_successor(input_val),
+                        )
+                    )
 
         return None
 
     @staticmethod
-    def get_successors(node, input_val):
+    def get_successors(node, input_val):  # -> None | Any:
         for inp in input_val:
             if node is None:
                 return None
@@ -107,7 +137,7 @@ class Apartness:
 
             # Construct possible candidates that can prove apartness.
             transfer_sequence = ob_tree.get_transfer_sequence(first, second)
-            suffix = transfer_sequence + first_access[len(first.access_sequence):]
+            suffix = transfer_sequence + first_access[len(first.access_sequence) :]
             candidate = first.access_sequence + suffix
             candidates = []
 
@@ -117,7 +147,7 @@ class Apartness:
                 candidate = first.access_sequence + suffix
 
             for candidate in candidates:
-                _ = ob_tree.experiment(candidate)
+                _ = ob_tree.execute_query(candidate)
 
         return conflicts != []
 
@@ -139,7 +169,9 @@ class Apartness:
             second_node = Apartness.get_successors(second, sequence)
             if second_node is None:
                 break
-            witnesses = Apartness.get_distinguishing_sequences([first_node, second_node], ob_tree)
+            witnesses = Apartness.get_distinguishing_sequences(
+                [first_node, second_node], ob_tree
+            )
             for witness in witnesses:
                 first_conflict = first_node.access_sequence + witness
                 second_conflict = second_node.access_sequence + witness
@@ -150,9 +182,13 @@ class Apartness:
     @staticmethod
     def get_distinguishing_sequences(group, ob_tree):
         if ob_tree.automaton_type == "mealy":
-            return Apartness._get_distinguishing_sequences_mealy(group, ob_tree.alphabet)
+            return Apartness._get_distinguishing_sequences_mealy(
+                group, ob_tree.alphabet
+            )
         else:
-            return Apartness._get_distinguishing_sequences_moore(group, ob_tree.alphabet)
+            return Apartness._get_distinguishing_sequences_moore(
+                group, ob_tree.alphabet
+            )
 
     @staticmethod
     def _get_distinguishing_sequences_mealy(group, alphabet):
@@ -162,7 +198,9 @@ class Apartness:
         while groups:
             access_seq, group = groups.popleft()
             for input_val in alphabet:
-                valid_group = [node for node in group if node.get_output(input_val) is not None]
+                valid_group = [
+                    node for node in group if node.get_output(input_val) is not None
+                ]
 
                 if len(valid_group) >= 2:
                     outputs = set([node.get_output(input_val) for node in valid_group])
@@ -173,7 +211,12 @@ class Apartness:
                     if len(outputs) >= 2:
                         yield access_seq + [input_val]
 
-                    groups.append((access_seq + [input_val], [node.get_successor(input_val) for node in valid_group]))
+                    groups.append(
+                        (
+                            access_seq + [input_val],
+                            [node.get_successor(input_val) for node in valid_group],
+                        )
+                    )
 
     @staticmethod
     def _get_distinguishing_sequences_moore(group, alphabet):
@@ -181,7 +224,9 @@ class Apartness:
         groups = deque([([], group)])
         while groups:
             access_seq, group = groups.popleft()
-            valid_group = [node for node in group if node is not None] # and node.leads_to_known]
+            valid_group = [
+                node for node in group if node is not None
+            ]  # and node.leads_to_known]
             if len(valid_group) >= 2:
                 outputs = set([node.output for node in valid_group])
                 if "unknown" in outputs:
@@ -192,20 +237,33 @@ class Apartness:
                     yield access_seq
 
                 for input_val in alphabet:
-                    groups.append((access_seq + [input_val], [node.get_successor(input_val) for node in valid_group]))
+                    groups.append(
+                        (
+                            access_seq + [input_val],
+                            [node.get_successor(input_val) for node in valid_group],
+                        )
+                    )
 
     @staticmethod
-    def compute_witness_in_tree_and_hypothesis_states(ob_tree, ob_tree_state, hyp_state):
+    def compute_witness_in_tree_and_hypothesis_states(
+        ob_tree, ob_tree_state, hyp_state
+    ):
         """
         Determines if the observation tree and the hypothesis are distinguishable based on their state outputs
         """
-        if ob_tree.automaton_type == 'mealy':
-            return Apartness.compute_witness_in_tree_and_hypothesis_states_mealy(ob_tree, ob_tree_state, hyp_state)
+        if ob_tree.automaton_type == "mealy":
+            return Apartness.compute_witness_in_tree_and_hypothesis_states_mealy(
+                ob_tree, ob_tree_state, hyp_state
+            )
         else:
-            return Apartness.compute_witness_in_tree_and_hypothesis_states_moore(ob_tree, ob_tree_state, hyp_state)
+            return Apartness.compute_witness_in_tree_and_hypothesis_states_moore(
+                ob_tree, ob_tree_state, hyp_state
+            )
 
     @staticmethod
-    def compute_witness_in_tree_and_hypothesis_states_mealy(ob_tree, ob_tree_state, hyp_state):
+    def compute_witness_in_tree_and_hypothesis_states_mealy(
+        ob_tree, ob_tree_state, hyp_state
+    ):
         """
         Determines if the observation tree and the hypothesis are distinguishable based on their state outputs
         """
@@ -219,16 +277,26 @@ class Apartness:
 
                 if tree_output is not None and input_val in hyp_state.output_fun:
                     hyp_output = hyp_state.output_fun[input_val]
-                    if tree_output != hyp_output and tree_output not in ["unknown", None]:
+                    if tree_output != hyp_output and tree_output not in [
+                        "unknown",
+                        None,
+                    ]:
                         tree_dest = tree_state.get_successor(input_val)
                         return ob_tree.get_transfer_sequence(ob_tree_state, tree_dest)
 
-                    pairs.append((tree_state.get_successor(input_val), hyp_state.transitions[input_val]))
+                    pairs.append(
+                        (
+                            tree_state.get_successor(input_val),
+                            hyp_state.transitions[input_val],
+                        )
+                    )
 
         return None
 
     @staticmethod
-    def compute_witness_in_tree_and_hypothesis_states_moore(ob_tree, ob_tree_state, hyp_state):
+    def compute_witness_in_tree_and_hypothesis_states_moore(
+        ob_tree, ob_tree_state, hyp_state
+    ):
         """
         Determines if the observation tree and the hypothesis are distinguishable based on their state outputs
         """
@@ -238,7 +306,7 @@ class Apartness:
             tree_state, hyp_state = pairs.popleft()
             if (tree_state is not None) and (hyp_state is not None):
                 tree_output = tree_state.output
-                if ob_tree.automaton_type == 'dfa':
+                if ob_tree.automaton_type == "dfa":
                     hyp_output = hyp_state.is_accepting
                 else:
                     hyp_output = hyp_state.output
@@ -248,6 +316,11 @@ class Apartness:
 
                 for input_val in ob_tree.alphabet:
                     if input_val in hyp_state.transitions:
-                        pairs.append((tree_state.get_successor(input_val), hyp_state.transitions[input_val]))
+                        pairs.append(
+                            (
+                                tree_state.get_successor(input_val),
+                                hyp_state.transitions[input_val],
+                            )
+                        )
 
         return None

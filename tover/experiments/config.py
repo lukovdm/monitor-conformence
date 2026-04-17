@@ -41,7 +41,10 @@ class ObjectGroup:
                     )
                     + ")"
                 )
-                yield self.prod_class(variant=variant, *args, **kwargs)
+                try:
+                    yield self.prod_class(variant=variant, *args, **kwargs)
+                except ValueError as e:
+                    continue  # Skip invalid parameter combinations
 
     def _value_to_str(self, value) -> str:
         if isinstance(value, str) and "/" in value:

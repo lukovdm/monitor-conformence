@@ -2,20 +2,16 @@ from collections import Counter
 from fractions import Fraction
 import json
 import os
-from random import seed
 import re
+from random import seed
 import traceback
-from typing import Any, Callable
+from typing import Any, Callable, cast
 
 from matplotlib import pyplot as plt
 
 
-VERIFY_EXPERIMENTS = 720
-LEARN_EXPERIMENTS = 64
-
-
-def clean_dict(d):
-    # If value is rational number, convert to float
+def clean_dict(d: dict) -> None:
+    """Convert rational number strings to Fraction objects in-place."""
     for k, v in d.items():
         if isinstance(v, dict):
             clean_dict(v)
@@ -26,77 +22,51 @@ def clean_dict(d):
                 pass
 
 
-def clean_data(data):
-    # Correctly interpret rational numebrs in data
+def clean_data(data: list[dict]) -> None:
+    """Convert rational number strings to Fraction objects across all data entries."""
     for d in data:
         clean_dict(d)
 
 
-def combine_sampling_and_verimon(data, equal_fields):
+def _timeout_or_oom(log_path: str) -> str:
+    """Detect whether a log file indicates a timeout or OOM."""
+    try:
+        with open(log_path, "r") as f:
+            log = f.read()
+        if "timed out" in log:
+            return "timeout"
+    except FileNotFoundError:
+        pass
+    return "OOM"
+
+
+def add_family_size(data: list[dict]) -> None:
+    """Parse log files to find the PAYNT family size for each experiment."""
     for d in data:
-        if "sampling" in d["experiment"]["learning_algs"]:
-            continue
-        for d2 in data:
-            if d == d2 or "sampling" not in d2["experiment"]["learning_algs"]:
-                continue
-            if all(
-                d["experiment"][field] == d2["experiment"][field]
-                for field in equal_fields
-            ):
-                if "sampling" in d2:
-                    d["sampling"] = d2["sampling"]
-                if "verimon" in d2:
-                    d["verimon"] = d2["verimon"]
-                d["experiment"]["learning_algs"] += d2["experiment"]["learning_algs"]
-                d2["ignore"] = True
-                break
-
-    return [d for d in data if "ignore" not in d]
-
-
-def add_family_size(data):
-    # Use regex on log file to find family size
-    for d in data:
-        if "family_size" in d:
+        if d["results"] is None:
             continue
         with open(d["log_path"], "r") as f:
             log = f.read()
         match = re.search(r"family size: (\d+e?\d*),", log)
-        if match:
-            d["family_size"] = float(match.group(1))
-        else:
-            d["family_size"] = None
+        d["family_size"] = float(match.group(1)) if match else None
 
 
-def add_learning_rounds(data):
-    # Use regex on log file to find learning rounds
+def add_learning_rounds(data: list[dict]) -> None:
+    """Parse log files to find the number of L* learning rounds for each experiment."""
     for d in data:
-        if "sampling" not in d:
+        if d["results"] is None:
             continue
         with open(d["log_path"], "r") as f:
             log = f.read()
-        match = re.search(r"Learning Rounds:  (\d+)", log)
-        if match:
-            d["sampling"]["learning_rounds"] = int(match.group(1))
-        else:
-            d["sampling"]["learning_rounds"] = None
+        match = re.search(r"Learning Rounds:\s+(\d+)", log)
+        d["results"]["learning_rounds"] = int(match.group(1)) if match else None
 
 
-def prep_data_for_latex(data):
-    for d in data:
-        d["experiment"]["name"] = d["experiment"]["name"].replace("_", "\\_")
-        d["experiment"]["variant"] = d["experiment"]["variant"].replace("_", "\\_")
-
-
-def add_short_names(data, verify=False):
-    # Short names are first letter of name and index of variant
+def add_short_names(data: list[dict]) -> None:
+    """Assign a short LaTeX name (e.g. \\textsc{A-0}) to each experiment entry."""
     variant_indexes: dict[str, int] = {}
     for d in data:
-        if "learn_experiment" in d["experiment"]:
-            name = d["experiment"]["learn_experiment"]["name"]
-        else:
-            name = d["experiment"]["name"]
-
+        name = d["experiment"]["name"]
         if name not in variant_indexes:
             variant_indexes[name] = 0
         d["experiment"][
@@ -106,172 +76,124 @@ def add_short_names(data, verify=False):
 
 
 def add_symbol_color(
-    data,
-    verify=False,
+    data: list[dict],
     color_map: str | None = "tab20",
     col_func: Callable[[Any], str | None] | None = None,
-):
-    symbols = [
-        "o",
-        "s",
-        "D",
-        ">",
-        "^",
-        "p",
-        "*",
-        "h",
-        "H",
-        "d",
-    ]
+) -> tuple:
+    """Assign a matplotlib marker symbol and color to each experiment entry."""
+    symbols = ["o", "s", "D", ">", "^", "p", "*", "h", "H", "d"]
     seed(42)
-    if color_map is None:
-        colors = lambda x: "black"
-    else:
-        colors = plt.get_cmap(color_map)
+    colors = (lambda x: "black") if color_map is None else plt.get_cmap(color_map)
 
-    if verify:
-        experiment_names = set(
-            data["experiment"]["learn_experiment"]["name"] for data in data
-        )
-        experiment_name_counter = Counter(
-            [data["experiment"]["learn_experiment"]["name"] for data in data]
-        )
-        experiment_symbols = {
-            name: symbols[i % len(symbols)]
-            for i, name in enumerate(sorted(experiment_names))
-        }
+    experiment_names = set(d["experiment"]["name"] for d in data)
+    experiment_name_counter = Counter(d["experiment"]["name"] for d in data)
+    experiment_symbols = {
+        name: symbols[i % len(symbols)]
+        for i, name in enumerate(sorted(experiment_names))
+    }
+    for i, exp in enumerate(data):
+        name = exp["experiment"]["name"]
+        exp["symbol"] = experiment_symbols.get(name, "+")
+        exp["color"] = colors((i % experiment_name_counter[name]) % 20)
 
-        for i, exp in enumerate(data):
-            exp["symbol"] = experiment_symbols[
-                exp["experiment"]["learn_experiment"]["name"]
-            ]
-            exp["color"] = colors(
-                (
-                    i
-                    % (
-                        experiment_name_counter[
-                            exp["experiment"]["learn_experiment"]["name"]
-                        ]
-                    )
-                )
-                % 20
-            )
-
-        if col_func is not None:
-            for i, exp in enumerate(data):
-                color = col_func(exp)
-                if color is not None:
-                    exp["color"] = color
-
-    else:
-        experiment_names = set(data["experiment"]["name"] for data in data).difference(
-            ["compare-trad"]
-        )
-        experiment_name_counter = Counter([data["experiment"]["name"] for data in data])
-        experiment_symbols = {
-            name: symbols[i % len(symbols)]
-            for i, name in enumerate(sorted(experiment_names))
-        }
-
-        for i, exp in enumerate(data):
-            exp["symbol"] = experiment_symbols.get(exp["experiment"]["name"], "+")
-            exp["color"] = colors(
-                (i % (experiment_name_counter[exp["experiment"]["name"]])) % 20
-            )
+    if col_func is not None:
+        for exp in data:
+            color = col_func(exp)
+            if color is not None:
+                exp["color"] = color
 
     return symbols, colors
 
 
-def load_experiment_data(path: str):
-    json_files: list[str] = [
-        f for f in os.listdir(path + "/json") if f.endswith(".json")
-    ]
+def load_experiment_data(path: str, expected_total: int | None = None) -> list[dict]:
+    """Load all experiment JSON files from path/json/.
+
+    If experiment_metadata.json exists in path, experiments that never produced
+    a JSON file are included as not-started placeholders. All entries have a
+    ``started`` flag (True/False).
+
+    Results remain under data["results"]. Unfinished/not-started entries get a
+    fake placeholder result under data["results"].
+
+    Args:
+        path: Directory containing json/ and logs/ subdirectories.
+        expected_total: If given, reported in the summary line.
+    """
+    json_dir = os.path.join(path, "json")
+    json_files = [f for f in os.listdir(json_dir) if f.endswith(".json")]
 
     experiment_data: list[dict] = []
-    unfished_count = 0
+    unfinished_count = 0
+    started_keys: set[tuple[str, str]] = set()
+
     for json_file in json_files:
-        with open(os.path.join(path + "/json/", json_file), "r") as f:
-            try:
+        json_path = os.path.join(json_dir, json_file)
+        log_path = os.path.join(path, "logs", json_file[:-5] + ".log")
+
+        try:
+            with open(json_path, "r") as f:
                 data: dict = json.load(f)
-            except json.JSONDecodeError:
-                print(f"Error in {json_file}: JSONDecodeError")
-                traceback.print_exc()
-                continue
-            if "verimon" in data and "error" in data["verimon"]:
-                print(f"Error in {json_file}: {data['verimon']['error']}")
-                continue
+        except json.JSONDecodeError:
+            print(f"Error in {json_file}: JSONDecodeError")
+            traceback.print_exc()
+            continue
 
-            data["json_path"] = os.path.join(path + "/json/", json_file)
-            data["log_path"] = os.path.join(path + "/logs/", json_file[:-5] + ".log")
+        data["json_path"] = json_path
+        data["log_path"] = log_path
+        data["error"] = None
 
-            if not data["finished"]:
-                unfished_count += 1
-                if "time" not in data:
-                    data["time"] = {"total": 0}
-                if (
-                    "learning_algs" in data["experiment"]
-                ):  # Fill in gaps of Learning experiment
-                    with open(data["log_path"], "r") as f:
-                        log = f.read()
-                        timed_out = "timed out after 12 hours" in log
-                        val = "timeout" if timed_out else "OOM"
-                    if (
-                        "verimon" in data["experiment"]["learning_algs"]
-                        and "verimon" not in data
-                    ):
-                        data["verimon"] = {
-                            "fake": True,
-                            "time": val,
-                            "monitor_states": val,
-                            "false_positive": val,
-                            "false_negative": val,
-                            "iterations": val,
-                        }
-                    if (
-                        "sampling" in data["experiment"]["learning_algs"]
-                        and "sampling" not in data
-                    ):
-                        data["sampling"] = {
-                            "fake": True,
-                            "time": val,
-                            "monitor_states": val,
-                            "false_positive": val,
-                            "false_negative": val,
-                            "iterations": val,
-                        }
-                elif "learn_experiment" in data["experiment"]:
-                    if "result" not in data:
-                        data["result"] = {
-                            "fake": True,
-                            "goal_threshold": -1,
-                            "pomdp_states": 0,
-                            "time": "unfinished",
-                            "product_time": 0,
-                            "paynt_time": 0,
-                            "double_check_time": 0,
-                            "iterations": "unfinished",
-                        }
+        if not data["finished"] and "results" not in data:
+            val = _timeout_or_oom(log_path)
+            data["results"] = None
+            data["error"] = val
 
-            if "result" in data and "error" in data["result"]:
-                if data["result"]["error"] == "No result":
-                    data["result"]["goal_threshold"] = None
-                else:
-                    data["result"] = {
-                        "fake": True,
-                        "goal_threshold": -1,
-                        "pomdp_states": 0,
-                        "time": "OOM",
-                        "product_time": 0,
-                        "paynt_time": 0,
-                        "double_check_time": 0,
-                        "iterations": "unfinished",
+        if data["results"] and "error" in cast(dict, data["results"]):
+            data["error"] = data["results"]["error"] + data["results"]["msg"]
+            data["results"] = None
+
+        if not data["finished"]:
+            unfinished_count += 1
+
+        started_keys.add((data["experiment"]["name"], data["experiment"]["variant"]))
+        experiment_data.append(data)
+
+    # Fill in experiments from metadata that never produced a JSON file
+    metadata_path = os.path.join(path, "experiment_metadata.json")
+    not_started_count = 0
+    if os.path.exists(metadata_path):
+        with open(metadata_path, "r") as f:
+            metadata = json.load(f)
+        for exp in metadata["experiments"]:
+            key = (exp["name"], exp["variant"])
+            if key not in started_keys:
+                experiment_data.append(
+                    {
+                        "experiment": exp,
+                        "results": None,
+                        "error": "not_started",
                     }
-            experiment_data.append(data)
+                )
+                not_started_count += 1
 
-    print(
-        f"Loaded {len(experiment_data) - unfished_count}/{unfished_count}/{(VERIFY_EXPERIMENTS if 'verify' in path else LEARN_EXPERIMENTS) - len(experiment_data)} ({(len(experiment_data) - unfished_count) / (VERIFY_EXPERIMENTS if 'verify' in path else LEARN_EXPERIMENTS) * 100:.2f}%) JSON files from {path}"
-    )
+    finished_count = len(experiment_data) - unfinished_count - not_started_count
+    total = len(experiment_data)
+    if expected_total is not None:
+        pct = finished_count / expected_total * 100
+        print(
+            f"Loaded {finished_count}/{unfinished_count}/{not_started_count} "
+            f"(finished/unfinished/not_started, {pct:.2f}%) from {path}"
+        )
+    else:
+        print(
+            f"Loaded {finished_count} finished, {unfinished_count} unfinished, "
+            f"{not_started_count} not started ({total} total) from {path}"
+        )
+
     experiment_data.sort(
-        key=lambda x: (x["experiment"]["name"], str(x["experiment"]["variant"]))
+        key=lambda d: (d["experiment"]["name"], str(d["experiment"]["variant"]))
     )
+
+    add_family_size(experiment_data)
+    add_learning_rounds(experiment_data)
+    add_short_names(experiment_data)
     return experiment_data

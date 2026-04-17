@@ -1,4 +1,7 @@
 """Parallel experiment execution with timeout handling."""
+
+import json
+import logging
 import os
 import signal
 from random import seed, shuffle
@@ -7,15 +10,19 @@ from typing import cast
 
 from tqdm import tqdm
 
+logger = logging.getLogger(__name__)
+
 
 def run_experiment_with_timeout(arg):
     """Worker function: runs a single experiment with a SIGALRM timeout."""
     exp, timestamp, base_dir, timeout = arg
 
-    print(f"Starting experiment {exp.name} ({exp.variant}) with timeout {timeout}s")
+    logger.info(
+        f"Starting experiment {exp.name} ({exp.variant}) with timeout {timeout}s"
+    )
 
     def timeout_handler(signum, frame):
-        print(
+        logger.warning(
             f"Experiment {exp.name} ({exp.variant}) timed out after {timeout} seconds"
         )
         os._exit(1)
@@ -55,7 +62,15 @@ def run_experiments(
     if cores == 0:
         cores = cast(int, os.cpu_count()) - 1
     elif cores < 0:
-        cores = os.cpu_count() + cores
+        cores = cast(int, os.cpu_count()) + cores
+
+    os.makedirs(base_dir, exist_ok=True)
+    json.dump(
+        {"experiments": [exp.__dict__ for exp in all_experiments]},
+        open(os.path.join(base_dir, "experiment_metadata.json"), "w"),
+        indent=4,
+        default=str,
+    )
 
     shuffle(all_experiments)
 
@@ -71,5 +86,5 @@ def run_experiments(
             pool.join()
         except KeyboardInterrupt:
             pool.terminate()
-            print("Terminating all processes")
+            logger.warning("Terminating all processes")
             pool.join()

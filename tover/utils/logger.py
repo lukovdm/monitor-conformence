@@ -96,7 +96,7 @@ def setup_logging(level=logging.DEBUG, path=None, output_to_stdout=True):
             "\033[1;34m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
         )
         formatter_debug = MultiLineFormatter(
-            "\033[1;37m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
+            "\033[37m%(levelname)s:%(processName)s:%(asctime)s - (%(relative)ss) - %(filename)s:%(lineno)d - %(message)s \033[0m"
         )
 
         s_warn = logging.StreamHandler(sys.__stdout__)

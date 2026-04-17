@@ -1,4 +1,3 @@
-import logging
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -110,7 +109,7 @@ class ToVerEqOracle(Oracle):
 
         logger.debug("Finding false negative probability")
         mon_cycl = aalpy_dfa_to_stormpy(hypothesis, self.mc.is_exact)
-        self._maybe_export_monitor(mon_cycl, hypothesis)
+        # self._maybe_export_monitor(mon_cycl, hypothesis)
 
         cex, _, stats = false_negative(
             self.mc,
@@ -213,40 +212,28 @@ class ToVerEqOracle(Oracle):
 
     def _assert_is_false_negative(self, hypothesis: Dfa[str], trace: list[str]):
         in_hyp = self._check_hyp_on_trace(hypothesis, trace)
-        logger.log(
-            logging.WARN if in_hyp else logging.INFO,
-            f"Trace should not be in hyp: {in_hyp}",
-        )
+        logger.debug(f"Trace should not be in hyp: {in_hyp}")
         in_sul = self._check_sul_on_trace(trace)
-        logger.log(
-            logging.INFO if in_sul else logging.WARN,
-            f"Trace should be in SUL: {in_sul}",
-        )
+        logger.debug(f"Trace should be in SUL: {in_sul}")
         if in_hyp or not in_sul:
             raise Exception("false negative found is not a false negative")
 
     def _assert_is_false_positive(self, hypothesis: Dfa[str], trace: list[str]):
         in_hyp = self._check_hyp_on_trace(hypothesis, trace)
-        logger.log(
-            logging.INFO if in_hyp else logging.WARN,
-            f"Trace should be in hyp: {in_hyp}",
-        )
+        logger.debug(f"Trace should be in hyp: {in_hyp}")
         in_sul = self._check_sul_on_trace(trace)
-        logger.log(
-            logging.WARN if in_sul else logging.INFO,
-            f"Trace should not be in SUL: {in_sul}",
-        )
+        logger.debug(f"Trace should not be in SUL: {in_sul}")
         if not in_hyp or in_sul:
             raise Exception("false positive found is not a false positive")
 
     def _check_sul_on_trace(self, trace: list[str]) -> bool | Literal["unknown"]:
-        self.filter_sul.set_logging(True)
+        # self.filter_sul.set_logging(True)
         self.filter_sul.pre()
         res = False
         for t in trace:
             res = self.filter_sul.step(t)
         self.filter_sul.post()
-        self.filter_sul.set_logging(False)
+        # self.filter_sul.set_logging(False)
         return res
 
     @staticmethod

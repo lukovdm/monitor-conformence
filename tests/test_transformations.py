@@ -18,7 +18,7 @@ def test_reference_language_pomdp():
     )
     alphabet = list(observations)
 
-    refrence_lang = language_of_hmm(mc, alphabet)
+    refrence_lang = language_of_hmm(mc, alphabet, 8)
     print(refrence_lang)
     refrence_lang.visualize()
 
@@ -45,7 +45,7 @@ def test_reference_language_snl():
     plt.savefig("snl_board.png")
     print("Saved SNL board to snl_board.png")
 
-    refrence_lang = language_of_hmm(mc, alphabet)
+    refrence_lang = language_of_hmm(mc, alphabet, 8)
     print(refrence_lang)
     refrence_lang.visualize(file_type="png")
 

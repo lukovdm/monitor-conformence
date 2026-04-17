@@ -148,7 +148,7 @@ class MonitorRandomWpMethodEqOracle(Oracle):
                 self.reference.initial_state, state.prefix
             )
             reference_state = self.reference.current_state
-            input = list(state.prefix)
+            input = list(state.prefix) if state.prefix is not None else []
             limit = self.min_length
             while limit > 0 or random.random() > 1 / (self.expected_length + 1):
                 alp = [

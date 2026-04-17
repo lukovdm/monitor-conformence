@@ -60,6 +60,9 @@ class RunArgs(Tap):
 
     # Timeouts
     solver_timeout: int = 200  # Timeout for the solver in seconds
+    learning_timeout: int | None = (
+        100000  # Timeout for the entire learning process in seconds
+    )
 
     # Output
     base_dir: str = f"out/tover-{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
@@ -205,6 +208,7 @@ def main():
             else None
         ),
         solver_timeout=args.solver_timeout,
+        learning_timeout=args.learning_timeout,
         base_dir=args.base_dir,
         export_benchmarks=args.export_benchmarks,
     )
@@ -214,12 +218,12 @@ def main():
     mon = aalpy_dfa_to_stormpy(learned_monitor, exact)
     export_to_drn(mon, f"{monitor_path_base}.drn")
 
-    print("Learning completed.")
-    print(
+    logger.info("Learning completed.")
+    logger.info(
         f"Learned monitor saved to: {monitor_path_base}.dot and {monitor_path_base}.drn"
     )
-    print(f"Statistics: {stats}")
-    print(f"L* statistics: {lstar_stats}")
+    logger.info(f"Statistics: {stats}")
+    logger.info(f"L* statistics: {lstar_stats}")
 
 
 if __name__ == "__main__":

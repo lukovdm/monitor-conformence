@@ -13,21 +13,21 @@ from tover.experiments.scheduler import run_experiments
 
 
 class ExperimentArgs(Tap):
-    files: list[str]                # Path(s) to experiment YAML config file(s)
+    files: list[str]  # Path(s) to experiment YAML config file(s)
 
     # Filtering
-    experiment: str | None = None   # Run only the named experiment (default: all)
-    base_dir: str = ""              # Output base directory (default: auto-generated)
+    experiment: str | None = None  # Run only the named experiment (default: all)
+    base_dir: str = ""  # Output base directory (default: auto-generated)
 
     # Actions
-    list: bool = False              # List all available experiments and exit
-    print: bool = False             # Print experiment configs and exit
+    list: bool = False  # List all available experiments and exit
+    print: bool = False  # Print experiment configs and exit
 
     # Execution
-    concurrent: bool = False        # Run experiments concurrently
-    cores: int = 0                  # Number of cores to use (0 = all available)
-    timeout: int = 43200            # Per-experiment timeout in seconds (default: 12h)
-    debug: bool = False             # Pause before running (for attaching a debugger)
+    concurrent: bool = False  # Run experiments concurrently
+    cores: int = 0  # Number of cores to use (0 = all available)
+    timeout: int = 43200  # Per-experiment timeout in seconds (default: 12h)
+    debug: bool = False  # Pause before running (for attaching a debugger)
 
     @override
     def process_args(self) -> None:
@@ -68,7 +68,7 @@ def main():
             total += len(objects)
             print(f"- {group.kwargss['name'][0]} ({len(objects)} variants):")
             for exp in objects:
-                print(f"\t- {exp.name} {exp.variant}")
+                print(f"\t- {exp}")
         print(f"Total experiments: {total}")
         return
 
