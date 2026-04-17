@@ -1,0 +1,121 @@
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - tests/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=25"
+    - constants: "IMAX=50"
+  horizon:
+    - 10
+    - 25
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  use_exact: true
+  use_dont_care: [true, false]
+  use_refrence_language: [true, false]
+
+- type: LearningExperiment
+  name: refuel
+  file:
+    - tests/premise/refuel.nm
+    - tests/premise/refuelB.nm
+  parameters:
+    - constants: "N=3,ENERGY=3"
+    - constants: "N=4,ENERGY=3"
+    - constants: "N=3,ENERGY=4"
+  spec: Pmax=? [F<=3 "empty"]
+  good_label: empty
+  loader: pomdp
+  use_exact: true
+  use_dont_care: [true, false]
+  use_refrence_language: [true, false]
+
+- type: LearningExperiment
+  name: evade
+  file: tests/premise/evade-monitoring.nm
+  parameters:
+    constants: "N=4,RADIUS=2"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  horizon:
+    - 7
+    - 9
+  use_exact: true
+  use_dont_care: [true, false]
+  use_refrence_language: [true, false]
+
+- type: LearningExperiment
+  name: hidden_incentive
+  file: tests/premise/hidden-incentive.nm
+  parameters:
+    constants: "N=3"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  horizon:
+    - 8
+    - 10
+  use_exact: true
+
+- type: LearningExperiment
+  name: airport
+  file:
+    - tests/premise/airportA-3.nm
+    - tests/premise/airportB-7.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+    - constants: "DMAX=5,PMAX=5"
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  learning_algs: 
+    - [verimon]
+  horizon:
+    - 9
+    - 11
+  use_exact: true
+  learning_method:
+    - lsharp
+    - lstar
+
+- name: snakes_ladders
+  type: LearningExperiment
+  file: tests/mc_u_nxn.pm
+  parameters:
+    n: 100
+    ladders:
+      1: 38
+      4: 14
+      9: 31
+      28: 64
+      40: 42
+      36: 44
+      51: 67
+      71: 91
+      80: 100
+    snakes:
+      98: 76
+      95: 75
+      93: 73
+      87: 24
+      64: 60
+      62: 19
+      55: 53
+      49: 11
+      47: 26
+      16: 6
+  spec: Pmax=? [F<5 "good"]
+  good_label: good
+  loader: snakes_ladders
+  horizon:
+    - 8
+    - 10
+    - 12
+    - 14
+    - 16
+    - 18
+  use_exact: true
+  use_dont_care: [true, false]
+  use_refrence_language: [true, false]
