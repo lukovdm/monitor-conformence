@@ -29,17 +29,30 @@ class Apartness:
 
     @staticmethod
     def states_are_apart(state1, state2, ob_tree):
-        # Checks if two states are apart by checking any output difference in the observation tree
+        # Checks if two states are apart by checking any output difference in the observation tree.
+        # A positive (apart) result is monotonic, so it is cached on the tree
+        # and reused across the whole learning loop. Negatives are not cached.
+        cache = getattr(ob_tree, "_apart_cache", None)
+        key = None
+        if cache is not None:
+            key = frozenset((state1.id, state2.id))
+            if key in cache:
+                return True
+
         if ob_tree.automaton_type == "mealy":
-            return (
+            apart = (
                 Apartness._show_states_are_apart_mealy(state1, state2, ob_tree.alphabet)
                 is not None
             )
         else:
-            return (
+            apart = (
                 Apartness._show_states_are_apart_moore(state1, state2, ob_tree.alphabet)
                 is not None
             )
+
+        if apart and cache is not None:
+            cache.add(key)
+        return apart
 
     @staticmethod
     def _show_states_are_apart_mealy(first, second, alphabet):
@@ -53,10 +66,7 @@ class Apartness:
                 second_output = second_node.get_output(input_val)
 
                 if first_output is not None and second_output is not None:
-                    if first_output != second_output and (
-                        first_output not in ["unknown", None]
-                        and second_output not in ["unknown", None]
-                    ):
+                    if Apartness.incompatible_output(first_output, second_output):
                         return first_node.get_successor(input_val)
 
                     pairs.append(
@@ -71,25 +81,27 @@ class Apartness:
     @staticmethod
     def _show_states_are_apart_moore(first, second, alphabet):
         # Identifies if two states can be distinguished by any input-output pair in the provided alphabet
+        if Apartness.incompatible_output(first.output, second.output):
+            return first
+
         pairs = deque([(first, second)])
         while pairs:
             first_node, second_node = pairs.popleft()
-            if first_node is not None and second_node is not None:
-                first_output = first_node.output
-                second_output = second_node.output
-                if first_output != second_output and (
-                    first_output not in ["unknown", None]
-                    and second_output not in ["unknown", None]
-                ):
-                    return first_node
-
-                for input_val in alphabet:
-                    pairs.append(
-                        (
-                            first_node.get_successor(input_val),
-                            second_node.get_successor(input_val),
+            for input_val in alphabet:
+                new_first_node = first_node.get_successor(input_val)
+                new_second_node = second_node.get_successor(input_val)
+                if new_first_node is not None and new_second_node is not None:
+                    if Apartness.incompatible_output(
+                        new_first_node.output, new_second_node.output
+                    ):
+                        return new_first_node
+                    else:
+                        pairs.append(
+                            (
+                                new_first_node,
+                                new_second_node,
+                            )
                         )
-                    )
 
         return None
 

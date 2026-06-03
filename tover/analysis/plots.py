@@ -7,7 +7,6 @@ import numpy as np
 from scipy.optimize import curve_fit
 from itertools import combinations, product
 
-
 # Fields used to match experiments across methods when pairing
 DEFAULT_MATCH_FIELDS = [
     "name",
@@ -89,7 +88,78 @@ def calculate_error_lines(
     out_of_memory = timeout * 4
     incorrect = out_of_memory * 4
     unfinished = incorrect * 4
-    return max_time, timeout, out_of_memory, incorrect, unfinished
+    return float(max_time), timeout, out_of_memory, incorrect, unfinished
+
+
+def setup_loglog_comparison(
+    ax,
+    max_lim: float,
+    label1: str,
+    label2: str,
+    min_value: float = 1,
+    sentinels: list[tuple[float, str]] | None = None,
+    xlabel: str | None = None,
+    ylabel: str | None = None,
+    show_y_axis: bool = True,
+):
+    """Decorate a log-log comparison axes with diagonal guides, region labels,
+    optional sentinel lines (timeout/OOM/...), and $10^i$ major + minor ticks.
+
+    Call this after plotting your data points. `max_lim` is the data-driven
+    upper bound used for the diagonal guides; sentinel positions extend the
+    visible range automatically.
+    """
+    ax.plot([0, max_lim], [0, max_lim], "-", color="0.5")
+    ax.plot([0, max_lim], [0, max_lim / 10], "--", color="0.5", label="10x faster")
+    ax.plot([0, max_lim / 10], [0, max_lim], "--", color="0.5")
+    ax.plot([0, max_lim], [0, max_lim / 100], ":", color="0.5", label="100x faster")
+    ax.plot([0, max_lim / 100], [0, max_lim], ":", color="0.5")
+
+    ax.text(0.05, 0.95, f"{label1} faster", transform=ax.transAxes,
+            ha="left", va="top", fontsize=9, color="0.4")
+    ax.text(0.95, 0.05, f"{label2} faster", transform=ax.transAxes,
+            ha="right", va="bottom", fontsize=9, color="0.4")
+
+    upper = max_lim
+    sentinel_label_map = {
+        "timeout": r"$\infty$",
+        "out of memory": "MO",
+        "incorrect": r"$\times$",
+        "unfinished": "U",
+    }
+    if sentinels:
+        for sentinel, label in sentinels:
+            ax.axhline(sentinel, color="gray", linestyle="--", label=f"{label2} {label}")
+            ax.axvline(sentinel, color="gray", linestyle="--", label=f"{label1} {label}")
+            upper = max(upper, sentinel)
+        upper *= 2
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_xlim(min_value, upper)
+    ax.set_ylim(min_value, upper)
+    ax.grid()
+
+    min_pow = ceil(log10(min_value))
+    max_pow = ceil(log10(max_lim))
+    tick_positions = [10**i for i in range(min_pow, max_pow)]
+    tick_labels = [f"$10^{{{i}}}$" for i in range(min_pow, max_pow)]
+    for sentinel, label in sentinels or []:
+        tick_positions.append(sentinel)
+        tick_labels.append(sentinel_label_map.get(label, label))
+    minor_ticks = [k * 10**i for i in range(min_pow - 1, max_pow) for k in range(2, 10)]
+
+    ax.set_xticks(tick_positions, tick_labels)
+    ax.set_xticks(minor_ticks, minor=True)
+    ax.set_xlabel(xlabel if xlabel else f"{label1} (s log)")
+    if show_y_axis:
+        ax.set_yticks(tick_positions, tick_labels)
+        ax.set_yticks(minor_ticks, minor=True)
+        ax.set_ylabel(ylabel if ylabel else f"{label2} (s log)")
+    else:
+        ax.set_yticks(tick_positions, [])
+        ax.set_yticks(minor_ticks, minor=True)
+        ax.set_ylabel("")
 
 
 def compare_runtimes(
@@ -102,7 +172,6 @@ def compare_runtimes(
     figsize: tuple = (10, 6),
     xlabel: str | None = None,
     ylabel: str | None = None,
-    log_scale: bool = True,
     name_func=lambda d1, d2: f"{d1['experiment']['name']} {d1['experiment']['variant']}",
     experiments_in_legends: bool = True,
     save_figures: bool = False,
@@ -131,63 +200,21 @@ def compare_runtimes(
             **plot_kwargs,
         )
 
-    max_lim = incorrect * 2
-
-    plt.plot([0, max_lim], [0, max_lim], r"-", color="0.5")
-    plt.plot([0, max_lim * 10], [0, max_lim], "--", color="0.5", label="10x faster")
-    plt.plot([0, max_lim], [0, max_lim * 10], "--", color="0.5")
-    plt.plot([0, max_lim * 100], [0, max_lim], ":", color="0.5", label="100x faster")
-    plt.plot([0, max_lim], [0, max_lim * 100], ":", color="0.5")
-    ax = plt.gca()
-    ax.text(
-        0.05,
-        0.95,
-        f"{label1} faster",
-        transform=ax.transAxes,
-        ha="left",
-        va="top",
-        fontsize=9,
-        color="0.4",
+    setup_loglog_comparison(
+        plt.gca(),
+        max_lim=max_time,
+        label1=label1,
+        label2=label2,
+        min_value=min_value,
+        sentinels=[
+            (timeout, "timeout"),
+            (out_of_memory, "out of memory"),
+            (incorrect, "incorrect"),
+        ],
+        xlabel=xlabel,
+        ylabel=ylabel,
+        show_y_axis=show_y_axis,
     )
-    ax.text(
-        0.95,
-        0.05,
-        f"{label2} faster",
-        transform=ax.transAxes,
-        ha="right",
-        va="bottom",
-        fontsize=9,
-        color="0.4",
-    )
-    for sentinel, label in [
-        (timeout, "timeout"),
-        (out_of_memory, "out of memory"),
-        (incorrect, "incorrect"),
-    ]:
-        plt.axhline(sentinel, color="gray", linestyle="--", label=f"{label2} {label}")
-        plt.axvline(sentinel, color="gray", linestyle="--", label=f"{label1} {label}")
-
-    plt.xlim(min_value, max_lim)
-    plt.ylim(min_value, max_lim)
-
-    plt.grid()
-    if log_scale:
-        plt.xscale("log")
-        plt.yscale("log")
-
-    plt.xlabel(xlabel if xlabel else f"{label1} (s log)")
-
-    min_pow = ceil(log10(min_value))
-    max_pow = ceil(log10(max_lim))
-    tick_positions = [10**i for i in range(min_pow, max_pow)] + [timeout, out_of_memory, incorrect]
-    tick_labels = [f"$10^{{{i}}}$" for i in range(min_pow, max_pow)] + [r"$\infty$", "MO", r"$\times$"]
-    plt.xticks(tick_positions, tick_labels)
-    if not show_y_axis:
-        plt.ylabel("")
-        plt.yticks(tick_positions, [])
-    else:
-        plt.ylabel(ylabel if ylabel else f"{label2} (s log)")
-        plt.yticks(tick_positions, tick_labels)
 
     fig = plt.gcf()
     fig.set_size_inches(*figsize)

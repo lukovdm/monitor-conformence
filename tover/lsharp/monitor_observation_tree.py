@@ -44,6 +44,13 @@ class MonitorObservationTree:
         self.basis = [self.root]
         self.frontier_to_basis_dict = dict()
 
+        # Persistent positive cache of apart node pairs (frozenset of node ids).
+        # Apartness is monotonic here: outputs only go None -> known (never flip,
+        # since set_output is always fed the deterministic SUL result), so once
+        # two nodes are apart they stay apart for the rest of the run. Only
+        # positive results are cached; negatives can change as the tree grows.
+        self._apart_cache = set()
+
     def insert_observation_sequence(self, inputs, outputs):
         """
         Insert an observation into the tree using a sequence of inputs and their corresponding outputs.
@@ -53,8 +60,7 @@ class MonitorObservationTree:
             node = node.extend_and_get(inp, output)
             node.set_output(output)
             if node not in self.frontier_to_basis_dict and node not in self.basis:
-                candidates = {candidate for candidate in self.basis}
-                self.frontier_to_basis_dict[node] = candidates
+                self.frontier_to_basis_dict[node] = set(self.basis)
 
     def get_successor(self, inputs, start_node=None):
         """
@@ -314,33 +320,42 @@ class MonitorObservationTree:
             "states_mapping", FunctionType(INT, [INT])
         )  # states_mapping: int → int
 
-        # Flatten the tree to a list of nodes
+        # Precompute the position of each alphabet symbol once (avoids repeated
+        # O(|alphabet|) scans inside the BFS below).
+        alphabet_index = {letter: i for i, letter in enumerate(self.alphabet)}
+
+        # Flatten the tree to a list of nodes, recording each node's index so we
+        # never need an O(n) nodes.index() scan later.
         queue = deque([self.root])
         nodes = [self.root]
+        node_to_index = {self.root: 0}
 
         while queue:
             node = queue.popleft()
-            idx = nodes.index(node)
+            idx = node_to_index[node]
             for letter, successor in node.successors.items():
                 # Check if successor can reach a known node
                 queue.append(successor)
+                node_to_index[successor] = len(nodes)
                 s.add_assertion(
                     Function(states_mapping, [Int(len(nodes))]).Equals(
                         Function(
                             delta,
                             [
                                 Function(states_mapping, [Int(idx)]),
-                                Int(self.alphabet.index(letter)),
+                                Int(alphabet_index[letter]),
                             ],
                         )
                     )
                 )
                 nodes.append(successor)
 
+        basis_index = {node: i for i, node in enumerate(self.basis)}
+
         # Basis nodes map to different states
-        for i, node in enumerate(self.basis):
+        for node, i in basis_index.items():
             s.add_assertion(
-                Function(states_mapping, [Int(nodes.index(node))]).Equals(Int(i))
+                Function(states_mapping, [Int(node_to_index[node])]).Equals(Int(i))
             )
 
         # Force known outputs
@@ -353,20 +368,19 @@ class MonitorObservationTree:
 
         # Frontier nodes map to the same state as one of their candidates or to a new state
         for node, candidates in self.frontier_to_basis_dict.items():
-            if node not in nodes:
+            if node not in node_to_index:
                 continue
+            node_idx = node_to_index[node]
             s.add_assertion(
                 Or(
                     [
-                        Function(states_mapping, [Int(nodes.index(node))]).Equals(
-                            Int(self.basis.index(c))
+                        Function(states_mapping, [Int(node_idx)]).Equals(
+                            Int(basis_index[c])
                         )
                         for c in candidates
                     ]
                     + [
-                        Function(states_mapping, [Int(nodes.index(node))]).Equals(
-                            Int(i)
-                        )
+                        Function(states_mapping, [Int(node_idx)]).Equals(Int(i))
                         for i in range(len(self.basis), self.size)
                     ]
                 )
@@ -379,18 +393,17 @@ class MonitorObservationTree:
                 s.add_assertion(GE(d_ij, Int(0)))
                 s.add_assertion(LT(d_ij, Int(self.size)))
 
-        # Appart nodes cannot be merged
+        # Appart nodes cannot be merged. Apartness is symmetric, so iterate over
+        # unordered pairs (i < j): a single NotEquals per apart pair is enough.
         if self.use_compatibility:
-            for node1 in nodes:
-                for node2 in nodes:
-                    if node1 == node2:
-                        continue
+            for i, node1 in enumerate(nodes):
+                for node2 in nodes[i + 1 :]:
                     if Apartness.states_are_apart(node1, node2, self):
                         s.add_assertion(
                             Function(
-                                states_mapping, [Int(nodes.index(node1))]
+                                states_mapping, [Int(node_to_index[node1])]
                             ).NotEquals(
-                                Function(states_mapping, [Int(nodes.index(node2))])
+                                Function(states_mapping, [Int(node_to_index[node2])])
                             )
                         )
 
@@ -513,11 +526,14 @@ class MonitorObservationTree:
         Extend the frontier self.size - len(self.basis) steps from the basis
         """
         length = 3  # used to be a 3 here?
+        # Compute each basis node's access sequence once instead of recomputing
+        # it for every word.
+        basis_access = [self.get_access_sequence(node) for node in self.basis]
         # Loop over words of length 'length'
         for word in itertools.product(self.alphabet, repeat=length):
-            for node in self.basis:
-                access = self.get_access_sequence(node)
-                inputs = access + list(word)
+            word = list(word)
+            for access in basis_access:
+                inputs = access + word
                 if self.get_successor(inputs) is None:
                     self.execute_query(inputs)
 

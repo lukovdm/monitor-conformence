@@ -137,6 +137,7 @@ def run_tover(
                         sul,
                         eq_oracle,
                         automaton_type="dfa",
+                        separation_rule="SepSeq",
                         return_data=True,
                         print_level=2,
                     ),

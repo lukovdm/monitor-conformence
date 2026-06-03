@@ -92,7 +92,7 @@ class Experiment(ABC):
         return f"(Experiment {self.name} ({self.variant}))"
 
     @abstractmethod
-    def run(self, timestamp: str, base_dir: str):
+    def run(self, timestamp: str, base_dir: str, output_to_stdout: bool = False):
         resource.setrlimit(
             resource.RLIMIT_AS,
             (1024 * 1024 * 1024 * 15, resource.RLIM_INFINITY),  # 15 GiB limit
@@ -104,7 +104,7 @@ class Experiment(ABC):
         log_file = f"{base_dir}/logs/{timestamp}_{self.name}_{self.variant_hash}.log"
         os.makedirs(os.path.dirname(log_file), exist_ok=True)
         clear_logging()
-        setup_logging(path=log_file, output_to_stdout=False)
+        setup_logging(path=log_file, output_to_stdout=output_to_stdout)
 
         os.makedirs(f"{base_dir}/models/", exist_ok=True)
 
@@ -366,14 +366,14 @@ class LearningExperiment(Experiment):
             return {"error": str(e), "msg": e.__repr__()}
 
     @override
-    def run(self, timestamp: str, base_dir: str):
+    def run(self, timestamp: str, base_dir: str, output_to_stdout: bool = False):
         if self.use_exact:
             self.threshold = sharpen(3, self.threshold)
             self.fp_slack = sharpen(5, self.fp_slack)
             self.fn_slack = sharpen(5, self.fn_slack)
             self.relative_error = sharpen(5, self.relative_error)
 
-        super().run(timestamp, base_dir)
+        super().run(timestamp, base_dir, output_to_stdout)
         start_time = time()
         logger.info(
             f"Running learning experiment: {self.name} ({self.variant}) {self.__dict__}"
@@ -512,11 +512,11 @@ class VerifyExperiment(Experiment):
             raise ValueError("Unknown monitor format")
 
     @override
-    def run(self, timestamp: str, base_dir: str):
+    def run(self, timestamp: str, base_dir: str, output_to_stdout: bool = False):
         if self.stop:
             return
 
-        super().run(timestamp, base_dir)
+        super().run(timestamp, base_dir, output_to_stdout)
 
         if self.threshold is not None:
             self.threshold = (
