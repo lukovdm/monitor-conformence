@@ -1,5 +1,6 @@
 import logging
 from enum import StrEnum
+import os
 from typing import Self
 
 import paynt.cli
@@ -98,10 +99,9 @@ class Verifier:
             if self.mc.is_exact
             else GenerateMonitorVerifierDoubleOptions()
         )
-        self.options.good_label = good_label
+        self.options.accepting_label = "accepting"
         self.options.step_prefix = "step="
-        self.options.use_risk = True
-        self.options.use_rejection_sampling = self.conditional_method == "rejection"
+        self.options.use_restart_semantics = self.conditional_method == "rejection"
 
         self._rebuild_generator()
 
@@ -123,7 +123,6 @@ class Verifier:
         logger.info(
             f"New good states become: {self.mc.labeling.get_states(self.good_label)}"
         )
-        self.options.use_risk = False
         self._rebuild_generator()
 
     def set_risk(self: Self, risk_prop: str):

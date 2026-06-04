@@ -1,11 +1,12 @@
-# Compares L* against L# (with/without don't-care and reference language).
-# The first experiment (icy-driving) carries the shared configuration via the
-# &base anchor; every other benchmark merges it with `<<: *base` and overrides
-# only the benchmark-specific keys (name/file/parameters/spec/good_label/horizon).
-# Locally specified keys win over the merged ones.
+# Compares the available conditional-probability synthesis methods against each
+# other. Only the lsharp_dc_rl configuration is run (L#, use_dont_care=true,
+# use_refrence_language=true); the single swept dimension is conditional_method.
+#
+# conditional_method values come from tover.core.synthesis.ConditionalMethod:
+#   rejection, restart, bisection, bisection_advanced,
+#   bisection_pt, bisection_advanced_pt, policy_iteration
 
-- &base
-  type: LearningExperiment
+- type: LearningExperiment
   name: icy-driving
   file:
     - experiments/icy-driving/icy-driving.pm
@@ -19,13 +20,19 @@
   good_label: crash
   loader: pomdp
   use_exact: true
-  learning_method:
-    - lstar
-    - lsharp
-  use_dont_care: [true, false]
-  use_refrence_language: [true, false]
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: &cmethods
+    - rejection
+    - restart
+    - bisection
+    - bisection_advanced
+    - bisection_pt
+    - bisection_advanced_pt
+    - policy_iteration
 
-- <<: *base
+- type: LearningExperiment
   name: refuel
   file:
     - experiments/premise/refuel.nm
@@ -34,33 +41,50 @@
     - constants: "N=3,ENERGY=3"
     # - constants: "N=4,ENERGY=3"
     # - constants: "N=3,ENERGY=4"
-  horizon: 10  # the base sets a horizon, so pin refuel to its default explicitly
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
+  loader: pomdp
+  use_exact: true
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: *cmethods
 
-- <<: *base
+- type: LearningExperiment
   name: evade
   file: experiments/premise/evade-monitoring.nm
   parameters:
     constants: "N=4,RADIUS=2"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
+  loader: pomdp
   horizon:
     - 7
     - 9
+  use_exact: true
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: *cmethods
 
-- <<: *base
+- type: LearningExperiment
   name: hidden_incentive
   file: experiments/premise/hidden-incentive.nm
   parameters:
     constants: "N=3"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
+  loader: pomdp
   horizon:
     - 8
     # - 10
+  use_exact: true
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: *cmethods
 
-- <<: *base
+- type: LearningExperiment
   name: airport
   file:
     - experiments/premise/airportA-3.nm
@@ -70,13 +94,18 @@
     # - constants: "DMAX=5,PMAX=5"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
+  loader: pomdp
   horizon:
     - 9
     # - 11
+  use_exact: true
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: *cmethods
 
-- <<: *base
-  name: snakes_ladders
-  loader: snakes_ladders
+- name: snakes_ladders
+  type: LearningExperiment
   file: experiments/mc_u_nxn.pm
   parameters:
     n: 100
@@ -103,6 +132,7 @@
       16: 6
   spec: Pmax=? [F<5 "good"]
   good_label: good
+  loader: snakes_ladders
   horizon:
     # - 8
     - 10
@@ -110,3 +140,8 @@
     - 14
     # - 16
     # - 18
+  use_exact: true
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: *cmethods

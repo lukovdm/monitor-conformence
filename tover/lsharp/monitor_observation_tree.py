@@ -15,8 +15,17 @@ from tover.utils.logger import logger
 
 class MonitorObservationTree:
     def __init__(
-        self, alphabet, reference, sul, solver_timeout, replace_basis, use_compatibility
+        self,
+        alphabet,
+        reference,
+        sul,
+        solver_timeout,
+        replace_basis,
+        use_compatibility,
+        use_dont_care=True,
     ):
+        # ``reference`` may be None, in which case no reference language is used
+        # and every queried sequence is treated as defined.
         """
         Initializes the observation tree with a root node.
         """
@@ -24,6 +33,10 @@ class MonitorObservationTree:
         self.solver_timeout = solver_timeout * 1000
         self.replace_basis = replace_basis
         self.use_compatibility = use_compatibility
+        # When don't cares are disabled the observation tree is fully defined
+        # (the SUL never returns "unknown"), so the hypothesis can be built with
+        # the classic L# construction instead of the SMT solver.
+        self.use_dont_care = use_dont_care
 
         # Logger information
         self.smt_time = 0
@@ -49,7 +62,7 @@ class MonitorObservationTree:
         # since set_output is always fed the deterministic SUL result), so once
         # two nodes are apart they stay apart for the rest of the run. Only
         # positive results are cached; negatives can change as the tree grows.
-        self._apart_cache = set()
+        self.apart_cache = set()
 
     def insert_observation_sequence(self, inputs, outputs):
         """
@@ -159,9 +172,12 @@ class MonitorObservationTree:
     def update_frontier_to_basis_dict_dfs(self, node):
         if node not in self.basis:
             self.update_basis_candidates(node)
-            if len(self.frontier_to_basis_dict[node]) == 0:
-                return
         for successor in node.successors.values():
+            if (
+                successor not in self.basis
+                and len(self.frontier_to_basis_dict[successor]) == 0
+            ):
+                continue
             self.update_frontier_to_basis_dict_dfs(successor)
 
     def promote_node_to_basis(self):
@@ -183,7 +199,7 @@ class MonitorObservationTree:
                 )
                 # Update the candidates
                 del self.frontier_to_basis_dict[iso_frontier_node]
-                for node, candidates in self.frontier_to_basis_dict.items():
+                for candidates in self.frontier_to_basis_dict.values():
                     candidates.add(iso_frontier_node)
                 logger.debug(f"Increasing basis size to {len(self.basis)}")
                 self.size = max(self.size, len(self.basis))
@@ -210,7 +226,7 @@ class MonitorObservationTree:
                 self.basis.append(iso_frontier_node)
                 # Update the candidates
                 del self.frontier_to_basis_dict[iso_frontier_node]
-                for node, candidates in self.frontier_to_basis_dict.items():
+                for candidates in self.frontier_to_basis_dict.values():
                     if candidate in candidates:
                         candidates.remove(candidate)
                     candidates.add(iso_frontier_node)
@@ -223,6 +239,7 @@ class MonitorObservationTree:
         Loop over all frontier nodes to identify them
         """
         extended = False
+        witness_cache = dict()
         for basis_node in self.basis:
             for letter in self.alphabet:
                 # not defined if rejecting in reference
@@ -230,12 +247,14 @@ class MonitorObservationTree:
                     frontier_node = basis_node.get_successor(letter)
                     if frontier_node in self.basis:
                         continue
-                    while self.identify_frontier(frontier_node):
+                    while self.identify_frontier(
+                        frontier_node, witness_cache=witness_cache
+                    ):
                         extended = True
                         self.update_basis_candidates(frontier_node)
         return extended
 
-    def identify_frontier(self, frontier_node):
+    def identify_frontier(self, frontier_node, witness_cache=None):
         """
         Identify a specific frontier node
         """
@@ -244,20 +263,30 @@ class MonitorObservationTree:
 
         inputs_to_frontier = self.get_transfer_sequence(self.root, frontier_node)
 
-        witnesses = self._get_witnesses_bfs(frontier_node)
+        witnesses = self._get_witnesses_bfs(frontier_node, witness_cache=witness_cache)
         for witness_seq in witnesses:
             inputs = inputs_to_frontier + witness_seq
             extended = self.execute_query(inputs)
             if extended:
+                witness_cache = (
+                    dict()
+                )  # Clear the cache since the tree has changed and there might be more witnesses
                 return True
         return False
 
-    def _get_witnesses_bfs(self, frontier_node):
+    def _get_witnesses_bfs(self, frontier_node, witness_cache=None):
         """
         Specifically identify frontier nodes using separating sequences
         """
-        basis_candidates = self.frontier_to_basis_dict.get(frontier_node)
-        witnesses = Apartness.get_distinguishing_sequences(basis_candidates, self)
+        basis_candidates = frozenset(self.frontier_to_basis_dict.get(frontier_node, []))
+        if witness_cache is not None and basis_candidates in witness_cache:
+            witnesses = witness_cache[basis_candidates]
+        else:
+            witnesses = list(
+                Apartness.get_distinguishing_sequences(basis_candidates, self)
+            )
+            if witness_cache is not None:
+                witness_cache[basis_candidates] = witnesses
 
         for witness_seq in witnesses:
             leads_to_node = self.get_successor(witness_seq, start_node=frontier_node)
@@ -302,8 +331,8 @@ class MonitorObservationTree:
         Find a hypothesis consistent with the observation tree, using the pySMT solver.
         There are 2 free functions: "out" and "m" and 1 bound function "delta".
         """
-        logger.debug(f"Trying to build hypothesis of size {self.size}")
         logger.debug(
+            f"Trying to build hypothesis of size {self.size} "
             f"Basis size: {len(self.basis)}, Frontier size: {len(self.frontier_to_basis_dict)}"
         )
         start_smt_time = time.time()
@@ -442,6 +471,11 @@ class MonitorObservationTree:
         """
         Builds the hypothesis which will be sent to the SUL and checks consistency
         """
+        if not self.use_dont_care:
+            # The observation tree is fully defined, so we can use the classic
+            # L# construction (no SMT solver needed).
+            return self.build_hypothesis_classic()
+
         lower_bound = self.size
         upper_bound = None
         hypothesis = None
@@ -484,12 +518,69 @@ class MonitorObservationTree:
 
         return hypothesis
 
+    def build_hypothesis_classic(self):
+        """
+        Classic L# hypothesis construction (no SMT), ported from AALpy's
+        ObservationTree.build_hypothesis. Usable when the observation tree is
+        fully defined (i.e. don't cares are disabled), so that every frontier
+        node can be identified with a single basis candidate.
+        """
+        while True:
+            self.find_adequate_observation_tree()
+            hypothesis = self.construct_hypothesis_classic()
+            counter_example = Apartness.compute_witness_in_tree_and_hypothesis_states(
+                self, self.root, hypothesis.initial_state
+            )
+            if not counter_example:
+                self.size = len(self.basis)
+                return hypothesis
+
+            self.process_counter_example(counter_example)
+
+    def construct_hypothesis_classic(self):
+        """
+        Construct the hypothesis DFA directly from the basis and the
+        frontier-to-basis mapping, without the SMT solver. Mirrors AALpy's
+        ObservationTree.construct_hypothesis.
+        """
+        states = {node: DfaState(f"s{i}") for i, node in enumerate(self.basis)}
+        for node, dfa_state in states.items():
+            dfa_state.is_accepting = node.output
+
+        for node, dfa_state in states.items():
+            for letter in self.alphabet:
+                successor = node.get_successor(letter)
+                if successor is None:
+                    # Transition is undefined in the reference language; it is
+                    # never exercised, so a self-loop keeps the DFA complete.
+                    dfa_state.transitions[letter] = dfa_state
+                    continue
+                if successor not in states:
+                    # Frontier node: map it to its (single) basis candidate.
+                    candidates = self.frontier_to_basis_dict[successor]
+                    successor = next(iter(candidates))
+                dfa_state.transitions[letter] = states[successor]
+
+        self.states_list = list(states.values())
+        hypothesis = Dfa(states[self.basis[0]], self.states_list)
+        hypothesis.compute_prefixes()
+        hypothesis.characterization_set = hypothesis.compute_characterization_set(
+            raise_warning=False
+        )
+        return hypothesis
+
     def defined_in_reference(self, inputs):
         """
         Checks whether all inputs lead to accepting states in the reference model
         If an input does not lead to an accepting state, it must not be enabled or the horizon is exceeded
         We return whether the full sequence is defined (True/False) and the prefix of the inputs up to the last accepting state
+
+        When no reference language is used, every input sequence is considered
+        defined (the SUL itself bounds the behaviour, e.g. via its horizon).
         """
+        if self.reference is None:
+            return True, inputs
+
         outputs = self.reference.compute_output_seq(
             self.reference.initial_state, inputs
         )
@@ -513,11 +604,17 @@ class MonitorObservationTree:
         if self.get_successor(defined_inputs) is not None:
             # Skipping OQ completely because all required info is in the obs tree
             return False
-        else:
+        elif self.use_dont_care:
             # logger.debug(
             #     f"Posing reduced OQ {defined_inputs[:-1]}, original OQ {inputs}"
             # )
             outputs = self.sul.query(defined_inputs[:-1]) + ["unknown"]
+            self.insert_observation_sequence(defined_inputs, outputs)
+            return True
+        else:
+            # Without don't cares we label the whole reference-defined prefix so
+            # the observation tree stays fully defined (no "unknown" nodes).
+            outputs = self.sul.query(defined_inputs)
             self.insert_observation_sequence(defined_inputs, outputs)
             return True
 
@@ -525,7 +622,7 @@ class MonitorObservationTree:
         """
         Extend the frontier self.size - len(self.basis) steps from the basis
         """
-        length = 3  # used to be a 3 here?
+        length = 2 if self.size - len(self.basis) > 2 else 1
         # Compute each basis node's access sequence once instead of recomputing
         # it for every word.
         basis_access = [self.get_access_sequence(node) for node in self.basis]
@@ -536,6 +633,8 @@ class MonitorObservationTree:
                 inputs = access + word
                 if self.get_successor(inputs) is None:
                     self.execute_query(inputs)
+
+        open("out/test/monitor_ob_tree.dot", "w").write(self.to_dot())
 
     def update_frontier(self):
         self.update_frontier_to_basis_dict()

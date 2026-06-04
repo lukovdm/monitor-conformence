@@ -1,3 +1,4 @@
+from itertools import filterfalse
 import time
 from typing import Any
 
@@ -10,16 +11,28 @@ from tover.utils.logger import logger
 
 def run_monitor_lsharp(
     alphabet: list[str],
-    reference: Dfa[str],
+    reference: Dfa[str] | None,
     sul: SUL,
     eq_oracle: Oracle,
     solver_timeout: int,
     learning_timeout: int | None = 1000,
     replace_basis: bool = True,
-    use_compatibility: bool = True,
+    use_compatibility: bool = filterfalse,
+    use_dont_care: bool = True,
 ) -> tuple[Dfa[str], dict[str, Any]]:
+    logger.info(
+        f"Starting L# learning with alphabet size {len(alphabet)}, "
+        f"reference size {reference.size if reference else 'N/A'}, "
+        f"dont_care={use_dont_care}, and solver timeout {solver_timeout}s."
+    )
     ob_tree = MonitorObservationTree(
-        alphabet, reference, sul, solver_timeout, replace_basis, use_compatibility
+        alphabet,
+        reference,
+        sul,
+        solver_timeout,
+        replace_basis,
+        use_compatibility,
+        use_dont_care,
     )
     start_time = time.time()
 
@@ -52,8 +65,6 @@ def run_monitor_lsharp(
 
         # Process the counterexample and start a new learning round
         ob_tree.process_counter_example(cex)
-
-        # open("out/test/monitor_ob_tree.dot", "w").write(ob_tree.to_dot())
 
     total_time = time.time() - start_time
     smt_time = ob_tree.smt_time

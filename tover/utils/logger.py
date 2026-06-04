@@ -152,3 +152,4 @@ class OutputLogger(IO[str]):
     def __exit__(self, exc_type, exc_value, traceback):
         self._redirector.__exit__(exc_type, exc_value, traceback)
         self._redirector_err.__exit__(exc_type, exc_value, traceback)
+        pass

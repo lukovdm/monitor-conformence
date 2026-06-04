@@ -1,8 +1,9 @@
 from enum import StrEnum
+from time import time
 from typing import Any, cast
 
 from aalpy import Dfa, run_Lstar
-from aalpy.learning_algs.deterministic.LSharp import run_Lsharp
+from aalpy.learning_algs import run_Lsharp
 from aalpy.oracles.WpMethodEqOracle import RandomWpMethodEqOracle
 from stormpy import (
     ExpressionManager,
@@ -17,6 +18,7 @@ from tover.lsharp.monitor_lsharp import run_monitor_lsharp
 from tover.lsharp.monitor_wp_method import (
     MonitorRandomWpMethodEqOracle,
 )
+from tover.utils.logger import logger
 
 
 class LearningMethod(StrEnum):
@@ -41,7 +43,7 @@ def run_tover(
     relative_error: float,
     # Behavior flags
     use_risk: bool = True,
-    use_dont_care: bool = True,
+    use_dont_care: bool = False,
     use_horizon_in_filtering: bool = True,
     random_eq_method: dict[str, int] | None = None,
     use_reference_language: bool = True,
@@ -55,6 +57,13 @@ def run_tover(
     base_dir: str | None = None,
 ) -> tuple[tuple[Dfa[str], dict[str, Any]], OracleStats]:
     """Run the ToVer L#-based monitor learning algorithm."""
+    logger.info(
+        f"Running ToVer with spec: {spec}, threshold: {threshold}, "
+        f"fp_slack: {fp_slack}, fn_slack: {fn_slack}, relative_error: {relative_error}, "
+        f"use_risk: {use_risk}, use_dont_care: {use_dont_care}, use_horizon_in_filtering: {use_horizon_in_filtering}, "
+        f"random_eq_method: {random_eq_method}, use_reference_language: {use_reference_language}, "
+        f"conditional_method: {conditional_method}, learning_method: {learning_method}"
+    )
     sul = FilteringSUL(
         mc,
         initial_observation,
@@ -67,9 +76,12 @@ def run_tover(
     )
 
     if use_reference_language and learning_method == LearningMethod.LSHARP:
+        reference_start = time()
         refrence = language_of_hmm(mc, alphabet, horizon)
+        reference_language_time = time() - reference_start
     else:
         refrence = None
+        reference_language_time = 0.0
 
     if random_eq_method is not None:
         if refrence is not None:
@@ -99,6 +111,7 @@ def run_tover(
         export_benchmarks,
         conditional_method,
     )
+    eq_oracle.stats.reference_language_time = reference_language_time
 
     if learning_method == LearningMethod.LSTAR:
         return (
@@ -116,19 +129,7 @@ def run_tover(
             eq_oracle.stats,
         )
     elif learning_method == LearningMethod.LSHARP:
-        if refrence is not None:
-            return (
-                run_monitor_lsharp(
-                    alphabet,
-                    refrence,
-                    sul,
-                    eq_oracle,
-                    solver_timeout=solver_timeout,
-                    learning_timeout=learning_timeout,
-                ),
-                eq_oracle.stats,
-            )
-        else:
+        if not use_reference_language and not use_dont_care:
             return (
                 cast(
                     tuple[Dfa[str], dict[str, Any]],
@@ -141,6 +142,19 @@ def run_tover(
                         return_data=True,
                         print_level=2,
                     ),
+                ),
+                eq_oracle.stats,
+            )
+        else:
+            return (
+                run_monitor_lsharp(
+                    alphabet,
+                    refrence,
+                    sul,
+                    eq_oracle,
+                    solver_timeout=solver_timeout,
+                    learning_timeout=learning_timeout,
+                    use_dont_care=use_dont_care,
                 ),
                 eq_oracle.stats,
             )

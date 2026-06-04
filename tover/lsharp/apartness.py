@@ -1,4 +1,6 @@
 from collections import deque
+from tover.utils.logger import logger
+import sys
 
 
 class Apartness:
@@ -32,12 +34,10 @@ class Apartness:
         # Checks if two states are apart by checking any output difference in the observation tree.
         # A positive (apart) result is monotonic, so it is cached on the tree
         # and reused across the whole learning loop. Negatives are not cached.
-        cache = getattr(ob_tree, "_apart_cache", None)
-        key = None
-        if cache is not None:
-            key = frozenset((state1.id, state2.id))
-            if key in cache:
-                return True
+
+        key = frozenset((state1.id, state2.id))
+        if key in ob_tree.apart_cache:
+            return True
 
         if ob_tree.automaton_type == "mealy":
             apart = (
@@ -50,8 +50,8 @@ class Apartness:
                 is not None
             )
 
-        if apart and cache is not None:
-            cache.add(key)
+        if apart:
+            ob_tree.apart_cache.add(key)
         return apart
 
     @staticmethod
@@ -89,19 +89,23 @@ class Apartness:
             first_node, second_node = pairs.popleft()
             for input_val in alphabet:
                 new_first_node = first_node.get_successor(input_val)
+                if new_first_node is None:
+                    continue
                 new_second_node = second_node.get_successor(input_val)
-                if new_first_node is not None and new_second_node is not None:
-                    if Apartness.incompatible_output(
-                        new_first_node.output, new_second_node.output
-                    ):
-                        return new_first_node
-                    else:
-                        pairs.append(
-                            (
-                                new_first_node,
-                                new_second_node,
-                            )
+                if new_second_node is None:
+                    continue
+
+                if Apartness.incompatible_output(
+                    new_first_node.output, new_second_node.output
+                ):
+                    return new_first_node
+                else:
+                    pairs.append(
+                        (
+                            new_first_node,
+                            new_second_node,
                         )
+                    )
 
         return None
 
@@ -234,25 +238,37 @@ class Apartness:
     def _get_distinguishing_sequences_moore(group, alphabet):
         # Identifies if two states can be distinguished by any input-output pair in the provided alphabet
         groups = deque([([], group)])
+        if len(group) >= 2:
+            outputs = set(
+                node.output
+                for node in group
+                if node.output is not None and node.output != "unknown"
+            )
+            if len(outputs) >= 2:
+                yield []
+
         while groups:
             access_seq, group = groups.popleft()
-            valid_group = [
-                node for node in group if node is not None
-            ]  # and node.leads_to_known]
-            if len(valid_group) >= 2:
-                outputs = set([node.output for node in valid_group])
-                if "unknown" in outputs:
-                    outputs.remove("unknown")
-                if None in outputs:
-                    outputs.remove(None)
-                if len(outputs) >= 2:
-                    yield access_seq
+            for input_val in alphabet:
+                valid_group = []
+                for node in group:
+                    successor = node.get_successor(input_val)
+                    if successor is not None:
+                        valid_group.append(successor)
 
-                for input_val in alphabet:
+                if len(valid_group) >= 2:
+                    outputs = set(
+                        node.output
+                        for node in group
+                        if node.output is not None and node.output != "unknown"
+                    )
+                    if len(outputs) >= 2:
+                        yield access_seq
+
                     groups.append(
                         (
                             access_seq + [input_val],
-                            [node.get_successor(input_val) for node in valid_group],
+                            valid_group,
                         )
                     )
 

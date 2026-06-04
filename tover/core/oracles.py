@@ -28,6 +28,7 @@ class OracleStats:
     paynt_time: float = 0.0
     product_time: float = 0.0
     eq_time: float = 0.0
+    reference_language_time: float = 0.0
 
     def update_from(self, stats: VerifyStats) -> None:
         """Accumulate timing from a verification sub-call."""
@@ -45,6 +46,7 @@ class OracleStats:
         self.paynt_time += other.paynt_time
         self.product_time += other.product_time
         self.eq_time += other.eq_time
+        self.reference_language_time += other.reference_language_time
         return self
 
 

@@ -198,9 +198,14 @@ class LearningExperiment(Experiment):
         self.use_refrence_language = use_refrence_language
 
         if learning_method == LearningMethod.LSTAR:
-            if not use_dont_care or not use_refrence_language:
+            if use_dont_care or use_refrence_language:
                 raise ValueError(
-                    "L* requires use_dont_care and use_reference_language to be True to avoid duplicates"
+                    "L* requires use_dont_care and use_reference_language to be False to avoid duplicates"
+                )
+        if learning_method == LearningMethod.LSHARP:
+            if use_dont_care != use_refrence_language:
+                raise ValueError(
+                    "l# requires use_dont_care and use_refrence_language to be the same to avoid duplicates"
                 )
 
     def _export_monitor(self, monitor: Dfa[str], base_dir: str) -> str:
@@ -326,6 +331,7 @@ class LearningExperiment(Experiment):
                 relative_error=self.relative_error,
                 use_risk=self.use_risk,
                 use_reference_language=self.use_refrence_language,
+                use_dont_care=self.use_dont_care,
                 use_horizon_in_filtering=self.use_horizon_in_filtering,
                 conditional_method=self.conditional_method,
                 learning_method=self.learning_method,
@@ -355,6 +361,7 @@ class LearningExperiment(Experiment):
                 "product_time": stats.product_time,
                 "paynt_time": stats.paynt_time,
                 "eq_time": stats.eq_time,
+                "reference_language_time": stats.reference_language_time,
                 "learning_stats": lstar_info,
                 "dot_file": f"{path_base}.dot",
                 "drn_file": f"{path_base}.drn",
@@ -423,7 +430,7 @@ class VerifyExperiment(Experiment):
         use_risk: bool = True,
         use_exact: bool = False,
         paynt_strategy: str = "ar",
-        conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
+        conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_PT,
     ):
         self.stop = False
 
@@ -471,7 +478,7 @@ class VerifyExperiment(Experiment):
                 or parameters is None
             ):
                 raise ValueError(
-                    f"file, spec, good_label, loader, and parameters are required when results_file is not given"
+                    "file, spec, good_label, loader, and parameters are required when results_file is not given"
                 )
 
             self.monitor = monitor

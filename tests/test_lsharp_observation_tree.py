@@ -163,6 +163,58 @@ def test_golden_with_unknown_zone(replace_basis):
     _assert_language_matches(learned, sul, ALPHABET, HORIZON)
 
 
+@pytest.mark.parametrize("replace_basis", [False, True])
+def test_classic_path_without_dont_cares(replace_basis):
+    """With use_dont_care=False the learner must use the classic L# construction
+    (no SMT solver) and still learn the correct language."""
+    random.seed(2)
+    reference = build_reference(ALPHABET, HORIZON)
+    sul = EndsInBSUL()
+    oracle = MonitorWpMethodEqOracle(ALPHABET, sul, reference, depth=2)
+
+    learned, info = run_monitor_lsharp(
+        ALPHABET,
+        reference,
+        sul,
+        oracle,
+        solver_timeout=60,
+        learning_timeout=120,
+        replace_basis=replace_basis,
+        use_compatibility=False,
+        use_dont_care=False,
+    )
+
+    _assert_language_matches(learned, sul, ALPHABET, HORIZON)
+    # The classic path never invokes the SMT solver.
+    assert info["smt_time"] == 0
+
+
+@pytest.mark.parametrize("use_dont_care", [True, False])
+def test_reference_language_optional(use_dont_care):
+    """run_monitor_lsharp must work without a reference language (reference=None):
+    every queried sequence is treated as defined."""
+    random.seed(3)
+    reference = build_reference(ALPHABET, HORIZON)
+    sul = EndsInBSUL()
+    # The tree gets no reference; the eq oracle keeps a reference only to bound
+    # counterexample search to the horizon for this assertion.
+    oracle = MonitorWpMethodEqOracle(ALPHABET, sul, reference, depth=2)
+
+    learned, _ = run_monitor_lsharp(
+        ALPHABET,
+        None,
+        sul,
+        oracle,
+        solver_timeout=60,
+        learning_timeout=120,
+        replace_basis=False,
+        use_compatibility=False,
+        use_dont_care=use_dont_care,
+    )
+
+    _assert_language_matches(learned, sul, ALPHABET, HORIZON)
+
+
 def _make_tree():
     sul = EndsInBSUL()
     reference = build_reference(ALPHABET, HORIZON)

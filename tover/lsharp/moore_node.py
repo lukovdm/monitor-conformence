@@ -34,9 +34,7 @@ class MooreNode:
 
     def get_successor(self, input_val):
         """Returns the successor node for the given input"""
-        if input_val in self.successors:
-            return self.successors[input_val]
-        return None
+        return self.successors.get(input_val, None)
 
     def extend_and_get(self, inp, output):
         """Extend the node with a new successor and return the successor node"""
