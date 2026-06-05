@@ -142,17 +142,19 @@ def load_experiment_data(path: str, expected_total: int | None = None) -> list[d
         data["log_path"] = log_path
         data["error"] = None
 
-        if not data["finished"] and "results" not in data:
+        if data["finished"] and "results" not in data:
             val = _timeout_or_oom(log_path)
             data["results"] = None
             data["error"] = val
 
-        if data["results"] and "error" in cast(dict, data["results"]):
+        if "results" in data and "error" in cast(dict, data["results"]):
             data["error"] = data["results"]["error"] + data["results"]["msg"]
             data["results"] = None
 
         if not data["finished"]:
             unfinished_count += 1
+            data["results"] = None
+            data["error"] = None
 
         started_keys.add((data["experiment"]["name"], data["experiment"]["variant"]))
         experiment_data.append(data)

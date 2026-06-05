@@ -19,7 +19,7 @@
   spec: Pmax=? [F<=1 "crash"]
   good_label: crash
   loader: pomdp
-  use_exact: true
+  use_exact: &exact false
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
@@ -44,7 +44,7 @@
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
   loader: pomdp
-  use_exact: true
+  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
@@ -61,7 +61,7 @@
   horizon:
     - 7
     - 9
-  use_exact: true
+  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
@@ -78,7 +78,7 @@
   horizon:
     - 8
     # - 10
-  use_exact: true
+  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
@@ -98,7 +98,7 @@
   horizon:
     - 9
     # - 11
-  use_exact: true
+  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
@@ -140,7 +140,7 @@
     - 14
     # - 16
     # - 18
-  use_exact: true
+  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true

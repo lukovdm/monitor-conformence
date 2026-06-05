@@ -243,8 +243,7 @@ class MonitorObservationTree:
         for basis_node in self.basis:
             for letter in self.alphabet:
                 # not defined if rejecting in reference
-                if basis_node.get_successor(letter):
-                    frontier_node = basis_node.get_successor(letter)
+                if frontier_node := basis_node.get_successor(letter):
                     if frontier_node in self.basis:
                         continue
                     while self.identify_frontier(
