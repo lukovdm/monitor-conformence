@@ -21,9 +21,10 @@ This readme gives an overview of the functionality. It also describes how to rep
 
 ## Smoke testing
 
-In order to smoke test this artifact, follow the steps in [Getting ToVer](#getting-tover). Then run the smoke test experiments:
+In order to smoke test this artifact, follow the steps in [Getting ToVer](#getting-tover). Then generate and run the smoke test experiments with GNU `parallel`:
 ```bash
-python -m tover.cli.experiment experiments/smoke-test.yml --concurrent
+python -m tover.cli.experiment --files experiments/quick.yml --base_dir out/smoke
+parallel --jobs 4 --joblog out/smoke/joblog.txt < out/smoke/commands.txt
 ```
 
 This should generate statistics in the folder `stats/` which can either be inspected using [JupyterLab](http://127.0.0.1:8080/lab/) (Make sure to refresh the jupyter lab file browser if the stats folder is not shown after running the test), or using the command line opened by starting the docker container.
@@ -90,27 +91,31 @@ The inputs to `python -m tover.cli.run` are as follows:
 - `--base-dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
 
 ## Running experiments
-Our experiments are defined in yaml files and consumed by `python -m tover.cli.experiment`.
+Our experiments are defined in yaml files. `python -m tover.cli.experiment` expands a yaml grid into one self-contained command per variant (written to `<base_dir>/commands.txt`); GNU [`parallel`](https://www.gnu.org/software/parallel/) then executes them, owning concurrency, timeouts, and process teardown.
 
 The file `experiments/reduced-exp/verify.yml` contains the reduced version of the experiments for the section "Efficiency of Monitor Verification", and the folder `experiments/verify-exp/` contains the extended version of the experiments found in the verification secion of the paper.
 
 The file `experiments/reduced-exp/learn.yml` contains the reduced version of the experiments for the section "Efficiency of Monitor Learning", and the folder `experiments/learn-exp/` contains the extended version of the experiments found in the learning section.
 
 
-For obtaining the reduced results run the following command.
+For obtaining the reduced results, generate the commands and run them:
 ```bash
-python -m tover.cli.experiment experiments/reduced-exp/* --concurrent --timeout 9300
+python -m tover.cli.experiment --files experiments/reduced-exp/* --base_dir out/reduced
+parallel --jobs 44 --timeout 9300 --memfree 15G \
+  --joblog out/reduced/joblog.txt < out/reduced/commands.txt
+python -m tover.cli.parallel --report out/reduced/joblog.txt --base_dir out/reduced
 ```
-This executes all experiments found in the folder `experiments/reduced-exp/` concurrently, each with a timeout of 9300 seconds.
+`parallel --jobs N` controls how many run at once (e.g. `--jobs 44`; omit to use all cores), `--timeout` gives each variant 9300 seconds, and the final `--report` step labels any timed-out runs so the analysis can tell them apart from out-of-memory failures. Each variant is capped at 15 GB of memory (most use far less), so with many cores allow ~10 GB per concurrent job (≈2.5 GB per job suffices for the reduced set); `--memfree 15G` makes `parallel` hold jobs back when memory is low.
 
-To obtain the full results run the below command. Depending on the amount of cores available this can take between 1-2 days.
+To obtain the full results, do the same for the full configs. Depending on the number of cores this can take between 1-2 days:
 
 ```bash
-python -m tover.cli.experiment experiments/verify-exp/* experiments/learn-exp/* --concurrent
+python -m tover.cli.experiment --files experiments/verify-exp/* experiments/learn-exp/* --base_dir out/full
+parallel --jobs 44 --timeout 9300 --memfree 15G \
+  --joblog out/full/joblog.txt < out/full/commands.txt
+python -m tover.cli.parallel --report out/full/joblog.txt --base_dir out/full
 ```
 The log files of our run of the full experiments can be found in the folders `stats/exp-2025-04-15_15-00-29-comp-base-prem_sam-premise-snl-snl_sam` and `stats/exp-2025-04-24_12-13-12-verify`. The folders can also be used to generate the plots as described in the next section.
-
-All experiment commands take an optional `--cores <number of cores>` to specify with how many cores to run the experiments, e.g., `--cores 44` to run with 44 cores. Without this argument it will run on all available cores. Each core can use at most 15GB of memory (many runs don't use the max memory) so it is advisable when running with many cores to have around 10GB of memory per core available. For the reduced set, 2.5GB of memory per core should be enough.
 
 ## Analyzing the results
 
@@ -138,7 +143,8 @@ The Python source code is in `tover/`, organised into the following packages.
 
 **`tover/cli/`** — Command line interfaces
 - `run.py` — Single monitor learning run (`python -m tover.cli.run`)
-- `experiment.py` — Batch experiment execution from YAML configs (`python -m tover.cli.experiment`)
+- `experiment.py` — Expands YAML configs into a `commands.txt` of per-variant commands for GNU `parallel` (`python -m tover.cli.experiment`)
+- `parallel.py` — Runs a single base64-pickled experiment variant, and (`--report`) labels timeouts from `parallel`'s joblog (`python -m tover.cli.parallel`)
 
 **`tover/core/`** — Learning and verification algorithm
 - `sul.py` — `FilteringSUL`: wraps the MC, uses a nondeterministic belief tracker to classify observations as accept/reject/don't-care relative to the threshold
@@ -159,8 +165,7 @@ The Python source code is in `tover/`, organised into the following packages.
 - `monitor_wp_method.py` — `MonitorWpMethodEqOracle` and `MonitorRandomWpMethodEqOracle`: W/Wp-method equivalence oracles that exploit the reference language
 
 **`tover/experiments/`** — Experiment infrastructure
-- `runner.py` — `LearningExperiment` and `VerifyExperiment`: experiment classes loaded from YAML
-- `scheduler.py` — Runs experiments concurrently using `multiprocessing` with per-experiment timeouts and a 15 GiB memory limit
+- `runner.py` — `LearningExperiment` and `VerifyExperiment`: experiment classes loaded from YAML; `Experiment.run` sets the 15 GiB per-process memory limit and writes the result JSON/log
 - `config.py` — `ObjectGroup`: expands parameter grids from YAML into experiment instances
 
 **`tover/analysis/`** — Result analysis

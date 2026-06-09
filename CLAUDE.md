@@ -20,18 +20,23 @@ python -m tover.cli.run --file tests/premise/airportA-3.nm --loader pomdp \
   --good-label crash --threshold 0.3 --horizon 8 \
   --fp-slack 0.2 --fn-slack 0.05 --exact --base-dir out/my-run
 
-# Run batch experiments from YAML configs
-python -m tover.cli.experiment tests/reduced-exp/*.yml --concurrent --timeout 9300
+# Generate per-variant commands from YAML configs (the default action)
+python -m tover.cli.experiment --files tests/reduced-exp/*.yml --base_dir out/my-batch
+# Then run them with GNU parallel (it owns concurrency + timeouts):
+parallel --jobs 8 --timeout 9300 --memfree 15G \
+  --joblog out/my-batch/joblog.txt < out/my-batch/commands.txt
+# Then label any timed-out runs so the analysis can distinguish them from OOM:
+python -m tover.cli.parallel --report out/my-batch/joblog.txt --base_dir out/my-batch
 
-# List experiments in a YAML file without running
-python -m tover.cli.experiment tests/reduced-exp/*.yml --list
+# List experiments in a YAML file without generating commands
+python -m tover.cli.experiment --files tests/reduced-exp/*.yml --list
 
 # Lint
 ruff check tover/
 ruff format tover/
 ```
 
-Note: `--exact` or `--double` must be specified for `tover.cli.run`. Experiments run with `--concurrent` use all available cores by default; use `--cores N` to limit.
+Note: `--exact` or `--double` must be specified for `tover.cli.run`. Batch experiments are no longer run in-process: `tover.cli.experiment` only writes a `commands.txt` (one base64-pickled experiment per line) that GNU `parallel` executes via `tover.cli.parallel`.
 
 Output lands in `out/` (single runs) or `stats/` (experiments).
 
@@ -78,7 +83,7 @@ transformations.py
 
 **Experiments** (`tover/experiments/`):
 - YAML files define `LearningExperiment` or `VerifyExperiment` objects with parameter grids
-- `scheduler.py` runs them concurrently using `multiprocessing`, with per-experiment timeouts and a 15 GiB memory limit
+- `tover/cli/experiment.py` expands the grid and writes one self-contained command per variant to `{base_dir}/commands.txt` (each a base64-pickled experiment), plus `experiment_metadata.json` and `run_info.json`. GNU `parallel` executes them; `tover/cli/parallel.py` runs a single pickled variant (reusing `Experiment.run`, which sets the 15 GiB `RLIMIT_AS`) and, in `--report` mode, labels timeouts from `parallel`'s `--joblog`.
 - Results are written as JSON to `{base_dir}/json/`
 
 **Analysis** (`tover/analysis/`): Loads experiment JSON results and generates matplotlib plots and LaTeX tables for the paper.

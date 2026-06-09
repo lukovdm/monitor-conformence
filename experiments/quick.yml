@@ -1,0 +1,24 @@
+# Fast smoke config for the parallel pipeline. Every variant finishes in well
+# under a second (tiny icy-driving model, short horizon, double precision), so
+# it is only meant for exercising generate -> parallel -> report end to end,
+# not for real results.
+
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - experiments/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=10"
+  horizon:
+    - 3
+    - 4
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  use_exact: false  # double is much faster than exact
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method:
+    - rejection
+    - bisection

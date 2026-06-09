@@ -362,6 +362,7 @@ class LearningExperiment(Experiment):
                 "paynt_time": stats.paynt_time,
                 "eq_time": stats.eq_time,
                 "reference_language_time": stats.reference_language_time,
+                "rounds": stats.rounds,
                 "learning_stats": lstar_info,
                 "dot_file": f"{path_base}.dot",
                 "drn_file": f"{path_base}.drn",

@@ -154,7 +154,11 @@ def load_experiment_data(path: str, expected_total: int | None = None) -> list[d
         if not data["finished"]:
             unfinished_count += 1
             data["results"] = None
-            data["error"] = None
+            # A run whose JSON stayed unfinished was killed (timeout / OOM /
+            # error); infer which from the log. Timeouts are marked "timed out"
+            # by the `tover.cli.parallel --report` step; everything else
+            # defaults to OOM.
+            data["error"] = _timeout_or_oom(log_path)
 
         started_keys.add((data["experiment"]["name"], data["experiment"]["variant"]))
         experiment_data.append(data)

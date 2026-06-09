@@ -30,7 +30,6 @@
     - bisection_advanced
     - bisection_pt
     - bisection_advanced_pt
-    - policy_iteration
 
 - type: LearningExperiment
   name: refuel

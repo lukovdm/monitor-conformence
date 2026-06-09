@@ -41,6 +41,10 @@ def run_monitor_lsharp(
     validity_queries = 0
     hypothesis = None
 
+    round_timings: list[dict[str, float]] = []
+    pending_build = 0.0
+    pending_smt = 0.0
+
     while True:
         learning_rounds += 1
 
@@ -49,7 +53,12 @@ def run_monitor_lsharp(
             break
 
         # Building the hypothesis
+        smt_before = ob_tree.smt_time
+        build_start = time.time()
         hypothesis = ob_tree.build_hypothesis()
+        build_smt = ob_tree.smt_time - smt_before
+        pending_build += time.time() - build_start - build_smt
+        pending_smt += build_smt
 
         if hypothesis is None:
             continue
@@ -57,14 +66,33 @@ def run_monitor_lsharp(
         # Pose Equivalence Query
         eq_query_start = time.time()
         cex = eq_oracle.find_cex(hypothesis)
-        eq_query_time += time.time() - eq_query_start
+        round_eq_time = time.time() - eq_query_start
+        eq_query_time += round_eq_time
         validity_queries += 1
 
+        round = {
+            "hypothesis_size": hypothesis.size,
+            "build_time": pending_build,
+            "smt_time": pending_smt,
+            "eq_time": round_eq_time,
+            "process_time": 0.0,
+        }
+        pending_build = 0.0
+        pending_smt = 0.0
+
         if cex is None:
+            round_timings.append(round)
             break
 
         # Process the counterexample and start a new learning round
+        smt_before = ob_tree.smt_time
+        process_start = time.time()
         ob_tree.process_counter_example(cex)
+        round["process_time"] = time.time() - process_start - (
+            ob_tree.smt_time - smt_before
+        )
+        round["smt_time"] += ob_tree.smt_time - smt_before
+        round_timings.append(round)
 
     total_time = time.time() - start_time
     smt_time = ob_tree.smt_time
@@ -77,6 +105,7 @@ def run_monitor_lsharp(
         "smt_time": smt_time,
         "eq_oracle_time": eq_query_time,
         "total_time": total_time,
+        "round_timings": round_timings,
         # learning algorithm
         "queries_learning": sul.num_queries,
         "validity_query": validity_queries,  # tree

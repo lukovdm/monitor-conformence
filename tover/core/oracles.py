@@ -29,6 +29,10 @@ class OracleStats:
     product_time: float = 0.0
     eq_time: float = 0.0
     reference_language_time: float = 0.0
+    # Per-round breakdown of each equivalence query (sampling + FN/FP synthesis).
+    # The matching learning-algorithm time per round lives in the learning-info
+    # dict (see `ToVerEqOracle.learning_times`).
+    rounds: list = field(default_factory=list)
 
     def update_from(self, stats: VerifyStats) -> None:
         """Accumulate timing from a verification sub-call."""
@@ -47,6 +51,7 @@ class OracleStats:
         self.product_time += other.product_time
         self.eq_time += other.eq_time
         self.reference_language_time += other.reference_language_time
+        self.rounds += other.rounds
         return self
 
 
@@ -104,9 +109,17 @@ class ToVerEqOracle(Oracle):
             f"Finding counterexample for hypothesis with {len(hypothesis.states)} states"
         )
 
+        record: dict = {"hypothesis_size": len(hypothesis.states), "found": None}
+        try:
+            return self._find_cex(hypothesis, record)
+        finally:
+            self.stats.rounds.append(record)
+
+    def _find_cex(self, hypothesis: Dfa[str], record: dict):
         if self.random_eq_oracle is not None:
-            cex = self._try_sampling_cex(hypothesis)
+            cex = self._try_sampling_cex(hypothesis, record)
             if cex is not None:
+                record["found"] = "sampling"
                 return cex
 
         logger.debug("Finding false negative probability")
@@ -122,6 +135,9 @@ class ToVerEqOracle(Oracle):
             self._verify_options(),
         )
         self.stats.update_from(stats)
+        record["fn_product_time"] = stats.product_time
+        record["fn_paynt_time"] = stats.paynt_time
+        record["fn_iterations"] = stats.iterations
 
         if cex is not None:
             result, trace, _ = cex
@@ -129,6 +145,7 @@ class ToVerEqOracle(Oracle):
             self.stats.fn_found += 1
             self.stats.fn_bounds.append(result)
             self.stats.fp_bounds.append(None)
+            record["found"] = "fn"
             return trace
 
         logger.debug("Finding false positive probability")
@@ -142,6 +159,9 @@ class ToVerEqOracle(Oracle):
             self._verify_options(),
         )
         self.stats.update_from(stats)
+        record["fp_product_time"] = stats.product_time
+        record["fp_paynt_time"] = stats.paynt_time
+        record["fp_iterations"] = stats.iterations
 
         if cex is not None:
             result, trace, _ = cex
@@ -149,11 +169,12 @@ class ToVerEqOracle(Oracle):
             self.stats.fp_found += 1
             self.stats.fp_bounds.append(result)
             self.stats.fn_bounds.append(None)
+            record["found"] = "fp"
             return trace
 
         return None
 
-    def _try_sampling_cex(self, hypothesis: Dfa[str]):
+    def _try_sampling_cex(self, hypothesis: Dfa[str], record: dict):
         assert self.random_eq_oracle is not None
 
         start_eq_time = time()
