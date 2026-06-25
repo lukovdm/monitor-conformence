@@ -22,8 +22,12 @@
   learning_method:
     - lstar
     - lsharp
-  use_dont_care: [true, false]
-  use_refrence_language: [true, false]
+  zip:
+    - use_dont_care: true
+      use_refrence_language: true
+    - use_dont_care: false
+      use_refrence_language: false
+  seed: [0,1,2]
 
 - <<: *base
   name: refuel

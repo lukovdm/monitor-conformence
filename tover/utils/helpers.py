@@ -14,6 +14,13 @@ def stormpy_pomdp_to_mdp(pomdp: SparsePomdp) -> SparseMdp:
     components.state_valuations = pomdp.state_valuations
     return SparseMdp(components)
 
+def copy_pomdp(pomdp: SparsePomdp) -> SparsePomdp:
+    components = SparseModelComponents(pomdp.transition_matrix, pomdp.labeling)
+    components.choice_labeling = pomdp.choice_labeling
+    # components.state_valuations = pomdp.state_valuations
+    components.observability_classes = pomdp.observations
+    return type(pomdp)(components)
+
 
 def hole_to_observations(assignment: Family) -> dict[int, str]:
     action_map = {}

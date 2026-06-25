@@ -1,3 +1,4 @@
+import copy
 import os
 import traceback
 from dataclasses import dataclass, field
@@ -22,6 +23,7 @@ from stormpy import (
 from tover.core.synthesis import ConditionalMethod, Verifier
 from tover.core.transformations import stormpy_unroll
 from tover.models.algorithms import complement_monitor
+from tover.utils.helpers import copy_pomdp
 from tover.utils.logger import logger
 
 
@@ -209,7 +211,7 @@ def _verify_helper(
             f"-{paynt_spec.replace('/', ' div ')}"
             f"-{options.get('hash', 'nohash')}-{timestamp}.drn"
         )
-        export_to_drn(model.pomdp, path)
+        export_to_drn(copy_pomdp(model.pomdp), path)
 
     logger.debug("Finding specified trace")
     paynt_start = time()

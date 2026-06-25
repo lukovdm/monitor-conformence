@@ -5,6 +5,11 @@
 # conditional_method values come from tover.core.synthesis.ConditionalMethod:
 #   rejection, restart, bisection, bisection_advanced,
 #   bisection_pt, bisection_advanced_pt, policy_iteration
+#
+# `zip` couples conditional_method with use_exact (see ObjectGroup): rejection and
+# restart run with exact arithmetic, the bisection family runs with floats. Each
+# bundle crosses its own list-valued keys, so the block below expands to six
+# method/precision variants (defined once via the &methods anchor, reused below).
 
 - type: LearningExperiment
   name: icy-driving
@@ -19,17 +24,15 @@
   spec: Pmax=? [F<=1 "crash"]
   good_label: crash
   loader: pomdp
-  use_exact: &exact false
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
-  conditional_method: &cmethods
-    - rejection
-    - restart
-    - bisection
-    - bisection_advanced
-    - bisection_pt
-    - bisection_advanced_pt
+  seed: &seeds [0,1,2]
+  zip: &methods
+    - conditional_method: [rejection, restart]
+      use_exact: true
+    - conditional_method: [bisection, bisection_advanced, bisection_pt, bisection_advanced_pt]
+      use_exact: false
 
 - type: LearningExperiment
   name: refuel
@@ -43,11 +46,11 @@
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
   loader: pomdp
-  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
-  conditional_method: *cmethods
+  seed: *seeds
+  zip: *methods
 
 - type: LearningExperiment
   name: evade
@@ -60,11 +63,11 @@
   horizon:
     - 7
     - 9
-  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
-  conditional_method: *cmethods
+  seed: *seeds
+  zip: *methods
 
 - type: LearningExperiment
   name: hidden_incentive
@@ -77,11 +80,11 @@
   horizon:
     - 8
     # - 10
-  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
-  conditional_method: *cmethods
+  seed: *seeds
+  zip: *methods
 
 - type: LearningExperiment
   name: airport
@@ -97,11 +100,11 @@
   horizon:
     - 9
     # - 11
-  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
-  conditional_method: *cmethods
+  seed: *seeds
+  zip: *methods
 
 - name: snakes_ladders
   type: LearningExperiment
@@ -139,8 +142,8 @@
     - 14
     # - 16
     # - 18
-  use_exact: *exact
   learning_method: lsharp
   use_dont_care: true
   use_refrence_language: true
-  conditional_method: *cmethods
+  seed: *seeds
+  zip: *methods

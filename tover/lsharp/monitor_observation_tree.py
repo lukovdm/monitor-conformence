@@ -1,3 +1,4 @@
+from enum import Enum
 import itertools
 from math import floor
 import time
@@ -13,6 +14,11 @@ from tover.lsharp.moore_node import MooreNode
 from tover.utils.logger import logger
 
 
+class SMTBehaviour(Enum):
+    EXPO_BACKOFF = "expo_backoff"
+    SEQUENTIAL = "sequential"
+
+
 class MonitorObservationTree:
     def __init__(
         self,
@@ -23,6 +29,7 @@ class MonitorObservationTree:
         replace_basis,
         use_compatibility,
         use_dont_care=True,
+        smt_behaviour=SMTBehaviour.EXPO_BACKOFF
     ):
         # ``reference`` may be None, in which case no reference language is used
         # and every queried sequence is treated as defined.
@@ -37,6 +44,7 @@ class MonitorObservationTree:
         # (the SUL never returns "unknown"), so the hypothesis can be built with
         # the classic L# construction instead of the SMT solver.
         self.use_dont_care = use_dont_care
+        self.smt_behaviour = smt_behaviour
 
         # Logger information
         self.smt_time = 0
@@ -470,10 +478,36 @@ class MonitorObservationTree:
         """
         Builds the hypothesis which will be sent to the SUL and checks consistency
         """
-        if not self.use_dont_care:
-            # The observation tree is fully defined, so we can use the classic
-            # L# construction (no SMT solver needed).
-            return self.build_hypothesis_classic()
+        # if not self.use_dont_care:
+        #     # The observation tree is fully defined, so we can use the classic
+        #     # L# construction (no SMT solver needed).
+        #     return self.build_hypothesis_classic()
+        
+        if self.smt_behaviour == SMTBehaviour.EXPO_BACKOFF:
+            return self.build_hypothesis_expo_backoff()
+        elif self.smt_behaviour == SMTBehaviour.SEQUENTIAL:
+            return self.build_hypothesis_sequential()
+        else:
+            raise ValueError(f"Unknown SMT behaviour: {self.smt_behaviour}")
+        
+    def build_hypothesis_sequential(self):
+        """
+        Builds the hypothesis which will be sent to the SUL and checks consistency
+        """
+        while True:
+            self.find_adequate_observation_tree()
+            transition_mapping, output_mapping = self.find_hypothesis()
+            if transition_mapping is not None:
+                hypothesis = self.construct_hypothesis(transition_mapping=transition_mapping,
+                                                       output_mapping=output_mapping)
+                return hypothesis
+            else:
+                self.size += 1
+
+    def build_hypothesis_expo_backoff(self):
+        """
+        Builds the hypothesis which will be sent to the SUL and checks consistency
+        """
 
         lower_bound = self.size
         upper_bound = None
@@ -633,7 +667,7 @@ class MonitorObservationTree:
                 if self.get_successor(inputs) is None:
                     self.execute_query(inputs)
 
-        open("out/test/monitor_ob_tree.dot", "w").write(self.to_dot())
+        # open("out/test/monitor_ob_tree.dot", "w").write(self.to_dot())
 
     def update_frontier(self):
         self.update_frontier_to_basis_dict()

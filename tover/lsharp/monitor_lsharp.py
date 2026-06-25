@@ -1,11 +1,10 @@
-from itertools import filterfalse
 import time
 from typing import Any
 
 from aalpy.automata import Dfa
 from aalpy.base import SUL, Oracle
 
-from tover.lsharp.monitor_observation_tree import MonitorObservationTree
+from tover.lsharp.monitor_observation_tree import MonitorObservationTree, SMTBehaviour
 from tover.utils.logger import logger
 
 
@@ -17,8 +16,9 @@ def run_monitor_lsharp(
     solver_timeout: int,
     learning_timeout: int | None = 1000,
     replace_basis: bool = True,
-    use_compatibility: bool = filterfalse,
+    use_compatibility: bool = False,
     use_dont_care: bool = True,
+    smt_behaviour: SMTBehaviour = SMTBehaviour.EXPO_BACKOFF,
 ) -> tuple[Dfa[str], dict[str, Any]]:
     logger.info(
         f"Starting L# learning with alphabet size {len(alphabet)}, "
@@ -33,6 +33,7 @@ def run_monitor_lsharp(
         replace_basis,
         use_compatibility,
         use_dont_care,
+        smt_behaviour,
     )
     start_time = time.time()
 

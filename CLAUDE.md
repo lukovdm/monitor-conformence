@@ -22,8 +22,9 @@ python -m tover.cli.run --file tests/premise/airportA-3.nm --loader pomdp \
 
 # Generate per-variant commands from YAML configs (the default action)
 python -m tover.cli.experiment --files tests/reduced-exp/*.yml --base_dir out/my-batch
-# Then run them with GNU parallel (it owns concurrency + timeouts):
-parallel --jobs 8 --timeout 9300 --memfree 15G \
+# Then run them with GNU parallel (it owns concurrency + timeouts; --shuf
+# randomizes job order so heavy variants don't cluster):
+parallel --shuf --jobs 8 --timeout 9300 --memfree 15G \
   --joblog out/my-batch/joblog.txt < out/my-batch/commands.txt
 # Then label any timed-out runs so the analysis can distinguish them from OOM:
 python -m tover.cli.parallel --report out/my-batch/joblog.txt --base_dir out/my-batch

@@ -22,7 +22,6 @@ import json
 import os
 import pickle
 from hashlib import md5
-from random import seed
 from typing import override
 
 from tap import Tap
@@ -53,7 +52,8 @@ def _decode(blob: str):
 
 def _run(args: ParallelArgs) -> None:
     exp = _decode(args.pickle)
-    seed(0)  # parity with the old scheduler worker
+    # Seeding is driven by the experiment itself (Experiment.run uses exp.seed,
+    # default 0) so it stays consistent across entry points and is recorded.
     exp.run(args.timestamp, args.base_dir, output_to_stdout=False)
 
 

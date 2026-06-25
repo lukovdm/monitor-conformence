@@ -1,5 +1,6 @@
 import json
 import os
+import random
 import resource
 import traceback
 from abc import ABC, abstractmethod
@@ -52,6 +53,7 @@ class Experiment(ABC):
         parameters: dict[str, Any],
         file: str,
         use_exact: bool,
+        seed: int = 0,
     ):
         self.name: str = name
         self.variant: str | None = variant
@@ -61,6 +63,7 @@ class Experiment(ABC):
         self.parameters: dict[str, Any] = parameters
         self.file: str = file
         self.use_exact: bool = use_exact
+        self.seed: int = seed
 
         self.mc = None
         self.expr_manager = None
@@ -97,6 +100,9 @@ class Experiment(ABC):
             resource.RLIMIT_AS,
             (1024 * 1024 * 1024 * 15, resource.RLIM_INFINITY),  # 15 GiB limit
         )
+        # Seed the global RNG (the only randomness source on the run path) so each
+        # variant is reproducible; the seed is part of the experiment definition.
+        random.seed(self.seed)
         proc_title = getproctitle().split("<")[0]
         setproctitle(f"{proc_title} <{self.name} {self.variant}>")
 
@@ -174,8 +180,10 @@ class LearningExperiment(Experiment):
         # Learning
         learning_method: LearningMethod = LearningMethod.LSHARP,
         random_eq_method: dict[str, int] | Literal["default"] | None = "default",
+        # Reproducibility
+        seed: int = 0,
     ):
-        super().__init__(name, variant, loader, parameters, file, use_exact)
+        super().__init__(name, variant, loader, parameters, file, use_exact, seed)
 
         if random_eq_method == "default":
             random_eq_method = {}
@@ -337,6 +345,7 @@ class LearningExperiment(Experiment):
                 learning_method=self.learning_method,
                 random_eq_method=self.random_eq_method,
                 base_dir=base_dir,
+                # export_benchmarks=True
             )
             elapsed = time() - start_time
 
@@ -432,6 +441,7 @@ class VerifyExperiment(Experiment):
         use_exact: bool = False,
         paynt_strategy: str = "ar",
         conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_PT,
+        seed: int = 0,
     ):
         self.stop = False
 
@@ -493,7 +503,7 @@ class VerifyExperiment(Experiment):
 
         assert loader is not None and parameters is not None and file is not None
 
-        super().__init__(name, variant, loader, parameters, file, use_exact)
+        super().__init__(name, variant, loader, parameters, file, use_exact, seed)
 
         self.threshold = threshold
         self.search = search

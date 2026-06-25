@@ -7,7 +7,11 @@ import numpy as np
 from scipy.optimize import curve_fit
 from itertools import combinations, product
 
-# Fields used to match experiments across methods when pairing
+# Fields used to match experiments across methods when pairing. ``seed`` is
+# included so that, when a benchmark is run under several seeds, each seed of one
+# method is paired with the *same* seed of the other (giving one point per seed
+# rather than mispairing different seeds). For single-seed or older data with no
+# ``seed`` field, ``.get("seed")`` is None on both sides, so this is a no-op.
 DEFAULT_MATCH_FIELDS = [
     "name",
     "file",
@@ -18,6 +22,7 @@ DEFAULT_MATCH_FIELDS = [
     "fn_slack",
     "spec",
     "good_label",
+    "seed",
 ]
 
 
@@ -75,12 +80,15 @@ def calculate_error_lines(
     value_func,
 ) -> tuple[float, float, float, float, float]:
     """Compute sentinel line positions based on the maximum observed value."""
+    # Only positive values count: unfinished runs map to 0 here, and if *nothing*
+    # has finished yet we must still fall back to 1.0 (a 0 bound breaks the log
+    # axis in setup_loglog_comparison).
     max_time = max(
         (
             v
             for d in data
             for v in [value_func(d)]
-            if isinstance(v, (int, float, Fraction))
+            if isinstance(v, (int, float, Fraction)) and v > 0
         ),
         default=1.0,
     )
@@ -109,6 +117,9 @@ def setup_loglog_comparison(
     upper bound used for the diagonal guides; sentinel positions extend the
     visible range automatically.
     """
+    # Guard the log axis: with no finished runs the data-driven bound can be 0
+    # (or below min_value), which would make log10 fail / produce no ticks.
+    max_lim = max(max_lim, min_value * 10)
     ax.plot([0, max_lim], [0, max_lim], "-", color="0.5")
     ax.plot([0, max_lim], [0, max_lim / 10], "--", color="0.5", label="10x faster")
     ax.plot([0, max_lim / 10], [0, max_lim], "--", color="0.5")

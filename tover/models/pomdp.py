@@ -21,7 +21,7 @@ from tover.utils.helpers import compact_json_str
 
 def pomdp_to_stormpy_mc(
     path: str, constants: str, use_exact: bool
-) -> tuple[str, set[str], SparseDtmc | SparseExactDtmc, ExpressionManager]:
+) -> tuple[str, list[str], SparseDtmc | SparseExactDtmc, ExpressionManager]:
     """Load a POMDP from a PRISM file and convert it to a labelled Stormpy DTMC.
 
     Observation valuations are encoded as state labels so the belief tracker
@@ -64,7 +64,9 @@ def pomdp_to_stormpy_mc(
         )
         observation_classes.add(obs_string)
 
-    for obs in observation_classes:
+    observation_classes_list = sorted(observation_classes)
+
+    for obs in observation_classes_list:
         state_labeling.add_label(obs)
 
     if use_exact:
@@ -106,7 +108,7 @@ def pomdp_to_stormpy_mc(
         components = SparseExactModelComponents(matrix, state_labeling)
         return (
             initial_observation,
-            observation_classes,
+            observation_classes_list,
             SparseExactDtmc(components),
             prism.expression_manager,
         )
@@ -114,7 +116,7 @@ def pomdp_to_stormpy_mc(
         components = SparseModelComponents(matrix, state_labeling)
         return (
             initial_observation,
-            observation_classes,
+            observation_classes_list,
             SparseDtmc(components),
             prism.expression_manager,
         )

@@ -5,6 +5,7 @@ from typing import Any, cast
 from aalpy import Dfa, run_Lstar
 from aalpy.learning_algs import run_Lsharp
 from aalpy.oracles.WpMethodEqOracle import RandomWpMethodEqOracle
+from aalpy.base.SUL import CacheSUL
 from stormpy import (
     ExpressionManager,
     SparseDtmc,
@@ -15,6 +16,7 @@ from tover.core.sul import FilteringSUL
 from tover.core.synthesis import ConditionalMethod
 from tover.core.transformations import language_of_hmm
 from tover.lsharp.monitor_lsharp import run_monitor_lsharp
+from tover.lsharp.monitor_observation_tree import SMTBehaviour
 from tover.lsharp.monitor_wp_method import (
     MonitorRandomWpMethodEqOracle,
 )
@@ -49,6 +51,7 @@ def run_tover(
     use_reference_language: bool = True,
     conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
     learning_method: LearningMethod = LearningMethod.LSHARP,
+    smt_behaviour: SMTBehaviour = SMTBehaviour.SEQUENTIAL,
     # Timeouts
     solver_timeout: int = 200,
     learning_timeout: int | None = 100000,
@@ -62,8 +65,9 @@ def run_tover(
         f"fp_slack: {fp_slack}, fn_slack: {fn_slack}, relative_error: {relative_error}, "
         f"use_risk: {use_risk}, use_dont_care: {use_dont_care}, use_horizon_in_filtering: {use_horizon_in_filtering}, "
         f"random_eq_method: {random_eq_method}, use_reference_language: {use_reference_language}, "
-        f"conditional_method: {conditional_method}, learning_method: {learning_method}"
+        f"conditional_method: {conditional_method}, learning_method: {learning_method}, smt_behaviour: {smt_behaviour}"
     )
+    print(f"Using alphabet of size {len(alphabet)}: {alphabet}")
     sul = FilteringSUL(
         mc,
         initial_observation,
@@ -74,6 +78,7 @@ def run_tover(
         use_risk,
         use_dont_care,
     )
+    sul_cached = CacheSUL(sul)
 
     if use_reference_language and learning_method == LearningMethod.LSHARP:
         reference_start = time()
@@ -119,7 +124,7 @@ def run_tover(
                 tuple[Dfa[str], dict[str, Any]],
                 run_Lstar(
                     alphabet,
-                    sul,
+                    sul_cached,
                     eq_oracle,
                     automaton_type="dfa",
                     return_data=True,
@@ -135,7 +140,7 @@ def run_tover(
                     tuple[Dfa[str], dict[str, Any]],
                     run_Lsharp(
                         alphabet,
-                        sul,
+                        sul_cached,
                         eq_oracle,
                         automaton_type="dfa",
                         separation_rule="SepSeq",
@@ -150,11 +155,12 @@ def run_tover(
                 run_monitor_lsharp(
                     alphabet,
                     refrence,
-                    sul,
+                    sul_cached,
                     eq_oracle,
                     solver_timeout=solver_timeout,
                     learning_timeout=learning_timeout,
                     use_dont_care=use_dont_care,
+                    smt_behaviour=smt_behaviour,
                 ),
                 eq_oracle.stats,
             )

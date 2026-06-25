@@ -146,7 +146,7 @@ def generate_commands(
     print(f"Output directory: {base_dir}\n")
     print("Run with GNU parallel:")
     print(
-        f"  parallel --bar --jobs {jobs} --timeout {timeout} --memfree 15G "
+        f"  parallel --shuf --bar --jobs {jobs} --timeout {timeout} --memfree 15G "
         f"--joblog {joblog} < {commands_path}"
     )
     print("\nThen label any timed-out runs:")

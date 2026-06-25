@@ -156,6 +156,18 @@ class Verifier:
         paynt.cli.setup_logger()
         paynt.utils.timer.GlobalTimer.start()
 
+        paynt.verification.property.Property.conditional_algorithm = (
+            CONDITIONAL_METHODS[self.conditional_method]
+        )
+
+        paynt.verification.property.Property.conditional_bisection_optimization = (
+            not str_prop.startswith("Pmax")
+        )
+
+        logger.info(f"Checking property {str_prop} with conditional method {self.conditional_method} with bounds: {paynt.verification.property.Property.conditional_bisection_optimization}")
+
+        
+
         formula = PrismParser.parse_property(str_prop)
         prop = paynt.verification.property.construct_property(
             formula, relative_error, self.pomdp.is_exact
@@ -166,14 +178,6 @@ class Verifier:
             MinMaxMethod.value_iteration
             if "bisection" in self.conditional_method
             else None
-        )
-
-        paynt.verification.property.Property.conditional_algorithm = (
-            CONDITIONAL_METHODS[self.conditional_method]
-        )
-
-        paynt.verification.property.Property.conditional_bisection_optimization = (
-            not str_prop.startswith("Pmax")
         )
 
         paynt.verification.property.Property.initialize(
