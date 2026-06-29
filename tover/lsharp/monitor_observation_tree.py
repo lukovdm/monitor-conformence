@@ -4,6 +4,7 @@ from math import floor
 import time
 from collections import deque
 
+from aalpy import SUL
 from aalpy.automata import Dfa, DfaState
 from pysmt.exceptions import SolverReturnedUnknownResultError
 from pysmt.shortcuts import GE, LT, Bool, Function, Int, Or, Solver, Symbol
@@ -29,7 +30,7 @@ class MonitorObservationTree:
         replace_basis,
         use_compatibility,
         use_dont_care=True,
-        smt_behaviour=SMTBehaviour.EXPO_BACKOFF
+        smt_behaviour=SMTBehaviour.EXPO_BACKOFF,
     ):
         # ``reference`` may be None, in which case no reference language is used
         # and every queried sequence is treated as defined.
@@ -48,12 +49,14 @@ class MonitorObservationTree:
 
         # Logger information
         self.smt_time = 0
+        # Number of SMT solver invocations (one per find_hypothesis call).
+        self.smt_queries = 0
         MooreNode._id_counter = 0
 
         # Initialize tree
         self.alphabet = alphabet
-        self.reference = reference
-        self.sul = sul
+        self.reference: Dfa = reference
+        self.sul: SUL = sul
         self.outputAlphabet = [True, False, "unknown"]
         self.states_list = []
 
@@ -158,6 +161,41 @@ class MonitorObservationTree:
             for successor in node.successors.values():
                 queue.append(successor)
         return count
+
+    def reference_explored_depth(self):
+        """Largest depth ``d`` such that every reference-defined word of length
+        ``<= d`` is present as a node in the observation tree (i.e. has been
+        queried). Returns ``None`` when no reference language is used.
+
+        Walks the reference DFA and the observation tree in lockstep: a word is
+        reference-defined as long as its transitions stay in accepting (non-dead)
+        reference states, matching ``defined_in_reference``. Naturally caps at the
+        horizon, since the reference has no defined continuations past it.
+        """
+        if self.reference is None:
+            return None
+        # Pairs (reference_state, tree_node) for words of length `depth` that are
+        # both reference-defined and already present in the tree.
+        frontier = [(self.reference.initial_state, self.root)]
+        depth = 0
+        while frontier:
+            next_frontier = []
+            for ref_state, node in frontier:
+                for letter in self.alphabet:
+                    ref_next = ref_state.transitions.get(letter)
+                    if ref_next is None or not ref_next.is_accepting:
+                        continue  # not defined in the reference -> don't require it
+                    child = node.get_successor(letter)
+                    if child is None:
+                        return depth  # a defined word of length depth+1 is missing
+                    next_frontier.append((ref_next, child))
+            depth += 1
+            frontier = next_frontier
+        # Frontier ran dry without a missing node: the whole reference language is
+        # explored. The last level carrying defined words was depth-1 (the loop
+        # incremented once more past it), so that is the deepest covered depth
+        # (= the reference's max length / horizon).
+        return depth - 1
 
     def update_basis_candidates(self, frontier_node):
         """
@@ -275,9 +313,7 @@ class MonitorObservationTree:
             inputs = inputs_to_frontier + witness_seq
             extended = self.execute_query(inputs)
             if extended:
-                witness_cache = (
-                    dict()
-                )  # Clear the cache since the tree has changed and there might be more witnesses
+                witness_cache = dict()  # Clear the cache since the tree has changed and there might be more witnesses
                 return True
         return False
 
@@ -343,6 +379,7 @@ class MonitorObservationTree:
             f"Basis size: {len(self.basis)}, Frontier size: {len(self.frontier_to_basis_dict)}"
         )
         start_smt_time = time.time()
+        self.smt_queries += 1
 
         # or another backend supported by pySMT
         s = Solver(name="z3", solver_options={"timeout": self.solver_timeout})
@@ -482,14 +519,14 @@ class MonitorObservationTree:
         #     # The observation tree is fully defined, so we can use the classic
         #     # L# construction (no SMT solver needed).
         #     return self.build_hypothesis_classic()
-        
+
         if self.smt_behaviour == SMTBehaviour.EXPO_BACKOFF:
             return self.build_hypothesis_expo_backoff()
         elif self.smt_behaviour == SMTBehaviour.SEQUENTIAL:
             return self.build_hypothesis_sequential()
         else:
             raise ValueError(f"Unknown SMT behaviour: {self.smt_behaviour}")
-        
+
     def build_hypothesis_sequential(self):
         """
         Builds the hypothesis which will be sent to the SUL and checks consistency
@@ -498,8 +535,9 @@ class MonitorObservationTree:
             self.find_adequate_observation_tree()
             transition_mapping, output_mapping = self.find_hypothesis()
             if transition_mapping is not None:
-                hypothesis = self.construct_hypothesis(transition_mapping=transition_mapping,
-                                                       output_mapping=output_mapping)
+                hypothesis = self.construct_hypothesis(
+                    transition_mapping=transition_mapping, output_mapping=output_mapping
+                )
                 return hypothesis
             else:
                 self.size += 1
@@ -641,7 +679,9 @@ class MonitorObservationTree:
             # logger.debug(
             #     f"Posing reduced OQ {defined_inputs[:-1]}, original OQ {inputs}"
             # )
-            outputs = self.sul.query(defined_inputs[:-1]) + ["unknown"]
+            # CacheSUL.query returns a tuple on a cache hit but a list on a miss,
+            # so coerce to list before appending the don't-care output.
+            outputs = list(self.sul.query(defined_inputs[:-1])) + ["unknown"]
             self.insert_observation_sequence(defined_inputs, outputs)
             return True
         else:
@@ -655,19 +695,60 @@ class MonitorObservationTree:
         """
         Extend the frontier self.size - len(self.basis) steps from the basis
         """
-        length = 2 if self.size - len(self.basis) > 2 else 1
-        # Compute each basis node's access sequence once instead of recomputing
-        # it for every word.
-        basis_access = [self.get_access_sequence(node) for node in self.basis]
-        # Loop over words of length 'length'
-        for word in itertools.product(self.alphabet, repeat=length):
-            word = list(word)
-            for access in basis_access:
-                inputs = access + word
-                if self.get_successor(inputs) is None:
-                    self.execute_query(inputs)
+        if self.reference is None:
+            length = 2 if self.size - len(self.basis) > 2 else 1
+            basis_access = [self.get_access_sequence(node) for node in self.basis]
+            for word in itertools.product(self.alphabet, repeat=length):
+                word = list(word)
+                for access in basis_access:
+                    inputs = access + word
+                    if self.get_successor(inputs) is None:
+                        self.execute_query(inputs)
+        else:
+            length = self.size - len(self.basis)
+            max_words = (
+                MooreNode._id_counter * 0.1
+            )  # extend the frontier by at most 10% of the number of nodes in the tree to avoid exponential blowup
 
-        # open("out/test/monitor_ob_tree.dot", "w").write(self.to_dot())
+            bfs_stack = deque([])
+            seen_states = set()
+
+            for basis_node in self.basis:
+                basis_access_seq = self.get_access_sequence(basis_node)
+                basis_error = self.reference.execute_sequence(
+                    self.reference.initial_state, basis_access_seq
+                )
+                if basis_error is False or (
+                    isinstance(basis_error, list) and basis_error[-1] is False
+                ):
+                    continue
+
+                bfs_stack.append((self.reference.current_state, basis_access_seq, 0))
+                seen_states.add(self.reference.current_state)
+
+            count = 0
+            while bfs_stack:
+                if count > max_words:
+                    break
+
+                current_state, access_seq, depth = bfs_stack.popleft()
+                count += 1
+
+                for letter in self.alphabet:
+                    next_state = current_state.transitions.get(letter)
+                    if (
+                        next_state is None
+                        or next_state in seen_states
+                        or not next_state.is_accepting
+                    ):
+                        continue
+
+                    if self.get_successor(access_seq + [letter]) is None:
+                        self.execute_query(access_seq + [letter])
+
+                    if depth + 1 < length:
+                        bfs_stack.append((next_state, access_seq + [letter], depth + 1))
+                        seen_states.add(next_state)
 
     def update_frontier(self):
         self.update_frontier_to_basis_dict()
@@ -759,7 +840,7 @@ class MonitorObservationTree:
             # Add basis candidates for frontier nodes
             if node in frontier_set:
                 candidates = self.frontier_to_basis_dict[node]
-                label += f"\\n{" ".join(str(cid.id) for cid in candidates)}"
+                label += f"\\n{' '.join(str(cid.id) for cid in candidates)}"
 
             lines.append(
                 f'    n{node.id} [label="{label}", shape={shape}, color={color}];'

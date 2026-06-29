@@ -28,6 +28,8 @@
     - use_dont_care: false
       use_refrence_language: false
   seed: [0,1,2]
+  random_eq_method:
+    - max_seqs: 50000
 
 - <<: *base
   name: refuel

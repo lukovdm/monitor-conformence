@@ -3,23 +3,22 @@
   file:
     - experiments/icy-driving/icy-driving.pm
   parameters:
-    - constants: "IMAX=1"
     - constants: "IMAX=25"
-    - constants: "IMAX=50"
+    # - constants: "IMAX=50"
   horizon:
-    - 3
     - 10
     - 25
   spec: Pmax=? [F<=1 "crash"]
   good_label: crash
   loader: pomdp
-  learning_algs:
-    - [verimon]
   learning_method: lsharp
-  slack:
-    - [0, 0]
-    - [0.2, 0.05]
-  use_exact: true
+  use_dont_care: true
+  use_refrence_language: true
+  seed: &seeds [0,1,2]
+  random_eq_method: &methods
+    - max_seqs: 5000
+    - max_seqs: 50000
+    - max_seqs: 500000
 
 - type: LearningExperiment
   name: refuel
@@ -28,18 +27,16 @@
     - experiments/premise/refuelB.nm
   parameters:
     - constants: "N=3,ENERGY=3"
-    - constants: "N=4,ENERGY=3"
-    - constants: "N=3,ENERGY=4"
+    # - constants: "N=4,ENERGY=3"
+    # - constants: "N=3,ENERGY=4"
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
   loader: pomdp
-  learning_algs:
-    - [verimon]
   learning_method: lsharp
-  slack:
-    - [0, 0]
-    - [0.2, 0.05]
-  use_exact: true
+  use_dont_care: true
+  use_refrence_language: true
+  seed: *seeds
+  random_eq_method: *methods
 
 - type: LearningExperiment
   name: evade
@@ -50,17 +47,13 @@
   good_label: crash
   loader: pomdp
   horizon:
-    - 6
     - 7
-    - 8
     - 9
-  learning_algs:
-    - [verimon]
   learning_method: lsharp
-  slack:
-    - [0, 0]
-    - [0.2, 0.05]
-  use_exact: true
+  use_dont_care: true
+  use_refrence_language: true
+  seed: *seeds
+  random_eq_method: *methods
 
 - type: LearningExperiment
   name: hidden_incentive
@@ -70,49 +63,38 @@
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   loader: pomdp
-  learning_algs:
-    - [verimon]
-  learning_method: lsharp
   horizon:
     - 8
-    - 9
-    - 10
-    - 11
-  slack:
-    - [0, 0]
-    - [0.2, 0.05]
-  use_exact: true
+    # - 10
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  seed: *seeds
+  random_eq_method: *methods
 
 - type: LearningExperiment
   name: airport
   file:
     - experiments/premise/airportA-3.nm
-    - experiments/premise/airportB-3.nm
-    - experiments/premise/airportA-7.nm
     - experiments/premise/airportB-7.nm
   parameters:
     - constants: "DMAX=3,PMAX=3"
-    - constants: "DMAX=4,PMAX=4"
-    - constants: "DMAX=5,PMAX=5"
+    # - constants: "DMAX=5,PMAX=5"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   loader: pomdp
-  learning_algs:
-    - [verimon]
-  learning_method: lsharp
   horizon:
-    - 8
     - 9
-    - 10
-    - 11
-  slack:
-    - [0, 0]
-    - [0.2, 0.05]
-  use_exact: true
+    # - 11
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  seed: *seeds
+  random_eq_method: *methods
 
 - name: snakes_ladders
   type: LearningExperiment
-  file: experiments/snake_ladder/mc_u_nxn.pm
+  file: experiments/mc_u_nxn.pm
   parameters:
     n: 100
     ladders:
@@ -140,16 +122,14 @@
   good_label: good
   loader: snakes_ladders
   horizon:
-    - 9
+    # - 8
     - 10
-    - 11
     - 12
-  use_horizon_in_filtering:
-    - true
-  learning_algs:
-    - [verimon]
+    - 14
+    # - 16
+    # - 18
   learning_method: lsharp
-  slack:
-    - [0, 0]
-    - [0.2, 0.05]
-  use_exact: true
+  use_dont_care: true
+  use_refrence_language: true
+  seed: *seeds
+  random_eq_method: *methods

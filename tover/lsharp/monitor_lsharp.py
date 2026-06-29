@@ -45,6 +45,7 @@ def run_monitor_lsharp(
     round_timings: list[dict[str, float]] = []
     pending_build = 0.0
     pending_smt = 0.0
+    pending_smt_queries = 0
 
     while True:
         learning_rounds += 1
@@ -55,11 +56,13 @@ def run_monitor_lsharp(
 
         # Building the hypothesis
         smt_before = ob_tree.smt_time
+        smt_queries_before = ob_tree.smt_queries
         build_start = time.time()
         hypothesis = ob_tree.build_hypothesis()
         build_smt = ob_tree.smt_time - smt_before
         pending_build += time.time() - build_start - build_smt
         pending_smt += build_smt
+        pending_smt_queries += ob_tree.smt_queries - smt_queries_before
 
         if hypothesis is None:
             continue
@@ -73,13 +76,21 @@ def run_monitor_lsharp(
 
         round = {
             "hypothesis_size": hypothesis.size,
+            "basis_size": len(ob_tree.basis),
+            "min_hyp_size": ob_tree.size,
             "build_time": pending_build,
             "smt_time": pending_smt,
+            "smt_queries": pending_smt_queries,
             "eq_time": round_eq_time,
             "process_time": 0.0,
+            # Observation-tree growth + reference coverage snapshot for this round.
+            "tree_nodes": ob_tree.get_size(),
+            "informative_nodes": ob_tree.count_informative_nodes(),
+            "reference_explored_depth": ob_tree.reference_explored_depth(),
         }
         pending_build = 0.0
         pending_smt = 0.0
+        pending_smt_queries = 0
 
         if cex is None:
             round_timings.append(round)
@@ -87,13 +98,18 @@ def run_monitor_lsharp(
 
         # Process the counterexample and start a new learning round
         smt_before = ob_tree.smt_time
+        smt_queries_before = ob_tree.smt_queries
         process_start = time.time()
         ob_tree.process_counter_example(cex)
-        round["process_time"] = time.time() - process_start - (
-            ob_tree.smt_time - smt_before
+        round["process_time"] = (
+            time.time() - process_start - (ob_tree.smt_time - smt_before)
         )
         round["smt_time"] += ob_tree.smt_time - smt_before
+        round["smt_queries"] += ob_tree.smt_queries - smt_queries_before
         round_timings.append(round)
+
+    if hypothesis is None:
+        raise RuntimeError("Learning failed to produce a hypothesis.")
 
     total_time = time.time() - start_time
     smt_time = ob_tree.smt_time
@@ -104,6 +120,7 @@ def run_monitor_lsharp(
         "automaton_size": hypothesis.size if hypothesis else 0,  # time
         "learning_time": learning_time,
         "smt_time": smt_time,
+        "smt_queries": ob_tree.smt_queries,
         "eq_oracle_time": eq_query_time,
         "total_time": total_time,
         "round_timings": round_timings,
@@ -111,7 +128,8 @@ def run_monitor_lsharp(
         "queries_learning": sul.num_queries,
         "validity_query": validity_queries,  # tree
         "nodes": ob_tree.get_size(),
-        "informative_nodes": ob_tree.count_informative_nodes(),  # system under learning
+        "informative_nodes": ob_tree.count_informative_nodes(),
+        "reference_explored_depth": ob_tree.reference_explored_depth(),  # system under learning
         "sul_steps": sul.num_steps,
         "cache_saved": sul.num_cached_queries,  # eq_oracle
         "queries_eq_oracle": eq_oracle.num_queries,

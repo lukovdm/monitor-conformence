@@ -127,8 +127,16 @@ class MonitorRandomWpMethodEqOracle(Oracle):
         self.min_length = min_length
         self.expected_length = expected_length
         self.max_seqs = max_seqs
+        # Stats about the most recent find_cex call (reset on each call):
+        #   last_num_seqs: how many sequences were sampled/tested,
+        #   last_cex_at:   the sequence index a counterexample was found at, or
+        #                  None if the call found none (exhausted the budget).
+        self.last_num_seqs = 0
+        self.last_cex_at: int | None = None
 
     def find_cex(self, hypothesis: Dfa[str]):
+        self.last_num_seqs = 0
+        self.last_cex_at = None
         hypothesis.characterization_set = hypothesis.compute_characterization_set()
         if not hypothesis.characterization_set:
             hypothesis.characterization_set = [
@@ -143,6 +151,7 @@ class MonitorRandomWpMethodEqOracle(Oracle):
         tries = self.max_seqs
         while tries > 0:
             tries -= 1
+            self.last_num_seqs += 1
             state = random.choice(hypothesis.states)
             _ = self.reference.execute_sequence(
                 self.reference.initial_state, state.prefix
@@ -154,7 +163,8 @@ class MonitorRandomWpMethodEqOracle(Oracle):
                 alp = [
                     i
                     for i in self.alphabet
-                    if i in reference_state.transitions and reference_state.is_accepting
+                    if i in reference_state.transitions
+                    and reference_state.transitions[i].is_accepting
                 ]
                 if len(alp) == 0:
                     break
@@ -196,5 +206,66 @@ class MonitorRandomWpMethodEqOracle(Oracle):
             out_hyp = hypothesis.compute_output_seq(hypothesis.initial_state, seq)
             for sul_o, hyp_o in zip(out_sul, out_hyp):
                 if sul_o != hyp_o and sul_o != "unknown":
+                    self.last_cex_at = self.last_num_seqs
                     return seq
         return None
+
+
+class RandomWpMethodEqOracle(Oracle):
+    """
+    Implements the Random Wp-Method as described in "Complementing Model
+    Learning with Mutation-Based Fuzzing" by Rick Smetsers, Joshua Moerman,
+    Mark Janssen, Sicco Verwer.
+        1) sample uniformly from the states for a prefix
+        2) sample geometrically a random word
+        3) sample a word from the set of suffixes / state identifiers
+    """
+
+    def __init__(
+        self, alphabet: list, sul: SUL, min_length=1, expected_length=5, max_seqs=5000,):
+        super().__init__(alphabet, sul)
+        self.min_length = min_length
+        self.expected_length = expected_length
+        self.bound = max_seqs
+
+    def find_cex(self, hypothesis):
+        # fix for non-minimal intermediate hypothesis that can occur in KV
+        hypothesis.characterization_set = hypothesis.compute_characterization_set()
+        if not hypothesis.characterization_set:
+            hypothesis.characterization_set = [(a,) for a in hypothesis.get_input_alphabet()]
+
+        state_mapping = {s : state_characterization_set(hypothesis, self.alphabet, s) for s in hypothesis.states}
+
+        for _ in range(self.bound):
+            state = random.choice(hypothesis.states)
+            input = state.prefix
+            limit = self.min_length
+            while limit > 0 or random.random() > 1 / (self.expected_length + 1):
+                letter = random.choice(self.alphabet)
+                input += (letter,)
+                limit -= 1
+            if random.random() > 0.5:
+                # global suffix with characterization_set
+                input += random.choice(hypothesis.characterization_set)
+            else:
+                # local suffix
+                _ = hypothesis.execute_sequence(hypothesis.initial_state, input)
+                if state_mapping[hypothesis.current_state]:
+                    input += random.choice(state_mapping[hypothesis.current_state])
+                else:
+                    continue
+
+            self.reset_hyp_and_sul(hypothesis)
+            for ind, letter in enumerate(input):
+                out_hyp = hypothesis.step(letter)
+                out_sul = self.sul.step(letter)
+                self.num_steps += 1
+
+                if out_hyp != out_sul:
+                    self.sul.post()
+                    return input[: ind + 1]
+
+            self.sul.post()
+
+        return None
+

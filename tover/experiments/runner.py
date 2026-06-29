@@ -230,7 +230,7 @@ class LearningExperiment(Experiment):
         extra_lines = ""
         if extra:
             extra_lines = (
-                f" # EQ oracle used        : {extra.eq_used}\n"
+                f" # CQ oracle used        : {extra.cq_used}\n"
                 f" # False positives found : {extra.fp_found}\n"
                 f" # False negatives found : {extra.fn_found}\n"
             )
@@ -361,7 +361,7 @@ class LearningExperiment(Experiment):
             return {
                 "time": elapsed,
                 "monitor_states": len(learned_monitor.states),
-                "eq_used": stats.eq_used,
+                "cq_used": stats.cq_used,
                 "fp_found": stats.fp_found,
                 "fn_found": stats.fn_found,
                 "fp_bounds": stats.fp_bounds,
@@ -369,8 +369,9 @@ class LearningExperiment(Experiment):
                 "monitors": stats.monitors,
                 "product_time": stats.product_time,
                 "paynt_time": stats.paynt_time,
-                "eq_time": stats.eq_time,
+                "cq_time": stats.cq_time,
                 "reference_language_time": stats.reference_language_time,
+                "reference_size": stats.reference_size,
                 "rounds": stats.rounds,
                 "learning_stats": lstar_info,
                 "dot_file": f"{path_base}.dot",

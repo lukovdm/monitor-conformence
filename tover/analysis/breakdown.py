@@ -26,7 +26,7 @@ from tover.utils.helpers import str_to_float
 
 # Experiments store their runtime split across several fields. Two layouts
 # exist in the data:
-#   new format -> results["product_time"/"paynt_time"/"eq_time"/
+#   new format -> results["product_time"/"paynt_time"/"cq_time" (was "eq_time")/
 #                 "reference_language_time"] and
 #                 results["learning_stats"]["learning_time"/"smt_time"]
 #   old format -> results["lstar_time"/"counterexample_time"/...]
@@ -39,7 +39,10 @@ TIME_COMPONENTS = [
     ("reference", "tab:cyan"),  # reference-language DFA construction (rl variants)
     ("product", "tab:orange"),  # building the MC x monitor product MDP
     ("paynt", "tab:green"),  # PAYNT synthesis / verification
-    ("eq", "tab:red"),  # equivalence-oracle model checking
+    (
+        "cq",
+        "tab:red",
+    ),  # conformance-query (sampling) time, excl. product/paynt synthesis
     ("counterexample", "tab:brown"),  # counterexample extraction (old format)
     ("other", "lightgray"),  # unattributed remainder (= time - sum of above)
 ]
@@ -90,7 +93,8 @@ def time_components(d):
         "reference": r.get("reference_language_time") or 0.0,
         "product": r.get("product_time") or 0.0,
         "paynt": r.get("paynt_time") or 0.0,
-        "eq": r.get("eq_time") or 0.0,
+        "cq": (r.get("cq_time") if r.get("cq_time") is not None else r.get("eq_time"))
+        or 0.0,
         "counterexample": r.get("counterexample_time") or 0.0,
     }
     total = r.get("time")
@@ -303,7 +307,7 @@ def plot_runtime_breakdown(groups, title=None, ncols=4, sharey=False):
                 ax.text(
                     gi,
                     bottom[gi] + head,
-                    f"{bottom[gi]:.0f}",
+                    f"{bottom[gi]:.1f}",
                     ha="center",
                     va="bottom",
                     fontsize=7,
@@ -341,19 +345,123 @@ def plot_runtime_breakdown(groups, title=None, ncols=4, sharey=False):
     plt.show()
 
 
+def plotly_runtime_breakdown(groups, *, ncols=4, title=None):
+    """Interactive plotly twin of ``plot_runtime_breakdown``.
+
+    Same data, same phase colours, same per-facet linear y-axis — but rendered
+    as a stacked bar chart per benchmark with hover tooltips (phase, seconds,
+    ±std) and click selection. Returns a ``plotly.graph_objects.Figure``; wrap
+    it in ``marimo.ui.plotly(...)`` to expose click events as ``.value``.
+
+    A point's ``customdata`` carries ``[benchmark_label, group, phase]`` so a
+    downstream cell can react to the click without re-parsing the trace name.
+    """
+    # Plotly is an optional dep — import lazily so the rest of breakdown.py
+    # keeps working without it. mcolors translates "tab:blue" etc. to the
+    # hex strings plotly expects.
+    import plotly.express as px
+    from matplotlib import colors as mcolors
+
+    nonempty = {g: ds for g, ds in groups.items() if ds}
+    group_components = _group_components(nonempty)
+    group_components = {g: bk for g, bk in group_components.items() if bk}
+    group_names = list(group_components)
+    component_std = _group_component_std(nonempty)
+
+    col_label: dict = {}
+    for ds in nonempty.values():
+        for d in ds:
+            if time_components(d) is not None:
+                col_label.setdefault(bench_key(d), bench_label(d))
+    bench_keys = sorted(col_label, key=lambda k: col_label[k])
+    if not bench_keys:
+        raise ValueError("no benchmarks with runtime data to plot")
+
+    # Long-format: one row per non-empty (group, benchmark, phase). Skipping
+    # zero-second phases keeps the legend short and the bars clean.
+    records = []
+    for g in group_names:
+        for bk in bench_keys:
+            for cname, _color in TIME_COMPONENTS:
+                sec = group_components[g].get(bk, {}).get(cname, 0.0)
+                if sec <= 0:
+                    continue
+                sd = component_std.get(g, {}).get(bk, {}).get(cname, 0.0)
+                records.append(
+                    {
+                        # facet titles can't contain newlines in plotly; flatten.
+                        "benchmark": col_label[bk].replace("\n", " · "),
+                        "group": g,
+                        "phase": cname,
+                        "seconds": float(sec),
+                        "std": float(sd),
+                    }
+                )
+    df = pd.DataFrame(records)
+
+    phase_order = [n for n, _ in TIME_COMPONENTS]
+    color_map = {n: mcolors.to_hex(c) for n, c in TIME_COMPONENTS}
+    bench_order = [col_label[bk].replace("\n", " · ") for bk in bench_keys]
+
+    fig = px.bar(
+        df,
+        x="group",
+        y="seconds",
+        color="phase",
+        facet_col="benchmark",
+        facet_col_wrap=min(ncols, len(bench_order)),
+        error_y="std",
+        category_orders={
+            "phase": phase_order,
+            "group": group_names,
+            "benchmark": bench_order,
+        },
+        color_discrete_map=color_map,
+        custom_data=["benchmark", "group", "phase"],
+        hover_data={
+            "benchmark": False,  # already in custom_data, avoid duplicate
+            "seconds": ":.2f",
+            "std": ":.2f",
+        },
+    )
+
+    # Stacking + per-facet linear y. ``matches=None`` is the plotly equivalent
+    # of ``sharey=False`` — each facet auto-scales to its own benchmark.
+    fig.update_layout(
+        barmode="stack",
+        title=title or "Runtime breakdown — one facet per benchmark, bars: group",
+        legend_title_text="phase",
+        margin=dict(t=70, b=40, l=60, r=20),
+    )
+    fig.update_yaxes(matches=None, showticklabels=True, title_text="runtime (s)")
+    fig.update_xaxes(title_text="")
+    # px.bar prepends ``benchmark=`` to every facet title; strip it.
+    fig.for_each_annotation(
+        lambda a: a.update(text=a.text.split("=", 1)[-1], font_size=10)
+    )
+
+    n_bench = len(bench_keys)
+    nrows = -(-n_bench // ncols)
+    fig.update_layout(height=max(360, nrows * 320))
+    return fig
+
+
 # Per-round breakdown reuses the same phase colours as TIME_COMPONENTS, but the
 # components are sourced per learning round from the fine-grained timing:
-#   results["learning_stats"]["round_timings"][i] -> build/smt/process/eq wall time
-#   results["rounds"][i]                           -> FN/FP product & paynt split
-# (the two lists are aligned by round). "eq" holds the equivalence-oracle wall
-# time not attributable to product/paynt (sampling + model checking overhead).
+#   results["learning_stats"]["round_timings"][i] -> build/smt/process wall time
+#   results["rounds"][i]                           -> FN/FP product & paynt split + cq_time
+# (the two lists are aligned by round). "cq" holds the conformance-query
+# (sampling) time recorded by the oracle for that round; "other" absorbs the
+# remaining eq-oracle wall time (model-checking / double-check overhead) so the
+# bar still sums to the round's true wall time.
 ROUND_COMPONENTS = [
     ("learning", "tab:blue"),  # hypothesis construction (build_time)
     ("smt", "tab:purple"),  # SMT solving during build/process
     ("product", "tab:orange"),  # MC x monitor product (FN + FP)
     ("paynt", "tab:green"),  # PAYNT synthesis (FN + FP)
-    ("eq", "tab:red"),  # eq-oracle: sampling + model-checking overhead
+    ("cq", "tab:red"),  # conformance query (sampling) time
     ("counterexample", "tab:brown"),  # counterexample processing (process_time)
+    ("other", "lightgray"),  # eq-oracle overhead not attributed to product/paynt/cq
 ]
 
 
@@ -382,24 +490,32 @@ def round_components(d):
         o = oracle[i] if i < len(oracle) else {}
         product = (o.get("fn_product_time") or 0.0) + (o.get("fp_product_time") or 0.0)
         paynt = (o.get("fn_paynt_time") or 0.0) + (o.get("fp_paynt_time") or 0.0)
-        sampling = o.get("sampling_time") or 0.0
         eq_total = t.get("eq_time")
-        # The eq-oracle wall time (eq_total) contains product + paynt + sampling
-        # plus model-checking overhead; show the remainder under "eq" so the bar
-        # sums to the round's true wall time. When eq_total is absent (no
-        # round_timings, e.g. L* / plain L#), fall back to the sampling time.
-        if eq_total is None:
-            eq = sampling
-        else:
-            eq = max(0.0, eq_total - product - paynt)
+        cq = o.get("cq_time")
+        if cq is None:
+            # Backwards-compat with results recorded before the per-round cq_time
+            # field existed: approximate it as the eq-oracle wall time
+            # (t["eq_time"]) minus the synthesis phases, or the old sampling_time
+            # field when no round_timings are present (e.g. L* / plain L#).
+            if eq_total is None:
+                cq = o.get("sampling_time") or 0.0
+            else:
+                cq = max(0.0, eq_total - product - paynt)
+        # The eq-oracle wall time also covers model-checking / double-check
+        # overhead beyond product/paynt/cq; bucket that remainder into "other" so
+        # the bar still sums to the round's true wall time.
+        other = (
+            max(0.0, eq_total - product - paynt - cq) if eq_total is not None else 0.0
+        )
         rounds.append(
             {
                 "learning": t.get("build_time") or 0.0,
                 "smt": t.get("smt_time") or 0.0,
                 "product": product,
                 "paynt": paynt,
-                "eq": eq,
+                "cq": cq,
                 "counterexample": t.get("process_time") or 0.0,
+                "other": other,
                 "_size": o.get("hypothesis_size") or t.get("hypothesis_size"),
                 "_found": o.get("found"),
             }
@@ -521,10 +637,216 @@ def plot_round_breakdown(d, relative=False, round_range=None, title=None, figsiz
     plt.show()
 
 
+def plotly_round_breakdown(runs, *, round_range=None, relative=False, title=None):
+    """Interactive per-round runtime-breakdown bars — single run or several side-by-side.
+
+    ``runs`` is an ordered ``{label: entry}`` mapping. Each learning round
+    gets one stacked bar per run, dodged side-by-side when there's more than
+    one (``barmode='group'`` with manual ``base=`` for in-bar stacking, and
+    ``offsetgroup`` for the dodge). Phase colours come from ROUND_COMPONENTS;
+    per-run distinction is by ``marker_pattern_shape`` plus a pattern-only
+    legend entry so the run→pattern mapping is readable. Hover always shows
+    seconds and the cex-resolution marker (``fn``/``fp``/``samp``/``✓``).
+
+    With a *single* run, the cex marker is also drawn on top of each bar via
+    a text trace (grouped mode can't align text with dodged sub-bars). The
+    x-axis ticks combine the round number with the hypothesis size built
+    that round (``<round><br>|H|=…``); when runs disagree on ``|H|`` for the
+    same round, the largest is shown.
+
+    Returns a ``plotly.graph_objects.Figure`` — bare, so marimo renders it
+    inline; wrap in ``mo.ui.plotly`` if click events are needed.
+    """
+    import plotly.graph_objects as go
+    from matplotlib import colors as mcolors
+
+    if not runs:
+        raise ValueError("plotly_round_breakdown: no runs supplied")
+
+    parsed: dict = {}
+    for label, run in runs.items():
+        rounds = round_components(run)
+        if rounds is None:
+            raise ValueError(
+                f"{label!r}: run has no per-round timing data "
+                "(needs the L#box learning path with round_timings / rounds)"
+            )
+        parsed[label] = rounds
+
+    labels = list(parsed)
+    n_runs = len(labels)
+    sel = _resolve_round_range(max(len(r) for r in parsed.values()), round_range)
+    n = len(sel)
+    used_phases = {
+        cn
+        for rounds in parsed.values()
+        for gi in sel
+        if gi < len(rounds)
+        for cn, _ in ROUND_COMPONENTS
+        if rounds[gi][cn] > 0
+    }
+
+    color_map = {n_: mcolors.to_hex(c) for n_, c in ROUND_COMPONENTS}
+    found_label = {"fn": "fn", "fp": "fp", "sampling": "samp", None: "✓"}
+
+    # X-tick label per round: "<round><br>|H|=<size>" when any run has a size;
+    # the largest is used when runs disagree.
+    def _size_at(gi):
+        sizes = [
+            r[gi]["_size"]
+            for r in parsed.values()
+            if gi < len(r) and r[gi]["_size"] is not None
+        ]
+        return max(sizes) if sizes else None
+
+    round_labels = [
+        (f"{gi + 1}<br>|H|={s}" if (s := _size_at(gi)) is not None else f"{gi + 1}")
+        for gi in sel
+    ]
+
+    fig = go.Figure()
+    seen_phases: set = set()
+    final_tops: dict = {}  # ri -> per-position cumulative top (for the marker)
+
+    for ri, label in enumerate(labels):
+        rounds_all = parsed[label]
+        per_pos = []
+        for gi in sel:
+            if gi < len(rounds_all):
+                r = rounds_all[gi]
+                tot = sum(r[cn] for cn, _ in ROUND_COMPONENTS)
+                per_pos.append((r, tot))
+            else:
+                per_pos.append((None, 0.0))
+
+        bottoms = [0.0] * n
+        for cname, _ in ROUND_COMPONENTS:
+            if cname not in used_phases:
+                continue
+            ys, bases, cd = [], [], []
+            for pos, (r, tot) in enumerate(per_pos):
+                if r is None:
+                    raw, val = 0.0, 0.0
+                else:
+                    raw = float(r[cname])
+                    val = (raw / tot) if (relative and tot > 0) else raw
+                ys.append(val)
+                bases.append(bottoms[pos])
+                bottoms[pos] += val
+                cd.append(
+                    [
+                        label,
+                        cname,
+                        raw,
+                        found_label.get(r["_found"], "") if r is not None else "",
+                    ]
+                )
+
+            show_legend = cname not in seen_phases
+            seen_phases.add(cname)
+
+            bar_kwargs = dict(
+                x=round_labels,
+                y=ys,
+                base=bases,
+                name=cname,
+                legendgroup=cname,
+                showlegend=show_legend,
+                marker_color=color_map[cname],
+                offsetgroup=str(ri),
+                customdata=cd,
+            )
+            if n_runs > 1:
+                bar_kwargs["marker_pattern_shape"] = _COMPARE_PATTERNS_PLOTLY[
+                    ri % len(_COMPARE_PATTERNS_PLOTLY)
+                ]
+                bar_kwargs["hovertemplate"] = (
+                    "<b>%{customdata[0]}</b> · %{customdata[1]}<br>"
+                    "round=%{x}<br>"
+                    "seconds=%{customdata[2]:.2f}<br>"
+                    "found by=%{customdata[3]}<extra></extra>"
+                )
+            else:
+                bar_kwargs["hovertemplate"] = (
+                    "<b>%{customdata[1]}</b><br>"
+                    "round=%{x}<br>"
+                    "seconds=%{customdata[2]:.2f}<br>"
+                    "found by=%{customdata[3]}<extra></extra>"
+                )
+            fig.add_bar(**bar_kwargs)
+
+        final_tops[ri] = list(bottoms)
+
+    # Single-run case: cex marker as text on top of each bar.
+    if n_runs == 1:
+        rounds_all = parsed[labels[0]]
+        marker_text = [
+            (
+                found_label.get(r["_found"], str(r["_found"]))
+                if (r := (rounds_all[gi] if gi < len(rounds_all) else None)) is not None
+                else ""
+            )
+            for gi in sel
+        ]
+        marker_y = [1.0 if relative else final_tops[0][pos] for pos in range(n)]
+        fig.add_scatter(
+            x=round_labels,
+            y=marker_y,
+            mode="text",
+            text=marker_text,
+            textposition="top center",
+            showlegend=False,
+            hoverinfo="skip",
+            textfont={"size": 9, "color": "#555"},
+        )
+
+    # Pattern-only legend entries (multi-run only) so each run's hatch is
+    # identifiable independent of the phase colour swatches.
+    if n_runs > 1:
+        for ri, label in enumerate(labels):
+            fig.add_bar(
+                x=[None],
+                y=[None],
+                name=f"run: {label}",
+                legendgroup=f"_run_{ri}",
+                marker_color="rgba(128,128,128,0.4)",
+                marker_pattern_shape=_COMPARE_PATTERNS_PLOTLY[
+                    ri % len(_COMPARE_PATTERNS_PLOTLY)
+                ],
+                showlegend=True,
+                hoverinfo="skip",
+            )
+
+    if title is None:
+        bench_labels = {bench_label(r).replace(chr(10), " ") for r in runs.values()}
+        title = (
+            f"Per-round runtime breakdown — {next(iter(bench_labels))}"
+            if len(bench_labels) == 1
+            else "Per-round runtime breakdown — runs side by side"
+        )
+
+    fig.update_layout(
+        barmode="group",
+        bargroupgap=0.05 if n_runs > 1 else 0,
+        title=title,
+        legend_title_text="phase" + (" / run" if n_runs > 1 else ""),
+        height=460 if n_runs == 1 else 520,
+        margin=dict(t=70, b=60, l=60, r=20),
+    )
+    fig.update_xaxes(title_text="learning round")
+    fig.update_yaxes(
+        title_text=("fraction of round runtime" if relative else "runtime (s)"),
+        tickformat=".0%" if relative else None,
+    )
+    return fig
+
+
 # Hatch patterns distinguishing the runs in the grouped comparison plots (one per
 # run, cycled). The phase colours stay shared (ROUND_COMPONENTS), so the hatch is
 # the only per-run channel.
 _COMPARE_HATCHES = ["", "//", "..", "xx", "\\\\", "++"]
+# Plotly equivalents: same length/order, using plotly's marker_pattern_shape vocab.
+_COMPARE_PATTERNS_PLOTLY = ["", "/", ".", "x", "\\", "+"]
 
 
 def plot_round_breakdown_compare(
@@ -971,6 +1293,417 @@ def group_summary(groups):
     return pd.DataFrame(rows)
 
 
+def cq_seqs_to_cex(d):
+    """Sequences the cq (random Wp) oracle needed per sampling-resolved round.
+
+    Reads the per-round ``cq_seqs_to_cex`` recorded by ``ToVerEqOracle``: when a
+    learning round's counterexample was found by the random Wp-method sampling
+    oracle, this is the number of sampled sequences the successful conformance
+    query needed to hit it. Only rounds the sampling oracle resolved carry a
+    value; returns the list of those counts for one run (empty if the run predates
+    the field, used no sampling oracle, or sampling never found a counterexample).
+    """
+    r = d["results"]
+    if r is None:
+        return []
+    return [
+        rd["cq_seqs_to_cex"]
+        for rd in (r.get("rounds") or [])
+        if rd.get("cq_seqs_to_cex") is not None
+    ]
+
+
+def cq_seqs_summary(groups):
+    """Per-group summary of the cq oracle's sequences-to-counterexample.
+
+    For each group, pools the per-round ``cq_seqs_to_cex`` values across all its
+    runs (one per round the sampling oracle resolved) and reports the mean /
+    median / max sequences the oracle needed to find a counterexample.
+    ``cex rounds`` is how many sampling-resolved rounds contributed; ``miss
+    rounds`` counts rounds where sampling ran but exhausted its budget without
+    finding one (so the round fell back to PAYNT) — i.e. rounds carrying a
+    ``cq_seqs_total`` but no ``cq_seqs_to_cex``. Runs recorded before the field
+    existed contribute nothing.
+    """
+    rows = []
+    for label, ds in groups.items():
+        found = [v for d in ds for v in cq_seqs_to_cex(d)]
+        miss = 0
+        for d in ds:
+            r = d["results"]
+            if r is None:
+                continue
+            for rd in r.get("rounds") or []:
+                if (
+                    rd.get("cq_seqs_total") is not None
+                    and rd.get("cq_seqs_to_cex") is None
+                ):
+                    miss += 1
+        rows.append(
+            {
+                "group": label,
+                "cex rounds": len(found),
+                "miss rounds": miss,
+                "mean seqs": round(float(np.mean(found)), 1) if found else None,
+                "median seqs": round(float(np.median(found)), 1) if found else None,
+                "max seqs": max(found) if found else None,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def plot_cq_seqs_to_cex(groups, logy=True, title=None, ncols=4, sharey=False):
+    """Faceted distribution of the cq oracle's sequences-to-counterexample.
+
+    One subplot per benchmark (model), like ``plot_runtime_breakdown``; inside it
+    one box (with the individual per-round values jittered over it) per group, at a
+    fixed x-position so a budget sits in the same column in every subplot. Each
+    value is the number of sampled sequences a conformance query needed to find a
+    counterexample, pooled over every round the sampling oracle resolved for that
+    benchmark/group (seeds pooled together). This shows how deep into the
+    ``max_seqs`` budget the oracle typically reaches before succeeding: points near
+    the bottom mean sampling finds counterexamples cheaply, points pushed up toward
+    the budget mean it is straining against it. The number of contributing rounds
+    (``n``) is annotated above each box, and a muted ``×`` marks a budget with no
+    sampling-resolved round for that benchmark. ``ncols`` sets the subplot grid
+    width; ``sharey`` ties the subplots to a common axis (off by default, since
+    benchmarks differ by orders of magnitude); ``logy`` (default) puts the count
+    axis on a log scale.
+    """
+    # group -> bench_key -> pooled per-round values (only non-empty kept), plus a
+    # benchmark-key -> label map for the subplot titles.
+    per_group: dict = {}
+    col_label: dict = {}
+    for label, ds in groups.items():
+        by_key = {}
+        for k, entries in entries_by_bench(ds).items():
+            vals = [v for d in entries for v in cq_seqs_to_cex(d)]
+            if vals:
+                by_key[k] = vals
+                col_label.setdefault(k, bench_label(entries[0]))
+        per_group[label] = by_key
+
+    group_names = [g for g in groups if per_group[g]]
+    if not group_names:
+        raise ValueError(
+            "no sampling-resolved rounds with cq_seqs_to_cex data to plot "
+            "(runs may predate the field — re-run the experiment to populate it)"
+        )
+
+    bench_keys = sorted(col_label, key=lambda k: col_label[k])
+    n_bench = len(bench_keys)
+    n_groups = len(group_names)
+
+    ncols = min(ncols, n_bench)
+    nrows = -(-n_bench // ncols)  # ceil
+    fig, axes = plt.subplots(
+        nrows,
+        ncols,
+        figsize=(ncols * (1.1 + n_groups * 0.7), nrows * 3.4),
+        sharey=sharey,
+        squeeze=False,
+    )
+    xs = np.arange(n_groups)
+    rng = np.random.default_rng(0)
+
+    for bi, k in enumerate(bench_keys):
+        ax = axes[bi // ncols][bi % ncols]
+        data = [per_group[g].get(k, []) for g in group_names]
+        positions = [gi for gi, vals in enumerate(data) if vals]
+        boxdata = [vals for vals in data if vals]
+        if boxdata:
+            ax.boxplot(
+                boxdata,
+                positions=positions,
+                widths=0.5,
+                showfliers=False,
+                medianprops={"color": "tab:red"},
+            )
+        for gi, vals in enumerate(data):
+            if not vals:
+                ax.text(
+                    gi,
+                    0.5,
+                    "×",
+                    transform=ax.get_xaxis_transform(),
+                    ha="center",
+                    va="center",
+                    fontsize=10,
+                    color="0.6",
+                )
+                continue
+            jitter = rng.uniform(-0.16, 0.16, size=len(vals))
+            ax.plot(
+                gi + jitter,
+                vals,
+                "o",
+                color="tab:blue",
+                markersize=4,
+                alpha=0.45,
+                markeredgewidth=0,
+            )
+            ax.text(
+                gi,
+                max(vals),
+                f"n={len(vals)}",
+                ha="center",
+                va="bottom",
+                fontsize=6,
+                color="0.4",
+            )
+
+        if logy:
+            ax.set_yscale("log")
+        ax.set_title(col_label[k], fontsize=8, fontweight="bold", linespacing=0.9)
+        ax.set_xticks(xs)
+        ax.set_xticklabels(group_names, fontsize=7, rotation=30, ha="right")
+        ax.set_xlim(-0.6, n_groups - 0.4)
+        ax.margins(y=0.12)
+        ax.grid(True, axis="y", alpha=0.3)
+        if bi % ncols == 0:
+            ax.set_ylabel("sequences to cex")
+
+    for j in range(n_bench, nrows * ncols):  # hide unused cells
+        axes[j // ncols][j % ncols].axis("off")
+
+    fig.suptitle(
+        title
+        or "CQ oracle — sequences sampled to find a counterexample (per benchmark)",
+        y=1.02,
+        fontsize=11,
+    )
+    fig.tight_layout()
+    plt.show()
+
+
+def tree_growth_series(d):
+    """Per-round observation-tree growth + reference coverage for one run.
+
+    Reads ``results["learning_stats"]["round_timings"]`` and returns a dict of
+    equal-length lists: ``round`` (1-based) plus the metric series ``tree_nodes``,
+    ``informative_nodes``, ``reference_explored_depth`` and ``smt_queries`` (the
+    SMT solver calls spent that round). Missing per-round values become ``nan``.
+    Returns ``{}`` when the run carries no round timings (L* / plain L# /
+    unfinished) or none of the rounds record the tree-growth fields (runs from
+    before the learner tracked them).
+    """
+    r = d["results"]
+    if r is None:
+        return {}
+    timings = (r.get("learning_stats") or {}).get("round_timings") or []
+    keys = (
+        "tree_nodes",
+        "informative_nodes",
+        "reference_explored_depth",
+        "smt_queries",
+        "basis_size",
+        "min_hyp_size",
+    )
+    if not timings or not any(k in t for t in timings for k in keys):
+        return {}
+    out = {"round": list(range(1, len(timings) + 1))}
+    for k in keys:
+        out[k] = np.array(
+            [t.get(k) if t.get(k) is not None else np.nan for t in timings], dtype=float
+        )
+    return out
+
+
+def plot_tree_growth(d, title=None, figsize=None):
+    """Observation-tree growth and reference coverage over learning rounds.
+
+    Two stacked panels sharing the round x-axis, for a single run ``d``:
+
+    - top: observation-tree size (``tree_nodes`` and the non-``unknown``
+      ``informative_nodes``) on the left axis, the ``reference_explored_depth``
+      on a twin right axis — the deepest length to which *every* reference-defined
+      word has been queried — with the benchmark ``horizon`` drawn as a dashed
+      line (so you can read how close the tree is to covering the whole reference
+      language), and the ``basis_size`` / ``min_hyp_size`` (smallest hypothesis
+      size searched) sharing a second, offset right axis;
+    - bottom: the number of SMT solver queries spent per round.
+
+    Needs the L#box round data (``round_timings`` with the tree-growth fields);
+    raises otherwise (e.g. runs recorded before the learner tracked them).
+    """
+    series = tree_growth_series(d)
+    if not series:
+        raise ValueError(
+            f"{d.get('json_path')}: run has no per-round tree-growth data "
+            "(needs the L#box learner with tree_nodes / reference_explored_depth "
+            "in round_timings — re-run the experiment to populate it)"
+        )
+    rounds = series["round"]
+    horizon = d["experiment"].get("horizon")
+
+    fig, (ax1, ax2) = plt.subplots(
+        2,
+        1,
+        sharex=True,
+        figsize=figsize or (max(7, len(rounds) * 0.4), 6),
+        gridspec_kw={"height_ratios": [2, 1]},
+    )
+
+    ax1.plot(rounds, series["tree_nodes"], "o-", color="tab:blue", label="tree nodes")
+    ax1.plot(
+        rounds,
+        series["informative_nodes"],
+        "s-",
+        color="tab:cyan",
+        label="informative nodes",
+    )
+    ax1.set_ylabel("observation-tree nodes")
+    ax1.grid(True, axis="y", alpha=0.3)
+
+    axr = ax1.twinx()
+    axr.step(
+        rounds,
+        series["reference_explored_depth"],
+        where="post",
+        color="tab:red",
+        label="reference-explored depth",
+    )
+    axr.set_ylabel("reference-explored depth", color="tab:red")
+    axr.tick_params(axis="y", labelcolor="tab:red")
+    if horizon is not None:
+        axr.axhline(horizon, color="tab:red", linestyle="--", linewidth=1, alpha=0.6)
+        axr.text(
+            rounds[-1],
+            horizon,
+            " horizon",
+            color="tab:red",
+            va="bottom",
+            ha="right",
+            fontsize=7,
+        )
+
+    # basis size + smallest hypothesis size searched, on their own offset right
+    # axis (same small "number of states" scale, distinct from the depth axis).
+    axs = ax1.twinx()
+    axs.spines["right"].set_position(("outward", 52))
+    axs.plot(rounds, series["basis_size"], "^-", color="tab:green", label="basis size")
+    axs.plot(
+        rounds, series["min_hyp_size"], "v-", color="tab:olive", label="min hyp size"
+    )
+    axs.set_ylabel("basis / hypothesis size", color="tab:green")
+    axs.tick_params(axis="y", labelcolor="tab:green")
+
+    h1, l1 = ax1.get_legend_handles_labels()
+    h2, l2 = axr.get_legend_handles_labels()
+    h3, l3 = axs.get_legend_handles_labels()
+    ax1.legend(h1 + h2 + h3, l1 + l2 + l3, loc="upper left", fontsize=8)
+
+    ax2.bar(rounds, series["smt_queries"], color="tab:purple", width=0.8)
+    ax2.set_ylabel("SMT queries")
+    ax2.set_xlabel("learning round")
+    ax2.grid(True, axis="y", alpha=0.3)
+
+    fig.suptitle(
+        title or f"Observation-tree growth — {bench_label(d).replace(chr(10), ' ')}"
+    )
+    fig.tight_layout()
+    plt.show()
+
+
+def plotly_tree_growth(d, *, title=None):
+    """Interactive plotly twin of ``plot_tree_growth``.
+
+    Three stacked subplots sharing the round x-axis (the matplotlib version
+    uses one panel with three overlaid y-axes; in plotly that's awkward, so we
+    split it):
+
+    - top: tree_nodes / informative_nodes (left y) + reference-explored depth
+      with the benchmark horizon as a dashed reference line (right y);
+    - middle: basis_size and min_hyp_size;
+    - bottom: SMT queries per round (bar).
+
+    Returns a ``go.Figure``.
+    """
+    from plotly.subplots import make_subplots
+
+    series = tree_growth_series(d)
+    if not series:
+        raise ValueError(
+            f"{d.get('json_path')}: run has no per-round tree-growth data "
+            "(needs the L#box learner with tree_nodes / reference_explored_depth "
+            "in round_timings — re-run the experiment to populate it)"
+        )
+    rounds = series["round"]
+    horizon = d["experiment"].get("horizon")
+
+    fig = make_subplots(
+        rows=3,
+        cols=1,
+        shared_xaxes=True,
+        row_heights=[0.45, 0.27, 0.28],
+        vertical_spacing=0.07,
+        specs=[[{"secondary_y": True}], [{}], [{}]],
+        subplot_titles=("tree nodes & reference depth", "basis / hypothesis size", "SMT queries"),
+    )
+
+    fig.add_scatter(
+        x=rounds, y=series["tree_nodes"].tolist(),
+        name="tree nodes", mode="lines+markers",
+        line=dict(color="#1f77b4"), marker_symbol="circle",
+        row=1, col=1,
+    )
+    fig.add_scatter(
+        x=rounds, y=series["informative_nodes"].tolist(),
+        name="informative nodes", mode="lines+markers",
+        line=dict(color="#17becf"), marker_symbol="square",
+        row=1, col=1,
+    )
+    fig.add_scatter(
+        x=rounds, y=series["reference_explored_depth"].tolist(),
+        name="reference-explored depth", mode="lines+markers",
+        line=dict(color="#d62728", shape="hv"), marker_symbol="diamond",
+        row=1, col=1, secondary_y=True,
+    )
+    if horizon is not None:
+        # Horizon reference line on the depth (secondary) y-axis of row 1.
+        fig.add_hline(
+            y=horizon, line_dash="dash", line_color="#d62728",
+            line_width=1, opacity=0.6,
+            annotation_text="horizon", annotation_position="bottom right",
+            annotation_font_size=9,
+            row=1, col=1, secondary_y=True,
+        )
+
+    fig.add_scatter(
+        x=rounds, y=series["basis_size"].tolist(),
+        name="basis size", mode="lines+markers",
+        line=dict(color="#2ca02c"), marker_symbol="triangle-up",
+        row=2, col=1,
+    )
+    fig.add_scatter(
+        x=rounds, y=series["min_hyp_size"].tolist(),
+        name="min hyp size", mode="lines+markers",
+        line=dict(color="#bcbd22"), marker_symbol="triangle-down",
+        row=2, col=1,
+    )
+
+    fig.add_bar(
+        x=rounds, y=series["smt_queries"].tolist(),
+        marker_color="#9467bd", name="SMT queries", showlegend=False,
+        row=3, col=1,
+    )
+
+    fig.update_xaxes(title_text="learning round", row=3, col=1)
+    fig.update_yaxes(title_text="nodes", row=1, col=1)
+    fig.update_yaxes(title_text="depth", row=1, col=1, secondary_y=True, color="#d62728")
+    fig.update_yaxes(title_text="size", row=2, col=1)
+    fig.update_yaxes(title_text="queries", row=3, col=1)
+
+    fig.update_layout(
+        title=title
+        or f"Observation-tree growth — {bench_label(d).replace(chr(10), ' ')}",
+        height=560,
+        margin=dict(t=80, b=50, l=60, r=60),
+        legend=dict(orientation="h", y=1.07, x=0, xanchor="left", yanchor="bottom"),
+    )
+    return fig
+
+
 def find_runs(groups, group=None, benchmark=None, links=False):
     """Locate the individual seed-runs behind a ``method_table`` cell.
 
@@ -981,7 +1714,7 @@ def find_runs(groups, group=None, benchmark=None, links=False):
     (with its ``seed``, sorted so failures are easy to spot), exposing the
     ``name``/``file``/``h`` row index, runtime, the per-phase timing split (the
     same ``TIME_COMPONENTS`` as ``plot_runtime_breakdown``: learning, smt,
-    reference, product, paynt, eq, counterexample, other), finished flag, any
+    reference, product, paynt, cq, counterexample, other), finished flag, any
     error and the ``json`` / ``log`` paths. With ``links=True`` the paths render
     as clickable file links (a Styler).
 
@@ -1158,7 +1891,7 @@ def method_table(groups, metrics=("time", "steps", "eqs", "monitor")):
         # All seed-runs of a benchmark collapse to one cell; aggregate over them.
         for k, entries in entries_by_bench(ds).items():
             if k not in bench_details:
-                src = next((d for d in entries if d.get("mc")), entries[0])
+                src: dict = next((d for d in entries if d.get("mc")), entries[0])
                 e = src["experiment"]
                 threshold = e.get("threshold")
                 mc = src.get("mc") or {}
@@ -1168,6 +1901,10 @@ def method_table(groups, metrics=("time", "steps", "eqs", "monitor")):
                     else threshold,
                     ("benchmark", "|S|"): mc.get("mc_states"),
                     ("benchmark", "|T|"): mc.get("mc_transitions"),
+                    ("benchmark", "|RL|"): (src.get("results", {}) or {}).get(
+                        "reference_size"
+                    ),
+                    ("benchmark", "|Σ|"): len(e.get("alphabet") or []),
                 }
                 bench_index[k] = bench_row(src)
             rec = bench_metrics.setdefault(k, {})
@@ -1182,7 +1919,13 @@ def method_table(groups, metrics=("time", "steps", "eqs", "monitor")):
                 else:
                     rec[(label, metric_label[m])] = _summarize_reason(entries)
 
-    columns = [("benchmark", "λ"), ("benchmark", "|S|"), ("benchmark", "|T|")]
+    columns = [
+        ("benchmark", "λ"),
+        ("benchmark", "|S|"),
+        ("benchmark", "|T|"),
+        ("benchmark", "|RL|"),
+        ("benchmark", "|Σ|"),
+    ]
     columns += [(label, metric_label[m]) for label in groups for m in metrics]
 
     rows, index = [], []
@@ -1218,6 +1961,8 @@ def style_method_table(df):
         "h": "{:.0f}",
         "|S|": "{:.0f}",
         "|T|": "{:.0f}",
+        "|RL|": "{:.0f}",
+        "|Σ|": "{:.0f}",
         "EQs": "{:.0f}",
         "|M|": "{:.0f}",
     }

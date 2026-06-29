@@ -19,7 +19,7 @@ from tover.utils.logger import logger
 @dataclass
 class OracleStats:
     num_rounds: int = 0
-    eq_used: int = 0
+    cq_used: int = 0
     fp_found: int = 0
     fn_found: int = 0
     monitors: list = field(default_factory=list)
@@ -27,9 +27,10 @@ class OracleStats:
     fn_bounds: list = field(default_factory=list)
     paynt_time: float = 0.0
     product_time: float = 0.0
-    eq_time: float = 0.0
+    cq_time: float = 0.0
     reference_language_time: float = 0.0
-    # Per-round breakdown of each equivalence query (sampling + FN/FP synthesis).
+    reference_size: int = 0
+    # Per-round breakdown of each conformance query (sampling + FN/FP synthesis).
     # The matching learning-algorithm time per round lives in the learning-info
     # dict (see `ToVerEqOracle.learning_times`).
     rounds: list = field(default_factory=list)
@@ -41,7 +42,7 @@ class OracleStats:
 
     def __iadd__(self, other: "OracleStats") -> "OracleStats":
         self.num_rounds += other.num_rounds
-        self.eq_used += other.eq_used
+        self.cq_used += other.cq_used
         self.fp_found += other.fp_found
         self.fn_found += other.fn_found
         self.monitors += other.monitors
@@ -49,8 +50,9 @@ class OracleStats:
         self.fn_bounds += other.fn_bounds
         self.paynt_time += other.paynt_time
         self.product_time += other.product_time
-        self.eq_time += other.eq_time
+        self.cq_time += other.cq_time
         self.reference_language_time += other.reference_language_time
+        self.reference_size = max(self.reference_size, other.reference_size)
         self.rounds += other.rounds
         return self
 
@@ -177,33 +179,62 @@ class ToVerEqOracle(Oracle):
     def _try_sampling_cex(self, hypothesis: Dfa[str], record: dict):
         assert self.random_eq_oracle is not None
 
-        start_eq_time = time()
+        start_sampling_time = time()
         logger.debug("Trying sampling oracle")
 
-        # Check for false negative via sampling
-        logger.debug(
-            f"Finding fn using sampling oracle, threshold: {self.threshold + self.fn_slack}"
-        )
-        self.filter_sul.threshold = self.threshold + self.fn_slack
-        cex = self.random_eq_oracle.find_cex(hypothesis)
-        if cex is None or self._check_hyp_on_trace(hypothesis, cex):
-            # No fn found, try false positive
-            logger.debug(
-                f"Finding fp using sampling oracle, threshold: {self.threshold - self.fp_slack}"
-            )
-            self.filter_sul.threshold = self.threshold - self.fp_slack
-            cex = self.random_eq_oracle.find_cex(hypothesis)
-            if cex is None or not self._check_hyp_on_trace(hypothesis, cex):
-                logger.debug("No counter example found using sampling oracle")
-                cex = None
+        # How many sequences the cq oracle sampled this round, accumulated across
+        # the fn (and, if reached, fp) sampling calls. Only the monitor random
+        # Wp-method oracle tracks this; for others the attribute is absent.
+        tracks_seqs = hasattr(self.random_eq_oracle, "last_num_seqs")
 
-        self.filter_sul.threshold = self.threshold
+        def _seqs_sampled() -> int:
+            return getattr(self.random_eq_oracle, "last_num_seqs", 0) or 0
+
+        cq_seqs_total = 0
+
+        if self.filter_sul.use_dont_care:
+            cex = self.random_eq_oracle.find_cex(hypothesis)
+            cq_seqs_total += _seqs_sampled()
+        else:
+            # If the SUL does not support don't cares we need to check both bounds seperatly.
+            logger.debug(
+                f"Finding fn using sampling oracle, threshold: {self.threshold + self.fn_slack}"
+            )
+            self.filter_sul.threshold = self.threshold + self.fn_slack
+            cex = self.random_eq_oracle.find_cex(hypothesis)
+            cq_seqs_total += _seqs_sampled()
+            if cex is None or self._check_hyp_on_trace(hypothesis, cex):
+                # No fn found, try false positive
+                logger.debug(
+                    f"Finding fp using sampling oracle, threshold: {self.threshold - self.fp_slack}"
+                )
+                self.filter_sul.threshold = self.threshold - self.fp_slack
+                cex = self.random_eq_oracle.find_cex(hypothesis)
+                cq_seqs_total += _seqs_sampled()
+                if cex is None or not self._check_hyp_on_trace(hypothesis, cex):
+                    logger.debug("No counter example found using sampling oracle")
+                    cex = None
+
+            self.filter_sul.threshold = self.threshold
+
         self.num_steps = self.random_eq_oracle.num_steps
         self.num_queries = self.random_eq_oracle.num_queries
-        self.stats.eq_time += time() - start_eq_time
+        round_cq_time = time() - start_sampling_time
+        record["cq_time"] = round_cq_time
+        self.stats.cq_time += round_cq_time
+
+        # Per-round sampling effort (None when the oracle does not track it): the
+        # total sequences sampled, and — when sampling produced the counterexample
+        # this round — how many sequences the successful call needed to find it
+        # (the last find_cex above is the one that produced `cex`).
+        if tracks_seqs:
+            record["cq_seqs_total"] = cq_seqs_total
+            record["cq_seqs_to_cex"] = (
+                self.random_eq_oracle.last_cex_at if cex is not None else None
+            )
 
         if cex is not None:
-            self.stats.eq_used += 1
+            self.stats.cq_used += 1
             self.stats.fn_bounds.append(None)
             self.stats.fp_bounds.append(None)
             self.stats.monitors.append(None)
@@ -264,41 +295,3 @@ class ToVerEqOracle(Oracle):
         return cast(
             list[bool], hypothesis.compute_output_seq(hypothesis.initial_state, trace)
         )[-1]
-
-
-@final
-class SamplingEqOracle(Oracle):
-    """Equivalence oracle that walks random paths through the MC and checks the hypothesis."""
-
-    def __init__(
-        self,
-        alphabet: list[str],
-        sul: FilteringSUL,
-        mc: SparseDtmc,
-        num_walks: int,
-        walk_len: int,
-    ):
-        super().__init__(alphabet, sul)
-        self.sul = sul
-        self.mc = mc
-        self.num_walks = num_walks
-        self.walk_len = walk_len
-
-    def find_cex(self, hypothesis: Dfa[str]) -> list[str] | None:
-        simulator: SparseSimulator = cast(SparseSimulator, (self.mc))
-        for _ in range(self.num_walks):
-            simulator.restart()
-            self.reset_hyp_and_sul(hypothesis)
-            trace = []
-
-            for _ in range(self.walk_len):
-                _, _, labels = simulator.step()
-                label = next(l for l in labels if l in self.alphabet)
-                trace.append(label)
-                sul_out = self.sul.step(label)
-                hyp_out = hypothesis.step(label)
-                self.num_steps += 1
-                if box_compare(sul_out, hyp_out):
-                    return trace
-
-        return None

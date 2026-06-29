@@ -4,7 +4,6 @@ from typing import Any, cast
 
 from aalpy import Dfa, run_Lstar
 from aalpy.learning_algs import run_Lsharp
-from aalpy.oracles.WpMethodEqOracle import RandomWpMethodEqOracle
 from aalpy.base.SUL import CacheSUL
 from stormpy import (
     ExpressionManager,
@@ -18,7 +17,7 @@ from tover.core.transformations import language_of_hmm
 from tover.lsharp.monitor_lsharp import run_monitor_lsharp
 from tover.lsharp.monitor_observation_tree import SMTBehaviour
 from tover.lsharp.monitor_wp_method import (
-    MonitorRandomWpMethodEqOracle,
+    MonitorRandomWpMethodEqOracle, RandomWpMethodEqOracle
 )
 from tover.utils.logger import logger
 
@@ -73,7 +72,7 @@ def run_tover(
         initial_observation,
         alphabet,
         spec,
-        (threshold + fn_slack, threshold - fp_slack) if use_dont_care else threshold,
+        (threshold - fp_slack, threshold + fn_slack) if use_dont_care else threshold,
         horizon if use_horizon_in_filtering else None,
         use_risk,
         use_dont_care,
@@ -117,6 +116,7 @@ def run_tover(
         conditional_method,
     )
     eq_oracle.stats.reference_language_time = reference_language_time
+    eq_oracle.stats.reference_size = refrence.size if refrence is not None else 0
 
     if learning_method == LearningMethod.LSTAR:
         return (

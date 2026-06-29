@@ -69,7 +69,7 @@ def stormpy_unroll(
                     new_dest_s = len(states)
                     states[(i + 1, dest_s)] = new_dest_s
                     state_labels[new_dest_s] = {f"step={i + 1}"}
-                    if i + 1 == horizon - 1:
+                    if i + 1 == horizon:
                         state_labels[new_dest_s].add("horizon")
                         horizon_queue.append((new_dest_s, dest_s))
                     else:
