@@ -1,8 +1,8 @@
 from aalpy.utils import load_automaton_from_file
 
-from tover.lsharp.IcyDrivingSUL import IcyDrivingSUL
-from tover.lsharp.monitor_lsharp import run_monitor_lsharp
-from tover.lsharp.monitor_wp_method import (
+from tover.lsharp.monitor.IcyDrivingSUL import IcyDrivingSUL
+from tover.lsharp.monitor.monitor_lsharp import run_monitor_lsharp
+from tover.lsharp.monitor.monitor_wp_method import (
     MonitorRandomWpMethodEqOracle,
     MonitorWpMethodEqOracle,
 )

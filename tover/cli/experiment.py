@@ -34,7 +34,7 @@ class ExperimentArgs(Tap):
 
     # Values used only to fill in the printed `parallel` recipe
     jobs: int = 8  # parallel --jobs
-    timeout: int = 9300  # parallel --timeout (seconds)
+    timeout: int = 60*60*6  # parallel --timeout (seconds)
 
     debug: bool = False  # Pause before running (for attaching a debugger)
 

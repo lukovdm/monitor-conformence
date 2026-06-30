@@ -11,10 +11,10 @@
     - experiments/icy-driving/icy-driving.pm
   parameters:
     - constants: "IMAX=25"
-    # - constants: "IMAX=50"
+    - constants: "IMAX=50"
   horizon:
-    - 10
-    - 25
+    # - 10
+    - 20
   spec: Pmax=? [F<=1 "crash"]
   good_label: crash
   loader: pomdp
@@ -38,8 +38,8 @@
     - experiments/premise/refuelB.nm
   parameters:
     - constants: "N=3,ENERGY=3"
-    # - constants: "N=4,ENERGY=3"
-    # - constants: "N=3,ENERGY=4"
+    - constants: "N=4,ENERGY=3"
+    - constants: "N=3,ENERGY=4"
   horizon: 10  # the base sets a horizon, so pin refuel to its default explicitly
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
@@ -64,7 +64,7 @@
   good_label: crash
   horizon:
     - 8
-    # - 10
+    - 10
 
 - <<: *base
   name: airport
@@ -73,12 +73,12 @@
     - experiments/premise/airportB-7.nm
   parameters:
     - constants: "DMAX=3,PMAX=3"
-    # - constants: "DMAX=5,PMAX=5"
+    - constants: "DMAX=4,PMAX=4"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
   horizon:
     - 9
-    # - 11
+    - 11
 
 - <<: *base
   name: snakes_ladders
@@ -114,5 +114,5 @@
     - 10
     - 12
     - 14
-    # - 16
+    - 16
     # - 18

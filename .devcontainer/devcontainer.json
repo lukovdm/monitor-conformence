@@ -1,0 +1,39 @@
+{
+  "name": "ToVer",
+  "image": "lukovdm/tover:latest",
+
+  // The image is built with WORKDIR /app; mount the repo there so the
+  // checked-out source overlays the COPY . /app baked into the image.
+  "workspaceFolder": "/app",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/app,type=bind,consistency=cached",
+
+  // The image runs as root and the venv (stormpy, paynt, project deps) lives
+  // at /opt/venv.
+  "remoteUser": "root",
+
+  // Jupyter Lab / marimo default port from the image's CMD.
+  "forwardPorts": [8080],
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "python.defaultInterpreterPath": "/opt/venv/bin/python",
+        "python.terminal.activateEnvironment": false
+      },
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "charliermarsh.ruff"
+      ]
+    }
+  },
+
+  // Sync any pyproject/uv.lock changes into the existing venv on create,
+  // keeping the pre-installed stormpy/paynt (--inexact).
+  "postCreateCommand": "uv sync --frozen --inexact",
+
+  "containerEnv": {
+    "UV_PROJECT_ENVIRONMENT": "/opt/venv",
+    "UV_LINK_MODE": "copy"
+  }
+}

@@ -42,7 +42,6 @@ def _(mo):
     refresh_folders = mo.ui.button(label="↻ folder list", kind="neutral")
     refresh_data = mo.ui.button(label="↻ reload data", kind="neutral")
     mo.hstack([refresh_folders, refresh_data], justify="start", gap=1)
-
     return refresh_data, refresh_folders
 
 
@@ -118,7 +117,6 @@ def _(ROOT, mo, os, refresh_folders):
     )
     exp_dd = mo.ui.dropdown(_folders, value=_default, label="Experiment folder")
     mo.md(f"### Experiment\n{exp_dd}")
-
     return (exp_dd,)
 
 
@@ -141,7 +139,6 @@ def _(
     clean_data(data)
     add_symbol_color(data)
     mo.md(f"**{len(data)}** entries loaded from `{exp_dd.value}`")
-
     return (data,)
 
 
@@ -196,7 +193,6 @@ def _(data, mo):
         f"### Grouping\n{group_dd}  &nbsp; "
         f"(varying here: {', '.join(_varying) or '—'})"
     )
-
     return GROUPERS, group_dd
 
 
@@ -244,7 +240,6 @@ def _(bench_row, data, mo):
     get_selected_bench, set_selected_bench = mo.state(
         _benches_all[0] if _benches_all else None
     )
-
     return get_selected_bench, set_selected_bench
 
 
@@ -267,7 +262,6 @@ def _(mo):
         label="Per-group metrics to show",
     )
     metric_show
-
     return (metric_show,)
 
 
@@ -350,7 +344,7 @@ def _(method_table, metric_show, mo, pd, sel_groups):
                 if _met not in _visible_metrics:
                     continue
                 _short = _metric_short.get(_met, _met)
-                _col_name = f"{_grp} · {_short}"
+                _col_name = f"{_grp} \n {_short}"
                 _rec[_col_name] = _txt
                 if _grp in _best_per_metric.get(_met, set()):
                     _best_cells.add((_row_id, _col_name))
@@ -394,7 +388,6 @@ def _(method_table, metric_show, mo, pd, sel_groups):
         max_columns=None,
     )
     metric_table
-
     return
 
 
@@ -418,7 +411,6 @@ def _(bench_label, bench_row, flat, mo, plotly_runtime_breakdown, sel_groups):
         bench_label(_d).replace("\n", " · "): bench_row(_d) for _d in flat
     }
     runtime_chart
-
     return bench_label_to_row, runtime_chart, runtime_fig
 
 
@@ -449,7 +441,6 @@ def _(
                 if _row is not None and _row != get_selected_bench():
                     set_selected_bench(_row)
     mo.md("")
-
     return
 
 
@@ -476,7 +467,6 @@ def _(bench_row, data, get_selected_bench, mo, set_selected_bench):
         f"{bench_dd}\n\n"
         f"_click a bar in the runtime breakdown above to drill into that benchmark_"
     )
-
     return
 
 
@@ -491,7 +481,6 @@ def _(mo, sel_groups):
         label="Groups to compare on this benchmark",
     )
     compare_group_sel
-
     return (compare_group_sel,)
 
 
@@ -536,7 +525,6 @@ def _(bench_row, compare_group_sel, get_selected_bench, mo, sel_groups):
         else f"No run with a log for `{target}` in the selected groups."
     )
     mo.md(f"{_msg}\n\n{round_slider if runs else ''}")
-
     return round_slider, runs
 
 
@@ -555,7 +543,6 @@ def _(mo, plotly_round_breakdown, round_slider, runs):
         except Exception as _e:
             _out = mo.md(f"_no per-round timing data for this benchmark: {_e}_")
     _out
-
     return
 
 
@@ -572,7 +559,6 @@ def _(mo, plotly_tree_growth, runs):
     mo.vstack(
         [mo.vstack([mo.md(f"**{m}**"), _tree(r)]) for m, r in runs.items()]
     ) if runs else mo.md("")
-
     return
 
 
@@ -628,7 +614,6 @@ def _(bench_row, mo, pd, sel_groups):
         wrapped_columns=["variant"],
     )
     runs_table
-
     return (runs_table,)
 
 
@@ -678,7 +663,6 @@ def _(flat, mo, plotly_round_breakdown, plotly_tree_growth, runs_table):
                 _blocks.append(mo.md("---"))
         _detail = mo.vstack(_blocks)
     _detail
-
     return
 
 

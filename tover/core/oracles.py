@@ -11,7 +11,7 @@ from stormpy.simulator import SparseSimulator
 from tover.core.sul import FilteringSUL
 from tover.core.synthesis import ConditionalMethod
 from tover.core.verification import VerifyStats, false_negative, false_positive
-from tover.lsharp.box import box_compare
+from tover.lsharp.monitor.box import box_compare
 from tover.models.automata import aalpy_dfa_to_stormpy
 from tover.utils.logger import logger
 

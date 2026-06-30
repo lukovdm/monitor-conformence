@@ -1,3 +1,4 @@
+from time import time
 from typing import Literal
 
 from aalpy import SUL
@@ -51,6 +52,7 @@ class FilteringSUL(SUL):
         self.do_logging = False
         self.last_risk = 0
         self.use_dont_care = use_dont_care
+        self.time_taken = 0.0
 
         if self.use_dont_care != (type(self.threshold) is tuple):
             logger.warning(
@@ -88,8 +90,11 @@ class FilteringSUL(SUL):
             self.pomdp, _MAX_BELIEF_STATES, _MAX_BELIEF_STATES
         )
 
+
+        start_time = time()
         prop = parse_properties(spec)
         result = model_checking(mc, prop[0])
+        self.time_taken = time() - start_time
         if use_risk:
             risk_values = result.get_values()
             logger.debug(
@@ -104,22 +109,26 @@ class FilteringSUL(SUL):
         self.do_logging = log
 
     def pre(self):
+        start_time = time()
         self.tracker.reset(self.observation_classes.index(self.initial_observation))
         self.last_risk = self.tracker.obtain_current_risk(max=False)
         if self.do_logging:
             logger.debug(f"reset tracker, {self.last_risk}")
         self.observation_length = 0
+        self.time_taken += time() - start_time
 
     def post(self):
         pass
 
     def step(self, observation: str) -> bool | Literal["unknown"]:
         """Advance the belief tracker by one observation. Returns True if risk >= threshold."""
+        start_time = time()
         if self.tracker.size() == 0:
             if self.do_logging:
                 logger.debug(
                     f"No possible beliefs after observing {observation} ({self.observation_length})",
                 )
+            self.time_taken += time() - start_time
             return self._box()
 
         if self.horizon is not None and self.observation_length >= self.horizon:
@@ -127,6 +136,7 @@ class FilteringSUL(SUL):
                 logger.debug(
                     f"Horizon reached after {self.observation_length} observations",
                 )
+            self.time_taken += time() - start_time
             return self._box()
 
         if observation is not None:
@@ -138,6 +148,7 @@ class FilteringSUL(SUL):
                     logger.debug(
                         f"Observing {observation} resulted in belief collapse",
                     )
+                self.time_taken += time() - start_time
                 return self._box()
 
         risk = self.tracker.obtain_current_risk(max=False)
@@ -148,6 +159,7 @@ class FilteringSUL(SUL):
                 f"[{[str(b) for b in self.tracker.obtain_beliefs()]}]",
             )
 
+        self.time_taken += time() - start_time
         self.last_risk = risk
         if type(self.threshold) is tuple:
             lower, upper = self.threshold

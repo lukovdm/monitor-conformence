@@ -3,7 +3,7 @@ from time import time
 from typing import Any, cast
 
 from aalpy import Dfa, run_Lstar
-from aalpy.learning_algs import run_Lsharp
+from tover.lsharp.normal.LSharp import run_Lsharp
 from aalpy.base.SUL import CacheSUL
 from stormpy import (
     ExpressionManager,
@@ -14,9 +14,9 @@ from tover.core.oracles import OracleStats, ToVerEqOracle
 from tover.core.sul import FilteringSUL
 from tover.core.synthesis import ConditionalMethod
 from tover.core.transformations import language_of_hmm
-from tover.lsharp.monitor_lsharp import run_monitor_lsharp
-from tover.lsharp.monitor_observation_tree import SMTBehaviour
-from tover.lsharp.monitor_wp_method import (
+from tover.lsharp.monitor.monitor_lsharp import run_monitor_lsharp
+from tover.lsharp.monitor.monitor_observation_tree import SMTBehaviour
+from tover.lsharp.monitor.monitor_wp_method import (
     MonitorRandomWpMethodEqOracle, RandomWpMethodEqOracle
 )
 from tover.utils.logger import logger

@@ -10,8 +10,8 @@ from pysmt.exceptions import SolverReturnedUnknownResultError
 from pysmt.shortcuts import GE, LT, Bool, Function, Int, Or, Solver, Symbol
 from pysmt.typing import BOOL, INT, FunctionType
 
-from tover.lsharp.apartness import Apartness
-from tover.lsharp.moore_node import MooreNode
+from tover.lsharp.monitor.apartness import Apartness
+from tover.lsharp.monitor.moore_node import MooreNode
 from tover.utils.logger import logger
 
 

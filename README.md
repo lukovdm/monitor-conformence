@@ -24,10 +24,10 @@ This readme gives an overview of the functionality. It also describes how to rep
 In order to smoke test this artifact, follow the steps in [Getting ToVer](#getting-tover). Then generate and run the smoke test experiments with GNU `parallel`:
 ```bash
 python -m tover.cli.experiment --files experiments/quick.yml --base_dir out/smoke
-parallel --jobs 4 --joblog out/smoke/joblog.txt < out/smoke/commands.txt
+parallel --shuf --jobs 4 --joblog out/smoke/joblog.txt < out/smoke/commands.txt
 ```
 
-This should generate statistics in the folder `stats/` which can either be inspected using [JupyterLab](http://127.0.0.1:8080/lab/) (Make sure to refresh the jupyter lab file browser if the stats folder is not shown after running the test), or using the command line opened by starting the docker container.
+This should generate result JSON in the folder `out/smoke/json/`, which can either be inspected using [JupyterLab](http://127.0.0.1:8080/lab/) (Make sure to refresh the jupyter lab file browser if the folder is not shown after running the test), or using the command line opened by starting the docker container.
 
 ## Getting ToVer
 
@@ -69,26 +69,29 @@ You can use the tover algorithm on any prism POMDP model or snakes and ladder bo
 
 For a POMDP:
 ```bash
-python -m tover.cli.run --file experiments/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 8 --fp-slack 0.2 --fn-slack 0.05 --walk-len 11 --exact --base-dir out/airport_experiment
+python -m tover.cli.run --file experiments/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 8 --fp_slack 0.2 --fn_slack 0.05 --exact --base_dir out/airport_experiment
 ```
 
 For SnLs:
 ```bash
-python -m tover.cli.run --file experiments/premise/airportA-7.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good-label crash --threshold 0.3 --horizon 10 --fp-slack 0.2 --fn-slack 0.05 --exact --base-dir out/airport_experiment
+python -m tover.cli.run --loader snakes_ladders --n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6" --spec 'Pmax=? [F<5 "good"]' --threshold 0.3 --horizon 10 --fp_slack 0.2 --fn_slack 0.05 --exact --base_dir out/snl_experiment
 ```
 
 The inputs to `python -m tover.cli.run` are as follows:
-- `--file experiments/premise/airportA-3.nm` or `--file experiments/snake_ladder/mc_u_nxn.pm` for the prism file containing the POMDP or SnLs model.
-- `--loader pomdp` or `--loader snakes_ladders` specifying the loader to load the model with. Either POMDPs or SnLs.
+- `--file experiments/premise/airportA-3.nm` the prism file containing the POMDP model (only used by the `pomdp` loader; the SnLs loaders use a built-in board model and ignore `--file`).
+- `--loader pomdp` or `--loader snakes_ladders` specifying the loader to load the model with. Either POMDPs or SnLs (also `snakes_ladders_random` and `snakes_ladders_real`).
 - `--constants "DMAX=3,PMAX=3"` specify any constants used to build the prism POMDP model.
 - `--n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6"` the parameters for the SnLs board. The amount of squares (should be a square number), the locations of the ladders with their destinations and similarly for the snakes.
 - `--spec 'Pmax=? [F<=4 "crash"]'` gives the specification with which to generate the risks.
-- `--good-label crash` gives the target label in the model.
+- `--good_label crash` gives the target label in the model.
 - `--threshold 0.3` is the learning threshold.
 - `--horizon 10` contains the horizon in which the monitor should be correct.
-- `--fp-slack 0.2` is the area below the learning threshold considered as undetermined.
-- `--fn-slack 0.05` is the area above the learning threshold considered as undetermined.
-- `--base-dir stats/airport_experiment` defines where to save the statisics, models and dot file of the model.
+- `--fp_slack 0.2` is the area below the learning threshold considered as undetermined.
+- `--fn_slack 0.05` is the area above the learning threshold considered as undetermined.
+- `--exact` or `--double` selects exact rational arithmetic or double-precision floats; one of the two is required.
+- `--base_dir out/airport_experiment` defines where to save the statisics, models and dot file of the model.
+
+Further options control the learning algorithm and equivalence oracle (defaults shown by `python -m tover.cli.run --help`): `--learning_method {lstar,lsharp}` (default `lsharp`), `--dont_care`/`--refrence_language`/`--horizon_in_filtering`/`--random_eq` toggles, `--conditional_method`, `--relative_error`, `--min_length`/`--expected_length`/`--max_seqs` for the random oracle, and `--solver_timeout`/`--learning_timeout`.
 
 ## Running experiments
 Our experiments are defined in yaml files. `python -m tover.cli.experiment` expands a yaml grid into one self-contained command per variant (written to `<base_dir>/commands.txt`); GNU [`parallel`](https://www.gnu.org/software/parallel/) then executes them, owning concurrency, timeouts, and process teardown.
@@ -101,7 +104,7 @@ The file `experiments/reduced-exp/learn.yml` contains the reduced version of the
 For obtaining the reduced results, generate the commands and run them:
 ```bash
 python -m tover.cli.experiment --files experiments/reduced-exp/* --base_dir out/reduced
-parallel --jobs 44 --timeout 9300 --memfree 15G \
+parallel --shuf --jobs 44 --timeout 9300 --memfree 15G \
   --joblog out/reduced/joblog.txt < out/reduced/commands.txt
 python -m tover.cli.parallel --report out/reduced/joblog.txt --base_dir out/reduced
 ```
@@ -111,7 +114,7 @@ To obtain the full results, do the same for the full configs. Depending on the n
 
 ```bash
 python -m tover.cli.experiment --files experiments/verify-exp/* experiments/learn-exp/* --base_dir out/full
-parallel --jobs 44 --timeout 9300 --memfree 15G \
+parallel --shuf --jobs 44 --timeout 9300 --memfree 15G \
   --joblog out/full/joblog.txt < out/full/commands.txt
 python -m tover.cli.parallel --report out/full/joblog.txt --base_dir out/full
 ```
@@ -160,9 +163,9 @@ The Python source code is in `tover/`, organised into the following packages.
 - `automata.py` — Converts AALpy DFAs ↔ Stormpy `SparseMdp` (monitor representation)
 - `algorithms.py` — Monitor transformations such as complement construction
 
-**`tover/lsharp/`** — L# learning algorithm and monitor-specific oracles
-- `monitor_lsharp.py` — Monitor-aware L# learner entry point
-- `monitor_wp_method.py` — `MonitorWpMethodEqOracle` and `MonitorRandomWpMethodEqOracle`: W/Wp-method equivalence oracles that exploit the reference language
+**`tover/lsharp/`** — L# learning algorithm, split into two subpackages
+- `monitor/` — Monitor-aware L# variant that exploits the reference language: `monitor_lsharp.py` (learner entry point), `monitor_wp_method.py` (`MonitorWpMethodEqOracle` / `MonitorRandomWpMethodEqOracle`), `monitor_observation_tree.py`, `apartness.py`, `moore_node.py`, `box.py`
+- `normal/` — Plain L# implementation: `LSharp.py`, `ObservationTree.py`, `Apartness.py`, `ADS.py`
 
 **`tover/experiments/`** — Experiment infrastructure
 - `runner.py` — `LearningExperiment` and `VerifyExperiment`: experiment classes loaded from YAML; `Experiment.run` sets the 15 GiB per-process memory limit and writes the result JSON/log

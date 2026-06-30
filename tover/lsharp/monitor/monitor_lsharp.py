@@ -4,7 +4,7 @@ from typing import Any
 from aalpy.automata import Dfa
 from aalpy.base import SUL, Oracle
 
-from tover.lsharp.monitor_observation_tree import MonitorObservationTree, SMTBehaviour
+from tover.lsharp.monitor.monitor_observation_tree import MonitorObservationTree, SMTBehaviour
 from tover.utils.logger import logger
 
 
