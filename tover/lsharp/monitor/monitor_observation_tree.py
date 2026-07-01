@@ -2,6 +2,7 @@ from enum import Enum
 import itertools
 from math import floor
 import time
+import random
 from collections import deque
 
 from aalpy import SUL
@@ -29,6 +30,10 @@ class MonitorObservationTree:
         solver_timeout,
         replace_basis,
         use_compatibility,
+        integrate_testing,  # NEW
+        depth,  # NEW
+        full_testing,  # NEW
+        test_per_frontier=5,  # NEW
         use_dont_care=True,
         smt_behaviour=SMTBehaviour.EXPO_BACKOFF,
     ):
@@ -46,6 +51,11 @@ class MonitorObservationTree:
         # the classic L# construction instead of the SMT solver.
         self.use_dont_care = use_dont_care
         self.smt_behaviour = smt_behaviour
+
+        self.integrate_testing = integrate_testing
+        self.depth = depth
+        self.full_testing = full_testing
+        self.test_per_frontier = test_per_frontier
 
         # Logger information
         self.smt_time = 0
@@ -681,7 +691,7 @@ class MonitorObservationTree:
             # )
             # CacheSUL.query returns a tuple on a cache hit but a list on a miss,
             # so coerce to list before appending the don't-care output.
-            outputs = list(self.sul.query(defined_inputs[:-1])) + ["unknown"]
+            outputs = list(self.sul.query(defined_inputs)) + ["unknown"] # FIXEDBUG: removed [:-1] from defined_inputs
             self.insert_observation_sequence(defined_inputs, outputs)
             return True
         else:
@@ -758,6 +768,16 @@ class MonitorObservationTree:
         Tries to find an observation tree,
         for which each frontier state is identified as much as possible.
         """
+        if self.integrate_testing and self.reference:
+            self.find_adequate_observation_tree_TESTING()
+        else:
+            self.find_adequate_observation_tree_TRADITIONAL()
+
+    def find_adequate_observation_tree_TRADITIONAL(self):
+        """
+        Tries to find an observation tree,
+        for which each frontier state is identified as much as possible.
+        """
         self.extend_frontier()
         self.update_frontier_to_basis_dict()
         while self.promote_node_to_basis():
@@ -769,6 +789,135 @@ class MonitorObservationTree:
             while self.promote_node_to_basis():
                 self.extend_frontier()
                 self.update_frontier_to_basis_dict()
+
+    def find_adequate_observation_tree_TESTING(self):
+        """
+        Tries to find an observation tree,
+        for which each frontier state is identified as much as possible.
+        """
+        while True:
+            self.explore_frontier()
+            self.update_frontier_to_basis_dict()
+            while self.promote_node_to_basis():
+                self.explore_frontier()
+                self.update_frontier_to_basis_dict()
+
+            while self.make_frontiers_identified():
+                self.update_frontier_to_basis_dict()
+                while self.promote_node_to_basis():
+                    self.extend_frontier()
+                    self.update_frontier_to_basis_dict()
+
+            old_basis_size = len(self.basis)
+            self.testing()
+            self.update_frontier_to_basis_dict()
+            while self.promote_node_to_basis():
+                self.extend_frontier()
+                self.update_frontier_to_basis_dict()
+            logger.debug(f"Old basis size {old_basis_size} new {len(self.basis)}")
+            if len(self.basis) == old_basis_size:  # if no new states are found by testing we stop
+                return
+
+    def explore_frontier(self):
+        """ 
+        Iterates over all basis states and inputs and poses a query to ensure that all frontier states that are allowed according to the reference language are all defined.
+        """
+        # Compute sepseq that separates first two basis states to get some free identification
+        sep_seq = []
+        if len(self.basis) > 1:
+            sep_seq = Apartness.compute_witness(
+                self.basis[0], self.basis[1], self)
+        # Loop over basis and inputs, only pose queries when the frontier is not defined and should be defined according to reference
+        for basis_state in self.basis:
+            basis_access_seq = self.get_access_sequence(basis_state)
+            basis_error = self.reference.execute_sequence(
+                self.reference.initial_state, basis_access_seq
+            )
+            if basis_error is False or (isinstance(basis_error, list) and basis_error[-1] is False):
+                continue
+            for inp in self.alphabet:
+                frontier_error = self.reference.execute_sequence(
+                    self.reference.initial_state, basis_access_seq + [inp])
+                # frontier error must be a list
+                if basis_state.get_successor(inp) is None and False not in frontier_error:
+                    self.execute_query(basis_access_seq + [inp] + sep_seq)
+
+    def testing(self):
+        logger.debug("Start testing phase before hypothesis construction")
+        char_list = self.construct_characterization_set()
+        if self.full_testing:
+            test_suite = self.test_suite_construction(char_list)
+            for test in test_suite:
+                self.execute_query(test)
+        else:
+            self.randomized_test_suite(char_list)
+
+    def randomized_test_suite(self, char_list):
+        """ 
+        Performs self.test_per_frontier tests per frontier state.
+        Each test goes to the frontier state, performs a number of steps depending on a geometric distribution with self.depth as expected length and finally a separating sequence.
+        """
+        for f in list(self.frontier_to_basis_dict.keys()):
+            counter = 0
+            while counter < self.test_per_frontier:
+                test = self.get_access_sequence(f)
+                _ = self.reference.execute_sequence(
+                    self.reference.initial_state, test)
+                reference_state = self.reference.current_state
+                limit = 2
+                while limit > 0 or random.random() > 1 / (self.depth + 1):
+                    alp = [
+                        i
+                        for i in self.alphabet
+                        if i in reference_state.transitions
+                        and reference_state.transitions[i].is_accepting
+                    ]
+                    if len(alp) == 0:
+                        break
+                    letter = random.choice(alp)
+                    reference_state = reference_state.transitions[letter]
+                    test.append(letter)
+                    limit -= 1
+                if len(char_list) > 0:
+                    test += random.choice(char_list)
+                self.execute_query(test)
+                counter += 1
+
+    def construct_characterization_set(self):
+        """
+        Constructs a set of separating sequences for the basis states
+        """
+        char_list = []
+        for b1 in self.basis:
+            for b2 in self.basis:
+                if b1 != b2:
+                    wit = Apartness.compute_witness(b1, b2, self)
+                    if wit not in char_list:
+                        char_list.append(wit)
+        return [tuple(s) for s in char_list if not any(s != t and t[:len(s)] == s for t in char_list)]
+
+    def test_suite_construction(self, char_list):
+        """
+        Yields test sequences with depth self.depth
+        """
+        for f in list(self.frontier_to_basis_dict.keys()):
+            yield from self.recursive_test_suite_construction(
+                tuple(self.get_access_sequence(f)), self.depth, char_list, [])
+
+    def recursive_test_suite_construction(self, prefix, depth, char_list, sequences):
+        """ 
+        Constructs tests for the given prefix and calls the function recursively as long as the prefix + inp is defined according to the reference and the depth > 0
+        """
+        if depth > 0:
+            for inp in self.alphabet:
+                new_pref = prefix + tuple([inp],)
+                if False not in self.reference.execute_sequence(self.reference.initial_state, new_pref):
+                    yield new_pref
+                else:
+                    yield from self.recursive_test_suite_construction(new_pref, depth - 1, char_list, sequences)
+
+        for c in char_list:
+            yield prefix + c
 
     def to_dot(self) -> str:
         """

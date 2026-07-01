@@ -50,6 +50,10 @@ def run_tover(
     use_reference_language: bool = True,
     conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
     learning_method: LearningMethod = LearningMethod.LSHARP,
+    integrate_testing: bool = False,
+    depth: int | None = 2,
+    full_testing: bool = False,
+    test_per_frontier: int | None = 5, 
     smt_behaviour: SMTBehaviour = SMTBehaviour.SEQUENTIAL,
     # Timeouts
     solver_timeout: int = 200,
@@ -64,7 +68,8 @@ def run_tover(
         f"fp_slack: {fp_slack}, fn_slack: {fn_slack}, relative_error: {relative_error}, "
         f"use_risk: {use_risk}, use_dont_care: {use_dont_care}, use_horizon_in_filtering: {use_horizon_in_filtering}, "
         f"random_eq_method: {random_eq_method}, use_reference_language: {use_reference_language}, "
-        f"conditional_method: {conditional_method}, learning_method: {learning_method}, smt_behaviour: {smt_behaviour}"
+        f"conditional_method: {conditional_method}, learning_method: {learning_method}, smt_behaviour: {smt_behaviour}, "
+        f"integrate_testing: {integrate_testing}, depth {depth}, full_testing {full_testing}, test_per_frontier {test_per_frontier}"
     )
     print(f"Using alphabet of size {len(alphabet)}: {alphabet}")
     sul = FilteringSUL(
@@ -161,6 +166,10 @@ def run_tover(
                     learning_timeout=learning_timeout,
                     use_dont_care=use_dont_care,
                     smt_behaviour=smt_behaviour,
+                    integrate_testing=integrate_testing,
+                    depth=depth,
+                    full_testing=full_testing,
+                    test_per_frontier=test_per_frontier,
                 ),
                 eq_oracle.stats,
             )

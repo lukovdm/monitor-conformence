@@ -1,8 +1,8 @@
 from aalpy.utils import load_automaton_from_file
 
-from tover.lsharp.monitor.IcyDrivingSUL import IcyDrivingSUL
-from tover.lsharp.monitor.monitor_lsharp import run_monitor_lsharp
-from tover.lsharp.monitor.monitor_wp_method import (
+from tover.lsharp.IcyDrivingSUL import IcyDrivingSUL
+from tover.lsharp.monitor_lsharp import run_monitor_lsharp
+from tover.lsharp.monitor_wp_method import (
     MonitorRandomWpMethodEqOracle,
     MonitorWpMethodEqOracle,
 )
@@ -20,9 +20,13 @@ learned_dfa, info = run_monitor_lsharp(
     reference,
     sul,
     eq_oracle,
-    return_data=True,
+    # return_data=True,
     solver_timeout=3600,
     replace_basis=False,
+    integrate_testing=True, 
+    depth=2,
+    full_testing=False, 
+    test_per_frontier=5, 
     use_compatibility=False,
 )
 
