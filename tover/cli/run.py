@@ -43,6 +43,12 @@ class RunArgs(Tap):
     refrence_language: bool = True  # Whether to use the reference language
     learning_method: LearningMethod = LearningMethod.LSHARP
 
+    # Testing during learning
+    integrate_testing: bool = False # Whether to use testing during learning, the conformance testing is not necessary if this is set to True
+    depth: int | None = 2 # Depth of testing in terms of k-completeness or expected length when full testing is set to False
+    full_testing: bool = False # Full perform a k-complete test suite or randomized testing
+    test_per_frontier: int | None = 5 # Tests per frontier states
+
     # Filtering
     threshold: float = 0.3
     horizon: int = 10
@@ -195,6 +201,10 @@ def main():
         use_risk=True,
         use_dont_care=args.dont_care,
         use_reference_language=args.refrence_language,
+        integrate_testing=args.integrate_testing,
+        depth=args.depth,
+        full_testing =args.full_testing,
+        test_per_frontier=args.test_per_frontier,
         use_horizon_in_filtering=args.horizon_in_filtering,
         conditional_method=args.conditional_method,
         learning_method=args.learning_method,

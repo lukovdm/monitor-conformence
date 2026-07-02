@@ -1,4 +1,5 @@
 import time
+import random
 from typing import Any
 
 from aalpy.automata import Dfa
@@ -17,6 +18,10 @@ def run_monitor_lsharp(
     learning_timeout: int | None = 1000,
     replace_basis: bool = True,
     use_compatibility: bool = False,
+    integrate_testing: bool = False,
+    depth: int | None = 2, 
+    full_testing: bool = False, 
+    test_per_frontier: int | None = 5,
     use_dont_care: bool = True,
     smt_behaviour: SMTBehaviour = SMTBehaviour.EXPO_BACKOFF,
 ) -> tuple[Dfa[str], dict[str, Any]]:
@@ -32,9 +37,14 @@ def run_monitor_lsharp(
         solver_timeout,
         replace_basis,
         use_compatibility,
+        integrate_testing, 
+        depth, 
+        full_testing, 
+        test_per_frontier, 
         use_dont_care,
         smt_behaviour,
     )
+    random.seed(8)
     start_time = time.time()
 
     eq_query_time = 0
