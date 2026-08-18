@@ -1,0 +1,102 @@
+# Reduced experiment set: does seeding the L# observation tree from the belief
+# most-probable-path search help?
+#
+# Each model/horizon is run twice, once with `seed_from_search` off and once on, with
+# everything else held fixed. Deliberately small -- double precision, short horizons, four
+# models -- so the whole grid finishes in a couple of minutes instead of the hours the premise
+# sets take.
+#
+# Metrics of interest: total wall-clock time, the number of learning rounds, and the
+# false-positive / false-negative bounds the final verification reports for the learned monitor.
+#
+# A note on model choice. icy-driving appears only at horizon 3, where it is trivial (a
+# one-state monitor). At horizons 4 and above it does not terminate within 9 minutes *with or
+# without seeding* -- PAYNT synthesis blows up -- so it carries no signal about seeding while
+# dominating the runtime of the set. airportB-3 and refuel stand in as extra models; both behave
+# like airportA-3 and scale smoothly with the horizon.
+
+- type: LearningExperiment
+  name: icy-driving
+  file:
+    - experiments/icy-driving/icy-driving.pm
+  parameters:
+    - constants: "IMAX=10"
+  horizon:
+    - 3
+  spec: Pmax=? [F<=1 "crash"]
+  good_label: crash
+  loader: pomdp
+  use_exact: false
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: bisection
+  seed_from_search:
+    - false
+    - true
+
+- type: LearningExperiment
+  name: airportA-3
+  file:
+    - experiments/premise/airportA-3.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+  horizon:
+    - 5
+    - 6
+    - 7
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  use_exact: false
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: bisection
+  seed_from_search:
+    - false
+    - true
+
+- type: LearningExperiment
+  name: airportB-3
+  file:
+    - experiments/premise/airportB-3.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+  horizon:
+    - 5
+    - 6
+    - 7
+  spec: Pmax=? [F<=4 "crash"]
+  good_label: crash
+  loader: pomdp
+  use_exact: false
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: bisection
+  seed_from_search:
+    - false
+    - true
+
+- type: LearningExperiment
+  name: refuel
+  file:
+    - experiments/premise/refuel.nm
+  parameters:
+    - constants: "N=4,ENERGY=3"
+  horizon:
+    - 5
+    - 6
+    - 7
+  spec: Pmax=? [F<=4 "traps"]
+  good_label: traps
+  loader: pomdp
+  use_exact: false
+  learning_method: lsharp
+  use_dont_care: true
+  use_refrence_language: true
+  conditional_method: bisection
+  seed_from_search:
+    - false
+    - true

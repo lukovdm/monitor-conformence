@@ -368,14 +368,13 @@ class MonitorObservationTree:
         """
         Constructs the hypothesis DFA from the transition and output mappings.
         """
+        logger.debug(f"Constructing hypothesis")
         self.construct_hypothesis_states(output_mapping=output_mapping)
         self.construct_hypothesis_transitions(transition_mapping=transition_mapping)
 
         hypothesis = Dfa(self.states_list[0], self.states_list)
         hypothesis.compute_prefixes()
-        hypothesis.characterization_set = hypothesis.compute_characterization_set(
-            raise_warning=False
-        )
+        hypothesis.characterization_set = hypothesis.compute_characterization_set(raise_warning=False)
 
         return hypothesis
 
@@ -542,6 +541,7 @@ class MonitorObservationTree:
         Builds the hypothesis which will be sent to the SUL and checks consistency
         """
         while True:
+            logger.debug(f"Trying to build hypothesis of size {self.size}")
             self.find_adequate_observation_tree()
             transition_mapping, output_mapping = self.find_hypothesis()
             if transition_mapping is not None:
@@ -783,6 +783,8 @@ class MonitorObservationTree:
         while self.promote_node_to_basis():
             self.extend_frontier()
             self.update_frontier_to_basis_dict()
+
+        logger.debug(f"Extended and promoted frontier.")
 
         while self.make_frontiers_identified():
             self.update_frontier_to_basis_dict()

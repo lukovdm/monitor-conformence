@@ -66,6 +66,12 @@ def _(ROOT, sys):
         clean_data,
         add_symbol_color,
     )
+    import importlib
+    import tover.analysis.breakdown as _breakdown
+    importlib.reload(_breakdown)
+    import tover.analysis.plots as _plots
+    importlib.reload(_plots)
+
     from tover.analysis.breakdown import (
         group_summary,
         method_table,
@@ -81,11 +87,14 @@ def _(ROOT, sys):
         find_runs,
         bench_row,
         bench_label,
+        time_components,
+        TIME_COMPONENTS,
     )
-    from tover.analysis.plots import compare_runtimes
+    from tover.analysis.plots import compare_runtimes, plotly_compare_runtimes
 
 
     return (
+        TIME_COMPONENTS,
         add_symbol_color,
         bench_label,
         bench_row,
@@ -93,9 +102,11 @@ def _(ROOT, sys):
         load_experiment_data,
         method_table,
         pd,
+        plotly_compare_runtimes,
         plotly_round_breakdown,
         plotly_runtime_breakdown,
         plotly_tree_growth,
+        time_components,
     )
 
 
@@ -112,7 +123,7 @@ def _(ROOT, mo, os, refresh_folders):
         if os.path.isdir(os.path.join(_out_dir, f, "json"))
     )
     _default = next(
-        (f for f in reversed(_folders) if "compare_cq_amount" in f),
+        (f for f in reversed(_folders) if "exp" in f),
         _folders[-1] if _folders else None,
     )
     exp_dd = mo.ui.dropdown(_folders, value=_default, label="Experiment folder")
@@ -178,14 +189,19 @@ def _(data, mo):
     }
     _varying = [k for k, fn in GROUPERS.items() if len({fn(d) for d in data}) > 1]
     _distinct = {k: len({GROUPERS[k](d) for d in data}) for k in _varying}
+    # ``name`` identifies the benchmark — already the table's *rows* — so grouping by
+    # it pools every method into one cell and the mean/std then mix methods, not
+    # seeds. Keep it selectable but never auto-default to it.
+    _IDENTITY_GROUPERS = {"name"}
     # Default: ``max_seqs`` if it varies (per-budget comparisons), otherwise the
-    # dimension with the most distinct values — so for compare_lsharp_lstar the
-    # default picks ``method+dc/rl`` (3 groups) instead of ``learning_method`` (2),
-    # giving lsharp+dc+rl its own column.
-    if "max_seqs" in _varying:
+    # method/config dimension with the most distinct values — so for
+    # compare_lsharp_lstar the default picks ``method+dc/rl`` (3 groups), giving
+    # lsharp+dc+rl its own column.
+    _default_pool = [k for k in _varying if k not in _IDENTITY_GROUPERS]
+    if "max_seqs" in _default_pool:
         _default = "max_seqs"
-    elif _varying:
-        _default = max(_varying, key=lambda k: _distinct[k])
+    elif _default_pool:
+        _default = max(_default_pool, key=lambda k: _distinct[k])
     else:
         _default = "name"
     group_dd = mo.ui.dropdown(list(GROUPERS), value=_default, label="Group columns by")
@@ -197,7 +213,7 @@ def _(data, mo):
 
 
 @app.cell
-def _(GROUPERS, data, group_dd, mo):
+def _(GROUPERS, bench_row, data, group_dd, mo):
     # Build {label -> entries} for the chosen dimension, then let the user keep a
     # subset of the resulting groups (columns) to compare.
     def _fmt(v):
@@ -214,17 +230,137 @@ def _(GROUPERS, data, group_dd, mo):
     group_sel = mo.ui.multiselect(
         list(groups), value=list(groups), label="Groups to compare"
     )
+
+    import re as _re
+
+
+    def _config_sig(d):
+        # Everything that defines a run *except* the seed; only seeds of one
+        # identical config should be averaged together inside a cell.
+        return _re.sub(r"seed=[^,)]*,?", "", d["experiment"].get("variant") or "")
+
+
+    # If the chosen grouping leaves several configs in one (group, benchmark) cell,
+    # the table's mean/std mix configs rather than seed repetitions.
+    _pooled = []
+    for _k, _ds in groups.items():
+        _by_bench: dict = {}
+        for _d in _ds:
+            _by_bench.setdefault(bench_row(_d), set()).add(_config_sig(_d))
+        if any(len(s) > 1 for s in _by_bench.values()):
+            _pooled.append(_k)
+    _warn = (
+        f"\n\n> ⚠️ Grouping by **{group_dd.value}** pools several configurations "
+        f"per benchmark — mean±std mix configs, not just seeds — in: "
+        f"{', '.join(_pooled)}. Choose a finer grouping (e.g. `method+dc/rl`)."
+        if _pooled
+        else ""
+    )
     mo.md(
         f"{group_sel}\n\nSizes: "
         + ", ".join(f"`{k}`={len(v)}" for k, v in groups.items())
+        + _warn
     )
     return group_sel, groups
 
 
 @app.cell
 def _(group_sel, groups):
-    # The active selection used by every view below.
-    sel_groups = {k: groups[k] for k in group_sel.value} or groups
+    # The group-selected data, *before* any scatter filtering. ``sel_groups`` /
+    # ``flat`` (defined just below the scatter) narrow this down to the runs behind
+    # the points selected in the scatter, so every view further down reacts to it.
+    base_groups = {k: groups[k] for k in group_sel.value} or groups
+    base_flat = [d for ds in base_groups.values() for d in ds]
+    return base_flat, base_groups
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## Runtime scatter — select to filter everything below
+
+    Compare two methods' per-benchmark runtimes. **Box/lasso-select** points to
+    restrict every table and plot below to the selected benchmark/seed runs;
+    clear the selection to see all data again.
+    """)
+    return
+
+
+@app.cell
+def _(base_groups, mo):
+    # Pick the two method groups to put on each axis of the runtime scatter.
+    _cmp_opts = list(base_groups)
+    cmp_x_dd = mo.ui.dropdown(
+        _cmp_opts, value=_cmp_opts[0] if _cmp_opts else None, label="x-axis method"
+    )
+    cmp_y_dd = mo.ui.dropdown(
+        _cmp_opts,
+        value=_cmp_opts[1] if len(_cmp_opts) > 1 else (_cmp_opts[0] if _cmp_opts else None),
+        label="y-axis method",
+    )
+    mo.hstack([cmp_x_dd, cmp_y_dd], justify="start", gap=1)
+    return cmp_x_dd, cmp_y_dd
+
+
+@app.cell
+def _(base_flat, base_groups, cmp_x_dd, cmp_y_dd, mo, plotly_compare_runtimes):
+    # Runtime scatter over the full (group-selected) data. ``meta_func`` stashes the
+    # flat positions of the paired x/y runs into each point\'s customdata so the
+    # filter cell below can map a selection back to runs.
+    _pos_of = {id(_d): _i for _i, _d in enumerate(base_flat)}
+    _cx, _cy = cmp_x_dd.value, cmp_y_dd.value
+    if _cx and _cy and _cx != _cy:
+        compare_fig = plotly_compare_runtimes(
+            base_groups[_cx],
+            base_groups[_cy],
+            label1=_cx,
+            label2=_cy,
+            height=520,
+            meta_func=lambda d1, d2: [_pos_of.get(id(d1)), _pos_of.get(id(d2))],
+        )
+        compare_fig.update_layout(dragmode="select")
+        compare_chart = mo.ui.plotly(compare_fig)
+    else:
+        compare_fig = None
+        compare_chart = mo.md("_pick two different methods to compare_")
+    compare_chart
+    return compare_chart, compare_fig
+
+
+@app.cell(hide_code=True)
+def _(base_flat, base_groups, bench_row, compare_chart, compare_fig):
+    # Scatter selection -> global filter. The flat positions stashed in each point\'s
+    # customdata identify the runs behind the selected points; keep every run sharing
+    # their (benchmark, seed) so all methods stay comparable in the views below.
+    plot_sel_ids = set()
+    if compare_fig is not None and getattr(compare_chart, "value", None):
+        for _pt in compare_chart.value:
+            _cn = _pt.get("curveNumber")
+            _pn = _pt.get("pointNumber")
+            if _pn is None:
+                _pn = _pt.get("pointIndex")  # box/lasso selections use pointIndex
+            if _cn is None or _pn is None or _cn >= len(compare_fig.data):
+                continue
+            _cd = getattr(compare_fig.data[_cn], "customdata", None)
+            if _cd is not None and _pn < len(_cd):
+                for _idx in _cd[_pn][4:6]:  # flat positions of the x-run and y-run
+                    if _idx is not None:
+                        plot_sel_ids.add(int(_idx))
+
+
+    def _runkey(d):
+        return (*bench_row(d), d["experiment"].get("seed"))
+
+
+    if plot_sel_ids:
+        _keys = {_runkey(base_flat[_i]) for _i in plot_sel_ids}
+        sel_groups = {}
+        for _k, _ds in base_groups.items():
+            _kept = [d for d in _ds if _runkey(d) in _keys]
+            if _kept:
+                sel_groups[_k] = _kept
+    else:
+        sel_groups = base_groups
     flat = [d for ds in sel_groups.values() for d in ds]
     return flat, sel_groups
 
@@ -319,8 +455,8 @@ def _(method_table, metric_show, mo, pd, sel_groups):
     _reason_cells: set = set()
     _rows = []
     for _pos, (_ridx, _row) in enumerate(_mt.iterrows()):
-        _name, _file, _h = _ridx
-        _rec = {"name": _name, "file": _file, "h": _h}
+        _name, _file, _params, _h = _ridx
+        _rec = {"name": _name, "file": _file, "params": _params, "h": _h}
         _row_id = str(_pos)
         _best_per_metric: dict = {}
         for _met in _visible_metrics:
@@ -366,6 +502,7 @@ def _(method_table, metric_show, mo, pd, sel_groups):
     _widths = {
         "name": 100,
         "file": 160,
+        "params": 110,
         "h": 35,
         "λ": 45, "|S|": 55, "|T|": 60, "|RL|": 50, "|Σ|": 50,
     }
@@ -374,7 +511,7 @@ def _(method_table, metric_show, mo, pd, sel_groups):
         if " · " in _c:
             _widths[_c] = _per_metric_width.get(_c.split(" · ")[-1], 90)
 
-    _numeric_cols = [c for c in _df.columns if c not in ("name", "file")]
+    _numeric_cols = [c for c in _df.columns if c not in ("name", "file", "params")]
 
     metric_table = mo.ui.table(
         _df,
@@ -383,7 +520,7 @@ def _(method_table, metric_show, mo, pd, sel_groups):
         label="Metrics per benchmark × group (best mean highlighted)",
         style_cell=_style_cell,
         column_widths=_widths,
-        freeze_columns_left=["name", "file", "h"],
+        freeze_columns_left=["name", "file", "params", "h"],
         text_justify_columns={c: "right" for c in _numeric_cols},
         max_columns=None,
     )
@@ -452,7 +589,10 @@ def _(bench_row, data, get_selected_bench, mo, set_selected_bench):
     _benches = sorted(
         {bench_row(_d) for _d in data}, key=lambda t: tuple(str(x) for x in t)
     )
-    _options = {f"{n}  |  {f}  |  h={h}": (n, f, h) for (n, f, h) in _benches}
+    _options = {
+        f"{n}  |  {f}" + (f"  |  {p}" if p else "") + f"  |  h={h}": (n, f, p, h)
+        for (n, f, p, h) in _benches
+    }
     _value_to_label = {v: k for k, v in _options.items()}
     _current = get_selected_bench()
     _initial_label = _value_to_label.get(_current) or next(iter(_options), None)
@@ -564,26 +704,28 @@ def _(mo, plotly_tree_growth, runs):
 
 @app.cell
 def _(mo):
-    # 7) Clickable drill-down: every seed-run as a selectable row. Select one to
-    #    inspect its paths and per-round breakdown below.
+    # 7) Clickable drill-down: every seed-run in the current (scatter-filtered)
+    #    selection as a row. Tick rows to inspect their method, paths, total time and
+    #    per-round breakdowns below.
     mo.md("""
-    ## Inspect individual seed-runs (click a row)
+    ## Inspect individual seed-runs (tick rows)
+
+    Every seed-run in the current selection. Tick one or more rows to see their
+    details below.
     """)
     return
 
 
 @app.cell
 def _(bench_row, mo, pd, sel_groups):
-    # Iterate sel_groups in the same order Xref builds ``flat``, so the ``id``
-    # column still indexes into flat (the detail cell uses ``flat[int(id)]``).
-    # Adds ``group`` (which grouping-dimension value this row belongs to) and
-    # ``variant`` (the swept-param signature) so you can tell seed-runs apart.
+    # Seed-runs in the current selection. ``id`` indexes into ``flat`` (the detail
+    # cell reads ``flat[int(id)]``). Tick rows to drill into their details below.
     _rows = []
     _i = 0
     for _g, _ds in sel_groups.items():
         for _d in _ds:
             _e = _d["experiment"]
-            _n, _f, _h = bench_row(_d)
+            _n, _f, _p, _h = bench_row(_d)
             _res = _d.get("results")
             _rows.append(
                 {
@@ -591,6 +733,7 @@ def _(bench_row, mo, pd, sel_groups):
                     "group": _g,
                     "name": _n,
                     "file": _f,
+                    "params": _p,
                     "h": _h,
                     "seed": _e.get("seed"),
                     "ok": _res is not None,
@@ -608,7 +751,7 @@ def _(bench_row, mo, pd, sel_groups):
         page_size=15,
         freeze_columns_left=["id", "group", "name"],
         column_widths={
-            "id": 40, "group": 110, "name": 100, "file": 150, "h": 35,
+            "id": 40, "group": 110, "name": 100, "file": 150, "params": 110, "h": 35,
             "seed": 45, "ok": 40, "time": 65, "error": 70, "variant": 260,
         },
         wrapped_columns=["variant"],
@@ -618,38 +761,92 @@ def _(bench_row, mo, pd, sel_groups):
 
 
 @app.cell
-def _(flat, mo, plotly_round_breakdown, plotly_tree_growth, runs_table):
-    # Details for every selected seed-run: clickable json/log paths plus the
-    # per-round breakdown and tree-growth plots (plotly: hover for values), one
-    # block per run separated by a horizontal rule.
+def _(
+    TIME_COMPONENTS,
+    flat,
+    mo,
+    os,
+    plotly_round_breakdown,
+    plotly_tree_growth,
+    runs_table,
+    time_components,
+):
+    # Details for the ticked seed-runs: method + paths, a total runtime breakdown,
+    # and the per-round breakdown and tree-growth plots.
     _sel = runs_table.value
     _ids = list(_sel["id"]) if _sel is not None and len(_sel) else []
 
 
+    def _method_label(e):
+        parts = [e.get("learning_method") or "?"]
+        if e.get("use_dont_care"):
+            parts.append("dc")
+        if e.get("use_refrence_language"):
+            parts.append("rl")
+        return "+".join(parts)
+
+
     def _round_brk(d):
-        # plotly_round_breakdown now always takes a {label: entry} dict; wrap a
-        # single entry so it renders in single-run mode (no dodging, cex marker
-        # drawn on top of each bar).
         return plotly_round_breakdown({f"seed {d['experiment'].get('seed')}": d})
 
 
+    def _total_brk(d):
+        import plotly.graph_objects as _go
+        from matplotlib import colors as _mcolors
+
+        comp = time_components(d)
+        if not comp:
+            return mo.md("_no timing breakdown available_")
+        _fig = _go.Figure()
+        for _cn, _cc in TIME_COMPONENTS:
+            _v = comp.get(_cn, 0.0) or 0.0
+            if _v <= 0:
+                continue
+            _fig.add_trace(
+                _go.Bar(
+                    x=[_v],
+                    y=[""],
+                    orientation="h",
+                    name=_cn,
+                    marker_color=_mcolors.to_hex(_cc),
+                    hovertemplate=f"{_cn}: %{{x:.2f}} s<extra></extra>",
+                )
+            )
+        _fig.update_layout(
+            barmode="stack",
+            height=170,
+            margin=dict(l=10, r=10, t=40, b=30),
+            xaxis_title="seconds",
+            template="plotly_white",
+            legend=dict(orientation="h"),
+            title=f"total {sum(v or 0 for v in comp.values()):.2f} s",
+        )
+        return _fig
+
+
     if not _ids:
-        _detail = mo.md("_select one or more rows above to see their details_")
+        _detail = mo.md("_tick one or more rows above to see their details_")
     else:
         _blocks = []
         for _pos, _i in enumerate(_ids):
             _d = flat[int(_i)]
             _e = _d["experiment"]
+            _res = _d.get("results") or {}
+            _dot = _res.get("dot_file")
+            _dot_line = f"- monitor dot: `{os.path.abspath(_dot)}`\n" if _dot else ""
             _parts = [
                 mo.md(
-                    f"### {_pos + 1}. **{_e.get('name')}** · `{_e.get('file')}` · "
-                    f"h={_e.get('horizon')} · seed={_e.get('seed')}\n\n"
+                    f"### {_pos + 1}. **{_e.get('name')}** · method `{_method_label(_e)}` · "
+                    f"`{_e.get('file')}` · h={_e.get('horizon')} · seed={_e.get('seed')}\n\n"
+                    f"- variant: `{_e.get('variant')}`\n"
                     f"- json: `{_d.get('json_path')}`\n"
                     f"- log: `{_d.get('log_path')}`\n"
+                    f"{_dot_line}"
                     f"- error: {_d.get('error')}"
                 )
             ]
             for _label, _fn in (
+                ("Total time breakdown", _total_brk),
                 ("Round breakdown", _round_brk),
                 ("Tree growth", plotly_tree_growth),
             ):

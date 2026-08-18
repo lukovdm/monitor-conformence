@@ -44,10 +44,13 @@ class RunArgs(Tap):
     learning_method: LearningMethod = LearningMethod.LSHARP
 
     # Testing during learning
-    integrate_testing: bool = False # Whether to use testing during learning, the conformance testing is not necessary if this is set to True
+    integrate_testing: bool = True # Whether to use testing during learning, the conformance testing is not necessary if this is set to True
     depth: int | None = 2 # Depth of testing in terms of k-completeness or expected length when full testing is set to False
     full_testing: bool = False # Full perform a k-complete test suite or randomized testing
     test_per_frontier: int | None = 5 # Tests per frontier states
+    seed_from_search: bool = False # Seed the observation tree from the belief most-probable-path search
+    seed_max_expansions: int = 100000 # Safety budget for the seeding search
+    seed_timeout_ms: int = 0 # Wall-clock budget for the seeding search (0 = none)
 
     # Filtering
     threshold: float = 0.3
@@ -62,7 +65,7 @@ class RunArgs(Tap):
     min_length: int = 1
     expected_length: int = 5
     max_seqs: int = 5000
-    conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_ADVANCED_PT
+    conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_PT
 
     # Timeouts
     solver_timeout: int = 200  # Timeout for the solver in seconds
@@ -205,6 +208,9 @@ def main():
         depth=args.depth,
         full_testing =args.full_testing,
         test_per_frontier=args.test_per_frontier,
+        seed_from_search=args.seed_from_search,
+        seed_max_expansions=args.seed_max_expansions,
+        seed_timeout_ms=args.seed_timeout_ms,
         use_horizon_in_filtering=args.horizon_in_filtering,
         conditional_method=args.conditional_method,
         learning_method=args.learning_method,

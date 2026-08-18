@@ -175,11 +175,20 @@ class LearningExperiment(Experiment):
         use_horizon_in_filtering: bool = True,
         use_dont_care: bool = True,
         use_refrence_language: bool = True,
-        conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
-        use_exact: bool = True,
+        conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_PT,
+        use_exact: bool = False,
         # Learning
         learning_method: LearningMethod = LearningMethod.LSHARP,
         random_eq_method: dict[str, int] | Literal["default"] | None = "default",
+        # Testing
+        integrate_testing: bool = True,
+        depth: int | None = 2,
+        full_testing: bool = False,
+        test_per_frontier: int | None = 5,
+        # Seed the observation tree from the belief most-probable-path search
+        seed_from_search: bool = False,
+        seed_max_expansions: int = 100000,
+        seed_timeout_ms: int = 0,
         # Reproducibility
         seed: int = 0,
     ):
@@ -204,6 +213,13 @@ class LearningExperiment(Experiment):
         self.random_eq_method = random_eq_method
         self.use_dont_care = use_dont_care
         self.use_refrence_language = use_refrence_language
+        self.integrate_testing = integrate_testing
+        self.depth = depth
+        self.full_testing = full_testing
+        self.test_per_frontier = test_per_frontier
+        self.seed_from_search = seed_from_search
+        self.seed_max_expansions = seed_max_expansions
+        self.seed_timeout_ms = seed_timeout_ms
 
         if learning_method == LearningMethod.LSTAR:
             if use_dont_care or use_refrence_language:
@@ -344,6 +360,13 @@ class LearningExperiment(Experiment):
                 conditional_method=self.conditional_method,
                 learning_method=self.learning_method,
                 random_eq_method=self.random_eq_method,
+                integrate_testing=self.integrate_testing,
+                depth=self.depth,
+                full_testing=self.full_testing,
+                test_per_frontier=self.test_per_frontier,
+                seed_from_search=self.seed_from_search,
+                seed_max_expansions=self.seed_max_expansions,
+                seed_timeout_ms=self.seed_timeout_ms,
                 base_dir=base_dir,
                 # export_benchmarks=True
             )
@@ -372,6 +395,7 @@ class LearningExperiment(Experiment):
                 "cq_time": stats.cq_time,
                 "reference_language_time": stats.reference_language_time,
                 "reference_size": stats.reference_size,
+                "seeding": stats.seeding,
                 "rounds": stats.rounds,
                 "learning_stats": lstar_info,
                 "dot_file": f"{path_base}.dot",

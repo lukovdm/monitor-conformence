@@ -121,17 +121,37 @@ def bench_key(d):
     return tuple(_canon_field(f, e.get(f)) for f in MATCH_FIELDS)
 
 
+def bench_params(e):
+    """Compact label for the model parameters that distinguish otherwise-identical
+    benchmarks (same name/file/horizon). POMDP variants differ only by their PRISM
+    ``constants`` (e.g. ``"IMAX=25"``); loaders without constants (snakes_ladders)
+    keep a fixed board across rows, so they get an empty string and rely on the
+    name/file/horizon alone."""
+    return str((e.get("parameters") or {}).get("constants") or "")
+
+
 def bench_label(d):
     e = d["experiment"]
-    extra = e.get("file") or (e.get("parameters") or {}).get("constants", "")
-    extra = str(extra).split("/")[-1]
+    file = str(e.get("file") or "").split("/")[-1]
+    # Show file *and* constants: a single model file can be swept over several
+    # constant sets, so the file alone no longer identifies the benchmark.
+    extra = "  ".join(p for p in (file, bench_params(e)) if p)
     return f"{e.get('name')}\n{extra}\nh={e.get('horizon')}"
 
 
 def bench_row(d):
-    """The ``method_table`` row index for an entry: ``(name, file, horizon)``."""
+    """The ``method_table`` row index for an entry: ``(name, file, params, horizon)``.
+
+    ``params`` is the PRISM ``constants`` string (see ``bench_params``). Without it
+    two variants of the same model that differ only by their constants would share
+    a row, even though ``bench_key`` keeps them as distinct benchmarks."""
     e = d["experiment"]
-    return (e.get("name"), str(e.get("file") or "").split("/")[-1], e.get("horizon"))
+    return (
+        e.get("name"),
+        str(e.get("file") or "").split("/")[-1],
+        bench_params(e),
+        e.get("horizon"),
+    )
 
 
 # A metric aggregated over the seed-runs of one (group, benchmark) cell. The same
@@ -439,6 +459,43 @@ def plotly_runtime_breakdown(groups, *, ncols=4, title=None):
     fig.for_each_annotation(
         lambda a: a.update(text=a.text.split("=", 1)[-1], font_size=10)
     )
+
+    # A group that produced no runtime for a benchmark leaves that cell blank;
+    # annotate it with *why* — the (most common) failure reason across its
+    # seed-runs (``∞`` timeout, ``MO`` out of memory, ``ERR`` other error,
+    # ``incorrect``, or ``—`` never started) — so an absent bar is explained
+    # rather than silently missing (the matplotlib twin shows a muted ``×``).
+    # Map each benchmark facet onto the subplot axes it occupies via the bar
+    # traces: every trace carries the facet's benchmark label as customdata[0]
+    # and the ``xaxis``/``yaxis`` (e.g. ``"x2"``) of its subplot.
+    facet_axis: dict = {}
+    for _tr in fig.data:
+        cd = getattr(_tr, "customdata", None)
+        if cd is None or len(cd) == 0:
+            continue
+        facet_axis.setdefault(cd[0][0], (_tr.xaxis or "x", _tr.yaxis or "y"))
+    for g in group_names:
+        ebb = entries_by_bench(nonempty[g])
+        for bk in bench_keys:
+            if bk in group_components[g]:
+                continue
+            entries = ebb.get(bk)
+            reason = (_summarize_reason(entries) if entries else None) or "—"
+            xax, yax = facet_axis.get(
+                col_label[bk].replace("\n", " · "), (None, None)
+            )
+            if xax is None:
+                continue
+            fig.add_annotation(
+                x=g,
+                y=0,
+                xref=xax,
+                yref=yax,
+                yanchor="bottom",
+                text=reason,
+                showarrow=False,
+                font=dict(size=11, color="#999"),
+            )
 
     n_bench = len(bench_keys)
     nrows = -(-n_bench // ncols)
@@ -1709,10 +1766,11 @@ def find_runs(groups, group=None, benchmark=None, links=False):
 
     Coordinates match ``method_table``: ``group`` is a method/column label, and
     ``benchmark`` selects the row — either a substring of the ``"name file h=…"``
-    label or the exact ``(name, file, h)`` index tuple shown by ``method_table``.
+    label or the exact ``(name, file, params, h)`` index tuple shown by
+    ``method_table``.
     Because a cell aggregates several seeds, this returns **one row per seed-run**
     (with its ``seed``, sorted so failures are easy to spot), exposing the
-    ``name``/``file``/``h`` row index, runtime, the per-phase timing split (the
+    ``name``/``file``/``params``/``h`` row index, runtime, the per-phase timing split (the
     same ``TIME_COMPONENTS`` as ``plot_runtime_breakdown``: learning, smt,
     reference, product, paynt, cq, counterexample, other), finished flag, any
     error and the ``json`` / ``log`` paths. With ``links=True`` the paths render
@@ -1723,7 +1781,7 @@ def find_runs(groups, group=None, benchmark=None, links=False):
     >>> find_runs(groups, group="bisection")               # all bisection runs
     >>> find_runs(groups, benchmark="airport")             # all airport runs
     >>> find_runs(groups, "bisection", "airportA-3")       # substring row match
-    >>> find_runs(groups, "restart", ("snakes_ladders", "mc_u_nxn.pm", 12))
+    >>> find_runs(groups, "restart", ("snakes_ladders", "mc_u_nxn.pm", "", 12))
     """
     want_row = tuple(benchmark) if isinstance(benchmark, (tuple, list)) else None
     rows = []
@@ -1755,7 +1813,8 @@ def find_runs(groups, group=None, benchmark=None, links=False):
                     "group": glabel,
                     "name": idx[0],
                     "file": idx[1],
-                    "h": idx[2],
+                    "params": idx[2],
+                    "h": idx[3],
                     "seed": d["experiment"].get("seed"),
                     "runtime": round(rt, 2) if rt is not None else None,
                     # Per-phase timing (same split as plot_runtime_breakdown).
@@ -1773,7 +1832,7 @@ def find_runs(groups, group=None, benchmark=None, links=False):
     df = pd.DataFrame(rows)
     if not df.empty:
         df = df.sort_values(
-            ["group", "name", "file", "h", "seed"], na_position="first"
+            ["group", "name", "file", "params", "h", "seed"], na_position="first"
         ).reset_index(drop=True)
     if links and not df.empty:
         # vscode://file/<abs-path> opens the file in the editor; plain file://
@@ -1858,7 +1917,7 @@ def method_table(groups, metrics=("time", "steps", "eqs", "monitor")):
     ``groups`` is the same ordered ``label -> entries`` mapping used elsewhere,
     where each label is one learning method/configuration. Methods that never
     produced a result are dropped. Each benchmark is one row, indexed by
-    ``(name, file, h)``; the leading ``benchmark`` block holds the remaining
+    ``(name, file, params, h)``; the leading ``benchmark`` block holds the remaining
     details (threshold ``λ`` and the MC size ``|S|``/``|T|``), followed by one
     block of columns per method giving its runtime (s), learning steps, number of
     equivalence queries (EQs) and learned-monitor size (``|M|``). Where a method
@@ -1886,7 +1945,7 @@ def method_table(groups, metrics=("time", "steps", "eqs", "monitor")):
 
     bench_details: dict = {}  # bench key -> detail columns
     bench_metrics: dict = {}  # bench key -> per-method metric columns
-    bench_index: dict = {}  # bench key -> (name, file, horizon) row index
+    bench_index: dict = {}  # bench key -> (name, file, params, horizon) row index
     for label, ds in groups.items():
         # All seed-runs of a benchmark collapse to one cell; aggregate over them.
         for k, entries in entries_by_bench(ds).items():
@@ -1937,7 +1996,7 @@ def method_table(groups, metrics=("time", "steps", "eqs", "monitor")):
 
     return pd.DataFrame(
         rows,
-        index=pd.MultiIndex.from_tuples(index, names=["name", "file", "h"]),
+        index=pd.MultiIndex.from_tuples(index, names=["name", "file", "params", "h"]),
         columns=pd.MultiIndex.from_tuples(columns),
     )
 

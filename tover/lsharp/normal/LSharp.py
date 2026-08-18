@@ -66,13 +66,17 @@ def run_Lsharp(alphabet: list, sul: SUL, eq_oracle: Oracle, automaton_type,
     learning_rounds = 0
     hypothesis = None
 
+    round_timings: list[dict[str, float]] = []
+
     while True:
         learning_rounds += 1
         if max_learning_rounds and learning_rounds == max_learning_rounds:
             break
 
         # Building the hypothesis
+        build_start = time.time()
         hypothesis = ob_tree.build_hypothesis()
+        round_build_time = time.time() - build_start
 
         if print_level > 1:
             print(f'Hypothesis {learning_rounds}: {hypothesis.size} states.')
@@ -82,17 +86,32 @@ def run_Lsharp(alphabet: list, sul: SUL, eq_oracle: Oracle, automaton_type,
         # Pose Equivalence Query
         eq_query_start = time.time()
         cex = eq_oracle.find_cex(hypothesis)
-        eq_query_time += time.time() - eq_query_start
+        round_eq_time = time.time() - eq_query_start
+        eq_query_time += round_eq_time
 
         if print_level > 2:
             print(f'Counterexample: {cex}')
 
+        round_stats = {
+            "hypothesis_size": hypothesis.size,
+            "basis_size": len(ob_tree.basis),
+            "build_time": round_build_time,
+            "eq_time": round_eq_time,
+            "process_time": 0.0,
+            # Observation-tree growth snapshot for this round.
+            "tree_nodes": ob_tree.get_size(),
+        }
+
         if cex is None:
+            round_timings.append(round_stats)
             break
 
         # Process the counterexample and start a new learning round
+        process_start = time.time()
         cex_outputs = sul.query(cex)
         ob_tree.process_counter_example(hypothesis, cex, cex_outputs)
+        round_stats["process_time"] = time.time() - process_start
+        round_timings.append(round_stats)
 
     total_time = round(time.time() - start_time, 2)
     eq_query_time = round(eq_query_time, 2)
@@ -109,6 +128,8 @@ def run_Lsharp(alphabet: list, sul: SUL, eq_oracle: Oracle, automaton_type,
         'eq_oracle_time': eq_query_time,
         'total_time': total_time,
         'cache_saved': sul.num_cached_queries,
+        'round_timings': round_timings,
+        'nodes': ob_tree.get_size(),
     }
 
     if print_level > 0:

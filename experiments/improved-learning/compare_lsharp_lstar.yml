@@ -18,7 +18,7 @@
   spec: Pmax=? [F<=1 "crash"]
   good_label: crash
   loader: pomdp
-  use_exact: true
+  use_exact: false
   learning_method:
     - lstar
     - lsharp
@@ -28,6 +28,7 @@
     - use_dont_care: false
       use_refrence_language: false
   seed: [0,1,2]
+  full_testing: true
   random_eq_method:
     - max_seqs: 50000
 
@@ -43,6 +44,7 @@
   horizon: 10  # the base sets a horizon, so pin refuel to its default explicitly
   spec: Pmax=? [F<=3 "empty"]
   good_label: empty
+  full_testing: false
 
 - <<: *base
   name: evade
@@ -51,6 +53,7 @@
     constants: "N=4,RADIUS=2"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
+  full_testing: false
   horizon:
     - 7
     - 9
@@ -62,6 +65,7 @@
     constants: "N=3"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
+  full_testing: false
   horizon:
     - 8
     - 10
@@ -76,6 +80,7 @@
     - constants: "DMAX=4,PMAX=4"
   spec: Pmax=? [F<=4 "crash"]
   good_label: crash
+  full_testing: false
   horizon:
     - 9
     - 11
@@ -109,6 +114,7 @@
       16: 6
   spec: Pmax=? [F<5 "good"]
   good_label: good
+  full_testing: true
   horizon:
     # - 8
     - 10

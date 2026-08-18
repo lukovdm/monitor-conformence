@@ -1,5 +1,6 @@
+from collections import namedtuple
 from fractions import Fraction
-from math import ceil, log10
+from math import ceil, floor, log10
 import re
 from typing import Any, cast
 from matplotlib import pyplot as plt
@@ -26,6 +27,24 @@ DEFAULT_MATCH_FIELDS = [
 ]
 
 
+# Numeric fields stored inconsistently across runs: ``Experiment.run`` sharpens
+# ``threshold``/``fp_slack``/``fn_slack`` to exact ``Fraction``s on finished
+# runs, while not-started / unfinished placeholders keep the original ``float``.
+# Raw equality (``Fraction(3,10) == 0.3``) is then False and the pair is dropped,
+# silently losing a finished run from the scatter when its counterpart never
+# started. Canonicalise to a stable rounded float so the two forms match.
+_NUMERIC_MATCH_FIELDS = {"threshold", "fp_slack", "fn_slack"}
+
+
+def _canon_for_pair(field: str, value):
+    if field not in _NUMERIC_MATCH_FIELDS or value is None:
+        return value
+    try:
+        return round(float(Fraction(str(value))), 9)
+    except (ValueError, ZeroDivisionError, ArithmeticError):
+        return value
+
+
 def pair_by_benchmark(
     data1: list[dict],
     data2: list[dict],
@@ -40,7 +59,9 @@ def pair_by_benchmark(
     for d1 in data1:
         for d2 in data2:
             if all(
-                d1["experiment"].get(f) == d2["experiment"].get(f) for f in match_fields
+                _canon_for_pair(f, d1["experiment"].get(f))
+                == _canon_for_pair(f, d2["experiment"].get(f))
+                for f in match_fields
             ):
                 pairs.append((d1, d2))
                 break
@@ -173,6 +194,54 @@ def setup_loglog_comparison(
         ax.set_ylabel("")
 
 
+# One paired point of a runtime comparison: the two source entries, their
+# plot-ready (already sentinel-resolved) times, and the per-benchmark colour /
+# marker / legend label. ``RuntimeComparison`` bundles the points with the
+# sentinel-line positions so renderers don't recompute anything.
+ComparisonPoint = namedtuple("ComparisonPoint", "d1 d2 x y color symbol label")
+RuntimeComparison = namedtuple(
+    "RuntimeComparison", "points max_time timeout out_of_memory incorrect"
+)
+
+
+def compare_runtime_data(
+    data1: list[dict[str, Any]],
+    data2: list[dict[str, Any]],
+    match_fields: list[str] = DEFAULT_MATCH_FIELDS,
+    name_func=lambda d1, d2: f"{d1['experiment']['name']} {d1['experiment']['variant']}",
+) -> RuntimeComparison:
+    """Pair two methods by benchmark and resolve each run to a plot-ready point.
+
+    Does *all* the data work behind the runtime scatter: ``pair_by_benchmark``
+    matches an entry of ``data1`` with the same-benchmark/-seed entry of
+    ``data2``; ``calculate_error_lines`` derives the timeout / out-of-memory /
+    incorrect sentinel positions from the largest finished time; and
+    ``_resolve_time`` maps every run to an (x, y) coordinate (a sentinel when it
+    failed). The matplotlib ``compare_runtimes`` and the plotly
+    ``plotly_compare_runtimes`` share this function and differ only in rendering.
+    """
+    pairs = pair_by_benchmark(data1, data2, match_fields)
+
+    max_time, timeout, out_of_memory, incorrect, _unfinished = calculate_error_lines(
+        [d for pair in pairs for d in pair],
+        lambda d: d["results"]["time"] if d["results"] is not None else 0,
+    )
+
+    points = [
+        ComparisonPoint(
+            d1,
+            d2,
+            _resolve_time(d1, timeout, out_of_memory, incorrect),
+            _resolve_time(d2, timeout, out_of_memory, incorrect),
+            d1["color"],
+            d1["symbol"],
+            name_func(d1, d2),
+        )
+        for d1, d2 in pairs
+    ]
+    return RuntimeComparison(points, max_time, timeout, out_of_memory, incorrect)
+
+
 def compare_runtimes(
     data1: list[dict[str, Any]],
     data2: list[dict[str, Any]],
@@ -192,25 +261,24 @@ def compare_runtimes(
     plot_kwargs: dict = {},
     min_value: float = 1,
 ):
-    pairs = pair_by_benchmark(data1, data2, match_fields)
+    cmp = compare_runtime_data(data1, data2, match_fields, name_func)
 
-    max_time, timeout, out_of_memory, incorrect, unfinished = calculate_error_lines(
-        [d for pair in pairs for d in pair],
-        lambda d: d["results"]["time"] if d["results"] is not None else 0,
-    )
-
-    for d1, d2 in pairs:
-        time1 = _resolve_time(d1, timeout, out_of_memory, incorrect)
-        time2 = _resolve_time(d2, timeout, out_of_memory, incorrect)
+    for p in cmp.points:
         plt.plot(
-            max(time1, min_value),
-            max(time2, min_value),
-            d1["symbol"],
-            color=d1["color"],
-            label=name_func(d1, d2) if experiments_in_legends else None,
+            max(p.x, min_value),
+            max(p.y, min_value),
+            p.symbol,
+            color=p.color,
+            label=p.label if experiments_in_legends else None,
             **plot_kwargs,
         )
 
+    max_time, timeout, out_of_memory, incorrect = (
+        cmp.max_time,
+        cmp.timeout,
+        cmp.out_of_memory,
+        cmp.incorrect,
+    )
     setup_loglog_comparison(
         plt.gca(),
         max_lim=max_time,
@@ -232,6 +300,174 @@ def compare_runtimes(
     if save_figures:
         plt.savefig(f"{save_path}/{file_name}.pgf", bbox_inches="tight")
     plt.show()
+
+
+# Matplotlib marker -> plotly symbol, for reusing the per-benchmark markers that
+# ``add_symbol_color`` assigns when rendering the plotly scatter.
+_PLOTLY_MARKERS = {
+    "o": "circle", "s": "square", "D": "diamond", "d": "diamond-tall",
+    ">": "triangle-right", "^": "triangle-up", "p": "pentagon", "*": "star",
+    "h": "hexagon", "H": "hexagon2", "+": "cross", "x": "x",
+}
+
+
+def plotly_compare_runtimes(
+    data1: list[dict[str, Any]],
+    data2: list[dict[str, Any]],
+    label1: str = "Method 1",
+    label2: str = "Method 2",
+    match_fields: list[str] = DEFAULT_MATCH_FIELDS,
+    title: str | None = None,
+    name_func=lambda d1, d2: f"{d1['experiment']['name']} {d1['experiment']['variant']}",
+    meta_func=None,
+    min_value: float = 1.0,
+    width: int | None = None,
+    height: int = 600,
+):
+    """Interactive plotly twin of ``compare_runtimes``.
+
+    Reuses ``compare_runtime_data`` for *all* data work (same benchmark pairing,
+    sentinel positions and per-point colour/marker), so this function only draws.
+    A log-log scatter of ``label1`` (x) vs ``label2`` (y) runtimes per benchmark:
+    points above the diagonal are where ``label1`` is faster. Adds y=x / 10x /
+    100x speed-up guides, timeout (∞) / out-of-memory (MO) / incorrect (✗)
+    sentinel lines+ticks, and hover with the benchmark and both times. Returns a
+    bare ``go.Figure`` (wrap in ``mo.ui.plotly`` for click/selection events).
+
+    ``meta_func(d1, d2) -> list`` may attach extra per-point values to each
+    marker's ``customdata`` (appended after the four hover fields), e.g. row
+    identifiers so a caller can map a selected point back to its source runs.
+    """
+    import plotly.graph_objects as go
+    import plotly.colors as pcolors
+
+    cmp = compare_runtime_data(data1, data2, match_fields, name_func)
+
+    max_lim = max(cmp.max_time, min_value * 10)
+    sentinels = [
+        (cmp.timeout, "∞"),
+        (cmp.out_of_memory, "MO"),
+        (cmp.incorrect, "✗"),
+    ]
+    upper = max([max_lim, *(s for s, _ in sentinels)]) * 2
+
+    fig = go.Figure()
+
+    # Diagonal speed-up guides (y = r * x): equal, then 10x and 100x both ways.
+    # Clip each line so it lives inside [min_value, max_lim]^2 — otherwise the
+    # guides would extend past the sentinel (∞ / MO / ✗) lines and clutter the
+    # corners of the plot.
+    for r, dash, gname in [
+        (1.0, "solid", "equal"),
+        (0.1, "dash", "10× faster"),
+        (10.0, "dash", None),
+        (0.01, "dot", "100× faster"),
+        (100.0, "dot", None),
+    ]:
+        if r >= 1:
+            x0, y0, x1, y1 = min_value, min_value * r, max_lim / r, max_lim
+        else:
+            x0, y0, x1, y1 = min_value / r, min_value, max_lim, max_lim * r
+        fig.add_trace(
+            go.Scatter(
+                x=[x0, x1],
+                y=[y0, y1],
+                mode="lines",
+                line=dict(color="gray", dash=dash, width=1),
+                name=gname,
+                showlegend=gname is not None,
+                hoverinfo="skip",
+            )
+        )
+
+    # Sentinel guides: vertical = label1 failed, horizontal = label2 failed.
+    for s, _ in sentinels:
+        fig.add_hline(y=s, line=dict(color="lightgray", dash="dash", width=1))
+        fig.add_vline(x=s, line=dict(color="lightgray", dash="dash", width=1))
+
+    # One trace per benchmark name, each with its own colour *and* symbol so the
+    # legend swatch is unambiguous (the matplotlib version's per-point colours
+    # encode the seed/param variant, which made an interactive legend read as all
+    # one colour). The specific variant/seed stays available on hover.
+    by_name: dict = {}
+    for p in cmp.points:
+        by_name.setdefault(p.d1["experiment"]["name"], []).append(p)
+    _palette = pcolors.qualitative.Dark24
+    _name_color = {n: _palette[i % len(_palette)] for i, n in enumerate(sorted(by_name))}
+    for name, pts in by_name.items():
+        p0 = pts[0]
+        fig.add_trace(
+            go.Scatter(
+                x=[max(p.x, min_value) for p in pts],
+                y=[max(p.y, min_value) for p in pts],
+                mode="markers",
+                name=name,
+                marker=dict(
+                    color=_name_color[name],
+                    symbol=_PLOTLY_MARKERS.get(p0.symbol, "circle"),
+                    size=9,
+                    line=dict(width=0.5, color="black"),
+                ),
+                customdata=[
+                    [
+                        p.label,
+                        round(p.x, 2),
+                        round(p.y, 2),
+                        p.d1["experiment"].get("seed"),
+                        *(meta_func(p.d1, p.d2) if meta_func else []),
+                    ]
+                    for p in pts
+                ],
+                hovertemplate=(
+                    "%{customdata[0]}<br>"
+                    + f"{label1}: " + "%{customdata[1]} s<br>"
+                    + f"{label2}: " + "%{customdata[2]} s<br>"
+                    + "seed %{customdata[3]}<extra></extra>"
+                ),
+            )
+        )
+
+    fig.add_annotation(
+        x=0.02, y=0.98, xref="paper", yref="paper", text=f"{label1} faster",
+        showarrow=False, font=dict(color="gray", size=11), xanchor="left", yanchor="top",
+    )
+    fig.add_annotation(
+        x=0.98, y=0.02, xref="paper", yref="paper", text=f"{label2} faster",
+        showarrow=False, font=dict(color="gray", size=11), xanchor="right", yanchor="bottom",
+    )
+
+    # Ticks: powers of ten over the data range plus the sentinel markers.
+    lo_pow, hi_pow = floor(log10(min_value)), ceil(log10(max_lim))
+    tickvals = [10**i for i in range(lo_pow, hi_pow)]
+    ticktext = [f"10<sup>{i}</sup>" for i in range(lo_pow, hi_pow)]
+    for s, t in sentinels:
+        tickvals.append(s)
+        ticktext.append(t)
+
+    axis = dict(
+        type="log",
+        range=[log10(min_value), log10(upper)],
+        tickvals=tickvals,
+        ticktext=ticktext,
+        showgrid=True,
+        gridcolor="rgba(0,0,0,0.08)",
+    )
+    # ``scaleanchor``/``scaleratio`` lock a unit on the x-axis to the same pixel
+    # distance as a unit on the y-axis, so the speed-up diagonals stay at 45°
+    # and equal runtimes always look equal — independent of the figure shape.
+    fig.update_layout(
+        title=title or f"{label1} vs {label2} runtime",
+        xaxis=dict(title=f"{label1} (s)", **axis),
+        yaxis=dict(
+            title=f"{label2} (s)", scaleanchor="x", scaleratio=1, **axis
+        ),
+        height=height,
+        width=width,
+        autosize=width is None,
+        legend=dict(title="benchmark"),
+        template="plotly_white",
+    )
+    return fig
 
 
 def compare_monitor_sizes(

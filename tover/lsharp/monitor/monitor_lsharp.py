@@ -5,6 +5,7 @@ from typing import Any
 from aalpy.automata import Dfa
 from aalpy.base import SUL, Oracle
 
+from tover.lsharp.monitor.moore_node import MooreNode
 from tover.lsharp.monitor.monitor_observation_tree import MonitorObservationTree, SMTBehaviour
 from tover.utils.logger import logger
 
@@ -24,6 +25,7 @@ def run_monitor_lsharp(
     test_per_frontier: int | None = 5,
     use_dont_care: bool = True,
     smt_behaviour: SMTBehaviour = SMTBehaviour.EXPO_BACKOFF,
+    seed_sequences: list[tuple[list[str], list[Any]]] | None = None,
 ) -> tuple[Dfa[str], dict[str, Any]]:
     logger.info(
         f"Starting L# learning with alphabet size {len(alphabet)}, "
@@ -44,6 +46,28 @@ def run_monitor_lsharp(
         use_dont_care,
         smt_behaviour,
     )
+    # Seeds come from the belief most-probable-path search, which already knows the output of
+    # every trace it explored. Inserting them before the first round means L# starts from a
+    # tree that already covers the most probable part of the language instead of paying a
+    # membership query per symbol to rediscover it.
+    seeded_tree_nodes = 0
+    if seed_sequences:
+        seeding_start = time.time()
+        nodes_before = MooreNode._id_counter
+        for inputs, outputs in seed_sequences:
+            ob_tree.insert_observation_sequence(inputs, outputs)
+        # `extend_frontier` budgets itself at 10% of MooreNode._id_counter, so seeding also
+        # enlarges that budget as a side effect of enlarging the tree. Record the growth so
+        # the A/B against an unseeded run can account for it instead of attributing the whole
+        # difference to the information the seeds carry.
+        seeded_tree_nodes = MooreNode._id_counter - nodes_before
+        logger.info(
+            f"Seeded the observation tree with {len(seed_sequences)} sequences "
+            f"({sum(len(i) for i, _ in seed_sequences)} symbols) in "
+            f"{time.time() - seeding_start:.3f}s; created {seeded_tree_nodes} tree nodes, "
+            f"frontier now holds {len(ob_tree.frontier_to_basis_dict)} nodes."
+        )
+
     random.seed(8)
     start_time = time.time()
 
@@ -138,6 +162,7 @@ def run_monitor_lsharp(
         "queries_learning": sul.num_queries,
         "validity_query": validity_queries,  # tree
         "nodes": ob_tree.get_size(),
+        "seeded_tree_nodes": seeded_tree_nodes,
         "informative_nodes": ob_tree.count_informative_nodes(),
         "reference_explored_depth": ob_tree.reference_explored_depth(),  # system under learning
         "sul_steps": sul.num_steps,

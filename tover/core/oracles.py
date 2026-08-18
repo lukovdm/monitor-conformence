@@ -30,6 +30,8 @@ class OracleStats:
     cq_time: float = 0.0
     reference_language_time: float = 0.0
     reference_size: int = 0
+    # What the belief-search seeding cost and produced; empty when seeding is off.
+    seeding: dict = field(default_factory=dict)
     # Per-round breakdown of each conformance query (sampling + FN/FP synthesis).
     # The matching learning-algorithm time per round lives in the learning-info
     # dict (see `ToVerEqOracle.learning_times`).
@@ -53,6 +55,7 @@ class OracleStats:
         self.cq_time += other.cq_time
         self.reference_language_time += other.reference_language_time
         self.reference_size = max(self.reference_size, other.reference_size)
+        self.seeding = self.seeding or other.seeding
         self.rounds += other.rounds
         return self
 

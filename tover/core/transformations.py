@@ -224,3 +224,63 @@ def accept_all_language(observation_classes: list[str]) -> Dfa[str]:
     for obs in observation_classes:
         initial_state.transitions[obs] = initial_state
     return Dfa(initial_state, [initial_state])
+
+
+def prune_monitor_with_reference(monitor: Dfa[str], reference: Dfa[str]) -> Dfa[str]:
+    """Prune monitor transitions that are impossible under the reference language.
+
+    The reference DFA (see `language_of_hmm`) accepts exactly the observation
+    traces the HMM can produce up to the horizon; its only non-accepting states
+    are the dead/error states reached by impossible traces. A monitor transition
+    is impossible when, for every reference state the monitor state is paired with
+    along a valid trace, reading that symbol drives the reference into an error
+    state. Such transitions are never exercised on real traces, so we drop them
+    (mutating `monitor` in place) together with any states thereby left
+    unreachable from the initial state.
+    """
+    # For each monitor state, the symbols that stay inside the reference language
+    # from at least one reachable (monitor, reference) pairing.
+    valid_syms: dict[DfaState[str], set[str]] = {}
+
+    start = (monitor.initial_state, reference.initial_state)
+    queue: deque[tuple[DfaState[str], DfaState[str]]] = deque([start])
+    visited: set[tuple[DfaState[str], DfaState[str]]] = {start}
+
+    while queue:
+        mon_s, ref_s = queue.popleft()
+        keep = valid_syms.setdefault(mon_s, set())
+        for sym, mon_next in mon_s.transitions.items():
+            ref_next = ref_s.transitions.get(sym)
+            # No reference move, or a move into an error (non-accepting) state,
+            # means this symbol is impossible from here: not a valid transition.
+            if ref_next is None or not ref_next.is_accepting:
+                continue
+            keep.add(sym)
+            pair = (mon_next, ref_next)
+            if pair not in visited:
+                visited.add(pair)
+                queue.append(pair)
+
+    # Drop the transitions that are impossible under every reachable pairing.
+    for mon_s, keep in valid_syms.items():
+        for sym in list(mon_s.transitions):
+            if sym not in keep:
+                del mon_s.transitions[sym]
+
+    # Keep only the states still reachable from the initial state, and rebuild
+    # prefixes over the pruned transition structure.
+    reachable: list[DfaState[str]] = []
+    seen: set[DfaState[str]] = {monitor.initial_state}
+    bfs: deque[DfaState[str]] = deque([monitor.initial_state])
+    while bfs:
+        state = bfs.popleft()
+        state.prefix = None
+        reachable.append(state)
+        for nxt in state.transitions.values():
+            if nxt not in seen:
+                seen.add(nxt)
+                bfs.append(nxt)
+
+    monitor.states = reachable
+    monitor.compute_prefixes()
+    return monitor
