@@ -7,7 +7,6 @@
   horizon:
     - 3
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]

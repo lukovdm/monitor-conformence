@@ -69,7 +69,7 @@ You can use the tover algorithm on any prism POMDP model or snakes and ladder bo
 
 For a POMDP:
 ```bash
-python -m tover.cli.run --file experiments/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --good_label crash --threshold 0.3 --horizon 8 --fp_slack 0.2 --fn_slack 0.05 --exact --base_dir out/airport_experiment
+python -m tover.cli.run --file experiments/premise/airportA-3.nm --loader pomdp --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' --threshold 0.3 --horizon 8 --fp_slack 0.2 --fn_slack 0.05 --exact --base_dir out/airport_experiment
 ```
 
 For SnLs:
@@ -83,7 +83,6 @@ The inputs to `python -m tover.cli.run` are as follows:
 - `--constants "DMAX=3,PMAX=3"` specify any constants used to build the prism POMDP model.
 - `--n 100 --ladders "1:38,4:14,9:31,28:64,40:42,36:44,51:67,71:91,80:100" --snakes "98:76,95:75,93:73,87:24,64:60,62:19,55:53,49:11,47:26,16:6"` the parameters for the SnLs board. The amount of squares (should be a square number), the locations of the ladders with their destinations and similarly for the snakes.
 - `--spec 'Pmax=? [F<=4 "crash"]'` gives the specification with which to generate the risks.
-- `--good_label crash` gives the target label in the model.
 - `--threshold 0.3` is the learning threshold.
 - `--horizon 10` contains the horizon in which the monitor should be correct.
 - `--fp_slack 0.2` is the area below the learning threshold considered as undetermined.

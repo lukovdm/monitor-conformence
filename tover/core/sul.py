@@ -27,11 +27,6 @@ def storm_one(is_exact: bool):
     return Rational(1) if is_exact else 1.0
 
 
-def storm_zero(is_exact: bool):
-    """Zero, in whichever arithmetic the model uses."""
-    return Rational(0) if is_exact else 0.0
-
-
 class FilteringSUL(SUL):
     """System Under Learning that filters observations by risk threshold.
 
@@ -48,7 +43,6 @@ class FilteringSUL(SUL):
         spec: str,
         threshold: float | Rational | tuple[float, float] | tuple[Rational, Rational],
         horizon: int | None,
-        use_risk: bool,
         use_dont_care: bool,
     ):
         super().__init__()
@@ -105,25 +99,11 @@ class FilteringSUL(SUL):
         prop = parse_properties(spec)
         result = model_checking(mc, prop[0])
         self.time_taken = time() - start_time
-        if use_risk:
-            risk_values = result.get_values()
-            logger.debug(
-                f"FilteringSUL risk function: {max(risk_values)} max, {min(risk_values)} min, {float(sum(risk_values) / len(risk_values)):.2f} avg, {risk_values[-3:]} tail",
-            )
-            self.tracker.set_risk(risk_values)
-        else:
-            # get_truth_values returns a BitVector, and iterating a BitVector yields the
-            # *indices of the set bits* rather than one boolean per state. Passing it straight
-            # through produced a risk vector of length popcount whose entries were state
-            # indices -- a length mismatch on most models, and silently nonsense risks on a
-            # model where every bit happens to be set. Expand it explicitly.
-            truth_values = result.get_truth_values()
-            one, zero = storm_one(mc.is_exact), storm_zero(mc.is_exact)
-            risk_values = [zero] * mc.nr_states
-            for state in truth_values:
-                risk_values[state] = one
-            logger.debug(f"FilteringSUL risk function: {sum(1 for v in risk_values if v)} of {mc.nr_states} states")
-            self.tracker.set_risk(risk_values)
+        risk_values = result.get_values()
+        logger.debug(
+            f"FilteringSUL risk function: {max(risk_values)} max, {min(risk_values)} min, {float(sum(risk_values) / len(risk_values)):.2f} avg, {risk_values[-3:]} tail",
+        )
+        self.tracker.set_risk(risk_values)
         # Kept so that seeding can run the belief search over exactly the same risk function
         # the tracker uses, rather than recomputing it and risking a divergence.
         self.risk_values = risk_values

@@ -36,7 +36,6 @@ class RunArgs(Tap):
 
     # Specification
     spec: str  # Property specification (e.g. 'Pmax=? [F<=4 "crash"]')
-    good_label: str | None = None  # Label for good/target states
 
     # Learning
     dont_care: bool = True  # Whether to learn with don't cares
@@ -115,9 +114,6 @@ def main():
         assert (
             args.spec is not None
         ), "Specification must be provided for the POMDP loader."
-        assert (
-            args.good_label is not None
-        ), "Good label must be provided for the POMDP loader."
 
         logger.info(
             f"Loading POMDP model from {args.file} with constants {args.constants}"
@@ -127,7 +123,6 @@ def main():
             args.file, args.constants, exact
         )
         alphabet = list(observations)
-        good_label = args.good_label
     else:
         if args.loader == "snakes_ladders_random":
             logger.info(f"Loading random Snakes and Ladders model with n={args.n}")
@@ -181,7 +176,6 @@ def main():
             }
             n = args.n
 
-        good_label = "good"
         mc, expr_manager = load_snl_stormpy(SNL_MC_PATH, n, ladders, snakes, exact)
         alphabet = SNAKES_OBSERVATION_LABELS
         initial_observation = "init"
@@ -195,13 +189,11 @@ def main():
         initial_observation=initial_observation,
         expression_manager=expr_manager,
         spec=args.spec,
-        good_label=good_label,
         threshold=make_exact(args.threshold, exact),
         horizon=args.horizon,
         fp_slack=make_exact(args.fp_slack, exact),
         fn_slack=make_exact(args.fn_slack, exact),
         relative_error=make_exact(args.relative_error, exact),
-        use_risk=True,
         use_dont_care=args.dont_care,
         use_reference_language=args.refrence_language,
         integrate_testing=args.integrate_testing,

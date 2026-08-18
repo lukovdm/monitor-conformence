@@ -48,9 +48,7 @@ class VerifyStats:
 
 default_option = {
     "good_spec": 'P>0.9 [ "good" ]',
-    "good_label": "good",
     "relative_error": 0.1,
-    "use_risk": False,
     "paynt_strategy": "ar",
     "conditional_method": ConditionalMethod.REJECTION,
 }
@@ -186,17 +184,12 @@ def _verify_helper(
         mc,
         mon_unrolled,
         expr_manager,
-        options["good_label"],
         options["paynt_strategy"],
         options.get("export_benchmarks", False),
         options.get("conditional_method", "rejection"),
     )
-    if options["use_risk"]:
-        model.set_risk(options["good_spec"])
-        logger.debug("Apply risk done")
-    else:
-        model.apply_spec(options["good_spec"])
-        logger.debug("Apply spec done")
+    model.set_risk(options["good_spec"])
+    logger.debug("Apply risk done")
 
     model.create_product()
     stats.product_time = time() - product_start

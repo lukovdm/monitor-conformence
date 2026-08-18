@@ -17,7 +17,7 @@ uv sync
 # Run a single monitor learning job (POMDP)
 python -m tover.cli.run --file tests/premise/airportA-3.nm --loader pomdp \
   --constants "DMAX=3,PMAX=3" --spec 'Pmax=? [F<=4 "crash"]' \
-  --good-label crash --threshold 0.3 --horizon 8 \
+  --threshold 0.3 --horizon 8 \
   --fp-slack 0.2 --fn-slack 0.05 --exact --base-dir out/my-run
 
 # Generate per-variant commands from YAML configs (the default action)
@@ -93,5 +93,5 @@ transformations.py
 
 - **Horizon**: The monitor is only required to be correct for traces up to this length. The MDP is unrolled to this depth before building the product.
 - **fp_slack / fn_slack**: Dead-zone around the threshold — traces within `[threshold - fp_slack, threshold + fn_slack]` are treated as "don't care" by the SUL.
-- **Risk**: The probability of satisfying the spec, computed by model checking the MC. `use_risk=True` stores this as a continuous value; `use_risk=False` uses a Boolean labelling.
+- **Risk**: The probability of satisfying the spec, computed by model checking the MC, and stored as a continuous value per state.
 - **Exact vs float**: Stormpy supports exact rational arithmetic (`SparseExactDtmc`, `SparseExactMdp`) or double-precision floats. PAYNT's AR strategy is required for exact models.

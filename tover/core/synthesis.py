@@ -71,7 +71,6 @@ class Verifier:
         mc: SparseDtmc | SparseExactDtmc,
         mon: SparseMdp | SparseExactMdp,
         expr_manager: ExpressionManager,
-        good_label: str,
         paynt_strategy: str = "ar",
         export_benchmarks: bool = False,
         conditional_method: ConditionalMethod = ConditionalMethod.REJECTION,
@@ -84,7 +83,6 @@ class Verifier:
         self.mon = SparseExactMdp(mon) if mon.is_exact else SparseMdp(mon)
 
         self.expr_manager = expr_manager
-        self.good_label = good_label
         self.pomdp_quotient = None
         self.pomdp = None
         self.conditional_method = conditional_method
@@ -103,9 +101,6 @@ class Verifier:
         self.options.step_prefix = "step="
         self.options.use_restart_semantics = self.conditional_method == "rejection"
 
-        self._rebuild_generator()
-
-    def _rebuild_generator(self: Self):
         if self.mc.is_exact:
             self.generator = GenerateMonitorVerifierExact(
                 self.mc, self.mon, self.expr_manager, self.options
@@ -114,16 +109,6 @@ class Verifier:
             self.generator = GenerateMonitorVerifierDouble(
                 self.mc, self.mon, self.expr_manager, self.options
             )
-
-    def apply_spec(self: Self, spec: str):
-        """Label good states by evaluating spec on the MC, then rebuild the generator."""
-        prop = parse_properties(spec)
-        result = model_checking(self.mc, prop[0])
-        self.mc.labeling.set_states(self.good_label, result.get_truth_values())
-        logger.info(
-            f"New good states become: {self.mc.labeling.get_states(self.good_label)}"
-        )
-        self._rebuild_generator()
 
     def set_risk(self: Self, risk_prop: str):
         """Set the risk function by evaluating risk_prop on the MC."""

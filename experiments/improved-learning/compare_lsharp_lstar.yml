@@ -1,7 +1,7 @@
 # Compares L* against L# (with/without don't-care and reference language).
 # The first experiment (icy-driving) carries the shared configuration via the
 # &base anchor; every other benchmark merges it with `<<: *base` and overrides
-# only the benchmark-specific keys (name/file/parameters/spec/good_label/horizon).
+# only the benchmark-specific keys (name/file/parameters/spec/horizon).
 # Locally specified keys win over the merged ones.
 
 - &base
@@ -16,7 +16,6 @@
     # - 10
     - 20
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   use_exact: false
   learning_method:
@@ -43,7 +42,6 @@
     - constants: "N=3,ENERGY=4"
   horizon: 10  # the base sets a horizon, so pin refuel to its default explicitly
   spec: Pmax=? [F<=3 "empty"]
-  good_label: empty
   full_testing: false
 
 - <<: *base
@@ -52,7 +50,6 @@
   parameters:
     constants: "N=4,RADIUS=2"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   full_testing: false
   horizon:
     - 7
@@ -64,7 +61,6 @@
   parameters:
     constants: "N=3"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   full_testing: false
   horizon:
     - 8
@@ -79,7 +75,6 @@
     - constants: "DMAX=3,PMAX=3"
     - constants: "DMAX=4,PMAX=4"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   full_testing: false
   horizon:
     - 9
@@ -113,7 +108,6 @@
       47: 26
       16: 6
   spec: Pmax=? [F<5 "good"]
-  good_label: good
   full_testing: true
   horizon:
     # - 8

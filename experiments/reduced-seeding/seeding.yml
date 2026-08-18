@@ -24,7 +24,6 @@
   horizon:
     - 3
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   use_exact: false
   learning_method: lsharp
@@ -46,7 +45,6 @@
     - 6
     - 7
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   use_exact: false
   learning_method: lsharp
@@ -68,7 +66,6 @@
     - 6
     - 7
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   use_exact: false
   learning_method: lsharp
@@ -90,7 +87,6 @@
     - 6
     - 7
   spec: Pmax=? [F<=4 "traps"]
-  good_label: traps
   loader: pomdp
   use_exact: false
   learning_method: lsharp

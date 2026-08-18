@@ -5,7 +5,6 @@
   parameters: 
     constants: "DMAX=4,PMAX=4"
   spec: Pmax=? [F<2 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [sampling]
@@ -27,7 +26,6 @@
     - 3
     - 10
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [sampling]
@@ -43,7 +41,6 @@
     - 3
     - 10
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]
@@ -59,7 +56,6 @@
   parameters:
     - constants: "DMAX=3,PMAX=3"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [sampling]
@@ -74,7 +70,6 @@
   parameters:
     - constants: "DMAX=3,PMAX=3"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]
@@ -112,7 +107,6 @@
       47: 26
       16: 6
   spec: Pmax=? [F<3 "good"]
-  good_label: good
   loader: snakes_ladders
   horizon:
     - 9
@@ -151,7 +145,6 @@
       47: 26
       16: 6
   spec: Pmax=? [F<5 "good"]
-  good_label: good
   loader: snakes_ladders
   horizon:
     - 9

@@ -21,6 +21,8 @@ from tover.utils.helpers import str_to_float
 
 
 # Fields from the JSON `experiment` block that are not constructor arguments.
+# `good_label` and `use_risk` are dropped for backwards compatibility: result JSONs
+# written before those were removed still carry them.
 _NON_CONSTRUCTOR_FIELDS = {
     "result_json_file",
     "mc",
@@ -28,6 +30,8 @@ _NON_CONSTRUCTOR_FIELDS = {
     "alphabet",
     "initial_observation",
     "variant_hash",
+    "good_label",
+    "use_risk",
 }
 
 
@@ -39,7 +43,6 @@ class ReplicateArgs(Tap):
     # Optional overrides — None means "use the value from JSON"
     file: str | None = None
     spec: str | None = None
-    good_label: str | None = None
     loader: Literal["pomdp", "snakes_ladders"] | None = None
     parameters: str | None = None  # JSON string, e.g. '{"constants": "N=4,ENERGY=3"}'
 
@@ -49,7 +52,6 @@ class ReplicateArgs(Tap):
     fn_slack: float | None = None
     relative_error: float | None = None
 
-    use_risk: bool | None = None
     use_horizon_in_filtering: bool | None = None
     use_dont_care: bool | None = None
     use_refrence_language: bool | None = None
@@ -99,12 +101,10 @@ def main():
     overrides = {
         "file": args.file,
         "spec": args.spec,
-        "good_label": args.good_label,
         "loader": args.loader,
         "horizon": args.horizon,
         "threshold": args.threshold,
         "relative_error": args.relative_error,
-        "use_risk": args.use_risk,
         "use_horizon_in_filtering": args.use_horizon_in_filtering,
         "use_dont_care": args.use_dont_care,
         "use_refrence_language": args.use_refrence_language,

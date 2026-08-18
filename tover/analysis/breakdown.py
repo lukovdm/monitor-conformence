@@ -57,7 +57,6 @@ MATCH_FIELDS = [
     "fp_slack",
     "fn_slack",
     "spec",
-    "good_label",
 ]
 # These match fields are numeric but stored inconsistently: runs that executed
 # get an exact Fraction string (e.g. "3/10") because run() sharpens them, while

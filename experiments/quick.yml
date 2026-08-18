@@ -13,7 +13,6 @@
     - 3
     - 4
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   use_exact: false  # double is much faster than exact
   learning_method: lsharp

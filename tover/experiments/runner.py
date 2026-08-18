@@ -162,7 +162,6 @@ class LearningExperiment(Experiment):
         # Model and specification
         file: str,
         spec: str,
-        good_label: str,
         loader: Literal["pomdp", "snakes_ladders"],
         parameters: dict[str, Any],
         # Monitor parameters
@@ -171,7 +170,6 @@ class LearningExperiment(Experiment):
         slack: tuple[float, float] = (0.2, 0.05),
         relative_error: float = 0.01,
         # Behavior flags
-        use_risk: bool = True,
         use_horizon_in_filtering: bool = True,
         use_dont_care: bool = True,
         use_refrence_language: bool = True,
@@ -198,13 +196,11 @@ class LearningExperiment(Experiment):
             random_eq_method = {}
 
         self.spec = spec
-        self.good_label = good_label
         self.horizon = horizon
         self.threshold = threshold
         self.fp_slack = slack[0]
         self.fn_slack = slack[1]
         self.relative_error = relative_error
-        self.use_risk = use_risk
         self.use_horizon_in_filtering = use_horizon_in_filtering
         self.conditional_method = conditional_method
         self.loader = loader
@@ -288,15 +284,12 @@ class LearningExperiment(Experiment):
             self.spec,
             self.threshold,
             self.horizon if self.use_horizon_in_filtering else None,
-            self.use_risk,
             self.use_dont_care,
         )
         mon = aalpy_dfa_to_stormpy(learned_monitor, self.mc.is_exact)
         verify_opts = {
             "good_spec": self.spec,
-            "good_label": self.good_label,
             "relative_error": self.relative_error,
-            "use_risk": self.use_risk,
             "filtering": sul,
             "model_path": base_dir + "/debug-models/",
             "export_benchmarks": False,
@@ -347,13 +340,11 @@ class LearningExperiment(Experiment):
                 initial_observation=self.initial_observation,
                 expression_manager=self.expr_manager,
                 spec=self.spec,
-                good_label=self.good_label,
                 threshold=self.threshold,
                 horizon=self.horizon,
                 fp_slack=self.fp_slack,
                 fn_slack=self.fn_slack,
                 relative_error=self.relative_error,
-                use_risk=self.use_risk,
                 use_reference_language=self.use_refrence_language,
                 use_dont_care=self.use_dont_care,
                 use_horizon_in_filtering=self.use_horizon_in_filtering,
@@ -449,7 +440,6 @@ class VerifyExperiment(Experiment):
         # Required when results_file is not given
         file: str | None = None,
         spec: str | None = None,
-        good_label: str | None = None,
         loader: Literal["pomdp", "snakes_ladders"] | None = None,
         parameters: dict[str, Any] | None = None,
         # Load from prior learning experiment result
@@ -462,7 +452,6 @@ class VerifyExperiment(Experiment):
         threshold: float | None = None,
         relative_error: float = 0.01,
         # Behavior flags
-        use_risk: bool = True,
         use_exact: bool = False,
         paynt_strategy: str = "ar",
         conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_PT,
@@ -500,29 +489,24 @@ class VerifyExperiment(Experiment):
 
             self.intermediate_monitor = intermediate_monitor
             self.spec = exp["experiment"]["spec"]
-            self.good_label = exp["experiment"]["good_label"]
             self.horizon = exp["experiment"]["horizon"]
             self.relative_error = str_to_float(exp["experiment"]["relative_error"])
-            self.use_risk = exp["experiment"]["use_risk"]
             self.learn_experiment = exp["experiment"]
         else:
             if (
                 file is None
                 or spec is None
-                or good_label is None
                 or loader is None
                 or parameters is None
             ):
                 raise ValueError(
-                    "file, spec, good_label, loader, and parameters are required when results_file is not given"
+                    "file, spec, loader, and parameters are required when results_file is not given"
                 )
 
             self.monitor = monitor
             self.spec = spec
-            self.good_label = good_label
             self.horizon = horizon
             self.relative_error = relative_error
-            self.use_risk = use_risk
             self.threshold = threshold
             self.results_file = None
 
@@ -605,7 +589,6 @@ class VerifyExperiment(Experiment):
                         self.spec,
                         self.threshold,
                         self.horizon,
-                        self.use_risk,
                         use_dont_care=False,
                     )
 
@@ -618,9 +601,7 @@ class VerifyExperiment(Experiment):
                     threshold=self.threshold,
                     options={
                         "good_spec": self.spec,
-                        "good_label": self.good_label,
                         "relative_error": self.relative_error,
-                        "use_risk": self.use_risk,
                         "paynt_strategy": self.paynt_strategy,
                         "model_path": base_dir + "/debug-models/",
                         "export_benchmarks": True,

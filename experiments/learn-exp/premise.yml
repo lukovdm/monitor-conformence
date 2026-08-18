@@ -11,7 +11,6 @@
     - 10
     - 25
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]
@@ -30,7 +29,6 @@
     - constants: "N=4,ENERGY=3"
     - constants: "N=3,ENERGY=4"
   spec: Pmax=? [F<=3 "empty"]
-  good_label: empty
   loader: pomdp
   learning_algs: 
     - [verimon]
@@ -45,7 +43,6 @@
   parameters:
     constants: "N=4,RADIUS=2"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   horizon:
     - 6
@@ -65,7 +62,6 @@
   parameters:
     constants: "N=3"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]
@@ -91,7 +87,6 @@
     - constants: "DMAX=4,PMAX=4"
     - constants: "DMAX=5,PMAX=5"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [verimon]

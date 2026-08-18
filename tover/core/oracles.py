@@ -78,9 +78,7 @@ class ToVerEqOracle(Oracle):
         fn_slack: float,
         horizon: int,
         spec: str,
-        good_label: str,
         relative_error: float,
-        use_risk: bool,
         expression_manager: ExpressionManager,
         random_eq_oracle: Oracle | None = None,
         base_dir: str | None = None,
@@ -96,9 +94,7 @@ class ToVerEqOracle(Oracle):
         self.fn_slack = fn_slack
         self.horizon = horizon
         self.spec = spec
-        self.good_label = good_label
         self.relative_error = relative_error
-        self.use_risk = use_risk
         self.expression_manager = expression_manager
         self.base_dir = base_dir
         self.export_benchmarks = export_benchmarks
@@ -248,9 +244,7 @@ class ToVerEqOracle(Oracle):
     def _verify_options(self) -> dict:
         opts = {
             "good_spec": self.spec,
-            "good_label": self.good_label,
             "relative_error": self.relative_error,
-            "use_risk": self.use_risk,
             "filtering": self.filter_sul,
             "export_benchmarks": self.export_benchmarks,
             "conditional_method": self.conditional_method,

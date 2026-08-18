@@ -6,7 +6,6 @@
   parameters: 
     constants: "DMAX=4,PMAX=4"
   spec: Pmax=? [F<2 "crash"]
-  good_label: crash
   loader: pomdp
   learning_algs: 
     - [sampling]

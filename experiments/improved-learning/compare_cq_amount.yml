@@ -9,7 +9,6 @@
     - 10
     - 25
   spec: Pmax=? [F<=1 "crash"]
-  good_label: crash
   loader: pomdp
   learning_method: lsharp
   use_dont_care: true
@@ -30,7 +29,6 @@
     # - constants: "N=4,ENERGY=3"
     # - constants: "N=3,ENERGY=4"
   spec: Pmax=? [F<=3 "empty"]
-  good_label: empty
   loader: pomdp
   learning_method: lsharp
   use_dont_care: true
@@ -44,7 +42,6 @@
   parameters:
     constants: "N=4,RADIUS=2"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   horizon:
     - 7
@@ -61,7 +58,6 @@
   parameters:
     constants: "N=3"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   horizon:
     - 8
@@ -81,7 +77,6 @@
     - constants: "DMAX=3,PMAX=3"
     # - constants: "DMAX=5,PMAX=5"
   spec: Pmax=? [F<=4 "crash"]
-  good_label: crash
   loader: pomdp
   horizon:
     - 9
@@ -119,7 +114,6 @@
       47: 26
       16: 6
   spec: Pmax=? [F<5 "good"]
-  good_label: good
   loader: snakes_ladders
   horizon:
     # - 8

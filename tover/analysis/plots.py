@@ -22,7 +22,6 @@ DEFAULT_MATCH_FIELDS = [
     "fp_slack",
     "fn_slack",
     "spec",
-    "good_label",
     "seed",
 ]
 

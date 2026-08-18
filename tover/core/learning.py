@@ -36,7 +36,6 @@ def run_tover(
     expression_manager: ExpressionManager,
     # Specification
     spec: str,
-    good_label: str,
     threshold: float,
     # Monitor parameters
     horizon: int,
@@ -44,7 +43,6 @@ def run_tover(
     fn_slack: float,
     relative_error: float,
     # Behavior flags
-    use_risk: bool = True,
     use_dont_care: bool = False,
     use_horizon_in_filtering: bool = True,
     random_eq_method: dict[str, int] | None = None,
@@ -72,7 +70,7 @@ def run_tover(
         f"Running ToVer with spec: {spec}, threshold: {threshold}, "
         f"fp_slack: {fp_slack}, fn_slack: {fn_slack}, relative_error: {relative_error}, "
         f"exact: {mc.is_exact}, "
-        f"use_risk: {use_risk}, use_dont_care: {use_dont_care}, use_horizon_in_filtering: {use_horizon_in_filtering}, "
+        f"use_dont_care: {use_dont_care}, use_horizon_in_filtering: {use_horizon_in_filtering}, "
         f"random_eq_method: {random_eq_method}, use_reference_language: {use_reference_language}, "
         f"conditional_method: {conditional_method}, learning_method: {learning_method}, smt_behaviour: {smt_behaviour}, "
         f"integrate_testing: {integrate_testing}, depth {depth}, full_testing {full_testing}, test_per_frontier {test_per_frontier}"
@@ -85,7 +83,6 @@ def run_tover(
         spec,
         (threshold - fp_slack, threshold + fn_slack) if use_dont_care else threshold,
         horizon if use_horizon_in_filtering else None,
-        use_risk,
         use_dont_care,
     )
     sul_cached = CacheSUL(sul)
@@ -142,9 +139,7 @@ def run_tover(
         fn_slack,
         horizon,
         spec,
-        good_label,
         relative_error,
-        use_risk,
         expression_manager,
         random_eq,
         base_dir,
