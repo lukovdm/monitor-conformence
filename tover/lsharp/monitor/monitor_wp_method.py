@@ -236,8 +236,12 @@ class RandomWpMethodEqOracle(Oracle):
 
         state_mapping = {s : state_characterization_set(hypothesis, self.alphabet, s) for s in hypothesis.states}
 
+        # SMT-built hypotheses (L#box) can contain states that no input sequence
+        # reaches; those have no prefix, so there is nothing to sample from.
+        reachable_states = [s for s in hypothesis.states if s.prefix is not None]
+
         for _ in range(self.bound):
-            state = random.choice(hypothesis.states)
+            state = random.choice(reachable_states)
             input = state.prefix
             limit = self.min_length
             while limit > 0 or random.random() > 1 / (self.expected_length + 1):

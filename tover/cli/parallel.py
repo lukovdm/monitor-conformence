@@ -26,6 +26,7 @@ from typing import override
 
 from tap import Tap
 
+from tover.experiments.runner import Experiment
 from tover.utils.logger import logger
 
 
@@ -51,13 +52,13 @@ def _decode(blob: str):
 
 
 def _run(args: ParallelArgs) -> None:
-    exp = _decode(args.pickle)
+    exp: Experiment = _decode(args.pickle)
     # Seeding is driven by the experiment itself (Experiment.run uses exp.seed,
     # default 0) so it stays consistent across entry points and is recorded.
     exp.run(args.timestamp, args.base_dir, output_to_stdout=False)
 
 
-def _log_path(base_dir: str, timestamp: str, exp) -> str:
+def _log_path(base_dir: str, timestamp: str, exp: Experiment) -> str:
     variant_hash = md5(str(exp.variant).encode()).hexdigest()
     return os.path.join(base_dir, "logs", f"{timestamp}_{exp.name}_{variant_hash}.log")
 

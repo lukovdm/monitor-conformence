@@ -214,3 +214,39 @@ class FilteringSUL(SUL):
                     f"State {state} has no label in the observation classes {observation_classes}"
                 )
         return observations
+
+
+class ScalarQuerySUL:
+    """Gives an AALpy SUL the query interface the L#box baseline expects.
+
+    AALpy's ``SUL.query`` returns one output per input symbol; the upstream
+    L#box code (see its ``IncompleteDfaSUL``) returns a single output for the
+    whole word. Without this shim ``tover/lsharp/box`` feeds a list into
+    ``MooreNode.set_output``, and hypothesis construction dies on
+    ``Bool(node.output)``.
+
+    Deliberately not a :class:`SUL` subclass: L#box only ever touches ``query``
+    and the counters below, and something that answers ``query`` with a scalar
+    must not be passable to the learners that expect a list.
+
+    Counters are mirrored from the wrapped SUL after every query so the info
+    dict L#box builds reports the real query/step/cache numbers;
+    ``num_successful_queries`` (queries that returned a defined output) has no
+    AALpy equivalent and is counted here.
+    """
+
+    def __init__(self, sul: SUL):
+        self.sul = sul
+        self.num_queries = 0
+        self.num_steps = 0
+        self.num_cached_queries = 0
+        self.num_successful_queries = 0
+
+    def query(self, word) -> bool | Literal["unknown"]:
+        output = self.sul.query(word)[-1]
+        if output != "unknown":
+            self.num_successful_queries += 1
+        self.num_queries = self.sul.num_queries
+        self.num_steps = self.sul.num_steps
+        self.num_cached_queries = self.sul.num_cached_queries
+        return output

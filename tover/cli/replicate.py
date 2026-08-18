@@ -32,6 +32,10 @@ _NON_CONSTRUCTOR_FIELDS = {
     "variant_hash",
     "good_label",
     "use_risk",
+    # Derived from learning_method since the two-flag refactor; still present in
+    # both old and new result JSON, but no longer constructor arguments.
+    "use_dont_care",
+    "use_refrence_language",
 }
 
 
@@ -53,8 +57,6 @@ class ReplicateArgs(Tap):
     relative_error: float | None = None
 
     use_horizon_in_filtering: bool | None = None
-    use_dont_care: bool | None = None
-    use_refrence_language: bool | None = None
     use_exact: bool | None = None
 
     conditional_method: ConditionalMethod | None = None
@@ -90,6 +92,21 @@ def main():
         k: v for k, v in data["experiment"].items() if k not in _NON_CONSTRUCTOR_FIELDS
     }
 
+    # Result JSON written before don't cares and the reference language became part of
+    # the method: back then `lsharp` with both flags on is what `lsharp_monitor` is now.
+    # Without this the rerun would silently use plain L# instead.
+    stored = data["experiment"]
+    if (
+        stored.get("learning_method") == LearningMethod.LSHARP
+        and stored.get("use_dont_care")
+        and stored.get("use_refrence_language")
+    ):
+        exp_block["learning_method"] = LearningMethod.LSHARP_MONITOR
+        print(
+            "Note: this result predates the learning-method refactor; replaying it as "
+            f"{LearningMethod.LSHARP_MONITOR} (lsharp + don't cares + reference language)."
+        )
+
     # The JSON serializes fp_slack/fn_slack separately; the constructor wants a tuple.
     fp_slack = _coerce(exp_block.pop("fp_slack"))
     fn_slack = _coerce(exp_block.pop("fn_slack"))
@@ -106,8 +123,6 @@ def main():
         "threshold": args.threshold,
         "relative_error": args.relative_error,
         "use_horizon_in_filtering": args.use_horizon_in_filtering,
-        "use_dont_care": args.use_dont_care,
-        "use_refrence_language": args.use_refrence_language,
         "use_exact": args.use_exact,
         "conditional_method": args.conditional_method,
         "learning_method": args.learning_method,

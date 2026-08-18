@@ -90,7 +90,7 @@ The inputs to `python -m tover.cli.run` are as follows:
 - `--exact` or `--double` selects exact rational arithmetic or double-precision floats; one of the two is required.
 - `--base_dir out/airport_experiment` defines where to save the statisics, models and dot file of the model.
 
-Further options control the learning algorithm and equivalence oracle (defaults shown by `python -m tover.cli.run --help`): `--learning_method {lstar,lsharp}` (default `lsharp`), `--dont_care`/`--refrence_language`/`--horizon_in_filtering`/`--random_eq` toggles, `--conditional_method`, `--relative_error`, `--min_length`/`--expected_length`/`--max_seqs` for the random oracle, and `--solver_timeout`/`--learning_timeout`.
+Further options control the learning algorithm and equivalence oracle (defaults shown by `python -m tover.cli.run --help`): `--learning_method {lstar,lsharp,lsharp_monitor,lsharp_box}` (default `lsharp_monitor`; the method decides whether learning uses don't cares and the reference language), `--horizon_in_filtering`/`--random_eq` toggles, `--conditional_method`, `--relative_error`, `--min_length`/`--expected_length`/`--max_seqs` for the random oracle, and `--solver_timeout`/`--learning_timeout`.
 
 ## Running experiments
 Our experiments are defined in yaml files. `python -m tover.cli.experiment` expands a yaml grid into one self-contained command per variant (written to `<base_dir>/commands.txt`); GNU [`parallel`](https://www.gnu.org/software/parallel/) then executes them, owning concurrency, timeouts, and process teardown.

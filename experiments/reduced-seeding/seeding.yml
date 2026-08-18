@@ -26,9 +26,7 @@
   spec: Pmax=? [F<=1 "crash"]
   loader: pomdp
   use_exact: false
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   conditional_method: bisection
   seed_from_search:
     - false
@@ -47,9 +45,7 @@
   spec: Pmax=? [F<=4 "crash"]
   loader: pomdp
   use_exact: false
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   conditional_method: bisection
   seed_from_search:
     - false
@@ -68,9 +64,7 @@
   spec: Pmax=? [F<=4 "crash"]
   loader: pomdp
   use_exact: false
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   conditional_method: bisection
   seed_from_search:
     - false
@@ -89,9 +83,7 @@
   spec: Pmax=? [F<=4 "traps"]
   loader: pomdp
   use_exact: false
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   conditional_method: bisection
   seed_from_search:
     - false

@@ -38,9 +38,9 @@ class RunArgs(Tap):
     spec: str  # Property specification (e.g. 'Pmax=? [F<=4 "crash"]')
 
     # Learning
-    dont_care: bool = True  # Whether to learn with don't cares
-    refrence_language: bool = True  # Whether to use the reference language
-    learning_method: LearningMethod = LearningMethod.LSHARP
+    # The method decides whether learning uses don't cares and the reference
+    # language; see `LearningMethod`.
+    learning_method: LearningMethod = LearningMethod.LSHARP_MONITOR
 
     # Testing during learning
     integrate_testing: bool = True # Whether to use testing during learning, the conformance testing is not necessary if this is set to True
@@ -194,8 +194,6 @@ def main():
         fp_slack=make_exact(args.fp_slack, exact),
         fn_slack=make_exact(args.fn_slack, exact),
         relative_error=make_exact(args.relative_error, exact),
-        use_dont_care=args.dont_care,
-        use_reference_language=args.refrence_language,
         integrate_testing=args.integrate_testing,
         depth=args.depth,
         full_testing =args.full_testing,

@@ -1,6 +1,7 @@
 # Compares the available conditional-probability synthesis methods against each
-# other. Only the lsharp_dc_rl configuration is run (L#, use_dont_care=true,
-# use_refrence_language=true); the single swept dimension is conditional_method.
+# other. Only the lsharp_monitor configuration is run (ToVer's L#, i.e. with
+# don't cares and the reference language); the single swept dimension is
+# conditional_method.
 #
 # conditional_method values come from tover.core.synthesis.ConditionalMethod:
 #   rejection, restart, bisection, bisection_advanced,
@@ -23,9 +24,7 @@
     - 25
   spec: Pmax=? [F<=1 "crash"]
   loader: pomdp
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   seed: &seeds [0,1,2]
   zip: &methods
     - conditional_method: [rejection, restart]
@@ -44,9 +43,7 @@
     # - constants: "N=3,ENERGY=4"
   spec: Pmax=? [F<=3 "empty"]
   loader: pomdp
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   seed: *seeds
   zip: *methods
 
@@ -60,9 +57,7 @@
   horizon:
     - 7
     - 9
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   seed: *seeds
   zip: *methods
 
@@ -76,9 +71,7 @@
   horizon:
     - 8
     # - 10
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   seed: *seeds
   zip: *methods
 
@@ -95,9 +88,7 @@
   horizon:
     - 9
     # - 11
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   seed: *seeds
   zip: *methods
 
@@ -136,8 +127,6 @@
     - 14
     # - 16
     # - 18
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   seed: *seeds
   zip: *methods

@@ -1,4 +1,4 @@
-# Compares L* against L# (with/without don't-care and reference language).
+# Compares L* against plain L# and against ToVer's L# (lsharp_monitor).
 # The first experiment (icy-driving) carries the shared configuration via the
 # &base anchor; every other benchmark merges it with `<<: *base` and overrides
 # only the benchmark-specific keys (name/file/parameters/spec/horizon).
@@ -20,12 +20,8 @@
   use_exact: false
   learning_method:
     - lstar
-    - lsharp
-  zip:
-    - use_dont_care: true
-      use_refrence_language: true
-    - use_dont_care: false
-      use_refrence_language: false
+    - lsharp          # plain L#: no don't cares, no reference language
+    - lsharp_monitor  # ToVer's L#: don't cares + reference language
   seed: [0,1,2]
   full_testing: true
   random_eq_method:

@@ -15,9 +15,7 @@
   spec: Pmax=? [F<=1 "crash"]
   loader: pomdp
   use_exact: false  # double is much faster than exact
-  learning_method: lsharp
-  use_dont_care: true
-  use_refrence_language: true
+  learning_method: lsharp_monitor
   conditional_method:
     - rejection
     - bisection

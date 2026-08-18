@@ -1,0 +1,169 @@
+# A time-boxed version of compare_lsharp_lstar.yml, intended to be run with a 2h
+# timeout:
+#
+#   python -m tover.cli.experiment --files experiments/improved-learning/smaller-test-set.yml \
+#     --base_dir out/smaller
+#   parallel --shuf --jobs 8 --timeout 7200 --memfree 15G \
+#     --joblog out/smaller/joblog.txt < out/smaller/commands.txt
+#   python -m tover.cli.parallel --report out/smaller/joblog.txt --base_dir out/smaller
+#
+# SELECTION RULE
+# Every cell keeps all three arms (L* / L# with don't-cares + reference language /
+# plain L#) and all three seeds -- comparing the methods is the point. A cell is
+# kept when *at least one* arm is expected to land in 15min..2h. Arms that are far
+# faster or that hit the 2h cap around such an arm are the measurement, not waste.
+# Cells where every arm finishes in seconds, or where every arm blows past 2h, are
+# dropped: they separate nothing.
+#
+# EVIDENCE
+# Timings below are medians over 3 seeds from out/exp-2026-07-06_14-57-29-compare_lsharp_lstar,
+# the most recent run whose configuration matches this file (use_exact: false,
+# conditional_method default bisection_pt, integrate_testing, max_seqs 50000).
+# Earlier runs used exact arithmetic and/or rejection and are not comparable.
+# Lines marked (est) are horizons/parameters that were never measured; the estimate
+# comes from the measured growth per +1 horizon within the same benchmark, or from
+# the measured parameter scaling, and is stated with the factor used. Treat the
+# first run of this file as confirmation: drop any (est) cell whose arms all land
+# outside the band.
+#
+# COST
+# 16 cells x 3 arms x 3 seeds = 144 jobs, ~127 CPU-hours with the 2h cap
+# (~16h wall at --jobs 8). For comparison, the 216-job run this was derived from
+# took 430 CPU-hours, 312 of which were spent inside jobs that hit the old 6h cap.
+# The airport group sweeps file x parameters x horizon, so it also produces three
+# cells that the selection rule would not have picked on their own: A3/DMAX=3 h=8
+# and B7/DMAX=3 h=8 are below the band but cost under an hour each, and A3/DMAX=4
+# h=9 has no arm in band and burns ~18 CPU-hours against the cap. Pin the horizon
+# per parameter set if that one becomes annoying.
+
+# airport -- the strongest family in the set; h=9 is measured throughout and h=8 is
+# the interpolated step below it. Growth per +1 horizon, measured from h9 -> h11:
+# A3/DMAX=3 x3.44 (L*) x4.86 (L#dc) x4.02 (L#pl); B7/DMAX=3 x5.09 / x3.35 / x3.50.
+# The DMAX=4 estimates reuse the factors of the same file at DMAX=3.
+#   A3 DMAX=3 h=9  (measured): L* 20m   L#dc 15m    L#pl 20m    <- all three in band
+#   A3 DMAX=3 h=8  (est)     : L* 6m    L#dc 3m     L#pl 5m     <- below band, ~0.7 CPU-h
+#   A3 DMAX=4 h=9  (measured): L* 162m  L#dc >6h    L#pl 212m   <- nothing in band, all capped
+#   A3 DMAX=4 h=8  (est)     : L* 47m   L#dc >=74m  L#pl 53m    <- all three in band
+#   B7 DMAX=3 h=9  (measured): L* 5m    L#dc 32m    L#pl 15m
+#   B7 DMAX=3 h=8  (est)     : L* 1m    L#dc 10m    L#pl 4m     <- below band, ~0.8 CPU-h
+#   B7 DMAX=4 h=9  (measured): L* 56m   L#dc 56m    L#pl 125m   <- L#pl seeds land on the cap
+#   B7 DMAX=4 h=8  (est)     : L* 11m   L#dc 17m    L#pl 36m
+# If h=8/h=9 turns out to be too fast, h=10 is the next step up: A3/DMAX=3 h=10 is
+# estimated at L* 69m / L#dc 73m / L#pl 82m and B7/DMAX=3 h=10 at 26m / 107m / 53m.
+- &base
+  type: LearningExperiment
+  name: airport
+  file:
+    - experiments/premise/airportA-3.nm
+    - experiments/premise/airportB-7.nm
+  parameters:
+    - constants: "DMAX=3,PMAX=3"
+    - constants: "DMAX=4,PMAX=4"
+  horizon:
+    - 8
+    - 9
+  spec: Pmax=? [F<=4 "crash"]
+  loader: pomdp
+  use_exact: false
+  full_testing: false
+  learning_method:
+    - lstar
+    - lsharp          # plain L#: no don't cares, no reference language
+    - lsharp_monitor  # ToVer's L#: don't cares + reference language
+  seed: [0, 1, 2]
+  random_eq_method:
+    - max_seqs: 50000
+
+# evade -- the arms cliff in opposite directions, so the benchmark is carried at two
+# horizons: L* is the in-band arm at h=7, L#dc at h=13.
+#   h=7  (measured): L* 19m   L#dc 0.2m  L#pl over the cap
+#   h=13 (est)     : L#dc 86m, L* and L#pl over the cap
+#                    L#dc grows x2.86 per +1 horizon (0.16m at h=7 -> 1.28m at h=9)
+- <<: *base
+  name: evade
+  file: experiments/premise/evade-monitoring.nm
+  parameters:
+    constants: "N=4,RADIUS=2"
+  horizon:
+    - 7
+    - 13
+
+# hidden_incentive -- h=8 was useless (L* 2m, L#dc 0m) and h=10 puts two arms in band.
+#   h=10 (measured): L* 23m   L#dc 68m   L#pl over the cap
+- <<: *base
+  name: hidden_incentive
+  file: experiments/premise/hidden-incentive.nm
+  parameters:
+    constants: "N=3"
+  horizon: 10
+
+# refuel -- pinned to refuelB.nm: every refuel.nm cell was seconds-to-minutes on the
+# arms that did not blow past the cap, so it separates nothing. Horizon stays at 10
+# and the model parameters are the knob.
+#   N=3,ENERGY=4 (measured): L#dc 115m (seeds 110/115/209 -- the slowest is cut at 2h)
+#                            L* 9m, L#pl 6m
+#   N=4,ENERGY=4 (est)     : L* 26m   L#pl 41m   L#dc over the cap
+#                            from N=3,ENERGY=3 scaled by the measured ENERGY=4 factor
+#                            (L* x21.3, L#pl x9.4) and N=4 factor (L* x2.9, L#pl x6.6)
+- <<: *base
+  name: refuel
+  file: experiments/premise/refuelB.nm
+  parameters:
+    - constants: "N=3,ENERGY=4"
+    - constants: "N=4,ENERGY=4"
+  horizon: 10
+  spec: Pmax=? [F<=3 "empty"]
+
+# snakes_ladders -- L#dc is over the cap from h=14 on, L#pl is the in-band arm.
+#   h=16 (measured): L* 9m    L#pl 22m   L#dc over the cap
+#   h=18 (est)     : L* 34m   L#pl 66m   L#dc over the cap
+#                    from h14 -> h16 growth of x3.83 (L*) and x3.03 (L#pl) per +1 horizon
+- <<: *base
+  name: snakes_ladders
+  loader: snakes_ladders
+  file: experiments/mc_u_nxn.pm  # ignored by the snakes_ladders loader
+  full_testing: true
+  parameters:
+    n: 100
+    ladders:
+      1: 38
+      4: 14
+      9: 31
+      28: 64
+      40: 42
+      36: 44
+      51: 67
+      71: 91
+      80: 100
+    snakes:
+      98: 76
+      95: 75
+      93: 73
+      87: 24
+      64: 60
+      62: 19
+      55: 53
+      49: 11
+      47: 26
+      16: 6
+  spec: Pmax=? [F<5 "good"]
+  horizon:
+    - 16
+    - 18
+
+# icy-driving -- the weakest cell in the set, and the first to drop if it disappoints.
+# Under this configuration only h=20 was measured, where nothing was in band (L* and
+# L#pl 1m, L#dc over the cap). IMAX=50 timed the same as IMAX=25, so only IMAX=25 is
+# kept.
+#   h=30 (est): L* ~35m, L#pl ~35m, L#dc over the cap
+#               1.1m at h=20 grown by x1.42 per +1 horizon, which is icy's L#dc growth
+#               from a run under exact + rejection -- a different configuration, so this
+#               is an order-of-magnitude guess rather than an extrapolation of like data.
+- <<: *base
+  name: icy-driving
+  file: experiments/icy-driving/icy-driving.pm
+  parameters:
+    constants: "IMAX=25"
+  full_testing: true
+  spec: Pmax=? [F<=1 "crash"]
+  horizon: 30

@@ -49,6 +49,11 @@ module-root = ""
 requires = ["uv_build>=0.11.4,<0.12.0"]
 build-backend = "uv_build"
 
+[tool.ruff]
+# Verbatim upstream copy of the L#box baseline; kept unformatted so it can be
+# re-synced from https://github.com/JLaumen/l-sharp-square-algorithm with a plain copy.
+extend-exclude = ["tover/lsharp/box"]
+
 [tool.ruff.lint]
 ignore=["E402", "F405", "F403", "E741"]
 

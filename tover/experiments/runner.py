@@ -171,18 +171,18 @@ class LearningExperiment(Experiment):
         relative_error: float = 0.01,
         # Behavior flags
         use_horizon_in_filtering: bool = True,
-        use_dont_care: bool = True,
-        use_refrence_language: bool = True,
         conditional_method: ConditionalMethod = ConditionalMethod.BISECTION_PT,
         use_exact: bool = False,
         # Learning
-        learning_method: LearningMethod = LearningMethod.LSHARP,
+        learning_method: LearningMethod = LearningMethod.LSHARP_MONITOR,
         random_eq_method: dict[str, int] | Literal["default"] | None = "default",
         # Testing
         integrate_testing: bool = True,
         depth: int | None = 2,
         full_testing: bool = False,
         test_per_frontier: int | None = 5,
+        # Verification of the learned monitor (off by default)
+        verify_learned_monitor: bool = False,
         # Seed the observation tree from the belief most-probable-path search
         seed_from_search: bool = False,
         seed_max_expansions: int = 100000,
@@ -194,6 +194,9 @@ class LearningExperiment(Experiment):
 
         if random_eq_method == "default":
             random_eq_method = {}
+
+        # YAML hands us a plain string; the derived flags below need the enum.
+        learning_method = LearningMethod(learning_method)
 
         self.spec = spec
         self.horizon = horizon
@@ -207,26 +210,18 @@ class LearningExperiment(Experiment):
         self.use_exact = use_exact
         self.learning_method = learning_method
         self.random_eq_method = random_eq_method
-        self.use_dont_care = use_dont_care
-        self.use_refrence_language = use_refrence_language
+        # Derived from the method (see `LearningMethod`), but kept as attributes so
+        # they stay visible in the serialized experiment block.
+        self.use_dont_care = learning_method.use_dont_care
+        self.use_refrence_language = learning_method.use_reference_language
         self.integrate_testing = integrate_testing
         self.depth = depth
         self.full_testing = full_testing
         self.test_per_frontier = test_per_frontier
+        self.verify_learned_monitor = verify_learned_monitor
         self.seed_from_search = seed_from_search
         self.seed_max_expansions = seed_max_expansions
         self.seed_timeout_ms = seed_timeout_ms
-
-        if learning_method == LearningMethod.LSTAR:
-            if use_dont_care or use_refrence_language:
-                raise ValueError(
-                    "L* requires use_dont_care and use_reference_language to be False to avoid duplicates"
-                )
-        if learning_method == LearningMethod.LSHARP:
-            if use_dont_care != use_refrence_language:
-                raise ValueError(
-                    "l# requires use_dont_care and use_refrence_language to be the same to avoid duplicates"
-                )
 
     def _export_monitor(self, monitor: Dfa[str], base_dir: str) -> str:
         """Visualize and export a learned monitor to dot and drn formats."""
@@ -345,8 +340,6 @@ class LearningExperiment(Experiment):
                 fp_slack=self.fp_slack,
                 fn_slack=self.fn_slack,
                 relative_error=self.relative_error,
-                use_reference_language=self.use_refrence_language,
-                use_dont_care=self.use_dont_care,
                 use_horizon_in_filtering=self.use_horizon_in_filtering,
                 conditional_method=self.conditional_method,
                 learning_method=self.learning_method,
@@ -366,11 +359,14 @@ class LearningExperiment(Experiment):
             self._log_learning_summary(lstar_info, stats)
             path_base = self._export_monitor(learned_monitor, base_dir)
 
-            logger.info("Verifying the ToVer learned monitor")
-            fp_result, fn_result = self._run_verify(
-                learned_monitor,
-                base_dir,
-            )
+            verify_results: dict[str, Any] = {}
+            if self.verify_learned_monitor:
+                logger.info("Verifying the ToVer learned monitor")
+                fp_result, fn_result = self._run_verify(
+                    learned_monitor,
+                    base_dir,
+                )
+                verify_results = self._build_verify_result_dict(fp_result, fn_result)
 
             return {
                 "time": elapsed,
@@ -391,7 +387,7 @@ class LearningExperiment(Experiment):
                 "learning_stats": lstar_info,
                 "dot_file": f"{path_base}.dot",
                 "drn_file": f"{path_base}.drn",
-                **self._build_verify_result_dict(fp_result, fn_result),
+                **verify_results,
             }
         except Exception as e:
             logger.error(f"Error in ToVer: {traceback.format_exc()}")

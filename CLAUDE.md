@@ -77,10 +77,26 @@ transformations.py
 - `automata.py`: Converts AALpy DFA ↔ Stormpy SparseMdp (the monitor representation). Monitors are MDPs where states are DFA states, actions are alphabet symbols, and transitions are deterministic (probability 1.0).
 - `snakes.py`: Loads Snakes and Ladders board models.
 
-**Three learning modes** (`tover/core/learning.py`):
-1. `run_tover`: Full algorithm — L* + `ToVerEqOracle` (PAYNT synthesis)
-2. `run_trad_learning`: L* + `RandomWMethodEqOracle` (no PAYNT)
-3. `run_sampling_learning`: L* + `SamplingEqOracle` (MC random walks)
+**Learning methods** (`tover/core/learning.py`, `LearningMethod`): `run_tover` always builds the
+`FilteringSUL` and the `ToVerEqOracle`, then dispatches on `learning_method`. The method also
+decides whether the SUL reports don't cares and whether a reference language is built — these
+are `LearningMethod` properties, not separate flags:
+
+| method | don't cares | reference language | implementation |
+| --- | --- | --- | --- |
+| `lstar` | no | no | AALpy's L* |
+| `lsharp` | no | no | plain L#, `tover/lsharp/normal` |
+| `lsharp_monitor` | yes | yes | ToVer's L#, `tover/lsharp/monitor` |
+| `lsharp_box` | yes | no | baseline, `tover/lsharp/box` |
+
+`lsharp_monitor` is the full algorithm: SMT-based hypothesis construction, reference-language-guided
+frontier expansion, optional seeding, and reference-based pruning of the learned monitor.
+
+`lsharp_box` is the unmodified L#□ of Laumen, Snel and Vaandrager, vendored verbatim (see
+`tover/lsharp/box/__init__.py`; upstream spells □ "square" in its own file names, which are kept
+as-is). `ScalarQuerySUL` (`tover/core/sul.py`) bridges AALpy's per-symbol `query` to the
+single-output `query` it expects. Upstream uses `solver_timeout` both as the SMT timeout and as
+the total learning budget, so `learning_timeout` does not apply to it.
 
 **Experiments** (`tover/experiments/`):
 - YAML files define `LearningExperiment` or `VerifyExperiment` objects with parameter grids
